@@ -1,0 +1,19 @@
+services:
+  backend:
+    build: ./Backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./Backend:/Backend
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    environment:
+      - DEBUG=1
+    env_file:
+      - Backend/.env

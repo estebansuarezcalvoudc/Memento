@@ -1,0 +1,44 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs
+logs/
+*.log
+
+# Virtual environments
+venv/
+.env/
+.venv/
+
+# Environment variable files
+.env
+*.env
+
+# Test output
+.coverage
+htmlcov/
+.tox/
+.nox/
+.cache/
+pytest_cache/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Editor & OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore local Docker-related files
+docker-compose.override.yml

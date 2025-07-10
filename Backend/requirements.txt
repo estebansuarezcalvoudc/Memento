@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+whisperx
+torch
+python-dotenv
+python-multipart
+debugpy
+pydantic-settings
