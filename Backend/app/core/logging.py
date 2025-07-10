@@ -1,7 +1,7 @@
 import logging
 import os
 
-LOG_DIR = "logs"
+LOG_DIR = "Backend/logs"
 LOG_FILE = "app.log"
 
 os.makedirs(LOG_DIR, exist_ok=True)
