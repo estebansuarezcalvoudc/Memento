@@ -1,62 +1,67 @@
 import whisperx
-import gc
-import torch
 import os
 import tempfile
 from dotenv import load_dotenv
 from ..core.logging import setup_logger
 from ..core.config import settings
+from ..models.meeting_model import CreateMeeting, RetrieveMeeting
 
 logger = setup_logger(__name__)
 
 
-def process_audio_from_bytes(audio_bytes):
-    # Crear un archivo temporal solo para whisperx.load_audio
+def process_meeting(meeting: CreateMeeting, audio_bytes: bytes) -> RetrieveMeeting:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_file:
         temp_file.write(audio_bytes)
         temp_file_path = temp_file.name
 
     try:
-        audio = whisperx.load_audio(temp_file_path)
-        return _process_audio_data(audio)
-    finally: # Limpiar el archivo temporal
+        return _process_audio_file(meeting, temp_file_path)
+    finally:
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
 
 
-def _process_audio_data(audio):
-    transcription = _transcribe_audio(audio)
-    logger.info(f"Audio has been transcribed")
+def _process_audio_file(meeting: CreateMeeting, temp_file_path):
+    audio = whisperx.load_audio(temp_file_path)
 
-    aligned_transcription = _align_audio_and_transcription(audio, transcription)
-    logger.info("Audio has been aligned")
+    transcription = _transcribe_meeting(audio)
+    logger.debug("Transcribed (1/5)")
 
-    diarized_segments = _diarize_conversation(audio)
-    logger.info("Audio has been diarized")
+    aligned = _align_meeting(transcription, audio)
+    logger.debug("Aligned (2/5)")
 
-    diarized_conversation = whisperx.assign_word_speakers(
-        diarized_segments, aligned_transcription
+    segments = _diarize_meeting(audio)
+    logger.debug("Segmented (3/5)")
+
+    diarized_conversation = whisperx.assign_word_speakers(segments, aligned)
+    logger.debug("Diarized (4/5)")
+
+    conversation = _create_diarized_dialogue(diarized_conversation)
+    logger.debug("Conversation formatted (5/5)")
+
+    return RetrieveMeeting(
+        title=meeting.title,
+        date=meeting.date,
+        transcription=conversation,
+        language=meeting.language or "es",
+        number_of_speakers=meeting.number_of_speakers or 2,
     )
 
-    logger.info("Diarized conversation has been created")
 
-    return _format_output(diarized_conversation)
+def _transcribe_meeting(audio):
+    model = whisperx.load_model(
+        "tiny",
+        "cpu",
+        language="es",
+        compute_type="int8",
+    )
 
-
-def _transcribe_audio(audio):
-    model = whisperx.load_model("tiny", "cpu", language="es", compute_type="int8")
-
-    transcription = model.transcribe(audio, batch_size=10)
-
-    gc.collect()
-    torch.cuda.empty_cache()
-    del model
-
-    return transcription
+    return model.transcribe(audio, batch_size=10)
 
 
-def _align_audio_and_transcription(audio, transcription):
+def _align_meeting(transcription, audio):
     model_a, metadata = whisperx.load_align_model(language_code="es", device="cpu")
+
     return whisperx.align(
         transcription["segments"],
         model_a,
@@ -67,17 +72,17 @@ def _align_audio_and_transcription(audio, transcription):
     )
 
 
-def _diarize_conversation(audio):
+def _diarize_meeting(audio):
     load_dotenv()
 
     diarize_model = whisperx.diarize.DiarizationPipeline(
-        settings.hf_token, device="cpu"
+        use_auth_token=settings.hf_token, device="cpu"
     )
 
     return diarize_model(audio)
 
 
-def _format_output(diarized_conversation):
+def _create_diarized_dialogue(diarized_conversation):
     segments = diarized_conversation["segments"]
     current_speaker = None
     conversation = ""

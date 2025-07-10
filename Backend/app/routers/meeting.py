@@ -1,29 +1,37 @@
-from fastapi import APIRouter, File, UploadFile, Form, Depends
+from fastapi import APIRouter, File, UploadFile, Form, Depends, status
+from fastapi.responses import Response
 from datetime import date
-from ..models.meeting_model import MeetingCreate
+from typing import Optional
+from ..models.meeting_model import CreateMeeting, RetrieveMeeting
 from ..core.logging import setup_logger
-from ..services.process_meeting import process_audio_from_bytes
+from ..services.process_meeting import process_meeting
 
 logger = setup_logger(__name__)
 router = APIRouter()
 
 
-def get_meeting_create(title: str = Form(...), date: date = Form(...)) -> MeetingCreate:
-    return MeetingCreate(title=title, date=date)
+def get_meeting_create(
+    title: str = Form(...),
+    date: date = Form(...),
+    language: Optional[str] = Form(None),
+    number_of_speakers: Optional[int] = Form(None),
+) -> CreateMeeting:
+    return CreateMeeting(
+        title=title, date=date, language=language, number_of_speakers=number_of_speakers
+    )
 
 
-@router.post("/meetings")
+@router.post("/meetings", response_model=RetrieveMeeting)
 async def create_meeting(
-    meeting: MeetingCreate = Depends(get_meeting_create), audio: UploadFile = File(...)
+    meeting: CreateMeeting = Depends(get_meeting_create), audio: UploadFile = File(...)
 ):
-    logger.info("Create meeting was called")
+    logger.debug("Create meeting was called")
 
-    # Leer los bytes del archivo subido
     audio_bytes = await audio.read()
 
-    return {
-        "title": meeting.title,
-        "date": meeting.date,
-        "file_name": audio.filename,
-        "transcription": process_audio_from_bytes(audio_bytes),
-    }
+    result = process_meeting(meeting, audio_bytes)
+    return Response(
+        content=result.model_dump_json(),
+        media_type="application/json",
+        status_code=status.HTTP_201_CREATED,
+    )

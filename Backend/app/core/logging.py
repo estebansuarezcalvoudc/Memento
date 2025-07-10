@@ -9,7 +9,7 @@ os.makedirs(LOG_DIR, exist_ok=True)
 
 def setup_logger(name: str) -> logging.Logger:
     logger = logging.getLogger(name)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     if not logger.handlers:
         log_path = os.path.join(LOG_DIR, LOG_FILE)
