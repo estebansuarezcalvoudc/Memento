@@ -1,6 +1,7 @@
 import logging
 import os
 
+
 LOG_DIR = "./logs"
 LOG_FILE = "app.log"
 

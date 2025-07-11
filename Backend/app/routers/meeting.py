@@ -6,6 +6,7 @@ from ..models.meeting_model import CreateMeeting, RetrieveMeeting
 from ..core.logging import setup_logger
 from ..services.process_meeting import process_meeting
 
+
 logger = setup_logger(__name__)
 router = APIRouter()
 

@@ -6,6 +6,7 @@ from ..core.logging import setup_logger
 from ..core.config import settings
 from ..models.meeting_model import CreateMeeting, RetrieveMeeting
 
+
 logger = setup_logger(__name__)
 
 
@@ -90,12 +91,15 @@ def _create_diarized_dialogue(diarized_conversation):
     for segment in segments:
         speaker = segment.get("speaker", "Unknown")
         text = segment.get("text", "")
-        if speaker != current_speaker:
-            if conversation:
-                conversation += "\n\n\n"
-            conversation += f"{speaker}:\n    {text.strip()}"
-            current_speaker = speaker
-        else:
+
+        if speaker == current_speaker:
             conversation += f" {text.strip()}"
+            continue
+
+        if conversation:
+            conversation += "\n\n\n"
+
+        conversation += f"{speaker}:\n    {text.strip()}"
+        current_speaker = speaker
 
     return conversation
