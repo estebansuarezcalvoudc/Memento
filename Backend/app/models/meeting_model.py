@@ -14,7 +14,7 @@ class CreateMeeting(BaseMeeting):
 
 
 class RetrieveMeeting(BaseMeeting, table=True):
-    id: Optional[int] = Field(primary_key=True, index=True)
+    id: Optional[int] = Field(default=None, primary_key=True, index=True)
     language: str
     number_of_speakers: int
     transcription: str

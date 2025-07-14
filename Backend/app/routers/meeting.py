@@ -7,7 +7,6 @@ from ..models.meeting_model import CreateMeeting, RetrieveMeeting
 from ..core.logging import setup_logger
 from ..services.process_meeting import process_meeting, get_session
 
-
 logger = setup_logger(__name__)
 router = APIRouter()
 
@@ -23,19 +22,30 @@ def get_meeting_create(
     )
 
 
+def get_create_meeting_info(
+    metadata: CreateMeeting = Depends(get_meeting_create), audio: UploadFile = File(...)
+):
+    return metadata, audio
+
+
 @router.post(
-    "/meetings", response_model=RetrieveMeeting, status_code=status.HTTP_201_CREATED
+    "/meetings",
+    response_model=RetrieveMeeting,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new meeting and process it",
 )
 async def create_meeting(
-    meeting: CreateMeeting = Depends(get_meeting_create),
-    audio: UploadFile = File(...),
+    meeting: tuple[CreateMeeting, UploadFile] = Depends(get_create_meeting_info),
     session: Session = Depends(get_session),
 ):
     logger.debug("Create meeting was called")
 
+    metadata, audio = meeting
+
     audio_bytes = await audio.read()
 
-    result = process_meeting(meeting, audio_bytes, session)
+    result = process_meeting(metadata, audio_bytes, session)
+
     return Response(
         content=result.model_dump_json(),
         media_type="application/json",
