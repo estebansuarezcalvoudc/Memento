@@ -5,8 +5,8 @@ from typing import Optional
 from sqlmodel import Session
 from ..models.meeting_model import CreateMeeting, RetrieveMeeting
 from ..core.logging import setup_logger
-from ..core.database import engine
 from ..services.process_meeting import process_meeting, get_session
+
 
 logger = setup_logger(__name__)
 router = APIRouter()
