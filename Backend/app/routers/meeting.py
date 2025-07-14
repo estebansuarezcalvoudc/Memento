@@ -1,11 +1,12 @@
-from fastapi import APIRouter, File, UploadFile, Form, Depends, status
+from fastapi import APIRouter, File, UploadFile, Form, status, Depends
 from fastapi.responses import Response
 from datetime import date
 from typing import Optional
+from sqlmodel import Session
 from ..models.meeting_model import CreateMeeting, RetrieveMeeting
 from ..core.logging import setup_logger
-from ..services.process_meeting import process_meeting
-
+from ..core.database import engine
+from ..services.process_meeting import process_meeting, get_session
 
 logger = setup_logger(__name__)
 router = APIRouter()
@@ -22,15 +23,19 @@ def get_meeting_create(
     )
 
 
-@router.post("/meetings", response_model=RetrieveMeeting)
+@router.post(
+    "/meetings", response_model=RetrieveMeeting, status_code=status.HTTP_201_CREATED
+)
 async def create_meeting(
-    meeting: CreateMeeting = Depends(get_meeting_create), audio: UploadFile = File(...)
+    meeting: CreateMeeting = Depends(get_meeting_create),
+    audio: UploadFile = File(...),
+    session: Session = Depends(get_session),
 ):
     logger.debug("Create meeting was called")
 
     audio_bytes = await audio.read()
 
-    result = process_meeting(meeting, audio_bytes)
+    result = process_meeting(meeting, audio_bytes, session)
     return Response(
         content=result.model_dump_json(),
         media_type="application/json",

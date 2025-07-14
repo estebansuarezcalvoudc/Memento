@@ -1,18 +1,21 @@
 from typing import Optional
-from pydantic import BaseModel
 from datetime import date
+from sqlmodel import SQLModel, Field
 
 
-class CreateMeeting(BaseModel):
+class BaseMeeting(SQLModel):
     title: str
     date: date
+
+
+class CreateMeeting(BaseMeeting):
     language: Optional[str] = None
     number_of_speakers: Optional[int] = None
 
 
-class RetrieveMeeting(BaseModel):
-    title: str
-    date: date
-    transcription: str
+class RetrieveMeeting(BaseMeeting, table=True):
+    id: Optional[int] = Field(primary_key=True, index=True)
     language: str
     number_of_speakers: int
+    transcription: str
+    summary: str = ""

@@ -1,3 +1,5 @@
+from fastapi import Depends
+from sqlmodel import Session
 import whisperx
 import os
 import tempfile
@@ -5,18 +7,30 @@ from dotenv import load_dotenv
 from ..core.logging import setup_logger
 from ..core.config import settings
 from ..models.meeting_model import CreateMeeting, RetrieveMeeting
+from ..core.database import engine
 
 
 logger = setup_logger(__name__)
 
 
-def process_meeting(meeting: CreateMeeting, audio_bytes: bytes) -> RetrieveMeeting:
+def get_session():
+    with Session(engine) as session:
+        yield session
+
+
+def process_meeting(
+    meeting: CreateMeeting, audio_bytes: bytes, session: Session = Depends(get_session)
+) -> RetrieveMeeting:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_file:
         temp_file.write(audio_bytes)
         temp_file_path = temp_file.name
 
     try:
-        return _process_audio_file(meeting, temp_file_path)
+        retrieve_meeting = _process_audio_file(meeting, temp_file_path)
+        session.add(retrieve_meeting)
+        session.commit()
+        session.refresh(retrieve_meeting)
+        return retrieve_meeting
     finally:
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
