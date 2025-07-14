@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+whisperx
+torch
+python-dotenv
+python-multipart
+debugpy
+pydantic-settings
+sqlmodel
+psycopg2-binary
