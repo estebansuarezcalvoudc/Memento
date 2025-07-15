@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from .routers import meeting
-from .core.logging import setup_logger
 
+from .core.logging import setup_logger
+from .routers import meeting
 
 logger = setup_logger(__name__)
 

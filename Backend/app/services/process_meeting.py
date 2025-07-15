@@ -1,14 +1,15 @@
-from fastapi import Depends
-from sqlmodel import Session
-import whisperx
 import os
 import tempfile
-from dotenv import load_dotenv
-from ..core.logging import setup_logger
-from ..core.config import settings
-from ..models.meeting_model import CreateMeeting, RetrieveMeeting
-from ..core.database import engine
 
+import whisperx
+from dotenv import load_dotenv
+from fastapi import Depends
+from sqlmodel import Session
+
+from ..core.config import settings
+from ..core.database import engine
+from ..core.logging import setup_logger
+from ..models.meeting_model import CreateMeeting, RetrieveMeeting
 
 logger = setup_logger(__name__)
 

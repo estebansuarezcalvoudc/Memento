@@ -1,6 +1,7 @@
-from typing import Optional
 from datetime import date
-from sqlmodel import SQLModel, Field
+from typing import Optional
+
+from sqlmodel import Field, SQLModel
 
 
 class BaseMeeting(SQLModel):
