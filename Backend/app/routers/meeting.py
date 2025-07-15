@@ -1,5 +1,4 @@
 from fastapi import APIRouter, File, UploadFile, Form, status, Depends
-from fastapi.responses import Response
 from datetime import date
 from typing import Optional
 from sqlmodel import Session
@@ -11,7 +10,7 @@ logger = setup_logger(__name__)
 router = APIRouter()
 
 
-def get_meeting_create(
+def _get_meeting_create_metadata(
     title: str = Form(...),
     date: date = Form(...),
     language: Optional[str] = Form(None),
@@ -22,20 +21,21 @@ def get_meeting_create(
     )
 
 
-def get_create_meeting_info(
-    metadata: CreateMeeting = Depends(get_meeting_create), audio: UploadFile = File(...)
+def _get_meeting_create_data(
+    metadata: CreateMeeting = Depends(_get_meeting_create_metadata),
+    audio: UploadFile = File(...),
 ):
     return metadata, audio
 
 
 @router.post(
     "/meetings",
-    response_model=RetrieveMeeting,
+    response_model=list[RetrieveMeeting],
     status_code=status.HTTP_201_CREATED,
     summary="Create a new meeting and process it",
 )
 async def create_meeting(
-    meeting: tuple[CreateMeeting, UploadFile] = Depends(get_create_meeting_info),
+    meeting: tuple[CreateMeeting, UploadFile] = Depends(_get_meeting_create_data),
     session: Session = Depends(get_session),
 ):
     logger.debug("Create meeting was called")
@@ -44,10 +44,4 @@ async def create_meeting(
 
     audio_bytes = await audio.read()
 
-    result = process_meeting(metadata, audio_bytes, session)
-
-    return Response(
-        content=result.model_dump_json(),
-        media_type="application/json",
-        status_code=status.HTTP_201_CREATED,
-    )
+    return process_meeting(metadata, audio_bytes, session)
