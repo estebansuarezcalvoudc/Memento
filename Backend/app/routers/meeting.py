@@ -30,7 +30,7 @@ def _get_meeting_create_data(
 
 @router.post(
     "/meetings",
-    response_model=list[RetrieveMeeting],
+    response_model=RetrieveMeeting,
     status_code=status.HTTP_201_CREATED,
     summary="Create a new meeting and process it",
 )
