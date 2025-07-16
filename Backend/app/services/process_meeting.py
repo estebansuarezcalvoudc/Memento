@@ -31,6 +31,7 @@ def process_meeting(
         session.add(retrieve_meeting)
         session.commit()
         session.refresh(retrieve_meeting)
+        session.expunge(retrieve_meeting)
         return retrieve_meeting
     finally:
         if os.path.exists(temp_file_path):
