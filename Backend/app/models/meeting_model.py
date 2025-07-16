@@ -19,4 +19,3 @@ class RetrieveMeeting(BaseMeeting, table=True):
     language: str
     number_of_speakers: int
     transcription: str
-    summary: str = ""

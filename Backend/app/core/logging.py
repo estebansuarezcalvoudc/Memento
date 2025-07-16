@@ -1,12 +1,16 @@
 import logging
 import os
-import time
-
+from datetime import datetime, timedelta, timezone
 
 LOG_DIR = "./logs"
 LOG_FILE = "app.log"
 
 os.makedirs(LOG_DIR, exist_ok=True)
+
+
+def custom_time(*args):
+    tz = timezone(timedelta(hours=2))
+    return datetime.now(tz).timetuple()
 
 
 def setup_logger(name: str) -> logging.Logger:
@@ -21,7 +25,7 @@ def setup_logger(name: str) -> logging.Logger:
             "[%(asctime)s] [%(levelname)s] - %(name)s - %(message)s",
             "%Y-%m-%d %H:%M:%S",
         )
-        formatter.converter = lambda _: time.gmtime(time.time() + 2 * 3600)
+        formatter.converter = custom_time
         file_handler.setFormatter(formatter)
 
         logger.addHandler(file_handler)
