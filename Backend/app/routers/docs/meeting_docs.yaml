@@ -85,6 +85,7 @@ openapi_schemas:
                     date: "2025-07-15"
                     language: "es"
                     number_of_speakers: 2
+                description: "Metadata corresponding to each meeting"
               audios:
                 type: array
                 items:
@@ -94,26 +95,3 @@ openapi_schemas:
             required:
               - meetings_metadata
               - audios
-
-  get_meetings:
-    responses:
-      '200':
-        description: "List of meetings"
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  title:
-                    type: string
-                  date:
-                    type: string
-                    format: date
-                  language:
-                    type: string
-                  number_of_speakers:
-                    type: integer
