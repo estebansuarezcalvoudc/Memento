@@ -92,7 +92,7 @@ def _align_meeting(transcription, audio):
 def _diarize_meeting(audio):
     load_dotenv()
 
-    diarize_model = whisperx.diarize.DiarizationPipeline(
+    diarize_model = whisperx.diarize.DiarizationPipeline( # type: ignore
         use_auth_token=settings.hf_token, device="cpu"
     )
 
