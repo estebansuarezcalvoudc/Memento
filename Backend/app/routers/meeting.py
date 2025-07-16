@@ -1,53 +1,64 @@
-from fastapi import APIRouter, File, UploadFile, Form, status, Depends
-from fastapi.responses import Response
-from datetime import date
-from typing import Optional
-from sqlmodel import Session
-from ..models.meeting_model import CreateMeeting, RetrieveMeeting
-from ..core.logging import setup_logger
-from ..services.process_meeting import process_meeting, get_session
+from typing import Annotated
+import json
 
-logger = setup_logger(__name__)
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from sqlmodel import Session
+
+from ..core.logging import setup_logger
+from ..models.meeting_model import CreateMeeting, RetrieveMeeting
+from ..services.process_meeting import get_session, process_meeting
+from .docs.meeting_docs_loader import create_meetings_docs
+
+_logger = setup_logger(__name__)
 router = APIRouter()
 
 
-def get_meeting_create(
-    title: str = Form(...),
-    date: date = Form(...),
-    language: Optional[str] = Form(None),
-    number_of_speakers: Optional[int] = Form(None),
-) -> CreateMeeting:
-    return CreateMeeting(
-        title=title, date=date, language=language, number_of_speakers=number_of_speakers
-    )
-
-
-def get_create_meeting_info(
-    metadata: CreateMeeting = Depends(get_meeting_create), audio: UploadFile = File(...)
-):
-    return metadata, audio
+def _parse_meetings_metadata(
+    meetings_metadata: Annotated[
+        str,
+        Form(
+            description=create_meetings_docs.meetings_metadata_form_description,
+            example=create_meetings_docs.meetings_metadata_form_example,
+        ),
+    ],
+) -> list[CreateMeeting]:
+    try:
+        meetings_data = json.loads(meetings_metadata)
+        return [CreateMeeting(**meeting) for meeting in meetings_data]
+    except (json.JSONDecodeError, ValueError) as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid JSON format: {str(e)}",
+        )
 
 
 @router.post(
     "/meetings",
-    response_model=RetrieveMeeting,
+    response_model=list[RetrieveMeeting],
     status_code=status.HTTP_201_CREATED,
-    summary="Create a new meeting and process it",
+    summary="Create meetings and process them",
+    description=create_meetings_docs.description,
+    openapi_extra=create_meetings_docs.openapi_extra,
 )
-async def create_meeting(
-    meeting: tuple[CreateMeeting, UploadFile] = Depends(get_create_meeting_info),
+async def create_meetings(
+    meetings_list: list[CreateMeeting] = Depends(_parse_meetings_metadata),
+    audios: list[UploadFile] = File(
+        ..., description=create_meetings_docs.audios_file_description
+    ),
     session: Session = Depends(get_session),
 ):
-    logger.debug("Create meeting was called")
+    _logger.debug("Create meetings was called")
 
-    metadata, audio = meeting
+    if len(meetings_list) != len(audios):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="The number of metadata objects must match the number of audio files",
+        )
 
-    audio_bytes = await audio.read()
+    results = []
+    for metadata, audio in zip(meetings_list, audios):
+        audio_bytes = await audio.read()
+        result = process_meeting(metadata, audio_bytes, session)
+        results.append(result)
 
-    result = process_meeting(metadata, audio_bytes, session)
-
-    return Response(
-        content=result.model_dump_json(),
-        media_type="application/json",
-        status_code=status.HTTP_201_CREATED,
-    )
+    return results

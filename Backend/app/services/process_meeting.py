@@ -1,14 +1,15 @@
-from fastapi import Depends
-from sqlmodel import Session
-import whisperx
 import os
 import tempfile
-from dotenv import load_dotenv
-from ..core.logging import setup_logger
-from ..core.config import settings
-from ..models.meeting_model import CreateMeeting, RetrieveMeeting
-from ..core.database import engine
 
+import whisperx
+from dotenv import load_dotenv
+from fastapi import Depends
+from sqlmodel import Session
+
+from ..core.config import settings
+from ..core.database import engine
+from ..core.logging import setup_logger
+from ..models.meeting_model import CreateMeeting, RetrieveMeeting
 
 logger = setup_logger(__name__)
 
@@ -30,6 +31,7 @@ def process_meeting(
         session.add(retrieve_meeting)
         session.commit()
         session.refresh(retrieve_meeting)
+        session.expunge(retrieve_meeting)
         return retrieve_meeting
     finally:
         if os.path.exists(temp_file_path):
@@ -90,7 +92,7 @@ def _align_meeting(transcription, audio):
 def _diarize_meeting(audio):
     load_dotenv()
 
-    diarize_model = whisperx.diarize.DiarizationPipeline(
+    diarize_model = whisperx.diarize.DiarizationPipeline( # type: ignore
         use_auth_token=settings.hf_token, device="cpu"
     )
 

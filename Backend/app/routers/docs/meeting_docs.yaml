@@ -1,0 +1,97 @@
+# Meeting Router Documentation
+# This file contains all documentation for meeting-related endpoints
+
+# Form field descriptions (shared across endpoints)
+form_descriptions:
+  meetings_metadata: "JSON array of CreateMeeting objects. Copy and paste the example from the endpoint description above."
+  audios: "Audio files corresponding to each meeting"
+
+# Form field examples (shared across endpoints)
+form_examples:
+  meetings_metadata: |
+    [
+      {
+        "title": "Team Standup",
+        "date": "2025-07-15",
+        "language": "en",
+        "number_of_speakers": 3
+      }
+    ]
+
+# Endpoint-specific documentation
+endpoint_descriptions:
+  create_meetings: |
+    Create meetings and process them with audio files.
+
+    <b>meetings_metadata</b> should be a JSON string containing an array of meeting objects.
+
+    <b>Example:</b>
+    <pre>
+    [
+      {
+        "title": "Team Standup",
+        "date": "2025-07-15",
+        "language": "en",
+        "number_of_speakers": 3
+      }
+    ]
+    </pre>
+
+    <b>Required fields:</b>
+    - title: string
+    - date: string (YYYY-MM-DD format)
+
+    <b>Optional fields:</b>
+    - language: string (e.g., "en", "es")
+    - number_of_speakers: integer
+
+  get_meetings: |
+    Retrieve all meetings with optional filtering.
+
+    <b>Query Parameters:</b>
+    - limit: Maximum number of meetings to return (default: 100)
+    - offset: Number of meetings to skip (default: 0)
+    - date_from: Filter meetings from this date (YYYY-MM-DD format)
+    - date_to: Filter meetings until this date (YYYY-MM-DD format)
+
+# OpenAPI schema configurations for each endpoint
+openapi_schemas:
+  create_meetings:
+    requestBody:
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              meetings_metadata:
+                type: object
+                items:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                    date:
+                      type: string
+                      format: date
+                    language:
+                      type: string
+                    number_of_speakers:
+                      type: integer
+                  required:
+                    - title
+                    - date
+                default:
+                  - title: "My first meeting"
+                    date: "2025-07-15"
+                    language: "es"
+                    number_of_speakers: 2
+                description: "Metadata corresponding to each meeting"
+              audios:
+                type: array
+                items:
+                  type: string
+                  format: binary
+                description: "Audio files corresponding to each meeting"
+            required:
+              - meetings_metadata
+              - audios
