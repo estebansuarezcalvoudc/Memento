@@ -26,7 +26,7 @@ def update_meeting_by_id(
     session.refresh(meeting)
 
     response = MeetingResponse(
-        id=meeting.id or 0,
+        id=meeting.id, # type: ignore
         title=meeting.title,
         date=meeting.date,
         transcription=meeting.transcription,
