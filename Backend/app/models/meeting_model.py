@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date as date_type
 from typing import Optional
 
 from sqlmodel import Field, SQLModel
@@ -6,23 +6,26 @@ from sqlmodel import Field, SQLModel
 
 class BaseMeeting(SQLModel):
     title: str
-    date: date
+    date: date_type
 
 
-class CreateMeeting(BaseMeeting):
+class Meeting(BaseMeeting, table=True):
+    __tablename__: str = "meetings"
+
+    id: Optional[int] = Field(default=None, primary_key=True, index=True)
+    transcription: str
+
+
+class CreateMeetingRequest(BaseMeeting):
     language: Optional[str] = None
     number_of_speakers: Optional[int] = None
 
 
-class RetrieveMeeting(BaseMeeting, table=True):
-    __tablename__ = "meetings"
-
-    id: Optional[int] = Field(default=None, primary_key=True, index=True)
-    language: Optional[str]
-    number_of_speakers: Optional[int]
+class MeetingResponse(BaseMeeting):
+    id: int
     transcription: str
 
 
-class UpdateMeeting(SQLModel):
+class UpdateMeetingRequest(SQLModel):
     title: Optional[str] = None
-    meeting_date: Optional[date] = None
+    date: Optional[date_type] = None

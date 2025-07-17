@@ -1,11 +1,11 @@
 from fastapi import HTTPException, status
 from sqlmodel import Session
 
-from ..models.meeting_model import RetrieveMeeting
+from ..models.meeting_model import Meeting
 
 
 def delete_meeting_by_id(id: int, session: Session):
-    meeting = session.get(RetrieveMeeting, id)
+    meeting = session.get(Meeting, id)
 
     if not meeting:
         raise HTTPException(
