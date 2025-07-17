@@ -7,6 +7,7 @@ from sqlmodel import Session
 from ..core.logging import setup_logger
 from ..models.meeting_model import CreateMeeting, RetrieveMeeting
 from ..services.process_meeting import get_session, process_meeting
+from ..services.retrieve_meetings import get_all_meetings
 from .docs.meeting_docs_loader import create_meetings_docs
 
 _logger = setup_logger(__name__)
@@ -62,3 +63,13 @@ async def create_meetings(
         results.append(result)
 
     return results
+
+
+@router.get(
+    "/meetings",
+    response_model=list[RetrieveMeeting],
+    status_code=status.HTTP_200_OK,
+    summary="Retrieve all meetings",
+)
+async def retrieve_meetings(session: Session = Depends(get_session)):
+    return get_all_meetings(session)
