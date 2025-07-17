@@ -2,7 +2,6 @@ import os
 import tempfile
 
 import whisperx
-from dotenv import load_dotenv
 from sqlmodel import Session
 import whisperx.diarize
 
