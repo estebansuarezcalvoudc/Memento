@@ -15,7 +15,7 @@ class CreateMeeting(BaseMeeting):
 
 
 class RetrieveMeeting(BaseMeeting, table=True):
-    __tablename__: str = "meetings"
+    __tablename__ = "meetings"
 
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
     language: str
