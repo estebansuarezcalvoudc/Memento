@@ -21,3 +21,8 @@ class RetrieveMeeting(BaseMeeting, table=True):
     language: str
     number_of_speakers: int
     transcription: str
+
+
+class UpdateMeeting(SQLModel):
+    title: Optional[str] = None
+    meeting_date: Optional[date] = None
