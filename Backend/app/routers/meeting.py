@@ -8,6 +8,7 @@ from ..core.logging import setup_logger
 from ..models.meeting_model import CreateMeeting, RetrieveMeeting
 from ..services.process_meeting import process_meeting
 from ..services.get_all_meetings import get_all_meetings
+from ..services.delete_meeting import delete_meeting_by_id
 from .docs.meeting_docs_loader import create_meetings_docs
 from .utils.get_session import get_session
 
@@ -41,6 +42,7 @@ def _parse_meetings_metadata(
     summary="Create meetings and process them",
     description=create_meetings_docs.description,
     openapi_extra=create_meetings_docs.openapi_extra,
+    tags=["Meeting"],
 )
 async def create_meetings(
     meetings_list: list[CreateMeeting] = Depends(_parse_meetings_metadata),
@@ -71,6 +73,17 @@ async def create_meetings(
     response_model=list[RetrieveMeeting],
     status_code=status.HTTP_200_OK,
     summary="Retrieve all meetings",
+    tags=["Meeting"],
 )
 async def retrieve_meetings(session: Session = Depends(get_session)):
     return get_all_meetings(session)
+
+
+@router.delete(
+    "/meetings/{id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a meeting",
+    tags=["Meeting"],
+)
+async def delete_meeting(id: int, session: Session = Depends(get_session)):
+    delete_meeting_by_id(id, session)
