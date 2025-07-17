@@ -5,7 +5,11 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, s
 from sqlmodel import Session
 
 from ..core.logging import setup_logger
-from ..models.meeting_model import CreateMeeting, RetrieveMeeting, UpdateMeeting
+from ..models.meeting_model import (
+    CreateMeetingRequest,
+    MeetingResponse,
+    UpdateMeetingRequest,
+)
 from ..services.delete_meeting import delete_meeting_by_id
 from ..services.get_all_meetings import get_all_meetings
 from ..services.process_meeting import process_meeting
@@ -25,10 +29,10 @@ def _parse_meetings_metadata(
             example=create_meetings_docs.meetings_metadata_form_example,
         ),
     ],
-) -> list[CreateMeeting]:
+) -> list[CreateMeetingRequest]:
     try:
         meetings_data = json.loads(meetings_metadata)
-        return [CreateMeeting(**meeting) for meeting in meetings_data]
+        return [CreateMeetingRequest(**meeting) for meeting in meetings_data]
     except (json.JSONDecodeError, ValueError) as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -38,7 +42,7 @@ def _parse_meetings_metadata(
 
 @router.post(
     "/meetings",
-    response_model=list[RetrieveMeeting],
+    response_model=list[MeetingResponse],
     status_code=status.HTTP_201_CREATED,
     summary="Create meetings and process them",
     description=create_meetings_docs.description,
@@ -46,7 +50,7 @@ def _parse_meetings_metadata(
     tags=["Meeting"],
 )
 async def create_meetings(
-    meetings_list: list[CreateMeeting] = Depends(_parse_meetings_metadata),
+    meetings_list: list[CreateMeetingRequest] = Depends(_parse_meetings_metadata),
     audios: list[UploadFile] = File(
         ..., description=create_meetings_docs.audios_file_description
     ),
@@ -71,7 +75,7 @@ async def create_meetings(
 
 @router.get(
     "/meetings",
-    response_model=list[RetrieveMeeting],
+    response_model=list[MeetingResponse],
     status_code=status.HTTP_200_OK,
     summary="Retrieve all meetings",
     tags=["Meeting"],
@@ -92,12 +96,12 @@ async def delete_meeting(id: int, session: Session = Depends(get_session)):
 
 @router.patch(
     "/meetings/{id}",
-    response_model=RetrieveMeeting,
+    response_model=MeetingResponse,
     status_code=status.HTTP_200_OK,
     summary="Update a meeting",
     tags=["Meeting"],
 )
 async def update_meeting(
-    id: int, meeting_data: UpdateMeeting, session: Session = Depends(get_session)
+    id: int, meeting_data: UpdateMeetingRequest, session: Session = Depends(get_session)
 ):
     return update_meeting_by_id(id, meeting_data, session)

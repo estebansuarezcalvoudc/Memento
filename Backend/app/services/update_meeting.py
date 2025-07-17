@@ -1,12 +1,13 @@
-from sqlmodel import Session
 from fastapi import HTTPException, status
-from ..models.meeting_model import UpdateMeeting, RetrieveMeeting
+from sqlmodel import Session
+
+from ..models.meeting_model import Meeting, MeetingResponse, UpdateMeetingRequest
 
 
 def update_meeting_by_id(
-    id: int, meeting_data: UpdateMeeting, session: Session
-) -> RetrieveMeeting:
-    meeting = session.get(RetrieveMeeting, id)
+    id: int, meeting_data: UpdateMeetingRequest, session: Session
+) -> MeetingResponse:
+    meeting = session.get(Meeting, id)
 
     if not meeting:
         raise HTTPException(
@@ -17,11 +18,18 @@ def update_meeting_by_id(
     if meeting_data.title:
         meeting.title = meeting_data.title
 
-    if meeting_data.meeting_date:
-        meeting.date = meeting_data.meeting_date
+    if meeting_data.date:
+        meeting.date = meeting_data.date
 
     session.add(meeting)
     session.commit()
     session.refresh(meeting)
 
-    return meeting
+    response = MeetingResponse(
+        id=meeting.id, # type: ignore
+        title=meeting.title,
+        date=meeting.date,
+        transcription=meeting.transcription,
+    )
+
+    return response

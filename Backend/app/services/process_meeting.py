@@ -7,31 +7,46 @@ import whisperx.diarize
 
 from ..core.config import settings
 from ..core.logging import setup_logger
-from ..models.meeting_model import CreateMeeting, RetrieveMeeting
+from ..models.meeting_model import CreateMeetingRequest, Meeting, MeetingResponse
 
 _logger = setup_logger(__name__)
 
 
 def process_meeting(
-    meeting: CreateMeeting, audio_bytes: bytes, session: Session
-) -> RetrieveMeeting:
+    meeting: CreateMeetingRequest, audio_bytes: bytes, session: Session
+) -> MeetingResponse:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_file:
         temp_file.write(audio_bytes)
         temp_file_path = temp_file.name
 
     try:
-        retrieve_meeting = _process_audio_file(meeting, temp_file_path)
-        session.add(retrieve_meeting)
+        transcription = _process_audio_file(meeting, temp_file_path)
+
+        db_meeting = Meeting(
+            title=meeting.title,
+            date=meeting.date,
+            transcription=transcription,
+        )
+
+        session.add(db_meeting)
         session.commit()
-        session.refresh(retrieve_meeting)
-        session.expunge(retrieve_meeting)
-        return retrieve_meeting
+        session.refresh(db_meeting)
+
+        response = MeetingResponse(
+            id=db_meeting.id or 0,
+            title=db_meeting.title,
+            date=db_meeting.date,
+            transcription=db_meeting.transcription,
+        )
+
+        session.expunge(db_meeting)
+        return response
     finally:
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
 
 
-def _process_audio_file(meeting: CreateMeeting, temp_file_path):
+def _process_audio_file(meeting: CreateMeetingRequest, temp_file_path) -> str:
     audio = whisperx.load_audio(temp_file_path)
 
     transcription = _transcribe_meeting(audio, meeting.language)
@@ -49,13 +64,7 @@ def _process_audio_file(meeting: CreateMeeting, temp_file_path):
     conversation = _create_diarized_dialogue(diarized_conversation)
     _logger.debug("Conversation formatted (5/5)")
 
-    return RetrieveMeeting(
-        title=meeting.title,
-        date=meeting.date,
-        transcription=conversation,
-        language=meeting.language,
-        number_of_speakers=meeting.number_of_speakers,
-    )
+    return conversation
 
 
 def _transcribe_meeting(audio, language=None):
