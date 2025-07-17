@@ -9,7 +9,8 @@ def delete_meeting_by_id(id: int, session: Session):
 
     if not meeting:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Meeting not found"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Meeting with id={id} not found",
         )
 
     session.delete(meeting)
