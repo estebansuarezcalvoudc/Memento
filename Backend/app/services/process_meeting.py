@@ -4,6 +4,7 @@ import tempfile
 import whisperx
 from dotenv import load_dotenv
 from sqlmodel import Session
+import whisperx.diarize
 
 from ..core.config import settings
 from ..core.logging import setup_logger
@@ -34,7 +35,7 @@ def process_meeting(
 def _process_audio_file(meeting: CreateMeeting, temp_file_path):
     audio = whisperx.load_audio(temp_file_path)
 
-    transcription = _transcribe_meeting(audio)
+    transcription = _transcribe_meeting(audio, meeting.language)
     _logger.debug("Transcribed (1/5)")
 
     aligned = _align_meeting(transcription, audio)
@@ -53,18 +54,21 @@ def _process_audio_file(meeting: CreateMeeting, temp_file_path):
         title=meeting.title,
         date=meeting.date,
         transcription=conversation,
-        language=meeting.language or "es",
-        number_of_speakers=meeting.number_of_speakers or 2,
+        language=meeting.language,
+        number_of_speakers=meeting.number_of_speakers,
     )
 
 
-def _transcribe_meeting(audio):
-    model = whisperx.load_model(
-        "tiny",
-        "cpu",
-        language="es",
-        compute_type="int8",
-    )
+def _transcribe_meeting(audio, language=None):
+    if language:
+        model = whisperx.load_model(
+            "tiny",
+            "cpu",
+            language=language,
+            compute_type="int8",
+        )
+    else:
+        model = whisperx.load_model("tiny", "cpu", compute_type="int8")
 
     return model.transcribe(audio, batch_size=10)
 
@@ -82,12 +86,18 @@ def _align_meeting(transcription, audio):
     )
 
 
-def _diarize_meeting(audio):
-    load_dotenv()
-
-    diarize_model = whisperx.diarize.DiarizationPipeline(  # type: ignore
-        use_auth_token=settings.hf_token, device="cpu"
-    )
+def _diarize_meeting(audio, number_of_speakers=None):
+    if number_of_speakers:
+        diarize_model = whisperx.diarize.DiarizationPipeline(  # type: ignore
+            use_auth_token=settings.hf_token,
+            device="cpu",
+            min_speakers=number_of_speakers,  # type: ignore
+            max_speakers=number_of_speakers,  # type: ignore
+        )
+    else:
+        diarize_model = whisperx.diarize.DiarizationPipeline(
+            use_auth_token=settings.hf_token, device="cpu"
+        )
 
     return diarize_model(audio)
 
