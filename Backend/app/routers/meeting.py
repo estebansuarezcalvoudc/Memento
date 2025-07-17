@@ -1,14 +1,15 @@
-from typing import Annotated
 import json
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlmodel import Session
 
 from ..core.logging import setup_logger
 from ..models.meeting_model import CreateMeeting, RetrieveMeeting
-from ..services.process_meeting import get_session, process_meeting
-from ..services.retrieve_meetings import get_all_meetings
+from ..services.process_meeting import process_meeting
+from ..services.get_all_meetings import get_all_meetings
 from .docs.meeting_docs_loader import create_meetings_docs
+from .utils.get_session import get_session
 
 _logger = setup_logger(__name__)
 router = APIRouter()
