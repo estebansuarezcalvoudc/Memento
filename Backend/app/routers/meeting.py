@@ -8,6 +8,7 @@ from ..core.logging import setup_logger
 from ..models.meeting_model import CreateMeeting, RetrieveMeeting
 from ..services.process_meeting import process_meeting
 from ..services.get_all_meetings import get_all_meetings
+from ..services.delete_meeting import delete_meeting_by_id
 from .docs.meeting_docs_loader import create_meetings_docs
 from .utils.get_session import get_session
 
@@ -74,3 +75,10 @@ async def create_meetings(
 )
 async def retrieve_meetings(session: Session = Depends(get_session)):
     return get_all_meetings(session)
+
+
+@router.delete(
+    "/meetings/{id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete a meeting"
+)
+async def delete_meeting(id: int, session: Session = Depends(get_session)):
+    delete_meeting_by_id(id, session)
