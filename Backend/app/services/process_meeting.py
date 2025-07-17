@@ -3,24 +3,17 @@ import tempfile
 
 import whisperx
 from dotenv import load_dotenv
-from fastapi import Depends
 from sqlmodel import Session
 
 from ..core.config import settings
-from ..core.database import engine
 from ..core.logging import setup_logger
 from ..models.meeting_model import CreateMeeting, RetrieveMeeting
 
-logger = setup_logger(__name__)
-
-
-def get_session():
-    with Session(engine) as session:
-        yield session
+_logger = setup_logger(__name__)
 
 
 def process_meeting(
-    meeting: CreateMeeting, audio_bytes: bytes, session: Session = Depends(get_session)
+    meeting: CreateMeeting, audio_bytes: bytes, session: Session
 ) -> RetrieveMeeting:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_file:
         temp_file.write(audio_bytes)
@@ -42,19 +35,19 @@ def _process_audio_file(meeting: CreateMeeting, temp_file_path):
     audio = whisperx.load_audio(temp_file_path)
 
     transcription = _transcribe_meeting(audio)
-    logger.debug("Transcribed (1/5)")
+    _logger.debug("Transcribed (1/5)")
 
     aligned = _align_meeting(transcription, audio)
-    logger.debug("Aligned (2/5)")
+    _logger.debug("Aligned (2/5)")
 
     segments = _diarize_meeting(audio)
-    logger.debug("Segmented (3/5)")
+    _logger.debug("Segmented (3/5)")
 
     diarized_conversation = whisperx.assign_word_speakers(segments, aligned)
-    logger.debug("Diarized (4/5)")
+    _logger.debug("Diarized (4/5)")
 
     conversation = _create_diarized_dialogue(diarized_conversation)
-    logger.debug("Conversation formatted (5/5)")
+    _logger.debug("Conversation formatted (5/5)")
 
     return RetrieveMeeting(
         title=meeting.title,
@@ -92,7 +85,7 @@ def _align_meeting(transcription, audio):
 def _diarize_meeting(audio):
     load_dotenv()
 
-    diarize_model = whisperx.diarize.DiarizationPipeline( # type: ignore
+    diarize_model = whisperx.diarize.DiarizationPipeline(  # type: ignore
         use_auth_token=settings.hf_token, device="cpu"
     )
 
