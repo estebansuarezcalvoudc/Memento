@@ -10,3 +10,4 @@ sqlmodel
 psycopg2-binary
 PyYAML
 ollama
+ctranslate2==4.4.0
