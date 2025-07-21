@@ -14,16 +14,19 @@ class Meeting(BaseMeeting, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
     transcription: str
+    summary: str
 
 
 class CreateMeetingRequest(BaseMeeting):
     language: Optional[str] = None
     number_of_speakers: Optional[int] = None
+    summary_type: Optional[str] = "balanced"  # "concise", "balanced", "detailed", "creative"
 
 
 class MeetingResponse(BaseMeeting):
     id: int
     transcription: str
+    summary: str
 
 
 class UpdateMeetingRequest(SQLModel):

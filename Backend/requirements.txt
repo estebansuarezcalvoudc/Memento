@@ -9,3 +9,4 @@ pydantic-settings
 sqlmodel
 psycopg2-binary
 PyYAML
+ollama

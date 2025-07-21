@@ -1,13 +1,15 @@
 import os
 import tempfile
 
+import ollama
 import whisperx
-from sqlmodel import Session
 import whisperx.diarize
+from sqlmodel import Session
 
 from ..core.config import settings
 from ..core.logging import setup_logger
 from ..models.meeting_model import CreateMeetingRequest, Meeting, MeetingResponse
+from .summary_prompt import prompt
 
 _logger = setup_logger(__name__)
 
@@ -20,12 +22,13 @@ def process_meeting(
         temp_file_path = temp_file.name
 
     try:
-        transcription = _process_audio_file(meeting, temp_file_path)
+        transcription, summary = _process_audio_file(meeting, temp_file_path)
 
         db_meeting = Meeting(
             title=meeting.title,
             date=meeting.date,
             transcription=transcription,
+            summary=summary,
         )
 
         session.add(db_meeting)
@@ -37,6 +40,7 @@ def process_meeting(
             title=db_meeting.title,
             date=db_meeting.date,
             transcription=db_meeting.transcription,
+            summary=summary,
         )
 
         session.expunge(db_meeting)
@@ -46,25 +50,33 @@ def process_meeting(
             os.remove(temp_file_path)
 
 
-def _process_audio_file(meeting: CreateMeetingRequest, temp_file_path) -> str:
-    audio = whisperx.load_audio(temp_file_path)
+def _process_audio_file(
+    meeting: CreateMeetingRequest, temp_file_path
+) -> tuple[str, str]:
+    # audio = whisperx.load_audio(temp_file_path)
 
-    transcription = _transcribe_meeting(audio, meeting.language)
-    _logger.debug("Transcribed (1/5)")
+    # transcription = _transcribe_meeting(audio, meeting.language)
+    # _logger.debug("Transcribed (1/6)")
 
-    aligned = _align_meeting(transcription, audio)
-    _logger.debug("Aligned (2/5)")
+    # aligned = _align_meeting(transcription, audio)
+    # _logger.debug("Aligned (2/6)")
 
-    segments = _diarize_meeting(audio)
-    _logger.debug("Segmented (3/5)")
+    #    segments = _diarize_meeting(audio)
+    #   _logger.debug("Segmented (3/6)")
 
-    diarized_conversation = whisperx.assign_word_speakers(segments, aligned)
-    _logger.debug("Diarized (4/5)")
+    #    diarized_conversation = whisperx.assign_word_speakers(segments, aligned)
+    #   _logger.debug("Diarized (4/6)")
 
-    conversation = _create_diarized_dialogue(diarized_conversation)
-    _logger.debug("Conversation formatted (5/5)")
+    #    conversation = _create_diarized_dialogue(diarized_conversation)
+    #    _logger.debug("Conversation formatted (5/6)")
 
-    return conversation
+    summary = _summarize_meeting(
+        "SPEAKER_00: what do you thing about climate change. SPEAKER_01: well, I believe it is a very important topic",
+        meeting.summary_type or "balanced",
+    )
+    _logger.debug("Conversation summarized (6/6)")
+
+    return "conversation", summary
 
 
 def _transcribe_meeting(audio, language=None):
@@ -130,3 +142,21 @@ def _create_diarized_dialogue(diarized_conversation):
         current_speaker = speaker
 
     return conversation
+
+
+def _summarize_meeting(diarized_dialogue: str, summary_type: str = "balanced") -> str:
+    client = ollama.Client(host="http://ollama:11434")
+
+    client.pull("llama3.2")
+
+    client.create(model="summarizer", from_="llama3.2", system=prompt)
+
+    response = client.chat(
+        model="summarizer",
+        messages=[{"role": "user", "content": diarized_dialogue}],
+        options={"temperature": 0.2, "num_predict": 600},
+    )
+
+    summary = response.message.content
+
+    return summary if summary else ""
