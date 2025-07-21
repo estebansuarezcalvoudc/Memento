@@ -53,22 +53,22 @@ def process_meeting(
 def _process_audio_file(
     meeting: CreateMeetingRequest, temp_file_path
 ) -> tuple[str, str]:
-    # audio = whisperx.load_audio(temp_file_path)
+    audio = whisperx.load_audio(temp_file_path)
 
-    # transcription = _transcribe_meeting(audio, meeting.language)
-    # _logger.debug("Transcribed (1/6)")
+    transcription = _transcribe_meeting(audio, meeting.language)
+    _logger.debug("Transcribed (1/6)")
 
-    # aligned = _align_meeting(transcription, audio)
-    # _logger.debug("Aligned (2/6)")
+    aligned = _align_meeting(transcription, audio)
+    _logger.debug("Aligned (2/6)")
 
-    #    segments = _diarize_meeting(audio)
-    #   _logger.debug("Segmented (3/6)")
+    segments = _diarize_meeting(audio)
+    _logger.debug("Segmented (3/6)")
 
-    #    diarized_conversation = whisperx.assign_word_speakers(segments, aligned)
-    #   _logger.debug("Diarized (4/6)")
+    diarized_conversation = whisperx.assign_word_speakers(segments, aligned)
+    _logger.debug("Diarized (4/6)")
 
-    #    conversation = _create_diarized_dialogue(diarized_conversation)
-    #    _logger.debug("Conversation formatted (5/6)")
+    conversation = _create_diarized_dialogue(diarized_conversation)
+    _logger.debug("Conversation formatted (5/6)")
 
     summary = _summarize_meeting(
         "SPEAKER_00: what do you thing about climate change. SPEAKER_01: well, I believe it is a very important topic",
