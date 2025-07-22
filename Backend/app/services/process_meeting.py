@@ -1,5 +1,6 @@
 import os
 import tempfile
+from typing import Callable, Any
 
 import ollama
 import torch
@@ -10,7 +11,7 @@ from sqlmodel import Session
 from .create_meeting import create_meeting
 from ..core.config import settings
 from ..core.logging import setup_logger
-from ..models.meeting_model import CreateMeetingRequest, Meeting, MeetingResponse
+from ..models.meeting_model import CreateMeetingRequest, MeetingResponse
 from .summary_prompt import prompt
 import time
 
@@ -42,69 +43,27 @@ def process_meeting(
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_file:
         temp_file.write(audio_bytes)
         temp_file_path = temp_file.name
+        audio = whisperx.load_audio(temp_file_path)
 
     try:
-        transcription, summary = _execute_meeting_processing(meeting, temp_file_path)
-
+        transcription, summary = _execute_meeting_processing(meeting, audio)
         return create_meeting(session, meeting, transcription, summary)
     finally:
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
 
 
-def _process_audio_file(
-    meeting: CreateMeetingRequest, temp_file_path
+def _execute_meeting_processing(
+    meeting: CreateMeetingRequest, audio
 ) -> tuple[str, str]:
-    start_time = time.time()
-
-    # Get the best available device
     device = _get_device()
     compute_type = "int8"
     model_size = "tiny"
 
-    audio = whisperx.load_audio(temp_file_path)
-
     try:
-        transcription = _transcribe_meeting(
-            audio, meeting.language, device, compute_type, model_size
+        return _log_execution_time(
+            _process_audio, meeting, audio, device, compute_type, model_size
         )
-        _logger.debug("Transcribed (1/6)")
-
-        # Clear GPU cache after transcription if using CUDA
-        if device == "cuda":
-            torch.cuda.empty_cache()
-
-        aligned = _align_meeting(transcription, audio, device)
-        _logger.debug("Aligned (2/6)")
-
-        # Clear GPU cache after alignment if using CUDA
-        if device == "cuda":
-            torch.cuda.empty_cache()
-
-        segments = _diarize_meeting(audio, device)
-        _logger.debug("Segmented (3/6)")
-
-        # Clear GPU cache after diarization if using CUDA
-        if device == "cuda":
-            torch.cuda.empty_cache()
-
-        diarized_conversation = whisperx.assign_word_speakers(segments, aligned)
-        _logger.debug("Diarized (4/6)")
-
-        conversation = _create_diarized_dialogue(diarized_conversation)
-        _logger.debug("Conversation formatted (5/6)")
-
-        summary = _summarize_meeting(conversation)
-        _logger.debug("Conversation summarized (6/6)")
-
-        total_time = time.time() - start_time
-        minutes = int(total_time // 60)
-        seconds = int(total_time % 60)
-        _logger.info(
-            f"Total processing time: {minutes}m {seconds}s using {device.upper()}"
-        )
-
-        return conversation, summary
 
     finally:
         # Clear GPU cache if using CUDA
@@ -115,6 +74,45 @@ def _process_audio_file(
             _logger.debug(
                 f"GPU memory after cleanup - Allocated: {memory_allocated:.2f}GB, Reserved: {memory_reserved:.2f}GB"
             )
+
+
+def _log_execution_time(function: Callable[..., Any], *args, **kwargs):
+    start_time = time.time()
+    result = function(*args, **kwargs)
+
+    total_time = time.time() - start_time
+    minutes, seconds = int(total_time // 60), int(total_time % 60)
+    _logger.debug(f"{function.__name__.upper()} finished in {minutes}min {seconds}s")
+
+    return result
+
+
+def _clear_gpu_cache(device):
+    if device == "cuda":
+        torch.cuda.empty_cache()
+
+
+def _process_audio(meeting, audio, device, compute_type, model_size):
+    transcription = _transcribe_meeting(
+        audio, meeting.language, device, compute_type, model_size
+    )
+    _clear_gpu_cache(device)
+
+    aligned = _log_execution_time(_align_meeting, transcription, audio, device)
+    _clear_gpu_cache(device)
+
+    segments = _log_execution_time(_diarize_meeting, audio, device)
+    _clear_gpu_cache(device)
+
+    diarized_conversation = _log_execution_time(
+        whisperx.assign_word_speakers, segments, aligned
+    )
+
+    conversation = _log_execution_time(_create_diarized_dialogue, diarized_conversation)
+
+    summary = _log_execution_time(_summarize_meeting, conversation)
+
+    return conversation, summary
 
 
 def _transcribe_meeting(
