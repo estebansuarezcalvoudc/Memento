@@ -1,6 +1,7 @@
 import os
 import tempfile
-from typing import Callable, Any
+import time
+from typing import Any, Callable
 
 import ollama
 import torch
@@ -8,25 +9,13 @@ import whisperx
 import whisperx.diarize
 from sqlmodel import Session
 
-from .create_meeting import create_meeting
 from ..core.config import settings
 from ..core.logging import setup_logger
 from ..models.meeting_model import CreateMeetingRequest, MeetingResponse
+from .create_meeting import create_meeting
 from .summary_prompt import prompt
-import time
 
 _logger = setup_logger(__name__)
-
-
-def _get_device():
-    if not torch.cuda.is_available():
-        _logger.info("CUDA not available, using CPU")
-        return "cpu"
-
-    gpu_name = torch.cuda.get_device_name(0)
-    memory_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
-    _logger.info(f"GPU acceleration enabled - Using {gpu_name} - {memory_gb:.1f}GB)")
-    return "cuda"
 
 
 def process_meeting(
@@ -60,6 +49,17 @@ def _execute_meeting_processing(
         _clear_gpu_cache(device)
 
 
+def _get_device():
+    if not torch.cuda.is_available():
+        _logger.info("CUDA not available, using CPU")
+        return "cpu"
+
+    gpu_name = torch.cuda.get_device_name(0)
+    memory_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+    _logger.info(f"GPU acceleration enabled - Using {gpu_name} - {memory_gb:.1f}GB)")
+    return "cuda"
+
+
 def _log_execution_time(function: Callable[..., Any], *args, **kwargs):
     start_time = time.time()
     result = function(*args, **kwargs)
@@ -69,11 +69,6 @@ def _log_execution_time(function: Callable[..., Any], *args, **kwargs):
     _logger.debug(f"{function.__name__.upper()} finished in {minutes}min {seconds}s")
 
     return result
-
-
-def _clear_gpu_cache(device):
-    if device == "cuda":
-        torch.cuda.empty_cache()
 
 
 def _process_audio(meeting, audio, device, compute_type, model_size):
@@ -132,6 +127,11 @@ def _try_on_gpu(device, function: Callable[..., Any], *args, **kwargs):
         return function(*args, **kwargs)
     finally:
         _clear_gpu_cache(device)
+
+
+def _clear_gpu_cache(device):
+    if device == "cuda":
+        torch.cuda.empty_cache()
 
 
 def _align_meeting(transcription, audio, device="cpu"):
