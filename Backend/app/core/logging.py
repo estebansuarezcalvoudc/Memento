@@ -23,7 +23,7 @@ def setup_logger(name: str) -> logging.Logger:
 
         formatter = logging.Formatter(
             "[%(asctime)s] [%(levelname)s] - %(name)s - %(message)s",
-            "%Y-%m-%d %H:%M:%S",
+            "%H:%M:%S",
         )
         formatter.converter = custom_time
         file_handler.setFormatter(formatter)
