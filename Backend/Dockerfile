@@ -21,6 +21,8 @@ RUN add-apt-repository ppa:deadsnakes/ppa \
     python3.10-dev \
     python3.10-venv \
     python3.10-distutils \
+    libcudnn8 \
+    libcudnn8-dev \
     ffmpeg
 
 RUN ln -s /usr/bin/python3.10 /usr/bin/python \
