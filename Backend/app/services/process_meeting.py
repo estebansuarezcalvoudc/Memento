@@ -23,18 +23,10 @@ def _get_device():
         _logger.info("CUDA not available, using CPU")
         return "cpu"
 
-    try:
-        device_count = torch.cuda.device_count()
-        gpu_name = torch.cuda.get_device_name(0)
-        memory_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
-        _logger.info(
-            f"GPU acceleration enabled - Using {device_count} GPU(s): {gpu_name} ({memory_gb:.1f}GB)"
-        )
-
-        return "cuda"
-    except Exception as e:
-        _logger.warning(f"CUDA available but GPU test failed: {e}. Falling back to CPU")
-        return "cpu"
+    gpu_name = torch.cuda.get_device_name(0)
+    memory_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+    _logger.info(f"GPU acceleration enabled - Using {gpu_name} - {memory_gb:.1f}GB)")
+    return "cuda"
 
 
 def process_meeting(
@@ -64,16 +56,8 @@ def _execute_meeting_processing(
         return _log_execution_time(
             _process_audio, meeting, audio, device, compute_type, model_size
         )
-
     finally:
-        # Clear GPU cache if using CUDA
-        if device == "cuda" and torch.cuda.is_available():
-            torch.cuda.empty_cache()
-            memory_allocated = torch.cuda.memory_allocated() / (1024**3)
-            memory_reserved = torch.cuda.memory_reserved() / (1024**3)
-            _logger.debug(
-                f"GPU memory after cleanup - Allocated: {memory_allocated:.2f}GB, Reserved: {memory_reserved:.2f}GB"
-            )
+        _clear_gpu_cache(device)
 
 
 def _log_execution_time(function: Callable[..., Any], *args, **kwargs):
@@ -93,16 +77,13 @@ def _clear_gpu_cache(device):
 
 
 def _process_audio(meeting, audio, device, compute_type, model_size):
-    transcription = _transcribe_meeting(
-        audio, meeting.language, device, compute_type, model_size
+    transcription = _log_execution_time(
+        _transcribe_meeting, audio, meeting.language, device, compute_type, model_size
     )
-    _clear_gpu_cache(device)
 
     aligned = _log_execution_time(_align_meeting, transcription, audio, device)
-    _clear_gpu_cache(device)
 
     segments = _log_execution_time(_diarize_meeting, audio, device)
-    _clear_gpu_cache(device)
 
     diarized_conversation = _log_execution_time(
         whisperx.assign_word_speakers, segments, aligned
@@ -118,11 +99,7 @@ def _process_audio(meeting, audio, device, compute_type, model_size):
 def _transcribe_meeting(
     audio, language=None, device="cpu", compute_type="int8", model_size="tiny"
 ):
-    _logger.debug(
-        f"Loading {model_size} transcription model on device: {device} with compute_type: {compute_type}"
-    )
-
-    try:
+    def _do_transcription(audio, language, device, compute_type, model_size):
         if language:
             model = whisperx.load_model(
                 model_size,
@@ -134,18 +111,31 @@ def _transcribe_meeting(
             model = whisperx.load_model(model_size, device, compute_type=compute_type)
 
         return model.transcribe(audio, batch_size=10)
+
+    return _try_on_gpu(
+        device, _do_transcription, audio, language, device, compute_type, model_size
+    )
+
+
+def _try_on_gpu(device, function: Callable[..., Any], *args, **kwargs):
+    try:
+        return function(*args, **kwargs)
     except Exception as e:
-        if device == "cuda":
-            _logger.warning(f"Transcription failed on GPU: {e}. Retrying on CPU")
-            return _transcribe_meeting(audio, language, "cpu", "int8", "tiny")
-        else:
+        if device != "cuda":
             raise e
+
+        _logger.warning(
+            f"{function.__name__.upper()} failed on GPU: {e}. Retrying on CPU"
+        )
+
+        kwargs["device"] = "cpu"
+        return function(*args, **kwargs)
+    finally:
+        _clear_gpu_cache(device)
 
 
 def _align_meeting(transcription, audio, device="cpu"):
-    _logger.debug(f"Loading alignment model on device: {device}")
-
-    try:
+    def _do_alignment(transcription, audio, device):
         model_a, metadata = whisperx.load_align_model(language_code="es", device=device)
 
         return whisperx.align(
@@ -156,18 +146,12 @@ def _align_meeting(transcription, audio, device="cpu"):
             device,
             return_char_alignments=False,
         )
-    except Exception as e:
-        if device == "cuda":
-            _logger.warning(f"Alignment failed on GPU: {e}. Retrying on CPU")
-            return _align_meeting(transcription, audio, "cpu")
-        else:
-            raise e
+
+    return _try_on_gpu(device, _do_alignment, transcription, audio, device)
 
 
 def _diarize_meeting(audio, device="cpu", number_of_speakers=None):
-    _logger.debug(f"Loading diarization model on device: {device}")
-
-    try:
+    def _do_diarization(audio, device, number_of_speakers=None):
         if number_of_speakers:
             diarize_model = whisperx.diarize.DiarizationPipeline(  # type: ignore
                 use_auth_token=settings.hf_token,
@@ -181,12 +165,10 @@ def _diarize_meeting(audio, device="cpu", number_of_speakers=None):
             )
 
         return diarize_model(audio)
-    except Exception as e:
-        if device == "cuda":
-            _logger.warning(f"Diarization failed on GPU: {e}. Retrying on CPU")
-            return _diarize_meeting(audio, "cpu", number_of_speakers)
-        else:
-            raise e
+
+    return _try_on_gpu(
+        device, _do_diarization, audio, device, number_of_speakers=number_of_speakers
+    )
 
 
 def _create_diarized_dialogue(diarized_conversation):
