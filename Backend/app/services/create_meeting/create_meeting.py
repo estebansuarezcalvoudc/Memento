@@ -1,4 +1,4 @@
-from ..models.meeting_model import Meeting, MeetingResponse, CreateMeetingRequest
+from ...models.meeting_model import Meeting, MeetingResponse, CreateMeetingRequest
 from sqlmodel import Session
 
 

@@ -12,7 +12,7 @@ from ..models.meeting_model import (
 )
 from ..services.delete_meeting import delete_meeting_by_id
 from ..services.get_all_meetings import get_all_meetings
-from ..services.process_meeting import process_meeting
+from ..services.create_meeting.process_meeting import process_meeting
 from ..services.update_meeting import update_meeting_by_id
 from .docs.meeting_docs_loader import create_meetings_docs
 from .utils.get_session import get_session

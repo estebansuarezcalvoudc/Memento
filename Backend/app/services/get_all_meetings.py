@@ -12,6 +12,7 @@ def get_all_meetings(session: Session) -> list[MeetingResponse]:
             title=meeting.title,
             date=meeting.date,
             transcription=meeting.transcription,
+            summary=meeting.summary
         )
         for meeting in db_meetings
     ]
