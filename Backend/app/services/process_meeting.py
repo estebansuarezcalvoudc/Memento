@@ -17,40 +17,31 @@ _logger = setup_logger(__name__)
 
 
 def _get_device():
-    """Detect and return the best available device (cuda or cpu)."""
-    # Allow forcing CPU via environment variable
-    force_cpu = os.getenv("FORCE_CPU", "false").lower() == "true"
-    if force_cpu:
-        _logger.info("GPU usage disabled via FORCE_CPU environment variable")
+    if not torch.cuda.is_available():
+        _logger.info("CUDA not available, using CPU")
         return "cpu"
 
-    if torch.cuda.is_available():
-        try:
-            # Test GPU functionality with a simple operation
-            test_tensor = torch.tensor([1.0]).cuda()
-            del test_tensor
-            torch.cuda.empty_cache()
+    try:
+        # Test GPU functionality with a simple operation
+        test_tensor = torch.tensor([1.0]).cuda()
+        del test_tensor
+        torch.cuda.empty_cache()
 
-            device_count = torch.cuda.device_count()
-            gpu_name = torch.cuda.get_device_name(0)
-            memory_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
-            _logger.info(
-                f"GPU acceleration enabled - Using {device_count} GPU(s): {gpu_name} ({memory_gb:.1f}GB)"
-            )
+        device_count = torch.cuda.device_count()
+        gpu_name = torch.cuda.get_device_name(0)
+        memory_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+        _logger.info(
+            f"GPU acceleration enabled - Using {device_count} GPU(s): {gpu_name} ({memory_gb:.1f}GB)"
+        )
 
-            # Enable TF32 for better performance on compatible hardware
-            torch.backends.cuda.matmul.allow_tf32 = True
-            torch.backends.cudnn.allow_tf32 = True
-            _logger.debug("TF32 enabled for improved GPU performance")
+        # Enable TF32 for better performance on compatible hardware
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
+        _logger.debug("TF32 enabled for improved GPU performance")
 
-            return "cuda"
-        except Exception as e:
-            _logger.warning(
-                f"CUDA available but GPU test failed: {e}. Falling back to CPU"
-            )
-            return "cpu"
-    else:
-        _logger.info("CUDA not available, using CPU")
+        return "cuda"
+    except Exception as e:
+        _logger.warning(f"CUDA available but GPU test failed: {e}. Falling back to CPU")
         return "cpu"
 
 
@@ -132,10 +123,7 @@ def _process_audio_file(
         conversation = _create_diarized_dialogue(diarized_conversation)
         _logger.debug("Conversation formatted (5/6)")
 
-        summary = _summarize_meeting(
-            conversation,
-            meeting.summary_type or "balanced",
-        )
+        summary = _summarize_meeting(conversation)
         _logger.debug("Conversation summarized (6/6)")
 
         total_time = time.time() - start_time
@@ -254,7 +242,7 @@ def _create_diarized_dialogue(diarized_conversation):
     return conversation
 
 
-def _summarize_meeting(diarized_dialogue: str, summary_type: str = "balanced") -> str:
+def _summarize_meeting(diarized_dialogue: str) -> str:
     client = ollama.Client(host="http://ollama:11434")
 
     client.pull("llama3.2")
