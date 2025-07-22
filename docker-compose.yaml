@@ -36,6 +36,12 @@ services:
       - POSTGRES_DB=prisma
     networks:
       - back_net
+  ollama:
+    image: ollama/ollama
+    ports:
+      - 8002:11434
+    networks:
+      - back_net
 
 volumes:
   database_data:
