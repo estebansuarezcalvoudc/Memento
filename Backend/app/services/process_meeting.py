@@ -7,6 +7,7 @@ import whisperx
 import whisperx.diarize
 from sqlmodel import Session
 
+from .create_meeting import create_meeting
 from ..core.config import settings
 from ..core.logging import setup_logger
 from ..models.meeting_model import CreateMeetingRequest, Meeting, MeetingResponse
@@ -22,22 +23,12 @@ def _get_device():
         return "cpu"
 
     try:
-        # Test GPU functionality with a simple operation
-        test_tensor = torch.tensor([1.0]).cuda()
-        del test_tensor
-        torch.cuda.empty_cache()
-
         device_count = torch.cuda.device_count()
         gpu_name = torch.cuda.get_device_name(0)
         memory_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
         _logger.info(
             f"GPU acceleration enabled - Using {device_count} GPU(s): {gpu_name} ({memory_gb:.1f}GB)"
         )
-
-        # Enable TF32 for better performance on compatible hardware
-        torch.backends.cuda.matmul.allow_tf32 = True
-        torch.backends.cudnn.allow_tf32 = True
-        _logger.debug("TF32 enabled for improved GPU performance")
 
         return "cuda"
     except Exception as e:
@@ -53,29 +44,9 @@ def process_meeting(
         temp_file_path = temp_file.name
 
     try:
-        transcription, summary = _process_audio_file(meeting, temp_file_path)
+        transcription, summary = _execute_meeting_processing(meeting, temp_file_path)
 
-        db_meeting = Meeting(
-            title=meeting.title,
-            date=meeting.date,
-            transcription=transcription,
-            summary=summary,
-        )
-
-        session.add(db_meeting)
-        session.commit()
-        session.refresh(db_meeting)
-
-        response = MeetingResponse(
-            id=db_meeting.id or 0,
-            title=db_meeting.title,
-            date=db_meeting.date,
-            transcription=db_meeting.transcription,
-            summary=summary,
-        )
-
-        session.expunge(db_meeting)
-        return response
+        return create_meeting(session, meeting, transcription, summary)
     finally:
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)

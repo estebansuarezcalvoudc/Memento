@@ -20,7 +20,6 @@ class Meeting(BaseMeeting, table=True):
 class CreateMeetingRequest(BaseMeeting):
     language: Optional[str] = None
     number_of_speakers: Optional[int] = None
-    summary_type: Optional[str] = "balanced"  # "concise", "balanced", "detailed", "creative"
 
 
 class MeetingResponse(BaseMeeting):
