@@ -70,7 +70,10 @@ async def create_meetings(
             detail=str(e),
         )
     except Exception as e:
-        _logger.error(f"Error creating meetings: {str(e)}")
+        _logger.error(f"Error creating meetings: {str(e)}", exc_info=True)
+        _logger.error(f"Exception type: {type(e).__name__}")
+        _logger.error(f"Meetings data: {meetings_list}")
+        _logger.error(f"Number of audio files: {len(audios_bytes) if 'audios_bytes' in locals() else 'Unknown'}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error while creating meetings",
