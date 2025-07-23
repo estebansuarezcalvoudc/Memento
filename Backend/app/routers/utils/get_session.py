@@ -1,8 +1,5 @@
-from sqlmodel import Session
-
-from ...core.database import engine
+from ...database.config import get_db_session
 
 
-def get_session():
-    with Session(engine) as session:
-        yield session
+def get_db_session():
+    yield from get_db_session()

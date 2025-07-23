@@ -1,9 +1,9 @@
 from fastapi import HTTPException, status
-from sqlmodel import Session, select
+from sqlalchemy.orm import Session
 
-from ..models.meeting_model import (
+from ..models.meeting_model import Meeting
+from ...schemas.meeting_schema import (
     CreateMeetingRequest,
-    Meeting,
     MeetingResponse,
     UpdateMeetingRequest,
 )
@@ -23,37 +23,18 @@ def create_meeting(
     session.commit()
     session.refresh(db_meeting)
 
-    response = MeetingResponse(
-        title=meeting.title,
-        date=meeting.date,
-        id=db_meeting.id or 0,
-        transcription=transcription,
-        summary=summary,
-    )
-
-    session.expunge(db_meeting)
-    return response
+    return MeetingResponse.model_validate(db_meeting)
 
 
 def retrieve_all_meetings(session: Session) -> list[MeetingResponse]:
-    db_meetings = session.exec(select(Meeting)).all()
-
-    return [
-        MeetingResponse(
-            id=meeting.id or 0,
-            title=meeting.title,
-            date=meeting.date,
-            transcription=meeting.transcription,
-            summary=meeting.summary,
-        )
-        for meeting in db_meetings
-    ]
+    db_meetings = session.query(Meeting).all()
+    return [MeetingResponse.model_validate(meeting) for meeting in db_meetings]
 
 
 def update_meeting_by_id(
     id: int, meeting_data: UpdateMeetingRequest, session: Session
 ) -> MeetingResponse:
-    meeting = session.get(Meeting, id)
+    meeting = session.query(Meeting).filter(Meeting.id == id).first()
 
     if not meeting:
         raise HTTPException(
@@ -61,29 +42,20 @@ def update_meeting_by_id(
             detail=f"Meeting with id={id} not found",
         )
 
-    if meeting_data.title:
+    if meeting_data.title is not None:
         meeting.title = meeting_data.title
 
-    if meeting_data.date:
+    if meeting_data.date is not None:
         meeting.date = meeting_data.date
 
-    session.add(meeting)
     session.commit()
     session.refresh(meeting)
 
-    response = MeetingResponse(
-        id=meeting.id,  # type: ignore
-        title=meeting.title,
-        date=meeting.date,
-        transcription=meeting.transcription,
-        summary=meeting.summary,
-    )
-
-    return response
+    return MeetingResponse.model_validate(meeting)
 
 
 def delete_meeting(id: int, session: Session) -> None:
-    meeting = session.get(Meeting, id)
+    meeting = session.query(Meeting).filter(Meeting.id == id).first()
 
     if not meeting:
         raise HTTPException(

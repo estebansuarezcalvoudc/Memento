@@ -2,18 +2,17 @@ import json
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 
 from ..core.logging import setup_logger
-from ..models.meeting_model import (
+from ..schemas.meeting_schema import (
     CreateMeetingRequest,
     MeetingResponse,
     UpdateMeetingRequest,
 )
 from ..services.meeting_service import MeetingService
 from .docs.meeting_docs_loader import create_meetings_docs
-from .utils.get_session import get_session
-
+from ..database.config import get_db_session
 _logger = setup_logger(__name__)
 router = APIRouter()
 _meeting_service = MeetingService()
@@ -52,7 +51,7 @@ async def create_meetings(
     audios: list[UploadFile] = File(
         ..., description=create_meetings_docs.audios_file_description
     ),
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_db_session),
 ):
     _logger.debug("Create meetings was called")
 
@@ -84,7 +83,7 @@ async def create_meetings(
     summary="Retrieve all meetings",
     tags=["Meeting"],
 )
-async def retrieve_meetings(session: Session = Depends(get_session)):
+async def retrieve_meetings(session: Session = Depends(get_db_session)):
     try:
         return _meeting_service.get_all_meetings(session)
     except Exception as e:
@@ -101,7 +100,7 @@ async def retrieve_meetings(session: Session = Depends(get_session)):
     summary="Delete a meeting",
     tags=["Meeting"],
 )
-async def delete_meeting(id: int, session: Session = Depends(get_session)):
+async def delete_meeting(id: int, session: Session = Depends(get_db_session)):
     try:
         _meeting_service.delete_meeting(id, session)
     except HTTPException:
@@ -122,7 +121,7 @@ async def delete_meeting(id: int, session: Session = Depends(get_session)):
     tags=["Meeting"],
 )
 async def update_meeting(
-    id: int, meeting_data: UpdateMeetingRequest, session: Session = Depends(get_session)
+    id: int, meeting_data: UpdateMeetingRequest, session: Session = Depends(get_db_session)
 ):
     try:
         return _meeting_service.update_meeting(id, meeting_data, session)

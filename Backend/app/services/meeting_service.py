@@ -2,18 +2,18 @@ import tempfile
 from typing import List
 
 import whisperx
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 
 from ..core.logging import setup_logger
-from ..models.meeting_model import (
+from ..schemas.meeting_schema import (
     CreateMeetingRequest,
     MeetingResponse,
     UpdateMeetingRequest,
 )
-from ..repositories.meeting_repo import create_meeting
-from ..repositories.meeting_repo import delete_meeting as repo_delete_meeting
-from ..repositories.meeting_repo import retrieve_all_meetings
-from ..repositories.meeting_repo import update_meeting_by_id as repo_update_meeting
+from ..database.repositories.meeting_repo import create_meeting
+from ..database.repositories.meeting_repo import delete_meeting as repo_delete_meeting
+from ..database.repositories.meeting_repo import retrieve_all_meetings
+from ..database.repositories.meeting_repo import update_meeting_by_id as repo_update_meeting
 from ..utils.log_execution_time import log_execution_time
 from ..utils.singleton_meta import SingletonMeta
 from .meeting_processing.gpu_utils import get_device
