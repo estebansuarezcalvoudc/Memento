@@ -10,12 +10,13 @@ from ..models.meeting_model import (
     MeetingResponse,
     UpdateMeetingRequest,
 )
-from ..services.meeting_service import meeting_service
+from ..services.meeting_service import MeetingService
 from .docs.meeting_docs_loader import create_meetings_docs
 from .utils.get_session import get_session
 
 _logger = setup_logger(__name__)
 router = APIRouter()
+_meeting_service = MeetingService()
 
 
 def _parse_meetings_metadata(
@@ -61,7 +62,7 @@ async def create_meetings(
             audio_bytes = await audio.read()
             audios_bytes.append(audio_bytes)
 
-        return meeting_service.create_meetings(meetings_list, audios_bytes, session)
+        return _meeting_service.create_meetings(meetings_list, audios_bytes, session)
 
     except ValueError as e:
         raise HTTPException(
@@ -85,7 +86,7 @@ async def create_meetings(
 )
 async def retrieve_meetings(session: Session = Depends(get_session)):
     try:
-        return meeting_service.get_all_meetings(session)
+        return _meeting_service.get_all_meetings(session)
     except Exception as e:
         _logger.error(f"Error retrieving meetings: {str(e)}")
         raise HTTPException(
@@ -102,7 +103,7 @@ async def retrieve_meetings(session: Session = Depends(get_session)):
 )
 async def delete_meeting(id: int, session: Session = Depends(get_session)):
     try:
-        meeting_service.delete_meeting(id, session)
+        _meeting_service.delete_meeting(id, session)
     except HTTPException:
         raise
     except Exception as e:
@@ -124,9 +125,8 @@ async def update_meeting(
     id: int, meeting_data: UpdateMeetingRequest, session: Session = Depends(get_session)
 ):
     try:
-        return meeting_service.update_meeting(id, meeting_data, session)
+        return _meeting_service.update_meeting(id, meeting_data, session)
     except HTTPException:
-        # Re-raise HTTPExceptions from the repository layer
         raise
     except Exception as e:
         _logger.error(f"Error updating meeting {id}: {str(e)}")

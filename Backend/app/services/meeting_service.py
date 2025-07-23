@@ -14,6 +14,7 @@ from ..repositories.meeting_repo import create_meeting
 from ..repositories.meeting_repo import delete_meeting as repo_delete_meeting
 from ..repositories.meeting_repo import retrieve_all_meetings
 from ..repositories.meeting_repo import update_meeting_by_id as repo_update_meeting
+from ..utils.singleton_meta import SingletonMeta
 from .create_meeting_utils.summarize import summarize_meeting
 from .create_meeting_utils.transcribe import get_transcribed_conversation
 from .create_meeting_utils.utils import get_device, log_execution_time
@@ -21,7 +22,7 @@ from .create_meeting_utils.utils import get_device, log_execution_time
 _logger = setup_logger(__name__)
 
 
-class MeetingService:
+class MeetingService(metaclass=SingletonMeta):
     """
     Service layer for meeting operations.
     Handles all business logic and communicates with the repository layer.
@@ -149,7 +150,3 @@ class MeetingService:
         """
         _logger.debug(f"Deleting meeting with ID: {meeting_id}")
         repo_delete_meeting(meeting_id, session)
-
-
-# Create a singleton instance of the service
-meeting_service = MeetingService()
