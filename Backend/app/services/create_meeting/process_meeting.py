@@ -7,8 +7,7 @@ from ...models.meeting_model import CreateMeetingRequest
 from .summarize import summarize_meeting
 from .transcribe import get_transcribed_conversation
 from .utils import get_device, log_execution_time
-from .create_meeting import create_meeting
-
+from ...repositories.meeting_repo import create_meeting
 
 def process_meeting(
     meeting: CreateMeetingRequest, audio_bytes: bytes, session: Session
