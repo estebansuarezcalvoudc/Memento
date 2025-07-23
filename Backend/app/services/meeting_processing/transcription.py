@@ -1,7 +1,7 @@
 import whisperx
 import whisperx.diarize
 
-from ...core.config import settings
+from ...core.settings import settings
 from .gpu_utils import try_on_gpu
 from ...utils.log_execution_time import log_execution_time
 

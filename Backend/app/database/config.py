@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from ..core.config import settings
+from ..core.settings import settings
 from .models.meeting_model import Base
 
 _engine = create_engine(settings.database_url)

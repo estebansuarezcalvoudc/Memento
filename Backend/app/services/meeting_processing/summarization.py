@@ -1,8 +1,10 @@
 import ollama
 
+from ...core.settings import settings
+
 
 def summarize_meeting(diarized_dialogue: str) -> str:
-    client = ollama.Client(host="http://ollama:11434")
+    client = ollama.Client(host=settings.ollama_url)
 
     client.pull("llama3.2")
 
