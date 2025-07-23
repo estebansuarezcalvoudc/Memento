@@ -6,7 +6,8 @@ python-dotenv
 python-multipart
 debugpy
 pydantic-settings
-sqlmodel
+sqlalchemy
+pydantic
 psycopg2-binary
 PyYAML
 ollama
