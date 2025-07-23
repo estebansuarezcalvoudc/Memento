@@ -76,16 +76,20 @@ def update_meeting_by_id(
         title=meeting.title,
         date=meeting.date,
         transcription=meeting.transcription,
+        summary=meeting.summary,
     )
 
     return response
 
 
-def delete_meeting(id: int, session: Session):
+def delete_meeting(id: int, session: Session) -> None:
     meeting = session.get(Meeting, id)
 
     if not meeting:
-        raise ValueError(f"Meeting with id={id} not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Meeting with id={id} not found",
+        )
 
     session.delete(meeting)
     session.commit()

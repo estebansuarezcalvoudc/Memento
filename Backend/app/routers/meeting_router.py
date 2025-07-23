@@ -10,10 +10,7 @@ from ..models.meeting_model import (
     MeetingResponse,
     UpdateMeetingRequest,
 )
-from ..services.delete_meeting import delete_meeting_by_id
-from ..services.get_all_meetings import get_all_meetings
-from ..services.create_meeting.process_meeting import process_meeting
-from ..services.update_meeting import update_meeting_by_id
+from ..services.meeting_service import meeting_service
 from .docs.meeting_docs_loader import create_meetings_docs
 from .utils.get_session import get_session
 
@@ -58,19 +55,25 @@ async def create_meetings(
 ):
     _logger.debug("Create meetings was called")
 
-    if len(meetings_list) != len(audios):
+    try:
+        audios_bytes = []
+        for audio in audios:
+            audio_bytes = await audio.read()
+            audios_bytes.append(audio_bytes)
+
+        return meeting_service.create_meetings(meetings_list, audios_bytes, session)
+
+    except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="The number of metadata objects must match the number of audio files",
+            detail=str(e),
         )
-
-    results = []
-    for metadata, audio in zip(meetings_list, audios):
-        audio_bytes = await audio.read()
-        result = process_meeting(metadata, audio_bytes, session)
-        results.append(result)
-
-    return results
+    except Exception as e:
+        _logger.error(f"Error creating meetings: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error while creating meetings",
+        )
 
 
 @router.get(
@@ -81,7 +84,14 @@ async def create_meetings(
     tags=["Meeting"],
 )
 async def retrieve_meetings(session: Session = Depends(get_session)):
-    return get_all_meetings(session)
+    try:
+        return meeting_service.get_all_meetings(session)
+    except Exception as e:
+        _logger.error(f"Error retrieving meetings: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error while retrieving meetings",
+        )
 
 
 @router.delete(
@@ -91,7 +101,16 @@ async def retrieve_meetings(session: Session = Depends(get_session)):
     tags=["Meeting"],
 )
 async def delete_meeting(id: int, session: Session = Depends(get_session)):
-    delete_meeting_by_id(id, session)
+    try:
+        meeting_service.delete_meeting(id, session)
+    except HTTPException:
+        raise
+    except Exception as e:
+        _logger.error(f"Error deleting meeting {id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error while deleting meeting",
+        )
 
 
 @router.patch(
@@ -104,4 +123,14 @@ async def delete_meeting(id: int, session: Session = Depends(get_session)):
 async def update_meeting(
     id: int, meeting_data: UpdateMeetingRequest, session: Session = Depends(get_session)
 ):
-    return update_meeting_by_id(id, meeting_data, session)
+    try:
+        return meeting_service.update_meeting(id, meeting_data, session)
+    except HTTPException:
+        # Re-raise HTTPExceptions from the repository layer
+        raise
+    except Exception as e:
+        _logger.error(f"Error updating meeting {id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error while updating meeting",
+        )
