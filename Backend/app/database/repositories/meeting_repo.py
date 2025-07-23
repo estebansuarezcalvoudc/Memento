@@ -9,59 +9,104 @@ from ...schemas.meeting_schema import (
 )
 
 
-def create_meeting(
-    session: Session, meeting: CreateMeetingRequest, transcription: str, summary: str
-) -> MeetingResponse:
-    db_meeting = Meeting(
-        title=meeting.title,
-        date=meeting.date,
-        transcription=transcription,
-        summary=summary,
-    )
+class MeetingRepository:
+    """
+    Repository layer for meeting database operations.
+    Handles all database interactions for meetings.
+    """
 
-    session.add(db_meeting)
-    session.commit()
-    session.refresh(db_meeting)
+    def __init__(self, session: Session):
+        self.session = session
 
-    return MeetingResponse.model_validate(db_meeting)
+    def create_meeting(
+        self, meeting: CreateMeetingRequest, transcription: str, summary: str
+    ) -> MeetingResponse:
+        """
+        Create a new meeting in the database.
 
+        Args:
+            meeting: Meeting metadata
+            transcription: Meeting transcription text
+            summary: Meeting summary text
 
-def retrieve_all_meetings(session: Session) -> list[MeetingResponse]:
-    db_meetings = session.query(Meeting).all()
-    return [MeetingResponse.model_validate(meeting) for meeting in db_meetings]
-
-
-def update_meeting_by_id(
-    id: int, meeting_data: UpdateMeetingRequest, session: Session
-) -> MeetingResponse:
-    meeting = session.query(Meeting).filter(Meeting.id == id).first()
-
-    if not meeting:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Meeting with id={id} not found",
+        Returns:
+            Created meeting response
+        """
+        db_meeting = Meeting(
+            title=meeting.title,
+            date=meeting.date,
+            transcription=transcription,
+            summary=summary,
         )
 
-    if meeting_data.title is not None:
-        meeting.title = meeting_data.title
+        self.session.add(db_meeting)
+        self.session.commit()
+        self.session.refresh(db_meeting)
 
-    if meeting_data.date is not None:
-        meeting.date = meeting_data.date
+        return MeetingResponse.model_validate(db_meeting)
 
-    session.commit()
-    session.refresh(meeting)
+    def retrieve_all_meetings(self) -> list[MeetingResponse]:
+        """
+        Retrieve all meetings from the database.
 
-    return MeetingResponse.model_validate(meeting)
+        Returns:
+            List of all meetings
+        """
+        db_meetings = self.session.query(Meeting).all()
+        return [MeetingResponse.model_validate(meeting) for meeting in db_meetings]
 
+    def update_meeting_by_id(
+        self, id: int, meeting_data: UpdateMeetingRequest
+    ) -> MeetingResponse:
+        """
+        Update an existing meeting by ID.
 
-def delete_meeting(id: int, session: Session) -> None:
-    meeting = session.query(Meeting).filter(Meeting.id == id).first()
+        Args:
+            id: Meeting ID to update
+            meeting_data: Updated meeting data
 
-    if not meeting:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Meeting with id={id} not found",
-        )
+        Returns:
+            Updated meeting response
 
-    session.delete(meeting)
-    session.commit()
+        Raises:
+            HTTPException: If meeting not found
+        """
+        meeting = self.session.query(Meeting).filter(Meeting.id == id).first()
+
+        if not meeting:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Meeting with id={id} not found",
+            )
+
+        if meeting_data.title is not None:
+            meeting.title = meeting_data.title
+
+        if meeting_data.date is not None:
+            meeting.date = meeting_data.date
+
+        self.session.commit()
+        self.session.refresh(meeting)
+
+        return MeetingResponse.model_validate(meeting)
+
+    def delete_meeting(self, id: int) -> None:
+        """
+        Delete a meeting by ID.
+
+        Args:
+            id: Meeting ID to delete
+
+        Raises:
+            HTTPException: If meeting not found
+        """
+        meeting = self.session.query(Meeting).filter(Meeting.id == id).first()
+
+        if not meeting:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Meeting with id={id} not found",
+            )
+
+        self.session.delete(meeting)
+        self.session.commit()

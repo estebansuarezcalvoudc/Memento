@@ -13,9 +13,9 @@ from ..schemas.meeting_schema import (
 from ..services.meeting_service import MeetingService
 from .docs.meeting_docs_loader import create_meetings_docs
 from ..database.config import get_db_session
+
 _logger = setup_logger(__name__)
 router = APIRouter()
-_meeting_service = MeetingService()
 
 
 def _parse_meetings_metadata(
@@ -61,7 +61,8 @@ async def create_meetings(
             audio_bytes = await audio.read()
             audios_bytes.append(audio_bytes)
 
-        return _meeting_service.create_meetings(meetings_list, audios_bytes, session)
+        meeting_service = MeetingService(session)
+        return meeting_service.create_meetings(meetings_list, audios_bytes)
 
     except ValueError as e:
         raise HTTPException(
@@ -85,7 +86,8 @@ async def create_meetings(
 )
 async def retrieve_meetings(session: Session = Depends(get_db_session)):
     try:
-        return _meeting_service.get_all_meetings(session)
+        meeting_service = MeetingService(session)
+        return meeting_service.get_all_meetings()
     except Exception as e:
         _logger.error(f"Error retrieving meetings: {str(e)}")
         raise HTTPException(
@@ -102,7 +104,8 @@ async def retrieve_meetings(session: Session = Depends(get_db_session)):
 )
 async def delete_meeting(id: int, session: Session = Depends(get_db_session)):
     try:
-        _meeting_service.delete_meeting(id, session)
+        meeting_service = MeetingService(session)
+        meeting_service.delete_meeting(id)
     except HTTPException:
         raise
     except Exception as e:
@@ -121,10 +124,13 @@ async def delete_meeting(id: int, session: Session = Depends(get_db_session)):
     tags=["Meeting"],
 )
 async def update_meeting(
-    id: int, meeting_data: UpdateMeetingRequest, session: Session = Depends(get_db_session)
+    id: int,
+    meeting_data: UpdateMeetingRequest,
+    session: Session = Depends(get_db_session),
 ):
     try:
-        return _meeting_service.update_meeting(id, meeting_data, session)
+        meeting_service = MeetingService(session)
+        return meeting_service.update_meeting(id, meeting_data)
     except HTTPException:
         raise
     except Exception as e:
