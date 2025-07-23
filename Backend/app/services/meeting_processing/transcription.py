@@ -2,7 +2,8 @@ import whisperx
 import whisperx.diarize
 
 from ...core.config import settings
-from .utils import log_execution_time, try_on_gpu
+from .gpu_utils import try_on_gpu
+from ...utils.log_execution_time import log_execution_time
 
 
 def get_transcribed_conversation(meeting, audio, device, compute_type, model_size):

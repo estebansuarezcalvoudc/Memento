@@ -14,10 +14,11 @@ from ..repositories.meeting_repo import create_meeting
 from ..repositories.meeting_repo import delete_meeting as repo_delete_meeting
 from ..repositories.meeting_repo import retrieve_all_meetings
 from ..repositories.meeting_repo import update_meeting_by_id as repo_update_meeting
+from ..utils.log_execution_time import log_execution_time
 from ..utils.singleton_meta import SingletonMeta
-from .create_meeting_utils.summarize import summarize_meeting
-from .create_meeting_utils.transcribe import get_transcribed_conversation
-from .create_meeting_utils.utils import get_device, log_execution_time
+from .meeting_processing.gpu_utils import get_device
+from .meeting_processing.summarization import summarize_meeting
+from .meeting_processing.transcription import get_transcribed_conversation
 
 _logger = setup_logger(__name__)
 
