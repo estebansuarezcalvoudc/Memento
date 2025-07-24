@@ -7,13 +7,13 @@ def summarize_meeting(diarized_dialogue: str) -> str:
     client = ollama.Client(host=settings.ollama_url)
 
     client.pull("llama3.2")
-
-    client.create(model="summarizer", from_="llama3.2", system=prompt)
+    client.create(model="summarizer", from_="llama3.2", system=_prompt)
 
     response = client.chat(
         model="summarizer",
         messages=[{"role": "user", "content": diarized_dialogue}],
         options={"temperature": 0.2, "num_predict": 600},
+        keep_alive=False,
     )
 
     summary = response.message.content
@@ -21,7 +21,7 @@ def summarize_meeting(diarized_dialogue: str) -> str:
     return summary if summary else ""
 
 
-prompt = """
+_prompt = """
     Analyze this meeting transcript and provide a structured summary with the following:
 
     1. Meeting Overview
