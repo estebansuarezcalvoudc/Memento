@@ -55,6 +55,8 @@ async def create_meetings(
 ):
     _logger.debug("Create meetings was called")
 
+    _validate_audio_files(audios)
+
     try:
         audios_bytes = []
         for audio in audios:
@@ -72,12 +74,44 @@ async def create_meetings(
     except Exception as e:
         _logger.error(f"Error creating meetings: {str(e)}", exc_info=True)
         _logger.error(f"Exception type: {type(e).__name__}")
-        _logger.error(f"Meetings data: {meetings_list}")
-        _logger.error(f"Number of audio files: {len(audios_bytes) if 'audios_bytes' in locals() else 'Unknown'}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error while creating meetings",
         )
+
+
+def _validate_audio_files(audio_files: list[UploadFile]) -> None:
+    """
+    Validate that all uploaded files are in supported audio formats.
+
+    Args:
+        audio_files: List of uploaded files to validate
+
+    Raises:
+        HTTPException: If any file has an unsupported format
+    """
+    supported_file_formats = {"mp3", "mp4", "mpeg", "mpga", "m4a", "wav", "webm"}
+
+    for file in audio_files:
+        if not file.filename:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Audio file must have a filename",
+            )
+
+        file_extension = file.filename.split(".")[-1].lower()
+        if file_extension not in supported_file_formats:
+            raise HTTPException(
+                status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                detail=f"Unsupported audio format: {file_extension}. "
+                f"Supported formats: {', '.join(sorted(supported_file_formats))}",
+            )
+
+        if not file.content_type or not file.content_type.startswith("audio/"):
+            raise HTTPException(
+                status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                detail="The uploaded file is not an audio file",
+            )
 
 
 @router.get(
@@ -93,6 +127,7 @@ async def retrieve_meetings(session: Session = Depends(get_db_session)):
         return meeting_service.get_all_meetings()
     except Exception as e:
         _logger.error(f"Error retrieving meetings: {str(e)}")
+        _logger.error(f"Exception type: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error while retrieving meetings",
@@ -113,6 +148,7 @@ async def delete_meeting(id: int, session: Session = Depends(get_db_session)):
         raise
     except Exception as e:
         _logger.error(f"Error deleting meeting {id}: {str(e)}")
+        _logger.error(f"Exception type: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error while deleting meeting",
@@ -138,6 +174,7 @@ async def update_meeting(
         raise
     except Exception as e:
         _logger.error(f"Error updating meeting {id}: {str(e)}")
+        _logger.error(f"Exception type: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error while updating meeting",

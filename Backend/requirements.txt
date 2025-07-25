@@ -1,6 +1,7 @@
 fastapi
 uvicorn
 whisperx
+openai-whisper
 torch
 python-dotenv
 python-multipart
