@@ -92,19 +92,25 @@ def _validate_audio_files(audio_files: list[UploadFile]) -> None:
     """
     supported_file_formats = {"mp3", "mp4", "mpeg", "mpga", "m4a", "wav", "webm"}
 
-    for audio_file in audio_files:
-        if not audio_file.filename:
+    for file in audio_files:
+        if not file.filename:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Audio file must have a filename",
             )
 
-        file_extension = audio_file.filename.split(".")[-1].lower()
+        file_extension = file.filename.split(".")[-1].lower()
         if file_extension not in supported_file_formats:
             raise HTTPException(
                 status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
                 detail=f"Unsupported audio format: {file_extension}. "
                 f"Supported formats: {', '.join(sorted(supported_file_formats))}",
+            )
+
+        if not file.content_type or not file.content_type.startswith("audio/"):
+            raise HTTPException(
+                status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                detail="The uploaded file is not an audio file",
             )
 
 
