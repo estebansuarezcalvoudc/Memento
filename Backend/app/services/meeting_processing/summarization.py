@@ -13,12 +13,12 @@ def summarize_meeting(diarized_dialogue: str) -> str:
         model="summarizer",
         messages=[{"role": "user", "content": diarized_dialogue}],
         options={"temperature": 0.2, "num_predict": 600},
-        keep_alive=False,
+        keep_alive=0,
     )
 
     summary = response.message.content
 
-    return summary if summary else ""
+    return summary or ""
 
 
 _prompt = """
