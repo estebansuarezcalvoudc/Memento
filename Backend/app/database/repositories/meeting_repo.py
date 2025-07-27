@@ -1,11 +1,14 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from ..models.meeting_model import Meeting
+from ..models.meeting_model import MeetingMetadata, MeetingSummary, MeetingTranscription
 from ...schemas.meeting_schema import (
     CreateMeetingRequest,
+    UpdateMeetingMetadata,
+    MeetingMetadataResponse,
+    MeetingSummaryResponse,
+    MeetingTranscriptionResponse,
     MeetingResponse,
-    UpdateMeetingRequest,
 )
 
 
@@ -21,57 +24,69 @@ class MeetingRepository:
     def create_meeting(
         self, meeting: CreateMeetingRequest, transcription: str, summary: str
     ) -> MeetingResponse:
-        """
-        Create a new meeting in the database.
+        meeting_metadata = MeetingMetadata(title=meeting.title, date=meeting.date)
+        self.session.add(meeting_metadata)
+        self.session.flush()
 
-        Args:
-            meeting: Meeting metadata
-            transcription: Meeting transcription text
-            summary: Meeting summary text
+        meeting_summary = MeetingSummary(id=meeting_metadata.id, summary=summary)
+        self.session.add(meeting_summary)
 
-        Returns:
-            Created meeting response
-        """
-        db_meeting = Meeting(
-            title=meeting.title,
-            date=meeting.date,
-            transcription=transcription,
-            summary=summary,
+        meeting_transcription = MeetingTranscription(
+            id=meeting_metadata.id, transcription=transcription
+        )
+        self.session.add(meeting_transcription)
+
+        self.session.commit()
+        self.session.refresh(meeting_metadata)
+        self.session.refresh(meeting_summary)
+        self.session.refresh(meeting_transcription)
+
+        return MeetingResponse(
+            id=meeting_metadata.id,
+            title=meeting_metadata.title,
+            date=meeting_metadata.date,
+            summary=meeting_summary.summary,
+            transcription=meeting_transcription.transcription,
         )
 
-        self.session.add(db_meeting)
-        self.session.commit()
-        self.session.refresh(db_meeting)
+    def retrieve_all_meetings_metadata(self) -> list[MeetingMetadataResponse]:
+        meetings = self.session.query(MeetingMetadata).all()
+        return [MeetingMetadataResponse.model_validate(meeting) for meeting in meetings]
 
-        return MeetingResponse.model_validate(db_meeting)
+    def retrieve_meeting_summary(self, id: int) -> MeetingSummaryResponse:
+        meeting = (
+            self.session.query(MeetingSummary).filter(MeetingSummary.id == id).first()
+        )
 
-    def retrieve_all_meetings(self) -> list[MeetingResponse]:
-        """
-        Retrieve all meetings from the database.
+        if not meeting:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Meeting summary with id={id} not found",
+            )
 
-        Returns:
-            List of all meetings
-        """
-        db_meetings = self.session.query(Meeting).all()
-        return [MeetingResponse.model_validate(meeting) for meeting in db_meetings]
+        return MeetingSummaryResponse.model_validate(meeting)
 
-    def update_meeting_by_id(
-        self, id: int, meeting_data: UpdateMeetingRequest
-    ) -> MeetingResponse:
-        """
-        Update an existing meeting by ID.
+    def retrieve_meeting_transcription(self, id: int) -> MeetingTranscriptionResponse:
+        meeting = (
+            self.session.query(MeetingTranscription)
+            .filter(MeetingTranscription.id == id)
+            .first()
+        )
 
-        Args:
-            id: Meeting ID to update
-            meeting_data: Updated meeting data
+        if not meeting:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Meeting transcription with id={id} not found",
+            )
 
-        Returns:
-            Updated meeting response
+        return MeetingTranscriptionResponse.model_validate(meeting)
 
-        Raises:
-            HTTPException: If meeting not found
-        """
-        meeting = self.session.query(Meeting).filter(Meeting.id == id).first()
+    def update_meeting_metadata(
+        self, id: int, meeting_data: UpdateMeetingMetadata
+    ) -> MeetingMetadataResponse:
+        meeting = (
+            self.session.query(MeetingMetadata).filter(MeetingMetadata.id == id).first()
+        )
 
         if not meeting:
             raise HTTPException(
@@ -88,19 +103,12 @@ class MeetingRepository:
         self.session.commit()
         self.session.refresh(meeting)
 
-        return MeetingResponse.model_validate(meeting)
+        return MeetingMetadataResponse.model_validate(meeting)
 
     def delete_meeting(self, id: int) -> None:
-        """
-        Delete a meeting by ID.
-
-        Args:
-            id: Meeting ID to delete
-
-        Raises:
-            HTTPException: If meeting not found
-        """
-        meeting = self.session.query(Meeting).filter(Meeting.id == id).first()
+        meeting = (
+            self.session.query(MeetingMetadata).filter(MeetingMetadata.id == id).first()
+        )
 
         if not meeting:
             raise HTTPException(

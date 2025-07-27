@@ -8,8 +8,11 @@ from ..core.logging import setup_logger
 from ..database.repositories.meeting_repo import MeetingRepository
 from ..schemas.meeting_schema import (
     CreateMeetingRequest,
+    MeetingMetadataResponse,
     MeetingResponse,
-    UpdateMeetingRequest,
+    MeetingSummaryResponse,
+    MeetingTranscriptionResponse,
+    UpdateMeetingMetadata,
 )
 from ..utils.log_execution_time import log_execution_time
 from .meeting_processing.gpu_utils import get_device
@@ -36,16 +39,6 @@ class MeetingService:
         meetings_list: List[CreateMeetingRequest],
         audios_bytes: List[bytes],
     ) -> List[MeetingResponse]:
-        """
-        Process and create multiple meetings with their audio files.
-
-        Args:
-            meetings_list: List of meeting metadata
-            audios_bytes: List of audio files as bytes
-
-        Returns:
-            List of created meeting responses
-        """
         _logger.debug(f"Processing {len(meetings_list)} meetings")
 
         if len(meetings_list) != len(audios_bytes):
@@ -63,16 +56,6 @@ class MeetingService:
     def _process_single_meeting(
         self, meeting: CreateMeetingRequest, audio_bytes: bytes
     ) -> MeetingResponse:
-        """
-        Process a single meeting: transcribe audio, generate summary, and save to database.
-
-        Args:
-            meeting: Meeting metadata
-            audio_bytes: Audio file as bytes
-
-        Returns:
-            Created meeting response
-        """
         _logger.debug(f"Processing meeting: {meeting.title}")
 
         audio = self._get_audio_from_bytes(audio_bytes)
@@ -91,52 +74,29 @@ class MeetingService:
         return self.repository.create_meeting(meeting, transcription, summary)
 
     def _get_audio_from_bytes(self, audio_bytes: bytes):
-        """
-        Convert audio bytes to whisperx audio format.
-
-        Args:
-            audio_bytes: Audio file as bytes
-
-        Returns:
-            Loaded audio for whisperx processing
-        """
         with tempfile.NamedTemporaryFile(suffix=".wav") as temp_file:
             temp_file.write(audio_bytes)
             temp_file.flush()
             return whisperx.load_audio(temp_file.name)
 
-    def get_all_meetings(self) -> List[MeetingResponse]:
-        """
-        Retrieve all meetings from the database.
-
-        Returns:
-            List of all meetings
-        """
+    def get_all_meetings_metadata(self) -> List[MeetingMetadataResponse]:
         _logger.debug("Retrieving all meetings")
-        return self.repository.retrieve_all_meetings()
+        return self.repository.retrieve_all_meetings_metadata()
+
+    def get_meeting_summary(self, id: int) -> MeetingSummaryResponse:
+        _logger.debug(f"Retrieving summary of meeting with id={id}")
+        return self.repository.retrieve_meeting_summary(id)
+
+    def get_meeting_transcription(self, id: int) -> MeetingTranscriptionResponse:
+        _logger.debug(f"Retrieving transcription of meeting with id={id}")
+        return self.repository.retrieve_meeting_transcription(id)
 
     def update_meeting(
-        self, meeting_id: int, meeting_data: UpdateMeetingRequest
-    ) -> MeetingResponse:
-        """
-        Update an existing meeting.
-
-        Args:
-            meeting_id: ID of the meeting to update
-            meeting_data: Updated meeting data
-
-        Returns:
-            Updated meeting response
-        """
-        _logger.debug(f"Updating meeting with ID: {meeting_id}")
-        return self.repository.update_meeting_by_id(meeting_id, meeting_data)
+        self, id: int, meeting_data: UpdateMeetingMetadata
+    ) -> MeetingMetadataResponse:
+        _logger.debug(f"Updating meeting with ID: {id}")
+        return self.repository.update_meeting_metadata(id, meeting_data)
 
     def delete_meeting(self, meeting_id: int) -> None:
-        """
-        Delete a meeting by ID.
-
-        Args:
-            meeting_id: ID of the meeting to delete
-        """
         _logger.debug(f"Deleting meeting with ID: {meeting_id}")
         self.repository.delete_meeting(meeting_id)

@@ -2,15 +2,12 @@ from datetime import date as date_type
 from typing import Optional
 
 import whisper.tokenizer  # whisperx uses whisper's tokenizer
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 
-class BaseMeetingSchema(BaseModel):
+class CreateMeetingRequest(BaseModel):
     title: str
     date: date_type
-
-
-class CreateMeetingRequest(BaseMeetingSchema):
     language: Optional[str] = Field(None, description="Language code for transcription")
     number_of_speakers: Optional[int] = Field(None, ge=2)
 
@@ -26,14 +23,38 @@ class CreateMeetingRequest(BaseMeetingSchema):
         return language
 
 
-class UpdateMeetingRequest(BaseModel):
+class UpdateMeetingMetadata(BaseModel):
     title: Optional[str] = None
     date: Optional[date_type] = None
 
 
-class MeetingResponse(BaseMeetingSchema):
+class MeetingMetadataResponse(BaseModel):
+    id: int
+    title: str
+    date: date_type
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MeetingSummaryResponse(BaseModel):
+    id: int
+    summary: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MeetingTranscriptionResponse(BaseModel):
     id: int
     transcription: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MeetingResponse(BaseModel):
+    id: int
+    title: str
+    date: date_type
     summary: str
+    transcription: str
 
     model_config = ConfigDict(from_attributes=True)
