@@ -147,6 +147,8 @@ async def retrieve_meeting_summary(id: int, session: Session = Depends(get_db_se
     try:
         meeting_service = MeetingService(session)
         return meeting_service.get_meeting_summary(id)
+    except HTTPException:
+        raise
     except Exception as e:
         _logger.error(f"Error retrieving meeting summary: {str(e)}")
         _logger.error(f"Exception tpe: {type(e).__name__}")
@@ -168,6 +170,8 @@ async def retrieve_meeting_transcription(
     try:
         meeting_service = MeetingService(session)
         return meeting_service.get_meeting_transcription(id)
+    except HTTPException:
+        raise
     except Exception as e:
         _logger.error(f"Error retrieving meeting transcription: {str(e)}")
         _logger.error(f"Exception tpe: {type(e).__name__}")
@@ -187,6 +191,8 @@ async def delete_meeting(id: int, session: Session = Depends(get_db_session)):
     try:
         meeting_service = MeetingService(session)
         meeting_service.delete_meeting(id)
+    except HTTPException:
+        raise
     except Exception as e:
         _logger.error(f"Error deleting meeting {id}: {str(e)}")
         _logger.error(f"Exception type: {type(e).__name__}")
