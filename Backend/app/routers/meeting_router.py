@@ -140,7 +140,7 @@ async def retrieve_all_meetings_metadata(session: Session = Depends(get_db_sessi
 @router.get(
     "/meetings/summary/{id}",
     response_model=MeetingSummaryResponse,
-    summary="Retrieve a the summary of a meeting",
+    summary="Retrieve the summary of a meeting",
     tags=["Meeting"],
 )
 async def retrieve_meeting_summary(id: int, session: Session = Depends(get_db_session)):
@@ -151,7 +151,7 @@ async def retrieve_meeting_summary(id: int, session: Session = Depends(get_db_se
         raise
     except Exception as e:
         _logger.error(f"Error retrieving meeting summary: {str(e)}")
-        _logger.error(f"Exception tpe: {type(e).__name__}")
+        _logger.error(f"Exception type: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error while retrieving meeting summary",
@@ -161,7 +161,7 @@ async def retrieve_meeting_summary(id: int, session: Session = Depends(get_db_se
 @router.get(
     "/meetings/transcription/{id}",
     response_model=MeetingTranscriptionResponse,
-    summary="Retrieve a the transcription of a meeting",
+    summary="Retrieve the transcription of a meeting",
     tags=["Meeting"],
 )
 async def retrieve_meeting_transcription(
@@ -174,7 +174,7 @@ async def retrieve_meeting_transcription(
         raise
     except Exception as e:
         _logger.error(f"Error retrieving meeting transcription: {str(e)}")
-        _logger.error(f"Exception tpe: {type(e).__name__}")
+        _logger.error(f"Exception type: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error while retrieving meeting transcription",
