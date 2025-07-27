@@ -5,14 +5,17 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, s
 from sqlalchemy.orm import Session
 
 from ..core.logging import setup_logger
+from ..database.config import get_db_session
 from ..schemas.meeting_schema import (
     CreateMeetingRequest,
+    MeetingMetadataResponse,
     MeetingResponse,
-    UpdateMeetingRequest,
+    MeetingSummaryResponse,
+    MeetingTranscriptionResponse,
+    UpdateMeetingMetadata,
 )
 from ..services.meeting_service import MeetingService
 from .docs.meeting_docs_loader import create_meetings_docs
-from ..database.config import get_db_session
 
 _logger = setup_logger(__name__)
 router = APIRouter()
@@ -116,21 +119,61 @@ def _validate_audio_files(audio_files: list[UploadFile]) -> None:
 
 @router.get(
     "/meetings",
-    response_model=list[MeetingResponse],
+    response_model=list[MeetingMetadataResponse],
     status_code=status.HTTP_200_OK,
     summary="Retrieve all meetings",
     tags=["Meeting"],
 )
-async def retrieve_meetings(session: Session = Depends(get_db_session)):
+async def retrieve_all_meetings_metadata(session: Session = Depends(get_db_session)):
     try:
         meeting_service = MeetingService(session)
-        return meeting_service.get_all_meetings()
+        return meeting_service.get_all_meetings_metadata()
     except Exception as e:
         _logger.error(f"Error retrieving meetings: {str(e)}")
         _logger.error(f"Exception type: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error while retrieving meetings",
+        )
+
+
+@router.get(
+    "/meetings/summary/{id}",
+    response_model=MeetingSummaryResponse,
+    summary="Retrieve a the summary of a meeting",
+    tags=["Meeting"],
+)
+async def retrieve_meeting_summary(id: int, session: Session = Depends(get_db_session)):
+    try:
+        meeting_service = MeetingService(session)
+        return meeting_service.get_meeting_summary(id)
+    except Exception as e:
+        _logger.error(f"Error retrieving meeting summary: {str(e)}")
+        _logger.error(f"Exception tpe: {type(e).__name__}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error while retrieving meeting summary",
+        )
+
+
+@router.get(
+    "/meetings/transcription/{id}",
+    response_model=MeetingTranscriptionResponse,
+    summary="Retrieve a the transcription of a meeting",
+    tags=["Meeting"],
+)
+async def retrieve_meeting_transcription(
+    id: int, session: Session = Depends(get_db_session)
+):
+    try:
+        meeting_service = MeetingService(session)
+        return meeting_service.get_meeting_transcription(id)
+    except Exception as e:
+        _logger.error(f"Error retrieving meeting transcription: {str(e)}")
+        _logger.error(f"Exception tpe: {type(e).__name__}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error while retrieving meeting transcription",
         )
 
 
@@ -144,8 +187,6 @@ async def delete_meeting(id: int, session: Session = Depends(get_db_session)):
     try:
         meeting_service = MeetingService(session)
         meeting_service.delete_meeting(id)
-    except HTTPException:
-        raise
     except Exception as e:
         _logger.error(f"Error deleting meeting {id}: {str(e)}")
         _logger.error(f"Exception type: {type(e).__name__}")
@@ -157,14 +198,14 @@ async def delete_meeting(id: int, session: Session = Depends(get_db_session)):
 
 @router.patch(
     "/meetings/{id}",
-    response_model=MeetingResponse,
+    response_model=MeetingMetadataResponse,
     status_code=status.HTTP_200_OK,
     summary="Update a meeting",
     tags=["Meeting"],
 )
 async def update_meeting(
     id: int,
-    meeting_data: UpdateMeetingRequest,
+    meeting_data: UpdateMeetingMetadata,
     session: Session = Depends(get_db_session),
 ):
     try:
