@@ -12,8 +12,6 @@ skinparam linetype ortho
 Person(Frontend, "Frontend")
 
 System_Boundary(Backend, "Backend"){
-    Component(main, "Main")
-
     Component(routers, "Routers") <<folder>> {
         Component(chat_router, "Chat Router")
         Component(meeting_router, "Meeting Router")
@@ -25,6 +23,11 @@ System_Boundary(Backend, "Backend"){
     Component(services, "Services") <<folder>> {
         Component(chat_service, "Chat Service")
         Component(meeting_service, "Meeting Service")
+        Component(meeting_processing, "Meeting Processing") <<folder>> {
+            Component(gpu_utils, "GPU Utils")
+            Component(summarization, "Summarization")
+            Component(transcription, "Transcription")
+        }
     }
 
     Component(database, "Database") <<folder>> {
@@ -56,19 +59,10 @@ System_Boundary(Backend, "Backend"){
         Component(settings, "Settings")
     }
 
-    Component(meeting_processing, "Meeting Processing") <<folder>> {
-        Component(gpu_utils, "GPU Utils")
-        Component(summarization, "Summarization")
-        Component(transcription, "Transcription")
-    }
+
 }
 
 Frontend -left-> routers
-
-' Main relationships
-
-main --> routers
-main --> core
 
 ' Router relationships
 
@@ -78,8 +72,8 @@ routers --> core
 
 ' Service relationships
 
-services --> repositories
-services --> schemas
+services -left-> repositories
+services -right-> schemas
 services --> utils
 services --> core
 chat_service --> meeting_processing
@@ -91,8 +85,8 @@ meeting_processing -right-> core
 
 ' Repository relationships
 
-repositories --> models
-repositories --> schemas
+repositories -left-> models
+repositories -down-> schemas
 
 
 ' Utils relationships
