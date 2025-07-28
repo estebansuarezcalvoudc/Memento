@@ -9,7 +9,8 @@ left to right direction
 title Backend Architecture - Component Diagram
 skinparam linetype ortho
 
-Person(Frontend, "Frontend")
+
+System(Frontend, "Frontend")
 
 System_Boundary(Backend, "Backend"){
     Component(routers, "Routers") <<folder>> {
