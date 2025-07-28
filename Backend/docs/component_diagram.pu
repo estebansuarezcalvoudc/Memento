@@ -1,0 +1,102 @@
+@startuml Backend Component Diagram
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+!include <azure/AzureCommon>
+!theme reddress-lightblue
+
+left to right direction
+
+title Backend Architecture - Component Diagram
+skinparam linetype ortho
+
+Person(Frontend, "Frontend")
+
+System_Boundary(Backend, "Backend"){
+    Component(main, "Main")
+
+    Component(routers, "Routers") <<folder>> {
+        Component(chat_router, "Chat Router")
+        Component(meeting_router, "Meeting Router")
+        Component(router_docs, "Documentation") <<folder>> {
+            Component(meeting_docs_loader, "Meeting Docs Loader")
+        }
+    }
+
+    Component(services, "Services") <<folder>> {
+        Component(chat_service, "Chat Service")
+        Component(meeting_service, "Meeting Service")
+    }
+
+    Component(database, "Database") <<folder>> {
+        Component(models, "Models") <<folder>> {
+            Component(meeting_metadata, "Meeting Metadata")
+            Component(meeting_summary, "Meeting Summary")
+            Component(meeting_transcription, "Meeting Transcription")
+        }
+        Component(repositories, "Repositories") <<folder>> {
+            Component(meeting_repository, "Meeting Repository")
+        }
+    }
+
+    Component(schemas, "Schemas") <<folder>> {
+        Component(create_meeting_request, "Create Meeting Request")
+        Component(meeting_metadata_response, "Meeting Metadata Response")
+        Component(meeting_summary_response, "Meeting Summary Response")
+        Component(meeting_transcription_response, "Meeting Transcription Response")
+        Component(meeting_response, "Meeting Response")
+    }
+
+    Component(utils, "Utils") <<folder>> {
+        Component(log_execution_time, "Log Execution Time")
+        Component(singleton_meta, "Singleton Metaclass")
+    }
+
+    Component(core, "Core") <<folder>> {
+        Component(logging, "Logging")
+        Component(settings, "Settings")
+    }
+
+    Component(meeting_processing, "Meeting Processing") <<folder>> {
+        Component(gpu_utils, "GPU Utils")
+        Component(summarization, "Summarization")
+        Component(transcription, "Transcription")
+    }
+}
+
+Frontend -left-> routers
+
+' Main relationships
+
+main --> routers
+main --> core
+
+' Router relationships
+
+routers --> services
+routers --> schemas
+routers --> core
+
+' Service relationships
+
+services --> repositories
+services --> schemas
+services --> utils
+services --> core
+chat_service --> meeting_processing
+
+' Meeting processing relationships
+
+meeting_processing --> utils
+meeting_processing -right-> core
+
+' Repository relationships
+
+repositories --> models
+repositories --> schemas
+
+
+' Utils relationships
+
+utils --> core
+
+@enduml
