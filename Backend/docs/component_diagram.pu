@@ -1,4 +1,5 @@
 @startuml Backend Component Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 !include <C4/C4_Container>
 !include <C4/C4_Component>
 !include <azure/AzureCommon>
@@ -11,6 +12,7 @@ skinparam linetype ortho
 
 
 System(Frontend, "Frontend")
+
 
 System_Boundary(Backend, "Backend"){
     Component(routers, "Routers") <<folder>> {
@@ -32,13 +34,14 @@ System_Boundary(Backend, "Backend"){
     }
 
     Component(database, "Database") <<folder>> {
+        Component(repositories, "Repositories") <<folder>> {
+            Component(meeting_repository, "Meeting Repository")
+        }
+
         Component(models, "Models") <<folder>> {
             Component(meeting_metadata, "Meeting Metadata")
             Component(meeting_summary, "Meeting Summary")
             Component(meeting_transcription, "Meeting Transcription")
-        }
-        Component(repositories, "Repositories") <<folder>> {
-            Component(meeting_repository, "Meeting Repository")
         }
     }
 
@@ -59,20 +62,18 @@ System_Boundary(Backend, "Backend"){
         Component(logging, "Logging")
         Component(settings, "Settings")
     }
-
-
 }
+
+ContainerDb(db, "Database")
 
 Frontend -left-> routers
 
 ' Router relationships
-
 routers --> services
 routers --> schemas
 routers --> core
 
 ' Service relationships
-
 services -left-> repositories
 services -right-> schemas
 services --> utils
@@ -80,18 +81,16 @@ services --> core
 chat_service --> meeting_processing
 
 ' Meeting processing relationships
-
 meeting_processing --> utils
 meeting_processing -right-> core
 
 ' Repository relationships
-
 repositories -left-> models
 repositories -down-> schemas
+repositories --> db
 
 
 ' Utils relationships
-
 utils --> core
 
 @enduml
