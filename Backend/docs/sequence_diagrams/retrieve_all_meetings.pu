@@ -1,0 +1,29 @@
+@startuml Retrieve All Meetings
+
+title Retrieve All Meetings
+
+actor Client
+participant "FastAPI Router" as Router
+participant "Meeting Service" as Service
+participant "Meeting Repository" as Repository
+
+Client -> Router: GET /meetings
+
+activate Router
+Router -> Service: get_all_meetings_metadata
+
+activate Service
+Service-> Repository: retrieve_all_meetings_metadata
+
+activate Repository
+Service <-- Repository: meetings_metadata_list
+deactivate Repository
+
+Router <-- Service: meetings_metadata_list
+deactivate Service
+
+Client <-- Router: 200 OK + meetings_metadata_list
+deactivate Router
+
+@enduml
+

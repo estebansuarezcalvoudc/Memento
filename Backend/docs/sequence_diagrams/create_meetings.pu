@@ -1,0 +1,47 @@
+@startuml Create Meetings
+
+title Create Meetings
+
+actor Client
+participant "FastAPI Router" as Router
+participant "Meeting Service" as Service
+participant "Transcription" as Transcriber
+participant "Summarize Meeting" as Summarizer
+participant "Meeting Repository" as Repository
+
+Client -> Router : POST /meetings
+
+activate Router
+Router -> Service : create_meetings
+
+activate Service
+loop
+    Service -> Service : _process_single_meeting
+    Service -> Transcriber : get_transcribed_conversation
+
+    activate Transcriber
+    Transcriber -> Transcriber: _do_transcription
+    Transcriber -> Transcriber: _align_meeting
+    Transcriber -> Transcriber: _diarize_meeting
+    Transcriber -> Transcriber: _create_diarized_dialogue
+    Service <-- Transcriber: transcription
+    deactivate Transcriber
+
+    Service -> Summarizer: summarize_meeting
+    activate Summarizer
+    Service <-- Summarizer: summary
+    deactivate Summarizer
+
+    Service -> Repository: create_meeting
+    activate Repository
+    Service <-- Repository: meeting_response
+    deactivate Repository
+end
+
+Router <-- Service: meeting_responses_list
+deactivate Service
+
+Client <-- Router: 201 CREATED + meeting_responses_list
+deactivate Router
+
+@enduml

@@ -61,13 +61,10 @@ async def create_meetings(
     _validate_audio_files(audios)
 
     try:
-        audios_bytes = []
-        for audio in audios:
-            audio_bytes = await audio.read()
-            audios_bytes.append(audio_bytes)
+        audio_bytes_list = [await audio.read() for audio in audios]
 
         meeting_service = MeetingService(session)
-        return meeting_service.create_meetings(meetings_list, audios_bytes)
+        return meeting_service.create_meetings(meetings_list, audio_bytes_list)
 
     except ValueError as e:
         raise HTTPException(
