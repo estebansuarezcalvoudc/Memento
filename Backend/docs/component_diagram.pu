@@ -7,7 +7,7 @@
 
 left to right direction
 
-title Backend Architecture - Component Diagram
+title Backend Architecture
 skinparam linetype ortho
 
 
@@ -87,7 +87,9 @@ meeting_processing -right-> core
 ' Repository relationships
 repositories -left-> models
 repositories -down-> schemas
-repositories --> db
+
+' Database relationship
+database --> db
 
 
 ' Utils relationships
