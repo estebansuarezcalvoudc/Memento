@@ -12,31 +12,31 @@ participant "Meeting Repository" as Repository
 Client -> Router : POST /meetings\n(meetings_list, audios)
 
 activate Router
-Router -> Router : _parse_meetings_metadata
-Router -> Router : _validate_audio_files
 Router -> Service : create_meetings
 
 activate Service
-Service -> Service : _process_single_meeting
-Service -> Transcriber : get_transcribed_conversation
+loop
+    Service -> Service : _process_single_meeting
+    Service -> Transcriber : get_transcribed_conversation
 
-activate Transcriber
-Transcriber -> Transcriber: _do_transcription
-Transcriber -> Transcriber: _align_meeting
-Transcriber -> Transcriber: _diarize_meeting
-Transcriber -> Transcriber: _create_diarized_dialogue
-Service <-- Transcriber: transcription
-deactivate Transcriber
+    activate Transcriber
+    Transcriber -> Transcriber: _do_transcription
+    Transcriber -> Transcriber: _align_meeting
+    Transcriber -> Transcriber: _diarize_meeting
+    Transcriber -> Transcriber: _create_diarized_dialogue
+    Service <-- Transcriber: transcription
+    deactivate Transcriber
 
-Service -> Summarizer: summarize_meeting
-activate Summarizer
-Service <-- Summarizer: summary
-deactivate Summarizer
+    Service -> Summarizer: summarize_meeting
+    activate Summarizer
+    Service <-- Summarizer: summary
+    deactivate Summarizer
 
-Service -> Repository: create_meeting
-activate Repository
-Service <-- Repository: meeting_response
-deactivate Repository
+    Service -> Repository: create_meeting
+    activate Repository
+    Service <-- Repository: meeting_response
+    deactivate Repository
+end
 
 Router <-- Service: meeting_responses_list
 deactivate Service
