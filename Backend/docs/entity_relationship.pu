@@ -4,7 +4,7 @@ title E/R
 
 entity MeetingMetadata {
     id: INTEGER <<key>>
-    : STRING
+    meeting_title: STRING
     date: DATE
 }
 entity MeetingSummary {
