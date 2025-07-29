@@ -46,12 +46,10 @@ class MeetingService:
                 "The number of metadata objects must match the number of audio files"
             )
 
-        results = []
-        for metadata, audio_bytes in zip(meetings_list, audios_bytes):
-            result = self._process_single_meeting(metadata, audio_bytes)
-            results.append(result)
-
-        return results
+        return [
+            self._process_single_meeting(metadata, audio_bytes)
+            for metadata, audio_bytes in zip(meetings_list, audios_bytes)
+        ]
 
     def _process_single_meeting(
         self, meeting_metadata: CreateMeetingRequest, audio_bytes: bytes
