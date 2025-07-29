@@ -9,7 +9,7 @@ participant "Transcription" as Transcriber
 participant "Summarize Meeting" as Summarizer
 participant "Meeting Repository" as Repository
 
-Client -> Router : POST /meetings\n(meetings_list, audios)
+Client -> Router : POST /meetings
 
 activate Router
 Router -> Service : create_meetings
@@ -41,7 +41,7 @@ end
 Router <-- Service: meeting_responses_list
 deactivate Service
 
-Client <-- Router: 201 Created + meeting_responses_list
+Client <-- Router: 201 CREATED + meeting_responses_list
 deactivate Router
 
 @enduml

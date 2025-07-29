@@ -22,7 +22,7 @@ deactivate Repository
 Router <-- Service
 deactivate Service
 
-Client <-- Router
+Client <-- Router: 204 NO CONTENT
 deactivate Router
 
 @enduml
