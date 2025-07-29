@@ -1,0 +1,27 @@
+@startuml Update Meeting Metadata
+
+title Update Meeting Metadata
+
+actor Client
+participant Router
+participant Service
+participant Repository
+
+Client --> Router: PATCH /meetings/{id}
+
+activate Router
+Router -> Service: update_meeting
+
+activate Service
+Service -> Repository: update_meeting_metadata
+
+activate Repository
+Service <-- Repository: updated_meeting
+deactivate Repository
+
+Router <-- Service: updated_meeting
+deactivate Service
+
+Client <-- Router: 200 OK + updated_meeting
+
+@enduml
