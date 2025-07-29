@@ -2,7 +2,7 @@ services:
   backend:
     build: ./Backend
     ports:
-      - "${BACKEND_EXTERNAL_PORT}:${BACKEND_INTERNAL_PORT}"
+      - "8000:${BACKEND_INTERNAL_PORT}"
     volumes:
       - ./Backend:/Backend
       - ./.env.docker:/.env.docker
@@ -26,29 +26,47 @@ services:
       - OLLAMA_PORT=${OLLAMA_PORT}
     networks:
       - back_net
+    restart: unless-stopped
 
-  database:
+  postgres_db:
     image: postgres
     ports:
-      - "${DATABASE_EXTERNAL_PORT}:${DATABASE_INTERNAL_PORT}"
+      - 5432:${POSTGRES_PORT}
     volumes:
-      - database_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=prisma
     networks:
       - back_net
+    restart: unless-stopped
 
   ollama:
     image: ollama/ollama
     ports:
-      - "${OLLAMA_EXTERNAL_PORT}:${OLLAMA_INTERNAL_PORT}"
+      - 8001:${OLLAMA_INTERNAL_PORT}
     networks:
       - back_net
+    restart: unless-stopped
+
+  mongo_db:
+    image: mongodb/mongodb-community-server
+    container_name: mongodb
+    ports:
+      - 27017:${MONGO_INTERNAL_PORT}
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+    networks:
+      - back_net
+    restart: unless-stopped
 
 volumes:
-  database_data:
+  postgres_data:
+  mongodb_data:
 
 networks:
   back_net:
