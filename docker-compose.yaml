@@ -8,6 +8,9 @@ services:
       - ./.env.docker:/.env.docker
       - ./Backend/.env.secrets:/Backend/.env.secrets
     runtime: nvidia
+    depends_on:
+      - postgres_db
+      - mongo_db
     deploy:
       resources:
         reservations:
