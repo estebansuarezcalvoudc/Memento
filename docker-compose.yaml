@@ -2,7 +2,7 @@ services:
   backend:
     build: ./Backend
     ports:
-      - "8000:${BACKEND_INTERNAL_PORT}"
+      - "8000:${BACKEND_PORT}"
     volumes:
       - ./Backend:/Backend
       - ./.env.docker:/.env.docker
@@ -48,7 +48,7 @@ services:
   ollama:
     image: ollama/ollama
     ports:
-      - 8001:${OLLAMA_INTERNAL_PORT}
+      - 8001:${OLLAMA_PORT}
     networks:
       - back_net
     restart: unless-stopped
@@ -57,7 +57,7 @@ services:
     image: mongodb/mongodb-community-server
     container_name: mongodb
     ports:
-      - 27017:${MONGO_INTERNAL_PORT}
+      - 27017:${MONGO_PORT}
     volumes:
       - mongodb_data:/data/db
     environment:
