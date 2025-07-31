@@ -19,12 +19,14 @@ class ConversationService(metaclass=SingletonMeta):
 
         self._repository = ConversationRepository()
 
-    def send_message(self, id:str, message:str): 
-        if id is None:
-            id = self._repository.create_conversation(
-                ConversationCreate(title="my conversation")
-            )
+    def create_conversation(self, message: str) -> str:
+        id = self._repository.create_conversation(
+            ConversationCreate(title="New chat")
+        )
 
+        return self.send_message(id, message)
+
+    def send_message(self, id: str, message: str) -> str:
         client = ollama.Client(host=settings.ollama_url)
 
         client.pull(self._model)

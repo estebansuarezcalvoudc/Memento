@@ -11,6 +11,26 @@ from ..services.conversation_service import ConversationService
 _logger = setup_logger(__name__)
 router = APIRouter()
 
+# TODO añadir un POST de create conversation
+
+@router.post(
+    "/conversations",
+    status_code=status.HTTP_200_OK,
+    summary="Create a new conversation",
+    tags=["Conversations"]
+)
+async def create_conversation(message:str):
+    try:
+        conversation_service = ConversationService()
+        return conversation_service.create_conversation(message)
+    except Exception as e:
+        _logger.error(f"Error creating conversation: {str(e)}")
+        _logger.error(f"Exception type: {type(e).__name__}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error while creating conversation",
+        )
+
 
 @router.post(
     "/conversations/{id}/chat",
