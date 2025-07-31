@@ -13,6 +13,11 @@ class Settings(BaseSettings):
     ollama_host: str
     ollama_port: int
 
+    mongo_user: str
+    mongo_host: str
+    mongo_password: str
+    mongo_port: int
+
     @property
     def database_url(self) -> str:
         return f"postgresql://{self.postgres_user}:{self.postgres_password}@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
@@ -20,6 +25,10 @@ class Settings(BaseSettings):
     @property
     def ollama_url(self) -> str:
         return f"http://{self.ollama_host}:{self.ollama_port}"
+
+    @property
+    def mongo_url(self) -> str:
+        return f"mongodb://{self.mongo_user}:{self.mongo_password}@{self.mongo_host}:{self.mongo_port}"
 
     class Config:
         env_file = ["/.env.docker", "/Backend/.env"]

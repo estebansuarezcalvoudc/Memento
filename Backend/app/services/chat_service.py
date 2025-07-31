@@ -1,5 +1,8 @@
 import ollama
+
 from ..core.settings import settings
+from ..database.repositories.conversation_repo import ConversationRepository
+from ..schemas.conversation_schema import ConversationCreate, UserChatbotInteraction
 from ..utils.singleton_meta import SingletonMeta
 
 
@@ -8,12 +11,19 @@ class ChatService(metaclass=SingletonMeta):
         self._conversation_history: list[dict] = []
         self._model = "llama3.2"
 
-    def send_message(self, message: str) -> str:
+        self._repository = ConversationRepository()
+        self._conversation_id = self._repository.create_conversation(
+            ConversationCreate(title="my conversation")
+        )
+
+    def send_message(self, message: str):
         client = ollama.Client(host=settings.ollama_url)
 
         client.pull(self._model)
 
-        self._conversation_history.append({"role": "user", "content": message})
+        user_message = {"role": "user", "content": message}
+        self._conversation_history.append(user_message)
+
         response = client.chat(
             model=self._model,
             messages=self._conversation_history,
@@ -21,6 +31,14 @@ class ChatService(metaclass=SingletonMeta):
         )
 
         reply = response.message.content or ""
-        self._conversation_history.append({"role": "assistant", "content": reply})
+        assistant_response = {"role": "assistant", "content": reply}
+        self._conversation_history.append(assistant_response)
+
+        self._repository.add_user_chatbot_interaction(
+            self._conversation_id,
+            UserChatbotInteraction(
+                user_message=user_message, assistant_response=assistant_response
+            ),
+        )
 
         return reply
