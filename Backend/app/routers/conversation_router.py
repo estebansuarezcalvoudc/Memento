@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
 from ..core.logging import setup_logger
-from ..schemas.conversation_schema import ConversationRetrieve
+from ..schemas.conversation_schema import ConversationRetrieve, DialogueRetrieve
 from ..services.conversation_service import ConversationService
 
 _logger = setup_logger(__name__)
@@ -47,4 +47,26 @@ async def retrieve_all_conversations_metadata():
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error while retrieving all conversations metadata",
+        )
+
+
+@router.get(
+    "/conversations/{id}",
+    response_model=DialogueRetrieve,
+    status_code=status.HTTP_200_OK,
+    summary="Retrieve a dialogue between the user and the assistant",
+    tags=["Conversations"],
+)
+async def retrieve_dialogue(id: str):
+    try:
+        conversation_service = ConversationService()
+        return conversation_service.retrieve_dialogue(id)
+    except HTTPException:
+        raise
+    except Exception as e:
+        _logger.error(f"Error retrieving dialogue with id <{id}>º: {str(e)}")
+        _logger.error(f"Exception type: {type(e).__name__}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal server error while retrieving dialogue with id: {id}",
         )

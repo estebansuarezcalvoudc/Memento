@@ -2,12 +2,14 @@ from datetime import datetime
 
 import pymongo
 from bson import ObjectId
+from fastapi import HTTPException, status
 
 from ...core.settings import settings
 from ...schemas.conversation_schema import (
     ConversationCreate,
-    UserChatbotInteraction,
     ConversationRetrieve,
+    DialogueRetrieve,
+    UserChatbotInteraction,
 )
 from ..models.conversation_model import ConversationModel
 
@@ -57,3 +59,14 @@ class ConversationRepository:
             )
             for conversation in result
         ]
+
+    def retrieve_dialogue(self, id: str) -> DialogueRetrieve:
+        result = self._collection.find_one({"_id": ObjectId(id)}, {"_id": False, "messages": True})
+
+        if not result:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Conversation with id={id} not found",
+            )
+
+        return DialogueRetrieve(messages=result["messages"])

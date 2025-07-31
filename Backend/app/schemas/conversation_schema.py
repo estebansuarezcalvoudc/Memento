@@ -1,5 +1,6 @@
-from pydantic import BaseModel
 from datetime import datetime
+
+from pydantic import BaseModel
 
 
 class UserChatbotInteraction(BaseModel):
@@ -15,3 +16,7 @@ class ConversationRetrieve(BaseModel):
 
 class ConversationCreate(BaseModel):
     title: str
+
+
+class DialogueRetrieve(BaseModel):
+    messages: list[dict[str, str]]
