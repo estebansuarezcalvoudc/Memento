@@ -5,7 +5,7 @@ from .routers import chat_router, meeting_router
 
 _tags_metadata = [
     {"name": "Meeting", "description": "Manage meetings"},
-    {"name": "Chat", "description": "Send and receive messages"},
+    {"name": "Conversations", "description": "Manage conversations"},
 ]
 
 

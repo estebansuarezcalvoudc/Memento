@@ -4,7 +4,11 @@ import pymongo
 from bson import ObjectId
 
 from ...core.settings import settings
-from ...schemas.conversation_schema import ConversationCreate, UserChatbotInteraction
+from ...schemas.conversation_schema import (
+    ConversationCreate,
+    UserChatbotInteraction,
+    ConversationRetrieve,
+)
 from ..models.conversation_model import ConversationModel
 
 
@@ -18,9 +22,7 @@ class ConversationRepository:
         myclient = pymongo.MongoClient(settings.mongo_url)
         mydb = myclient["chat_db"]
         self._collection = mydb["conversations"]
-        conversation = ConversationModel(
-            title=data.title, started_at=datetime.today()
-        )
+        conversation = ConversationModel(title=data.title, started_at=datetime.today())
 
         result = self._collection.insert_one(
             conversation.model_dump(by_alias=True, exclude={"id"})
@@ -43,3 +45,15 @@ class ConversationRepository:
                 }
             },
         )
+
+    def retrieve_all_conversations_metadata(self) -> list[ConversationRetrieve]:
+        result = self._collection.find({}, {"messages": False})
+
+        return [
+            ConversationRetrieve(
+                id=str(conversation["_id"]),
+                title=conversation["title"],
+                started_at=conversation["started_at"],
+            )
+            for conversation in result
+        ]

@@ -2,7 +2,7 @@ import ollama
 
 from ..core.settings import settings
 from ..database.repositories.conversation_repo import ConversationRepository
-from ..schemas.conversation_schema import ConversationCreate, UserChatbotInteraction
+from ..schemas.conversation_schema import ConversationCreate, UserChatbotInteraction, ConversationRetrieve
 from ..utils.singleton_meta import SingletonMeta
 
 
@@ -42,3 +42,6 @@ class ChatService(metaclass=SingletonMeta):
         )
 
         return reply
+
+    def retrieve_all_conversations_metadata(self) -> list[ConversationRetrieve]:
+        return self._repository.retrieve_all_conversations_metadata()
