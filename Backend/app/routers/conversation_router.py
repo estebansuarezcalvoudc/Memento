@@ -1,7 +1,11 @@
 from fastapi import APIRouter, HTTPException, status
 
 from ..core.logging import setup_logger
-from ..schemas.conversation_schema import ConversationRetrieve, DialogueRetrieve
+from ..schemas.conversation_schema import (
+    ConversationRetrieve,
+    DialogueRetrieve,
+    ConversationUpdate,
+)
 from ..services.conversation_service import ConversationService
 
 _logger = setup_logger(__name__)
@@ -85,9 +89,26 @@ async def delete_conversation(id: str):
     except HTTPException:
         raise
     except Exception as e:
-        _logger.error(f"Error deleting conversation with id={id}:{str(e)}")
+        _logger.error(f"Error deleting conversation with id={id}: {str(e)}")
         _logger.error(f"Exception type: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Internal server error while deleting conversation with id={id}"
+            detail=f"Internal server error while deleting conversation with id={id}",
         )
+
+
+@router.put(
+    "/conversations/{id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Update the metadata of a conversation",
+    tags=["Conversations"],
+)
+async def update_conversation_metadata(id: str, metadata: ConversationUpdate):
+    try:
+        conversation_service = ConversationService()
+        conversation_service.update_conversation_metadata(id, metadata)
+    except HTTPException:
+        raise
+    except Exception as e:
+        _logger.error(f"Error updating conversation with id={id}: {str(e)}")
+        _logger.error(f"Exception type: {type(e).__name__}")

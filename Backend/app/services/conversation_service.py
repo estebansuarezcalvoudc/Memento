@@ -5,6 +5,7 @@ from ..database.repositories.conversation_repo import ConversationRepository
 from ..schemas.conversation_schema import (
     ConversationCreate,
     ConversationRetrieve,
+    ConversationUpdate,
     DialogueRetrieve,
     UserChatbotInteraction,
 )
@@ -56,3 +57,6 @@ class ConversationService(metaclass=SingletonMeta):
 
     def delete_conversation(self, id: str) -> None:
         return self._repository.delete_conversation(id)
+
+    def update_conversation_metadata(self, id: str, metadata: ConversationUpdate):
+        return self._repository.update_conversation_metadata(id, metadata)

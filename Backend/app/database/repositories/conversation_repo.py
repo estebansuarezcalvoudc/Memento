@@ -9,6 +9,7 @@ from ...core.settings import settings
 from ...schemas.conversation_schema import (
     ConversationCreate,
     ConversationRetrieve,
+    ConversationUpdate,
     DialogueRetrieve,
     UserChatbotInteraction,
 )
@@ -35,19 +36,25 @@ class ConversationRepository:
     def add_user_chatbot_interaction(
         self, conversation_id: str, interaction: UserChatbotInteraction
     ) -> None:
-        self._collection.update_one(
-            {"_id": ObjectId(conversation_id)},
-            {
-                "$push": {
-                    "messages": {
-                        "$each": [
-                            interaction.user_message,
-                            interaction.assistant_response,
-                        ]
+        try:
+            self._collection.update_one(
+                {"_id": ObjectId(conversation_id)},
+                {
+                    "$push": {
+                        "messages": {
+                            "$each": [
+                                interaction.user_message,
+                                interaction.assistant_response,
+                            ]
+                        }
                     }
-                }
-            },
-        )
+                },
+            )
+        except InvalidId:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"The id={id} is not valid",
+            )
 
     def retrieve_all_conversations_metadata(self) -> list[ConversationRetrieve]:
         result = self._collection.find({}, {"messages": False})
@@ -90,6 +97,26 @@ class ConversationRepository:
             )
 
         if result.deleted_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Conversation with id={id} not found",
+            )
+
+    def update_conversation_metadata(
+        self, id: str, metadata: ConversationUpdate
+    ) -> None:
+        try:
+            result = self._collection.update_one(
+                {"_id": ObjectId(id)},
+                {"$set": {"title": metadata.title}},
+            )
+        except InvalidId:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"The id={id} is not valid",
+            )
+
+        if result.modified_count == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Conversation with id={id} not found",

@@ -20,3 +20,7 @@ class ConversationCreate(BaseModel):
 
 class DialogueRetrieve(BaseModel):
     messages: list[dict[str, str]]
+
+
+class ConversationUpdate(BaseModel):
+    title: str
