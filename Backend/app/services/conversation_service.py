@@ -6,7 +6,7 @@ from ..schemas.conversation_schema import ConversationCreate, UserChatbotInterac
 from ..utils.singleton_meta import SingletonMeta
 
 
-class ChatService(metaclass=SingletonMeta):
+class ConversationService(metaclass=SingletonMeta):
     def __init__(self) -> None:
         self._conversation_history: list[dict] = []
         self._model = "llama3.2"
