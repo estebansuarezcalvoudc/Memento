@@ -13,18 +13,18 @@ router = APIRouter()
 
 
 @router.post(
-    "/conversations/chat",
+    "/conversations/{id}/chat",
     response_model=str,
     status_code=status.HTTP_200_OK,
     summary="Send a message to the chatbot and get a response",
     tags=["Conversations"],
 )
-async def send_message(message: str):
+async def send_message(id: str, message: str):
     _logger.debug("Send message was called")
 
     try:
         conversation_service = ConversationService()
-        return conversation_service.send_message(message)
+        return conversation_service.send_message(id, message)
     except Exception as e:
         _logger.error(f"Error sending message: {str(e)}")
         _logger.error(f"Exception type: {type(e).__name__}")

@@ -18,11 +18,13 @@ class ConversationService(metaclass=SingletonMeta):
         self._model = "llama3.2"
 
         self._repository = ConversationRepository()
-        self._conversation_id = self._repository.create_conversation(
-            ConversationCreate(title="my conversation")
-        )
 
-    def send_message(self, message: str):
+    def send_message(self, id:str, message:str): 
+        if id is None:
+            id = self._repository.create_conversation(
+                ConversationCreate(title="my conversation")
+            )
+
         client = ollama.Client(host=settings.ollama_url)
 
         client.pull(self._model)
@@ -41,7 +43,7 @@ class ConversationService(metaclass=SingletonMeta):
         self._conversation_history.append(assistant_response)
 
         self._repository.add_user_chatbot_interaction(
-            self._conversation_id,
+            id,
             UserChatbotInteraction(
                 user_message=user_message, assistant_response=assistant_response
             ),
