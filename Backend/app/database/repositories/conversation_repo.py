@@ -2,6 +2,7 @@ from datetime import datetime
 
 import pymongo
 from bson import ObjectId
+from bson.errors import InvalidId
 from fastapi import HTTPException, status
 
 from ...core.settings import settings
@@ -61,12 +62,35 @@ class ConversationRepository:
         ]
 
     def retrieve_dialogue(self, id: str) -> DialogueRetrieve:
-        result = self._collection.find_one({"_id": ObjectId(id)}, {"_id": False, "messages": True})
+        try:
+            result = self._collection.find_one(
+                {"_id": ObjectId(id)}, {"_id": False, "messages": True}
+            )
+        except InvalidId:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"The id={id} is not valid",
+            )
 
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Conversation with id={id} not found",
+                detail=f"Dialogue with id={id} not found",
             )
 
         return DialogueRetrieve(messages=result["messages"])
+
+    def delete_conversation(self, id: str) -> None:
+        try:
+            result = self._collection.delete_one({"_id": ObjectId(id)})
+        except InvalidId:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"The id={id} is not valid",
+            )
+
+        if result.deleted_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Conversation with id={id} not found",
+            )

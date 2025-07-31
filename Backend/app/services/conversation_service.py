@@ -53,3 +53,6 @@ class ConversationService(metaclass=SingletonMeta):
 
     def retrieve_dialogue(self, id: str) -> DialogueRetrieve:
         return self._repository.retrieve_dialogue(id)
+
+    def delete_conversation(self, id: str) -> None:
+        return self._repository.delete_conversation(id)

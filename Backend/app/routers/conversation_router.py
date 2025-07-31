@@ -64,9 +64,30 @@ async def retrieve_dialogue(id: str):
     except HTTPException:
         raise
     except Exception as e:
-        _logger.error(f"Error retrieving dialogue with id <{id}>º: {str(e)}")
+        _logger.error(f"Error retrieving dialogue with id={id}: {str(e)}")
         _logger.error(f"Exception type: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Internal server error while retrieving dialogue with id: {id}",
+            detail=f"Internal server error while retrieving dialogue with id={id}",
+        )
+
+
+@router.delete(
+    "/conversations/{id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a conversation",
+    tags=["Conversations"],
+)
+async def delete_conversation(id: str):
+    try:
+        conversation_service = ConversationService()
+        conversation_service.delete_conversation(id)
+    except HTTPException:
+        raise
+    except Exception as e:
+        _logger.error(f"Error deleting conversation with id={id}:{str(e)}")
+        _logger.error(f"Exception type: {type(e).__name__}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal server error while deleting conversation with id={id}"
         )
