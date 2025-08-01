@@ -3,23 +3,23 @@ from fastapi import APIRouter, HTTPException, status
 from ..core.logging import setup_logger
 from ..schemas.conversation_schema import (
     ConversationRetrieve,
-    DialogueRetrieve,
     ConversationUpdate,
+    DialogueRetrieve,
 )
 from ..services.conversation_service import ConversationService
 
 _logger = setup_logger(__name__)
 router = APIRouter()
 
-# TODO añadir un POST de create conversation
 
 @router.post(
     "/conversations",
+    response_model=str,
     status_code=status.HTTP_200_OK,
     summary="Create a new conversation",
-    tags=["Conversations"]
+    tags=["Conversations"],
 )
-async def create_conversation(message:str):
+async def create_conversation(message: str):
     try:
         conversation_service = ConversationService()
         return conversation_service.create_conversation(message)
