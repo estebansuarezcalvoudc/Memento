@@ -36,7 +36,7 @@ def try_on_gpu(function: Callable[..., Any]):
                 f"{function.__name__.upper()} failed on GPU: {e}. Retrying on CPU"
             )
 
-            new_args = _replace_device_in_args(args, target_device)
+            new_args = _replace_device_in_args(args)
             new_kwargs = _replace_device_in_kwargs(kwargs)
 
             return function(*new_args, **new_kwargs)
@@ -47,17 +47,10 @@ def try_on_gpu(function: Callable[..., Any]):
     return wrapper
 
 
-def _replace_device_in_args(args: tuple, device) -> tuple:
-    if len(args) > 0:
-        args_list = list(args)
-
-        for i, arg in enumerate(args_list):
-            if isinstance(arg, str) and arg == device:
-                args_list[i] = "cpu"
-
-        args = tuple(args_list)
-
-    return args
+def _replace_device_in_args(args: tuple) -> tuple:
+    return tuple(
+        "cpu" if isinstance(arg, str) and arg == "cuda" else arg for arg in args
+    )
 
 
 def _replace_device_in_kwargs(kwargs: dict) -> dict:
