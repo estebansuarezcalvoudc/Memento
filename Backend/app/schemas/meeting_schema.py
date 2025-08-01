@@ -2,7 +2,7 @@ from datetime import date as date_type
 from typing import Optional
 
 import whisper.tokenizer  # whisperx uses whisper's tokenizer
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class CreateMeetingRequest(BaseModel):

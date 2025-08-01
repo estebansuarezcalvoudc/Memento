@@ -2,21 +2,31 @@ import ollama
 
 from ..core.settings import settings
 from ..database.repositories.conversation_repo import ConversationRepository
-from ..schemas.conversation_schema import ConversationCreate, UserChatbotInteraction
+from ..schemas.conversation_schema import (
+    ConversationCreate,
+    ConversationRetrieve,
+    ConversationUpdate,
+    DialogueRetrieve,
+    UserChatbotInteraction,
+)
 from ..utils.singleton_meta import SingletonMeta
 
 
-class ChatService(metaclass=SingletonMeta):
+class ConversationService(metaclass=SingletonMeta):
     def __init__(self) -> None:
         self._conversation_history: list[dict] = []
         self._model = "llama3.2"
 
         self._repository = ConversationRepository()
-        self._conversation_id = self._repository.create_conversation(
-            ConversationCreate(title="my conversation")
+
+    def create_conversation(self, message: str) -> str:
+        id = self._repository.create_conversation(
+            ConversationCreate(title="New chat")
         )
 
-    def send_message(self, message: str):
+        return self.send_message(id, message)
+
+    def send_message(self, id: str, message: str) -> str:
         client = ollama.Client(host=settings.ollama_url)
 
         client.pull(self._model)
@@ -35,10 +45,22 @@ class ChatService(metaclass=SingletonMeta):
         self._conversation_history.append(assistant_response)
 
         self._repository.add_user_chatbot_interaction(
-            self._conversation_id,
+            id,
             UserChatbotInteraction(
                 user_message=user_message, assistant_response=assistant_response
             ),
         )
 
         return reply
+
+    def retrieve_all_conversations_metadata(self) -> list[ConversationRetrieve]:
+        return self._repository.retrieve_all_conversations_metadata()
+
+    def retrieve_dialogue(self, id: str) -> DialogueRetrieve:
+        return self._repository.retrieve_dialogue(id)
+
+    def delete_conversation(self, id: str) -> None:
+        return self._repository.delete_conversation(id)
+
+    def update_conversation_metadata(self, id: str, metadata: ConversationUpdate):
+        return self._repository.update_conversation_metadata(id, metadata)
