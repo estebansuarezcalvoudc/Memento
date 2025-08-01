@@ -46,28 +46,33 @@ class MeetingService:
             )
 
         return [
-            self._process_single_meeting(metadata, audio_bytes)
-            for metadata, audio_bytes in zip(meetings_list, audios_bytes)
+            self._process_single_meeting(meeting_request, audio_bytes)
+            for meeting_request, audio_bytes in zip(meetings_list, audios_bytes)
         ]
 
     def _process_single_meeting(
-        self, meeting_metadata: CreateMeetingRequest, audio_bytes: bytes
+        self, meeting_request: CreateMeetingRequest, audio_bytes: bytes
     ) -> MeetingResponse:
-        _logger.debug(f"Processing meeting: {meeting_metadata.title}")
+        _logger.debug(f"Processing meeting: {meeting_request.title}")
 
         audio = self._get_audio_from_bytes(audio_bytes)
 
         transcription = get_transcribed_conversation(
-            meeting_metadata,
+            meeting_request,
             audio,
             self.device,
             self.compute_type,
             self.model_size,
         )
 
-        summary = summarize_meeting(transcription)
+        summary = summarize_meeting(
+            transcription,
+            language_model=meeting_request.language_model,
+            prompt=meeting_request.prompt,
+            options=meeting_request.options
+        )
 
-        return self.repository.create_meeting(meeting_metadata, transcription, summary)
+        return self.repository.create_meeting(meeting_request, transcription, summary)
 
     def _get_audio_from_bytes(self, audio_bytes: bytes):
         with tempfile.NamedTemporaryFile(suffix=".wav") as temp_file:

@@ -1,4 +1,5 @@
 import ollama
+from typing import Optional
 
 from ...core.logging import log_execution_time, setup_logger
 from ...core.settings import settings
@@ -7,16 +8,27 @@ _logger = setup_logger(__name__)
 
 
 @log_execution_time(_logger)
-def summarize_meeting(diarized_dialogue: str) -> str:
+def summarize_meeting(
+    diarized_dialogue: str, 
+    language_model: str = "llama3.2", 
+    prompt: Optional[str] = None, 
+    options: Optional[dict] = None
+) -> str:
+    if prompt is None:
+        prompt = _default_prompt
+    
+    if options is None:
+        options = {"temperature": 0.2, "num_predict": 600}
+    
     client = ollama.Client(host=settings.ollama_url)
 
-    client.pull("llama3.2")
-    client.create(model="summarizer", from_="llama3.2", system=_prompt)
+    client.pull(language_model)
+    client.create(model="summarizer", from_=language_model, system=prompt)
 
     response = client.chat(
         model="summarizer",
         messages=[{"role": "user", "content": diarized_dialogue}],
-        options={"temperature": 0.2, "num_predict": 600},
+        options=options,
         keep_alive=0,
     )
 
@@ -25,7 +37,7 @@ def summarize_meeting(diarized_dialogue: str) -> str:
     return summary or ""
 
 
-_prompt = """
+_default_prompt = """
     Analyze this meeting transcript and provide a structured summary with the following:
 
     1. Meeting Overview

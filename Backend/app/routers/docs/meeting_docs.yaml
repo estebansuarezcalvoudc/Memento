@@ -14,7 +14,13 @@ form_examples:
         "title": "Team Standup",
         "date": "2025-07-15",
         "language": "en",
-        "number_of_speakers": 3
+        "number_of_speakers": 3,
+        "language_model": "llama3.2",
+        "prompt": "Custom prompt for summarization",
+        "options": {
+          "temperature": 0.2,
+          "num_predict": 600
+        }
       }
     ]
 
@@ -32,7 +38,13 @@ endpoint_descriptions:
         "title": "Team Standup",
         "date": "2025-07-15",
         "language": "en",
-        "number_of_speakers": 3
+        "number_of_speakers": 3,
+        "language_model": "llama3.2",
+        "prompt": "Custom prompt for summarization",
+        "options": {
+          "temperature": 0.2,
+          "num_predict": 600
+        }
       }
     ]
     </pre>
@@ -44,6 +56,9 @@ endpoint_descriptions:
     <b>Optional fields:</b>
     - language: string (e.g., "en", "es")
     - number_of_speakers: integer
+    - language_model: string (default: "llama3.2") - Language model for summarization
+    - prompt: string - Custom prompt for the language model
+    - options: object - Options for the language model (e.g., temperature, num_predict)
 
   get_meetings: |
     Retrieve all meetings with optional filtering.
@@ -77,6 +92,23 @@ openapi_schemas:
                       type: string
                     number_of_speakers:
                       type: integer
+                    language_model:
+                      type: string
+                      description: "Language model for summarization"
+                      default: "llama3.2"
+                    prompt:
+                      type: string
+                      description: "Custom prompt for the language model"
+                    options:
+                      type: object
+                      description: "Options for the language model"
+                      properties:
+                        temperature:
+                          type: number
+                          default: 0.2
+                        num_predict:
+                          type: integer
+                          default: 600
                   required:
                     - title
                     - date
@@ -85,6 +117,10 @@ openapi_schemas:
                     date: "2025-07-15"
                     language: "es"
                     number_of_speakers: 2
+                    language_model: "llama3.2"
+                    options:
+                      temperature: 0.2
+                      num_predict: 600
                 description: "Metadata corresponding to each meeting"
               audios:
                 type: array
