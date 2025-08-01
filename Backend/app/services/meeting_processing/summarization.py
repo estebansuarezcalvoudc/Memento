@@ -9,17 +9,17 @@ _logger = setup_logger(__name__)
 
 @log_execution_time(_logger)
 def summarize_meeting(
-    diarized_dialogue: str, 
-    language_model: str = "llama3.2", 
-    prompt: Optional[str] = None, 
-    options: Optional[dict] = None
+    diarized_dialogue: str,
+    language_model: str = "llama3.2",
+    prompt: Optional[str] = None,
+    options: Optional[dict] = None,
 ) -> str:
     if prompt is None:
         prompt = _default_prompt
-    
+
     if options is None:
         options = {"temperature": 0.2, "num_predict": 600}
-    
+
     client = ollama.Client(host=settings.ollama_url)
 
     client.pull(language_model)

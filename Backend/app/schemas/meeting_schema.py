@@ -29,14 +29,14 @@ class ProcessingConfiguration(BaseModel):
     """Configuration for meeting processing (transcription and summarization)."""
 
     language_model: Optional[str] = Field(
-        "llama3.2", description="Language model to use for summarization"
+        default="llama3.2", description="Language model to use for summarization"
     )
     prompt: Optional[str] = Field(
-        None,
+        default=None,
         description="Custom prompt for the language model. If not provided, default prompt will be used",
     )
     options: Optional[Dict[str, Any]] = Field(
-        None,
+        default=None,
         description="Options for the language model (e.g., temperature, num_predict)",
     )
 
@@ -45,8 +45,8 @@ class CreateMeetingsBatchRequest(BaseModel):
     """Request for creating multiple meetings with shared processing configuration."""
 
     meetings_metadata: List[MeetingMetadata]
-    processing_configuration: Optional[ProcessingConfiguration] = Field(
-        default=None,
+    processing_configuration: ProcessingConfiguration = Field(
+        default=ProcessingConfiguration(),
         description="Configuration for processing all meetings in this batch",
     )
 

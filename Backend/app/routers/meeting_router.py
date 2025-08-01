@@ -25,8 +25,8 @@ def _parse_meetings_batch_request(
     meetings_data: Annotated[
         str,
         Form(
-            description=create_meetings_docs.meetings_metadata_form_description,
-            example=create_meetings_docs.meetings_metadata_form_example,
+            description=create_meetings_docs.meetings_batch_description,
+            example=create_meetings_docs.meetings_batch_example,
         ),
     ],
 ) -> CreateMeetingsBatchRequest:
@@ -66,11 +66,6 @@ async def create_meetings(
         meeting_service = MeetingService(session)
         return meeting_service.create_meetings(batch_request, audio_bytes_list)
 
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=str(e),
-        )
     except Exception as e:
         _logger.error(f"Error creating meetings: {str(e)}", exc_info=True)
         _logger.error(f"Exception type: {type(e).__name__}")
