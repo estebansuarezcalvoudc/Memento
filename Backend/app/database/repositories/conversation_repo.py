@@ -14,6 +14,22 @@ from ...schemas.conversation_schema import (
     UserChatbotInteraction,
 )
 from ..models.conversation_model import ConversationModel
+from functools import wraps
+
+
+def _handle_invalid_id(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except InvalidId as e:
+            id_value = kwargs.get("id") or kwargs.get("conversation_id") or "unknown"
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"The id={id_value} is not valid",
+            ) from e
+
+    return wrapper
 
 
 class ConversationRepository:
@@ -33,28 +49,23 @@ class ConversationRepository:
         )
         return result.inserted_id
 
+    @_handle_invalid_id
     def add_user_chatbot_interaction(
         self, conversation_id: str, interaction: UserChatbotInteraction
     ) -> None:
-        try:
-            self._collection.update_one(
-                {"_id": ObjectId(conversation_id)},
-                {
-                    "$push": {
-                        "messages": {
-                            "$each": [
-                                interaction.user_message,
-                                interaction.assistant_response,
-                            ]
-                        }
+        self._collection.update_one(
+            {"_id": ObjectId(conversation_id)},
+            {
+                "$push": {
+                    "messages": {
+                        "$each": [
+                            interaction.user_message,
+                            interaction.assistant_response,
+                        ]
                     }
-                },
-            )
-        except InvalidId:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"The id={id} is not valid",
-            )
+                }
+            },
+        )
 
     def retrieve_all_conversations_metadata(self) -> list[ConversationRetrieve]:
         result = self._collection.find({}, {"messages": False})
@@ -68,16 +79,11 @@ class ConversationRepository:
             for conversation in result
         ]
 
+    @_handle_invalid_id
     def retrieve_dialogue(self, id: str) -> DialogueRetrieve:
-        try:
-            result = self._collection.find_one(
-                {"_id": ObjectId(id)}, {"_id": False, "messages": True}
-            )
-        except InvalidId:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"The id={id} is not valid",
-            )
+        result = self._collection.find_one(
+            {"_id": ObjectId(id)}, {"_id": False, "messages": True}
+        )
 
         if not result:
             raise HTTPException(
@@ -87,14 +93,9 @@ class ConversationRepository:
 
         return DialogueRetrieve(messages=result["messages"])
 
+    @_handle_invalid_id
     def delete_conversation(self, id: str) -> None:
-        try:
-            result = self._collection.delete_one({"_id": ObjectId(id)})
-        except InvalidId:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"The id={id} is not valid",
-            )
+        result = self._collection.delete_one({"_id": ObjectId(id)})
 
         if result.deleted_count == 0:
             raise HTTPException(
@@ -102,19 +103,14 @@ class ConversationRepository:
                 detail=f"Conversation with id={id} not found",
             )
 
+    @_handle_invalid_id
     def update_conversation_metadata(
         self, id: str, metadata: ConversationUpdate
     ) -> None:
-        try:
-            result = self._collection.update_one(
-                {"_id": ObjectId(id)},
-                {"$set": {"title": metadata.title}},
-            )
-        except InvalidId:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"The id={id} is not valid",
-            )
+        result = self._collection.update_one(
+            {"_id": ObjectId(id)},
+            {"$set": {"title": metadata.title}},
+        )
 
         if result.modified_count == 0:
             raise HTTPException(

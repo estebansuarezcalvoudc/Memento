@@ -45,6 +45,8 @@ async def send_message(id: str, message: str):
     try:
         conversation_service = ConversationService()
         return conversation_service.send_message(id, message)
+    except HTTPException:
+        raise
     except Exception as e:
         _logger.error(f"Error sending message: {str(e)}")
         _logger.error(f"Exception type: {type(e).__name__}")
