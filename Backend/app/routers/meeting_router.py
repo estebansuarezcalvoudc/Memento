@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from ..core.logging import setup_logger
 from ..database.config import get_db_session
 from ..schemas.meeting_schema import (
-    CreateMeetingRequest,
+    CreateMeetingsBatchRequest,
     MeetingMetadataResponse,
     MeetingResponse,
     MeetingSummaryResponse,
@@ -21,18 +21,18 @@ _logger = setup_logger(__name__)
 router = APIRouter()
 
 
-def _parse_meetings_metadata(
-    meetings_metadata: Annotated[
+def _parse_meetings_batch_request(
+    meetings_data: Annotated[
         str,
         Form(
-            description=create_meetings_docs.meetings_metadata_form_description,
-            example=create_meetings_docs.meetings_metadata_form_example,
+            description=create_meetings_docs.meetings_batch_description,
+            example=create_meetings_docs.meetings_batch_example,
         ),
     ],
-) -> list[CreateMeetingRequest]:
+) -> CreateMeetingsBatchRequest:
     try:
-        meetings_data = json.loads(meetings_metadata)
-        return [CreateMeetingRequest(**meeting) for meeting in meetings_data]
+        batch_data = json.loads(meetings_data)
+        return CreateMeetingsBatchRequest(**batch_data)
     except (json.JSONDecodeError, ValueError) as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -50,7 +50,7 @@ def _parse_meetings_metadata(
     tags=["Meeting"],
 )
 async def create_meetings(
-    meetings_list: list[CreateMeetingRequest] = Depends(_parse_meetings_metadata),
+    batch_request: CreateMeetingsBatchRequest = Depends(_parse_meetings_batch_request),
     audios: list[UploadFile] = File(
         ..., description=create_meetings_docs.audios_file_description
     ),
@@ -64,13 +64,9 @@ async def create_meetings(
         audio_bytes_list = [await audio.read() for audio in audios]
 
         meeting_service = MeetingService(session)
-        return meeting_service.create_meetings(meetings_list, audio_bytes_list)
-
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=str(e),
-        )
+        return meeting_service.create_meetings(batch_request, audio_bytes_list)
+    except HTTPException:
+        raise
     except Exception as e:
         _logger.error(f"Error creating meetings: {str(e)}", exc_info=True)
         _logger.error(f"Exception type: {type(e).__name__}")

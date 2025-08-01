@@ -1,11 +1,13 @@
 from datetime import date as date_type
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 import whisper.tokenizer  # whisperx uses whisper's tokenizer
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
-class CreateMeetingRequest(BaseModel):
+class MeetingMetadata(BaseModel):
+    """Basic meeting metadata without processing configuration."""
+
     title: str
     date: date_type
     language: Optional[str] = Field(None, description="Language code for transcription")
@@ -21,6 +23,32 @@ class CreateMeetingRequest(BaseModel):
                 f"Supported languages: {supported_languages}"
             )
         return language
+
+
+class ProcessingConfiguration(BaseModel):
+    """Configuration for meeting processing (transcription and summarization)."""
+
+    language_model: Optional[str] = Field(
+        default="llama3.2", description="Language model to use for summarization"
+    )
+    prompt: Optional[str] = Field(
+        default=None,
+        description="Custom prompt for the language model. If not provided, default prompt will be used",
+    )
+    options: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Options for the language model (e.g., temperature, num_predict)",
+    )
+
+
+class CreateMeetingsBatchRequest(BaseModel):
+    """Request for creating multiple meetings with shared processing configuration."""
+
+    meetings_metadata: List[MeetingMetadata]
+    processing_configuration: ProcessingConfiguration = Field(
+        default=ProcessingConfiguration(),
+        description="Configuration for processing all meetings in this batch",
+    )
 
 
 class UpdateMeetingMetadata(BaseModel):

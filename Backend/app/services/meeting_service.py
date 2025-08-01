@@ -1,17 +1,19 @@
 import tempfile
-from typing import List
 
 import whisperx
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from ..core.logging import setup_logger
 from ..database.repositories.meeting_repo import MeetingRepository
 from ..schemas.meeting_schema import (
-    CreateMeetingRequest,
+    CreateMeetingsBatchRequest,
+    MeetingMetadata,
     MeetingMetadataResponse,
     MeetingResponse,
     MeetingSummaryResponse,
     MeetingTranscriptionResponse,
+    ProcessingConfiguration,
     UpdateMeetingMetadata,
 )
 from .meeting_processing.gpu_utils import get_device
@@ -35,23 +37,31 @@ class MeetingService:
 
     def create_meetings(
         self,
-        meetings_list: List[CreateMeetingRequest],
-        audios_bytes: List[bytes],
-    ) -> List[MeetingResponse]:
-        _logger.debug(f"Processing {len(meetings_list)} meetings")
+        batch_request: CreateMeetingsBatchRequest,
+        audio_bytes_list: list[bytes],
+    ) -> list[MeetingResponse]:
+        _logger.debug(f"Processing {len(batch_request.meetings_metadata)} meetings")
 
-        if len(meetings_list) != len(audios_bytes):
-            raise ValueError(
-                "The number of metadata objects must match the number of audio files"
+        if len(batch_request.meetings_metadata) != len(audio_bytes_list):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="The number of metadata objects must match the number of audio files",
             )
 
         return [
-            self._process_single_meeting(metadata, audio_bytes)
-            for metadata, audio_bytes in zip(meetings_list, audios_bytes)
+            self._process_single_meeting(
+                metadata, audio_bytes, batch_request.processing_configuration
+            )
+            for metadata, audio_bytes in zip(
+                batch_request.meetings_metadata, audio_bytes_list
+            )
         ]
 
     def _process_single_meeting(
-        self, meeting_metadata: CreateMeetingRequest, audio_bytes: bytes
+        self,
+        meeting_metadata: MeetingMetadata,
+        audio_bytes: bytes,
+        processing_config: ProcessingConfiguration,
     ) -> MeetingResponse:
         _logger.debug(f"Processing meeting: {meeting_metadata.title}")
 
@@ -65,7 +75,12 @@ class MeetingService:
             self.model_size,
         )
 
-        summary = summarize_meeting(transcription)
+        summary = summarize_meeting(
+            transcription,
+            language_model=processing_config.language_model,
+            prompt=processing_config.prompt,
+            options=processing_config.options,
+        )
 
         return self.repository.create_meeting(meeting_metadata, transcription, summary)
 
@@ -75,7 +90,7 @@ class MeetingService:
             temp_file.flush()
             return whisperx.load_audio(temp_file.name)
 
-    def get_all_meetings_metadata(self) -> List[MeetingMetadataResponse]:
+    def get_all_meetings_metadata(self) -> list[MeetingMetadataResponse]:
         _logger.debug("Retrieving all meetings")
         return self.repository.retrieve_all_meetings_metadata()
 
