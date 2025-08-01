@@ -23,7 +23,7 @@ def _handle_invalid_id(func):
         try:
             return func(*args, **kwargs)
         except InvalidId as e:
-            id_value = kwargs.get("id") or kwargs.get("conversation_id") or "unknown"
+            id_value = kwargs.get("id") or "unknown"
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"The id={id_value} is not valid",
@@ -51,10 +51,10 @@ class ConversationRepository:
 
     @_handle_invalid_id
     def add_user_chatbot_interaction(
-        self, conversation_id: str, interaction: UserChatbotInteraction
+        self, id: str, interaction: UserChatbotInteraction
     ) -> None:
         self._collection.update_one(
-            {"_id": ObjectId(conversation_id)},
+            {"_id": ObjectId(id)},
             {
                 "$push": {
                     "messages": {
