@@ -1,15 +1,15 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from ..models.meeting_model import MeetingMetadata, MeetingSummary, MeetingTranscription
+from ...schemas.meeting_schema import MeetingMetadata as MeetingMetadataSchema
 from ...schemas.meeting_schema import (
-    CreateMeetingRequest,
-    UpdateMeetingMetadata,
     MeetingMetadataResponse,
+    MeetingResponse,
     MeetingSummaryResponse,
     MeetingTranscriptionResponse,
-    MeetingResponse,
+    UpdateMeetingMetadata,
 )
+from ..models.meeting_model import MeetingMetadata, MeetingSummary, MeetingTranscription
 
 
 class MeetingRepository:
@@ -22,7 +22,7 @@ class MeetingRepository:
         self.session = session
 
     def create_meeting(
-        self, meeting: CreateMeetingRequest, transcription: str, summary: str
+        self, meeting: MeetingMetadataSchema, transcription: str, summary: str
     ) -> MeetingResponse:
         meeting_metadata = MeetingMetadata(title=meeting.title, date=meeting.date)
         self.session.add(meeting_metadata)

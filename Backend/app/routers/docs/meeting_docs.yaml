@@ -3,18 +3,28 @@
 
 # Form field descriptions (shared across endpoints)
 form_descriptions:
-  meetings_metadata: "JSON array of CreateMeeting objects. Copy and paste the example from the endpoint description above."
+  meetings_metadata: "JSON object containing meetings_metadata array and optional processing_configuration. Copy and paste the example from the endpoint description above."
   audios: "Audio files corresponding to each meeting"
 
 # Form field examples (shared across endpoints)
 form_examples:
   meetings_metadata: |
-    [
-      {
-        "title": "Team Standup",
-        "date": "2025-07-15",
-        "language": "en",
-        "number_of_speakers": 3,
+    {
+      "meetings_metadata": [
+        {
+          "title": "Team Standup",
+          "date": "2025-07-15",
+          "language": "en",
+          "number_of_speakers": 3
+        },
+        {
+          "title": "Project Review",
+          "date": "2025-07-16",
+          "language": "en",
+          "number_of_speakers": 2
+        }
+      ],
+      "processing_configuration": {
         "language_model": "llama3.2",
         "prompt": "Custom prompt for summarization",
         "options": {
@@ -22,23 +32,33 @@ form_examples:
           "num_predict": 600
         }
       }
-    ]
+    }
 
 # Endpoint-specific documentation
 endpoint_descriptions:
   create_meetings: |
     Create meetings and process them with audio files.
 
-    <b>meetings_metadata</b> should be a JSON string containing an array of meeting objects.
+    <b>meetings_data</b> should be a JSON string containing a batch request object with meetings metadata array and optional processing configuration.
 
     <b>Example:</b>
     <pre>
-    [
-      {
-        "title": "Team Standup",
-        "date": "2025-07-15",
-        "language": "en",
-        "number_of_speakers": 3,
+    {
+      "meetings_metadata": [
+        {
+          "title": "Team Standup",
+          "date": "2025-07-15",
+          "language": "en",
+          "number_of_speakers": 3
+        },
+        {
+          "title": "Project Review", 
+          "date": "2025-07-16",
+          "language": "en",
+          "number_of_speakers": 2
+        }
+      ],
+      "processing_configuration": {
         "language_model": "llama3.2",
         "prompt": "Custom prompt for summarization",
         "options": {
@@ -46,19 +66,23 @@ endpoint_descriptions:
           "num_predict": 600
         }
       }
-    ]
+    }
     </pre>
 
-    <b>Required fields:</b>
-    - title: string
-    - date: string (YYYY-MM-DD format)
+    <b>Structure:</b>
+    - meetings_metadata: Array of meeting objects (required)
+    - processing_configuration: Shared configuration for all meetings (optional)
 
-    <b>Optional fields:</b>
-    - language: string (e.g., "en", "es")
-    - number_of_speakers: integer
+    <b>Meeting metadata fields (per meeting):</b>
+    - title: string (required)
+    - date: string in YYYY-MM-DD format (required)
+    - language: string, e.g., "en", "es" (optional)
+    - number_of_speakers: integer (optional)
+
+    <b>Processing configuration fields (applied to all meetings):</b>
     - language_model: string (default: "llama3.2") - Language model for summarization
-    - prompt: string - Custom prompt for the language model
-    - options: object - Options for the language model (e.g., temperature, num_predict)
+    - prompt: string - Custom prompt for the language model (optional)
+    - options: object - Options for the language model like temperature, num_predict (optional)
 
   get_meetings: |
     Retrieve all meetings with optional filtering.
@@ -78,50 +102,60 @@ openapi_schemas:
           schema:
             type: object
             properties:
-              meetings_metadata:
+              meetings_data:
                 type: object
-                items:
-                  type: object
-                  properties:
-                    title:
-                      type: string
-                    date:
-                      type: string
-                      format: date
-                    language:
-                      type: string
-                    number_of_speakers:
-                      type: integer
-                    language_model:
-                      type: string
-                      description: "Language model for summarization"
-                      default: "llama3.2"
-                    prompt:
-                      type: string
-                      description: "Custom prompt for the language model"
-                    options:
+                properties:
+                  meetings_metadata:
+                    type: array
+                    items:
                       type: object
-                      description: "Options for the language model"
                       properties:
-                        temperature:
-                          type: number
-                          default: 0.2
-                        num_predict:
+                        title:
+                          type: string
+                        date:
+                          type: string
+                          format: date
+                        language:
+                          type: string
+                        number_of_speakers:
                           type: integer
-                          default: 600
-                  required:
-                    - title
-                    - date
+                      required:
+                        - title
+                        - date
+                  processing_configuration:
+                    type: object
+                    properties:
+                      language_model:
+                        type: string
+                        description: "Language model for summarization"
+                        default: "llama3.2"
+                      prompt:
+                        type: string
+                        description: "Custom prompt for the language model"
+                      options:
+                        type: object
+                        description: "Options for the language model"
+                        properties:
+                          temperature:
+                            type: number
+                            default: 0.2
+                          num_predict:
+                            type: integer
+                            default: 600
+                required:
+                  - meetings_metadata
                 default:
-                  - title: "My first meeting"
-                    date: "2025-07-15"
-                    language: "es"
-                    number_of_speakers: 2
+                  meetings_metadata:
+                    - title: "My first meeting"
+                      date: "2025-07-15"
+                      language: "es"
+                      number_of_speakers: 2
+                  processing_configuration:
                     language_model: "llama3.2"
                     options:
                       temperature: 0.2
                       num_predict: 600
-                description: "Metadata corresponding to each meeting"
+                description: "Batch request with meetings metadata and processing configuration"
               audios:
                 type: array
                 items:
@@ -129,5 +163,5 @@ openapi_schemas:
                   format: binary
                 description: "Audio files corresponding to each meeting"
             required:
-              - meetings_metadata
+              - meetings_data
               - audios

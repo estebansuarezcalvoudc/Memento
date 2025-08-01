@@ -1,5 +1,5 @@
 import tempfile
-from typing import List
+from typing import List, Optional
 
 import whisperx
 from sqlalchemy.orm import Session
@@ -7,11 +7,13 @@ from sqlalchemy.orm import Session
 from ..core.logging import setup_logger
 from ..database.repositories.meeting_repo import MeetingRepository
 from ..schemas.meeting_schema import (
-    CreateMeetingRequest,
+    CreateMeetingsBatchRequest,
+    MeetingMetadata,
     MeetingMetadataResponse,
     MeetingResponse,
     MeetingSummaryResponse,
     MeetingTranscriptionResponse,
+    ProcessingConfiguration,
     UpdateMeetingMetadata,
 )
 from .meeting_processing.gpu_utils import get_device
@@ -35,44 +37,58 @@ class MeetingService:
 
     def create_meetings(
         self,
-        meetings_list: List[CreateMeetingRequest],
+        batch_request: CreateMeetingsBatchRequest,
         audios_bytes: List[bytes],
     ) -> List[MeetingResponse]:
-        _logger.debug(f"Processing {len(meetings_list)} meetings")
+        _logger.debug(f"Processing {len(batch_request.meetings_metadata)} meetings")
 
-        if len(meetings_list) != len(audios_bytes):
+        if len(batch_request.meetings_metadata) != len(audios_bytes):
             raise ValueError(
                 "The number of metadata objects must match the number of audio files"
             )
 
+        # Use default configuration if none provided
+        processing_config = batch_request.processing_configuration
+
         return [
-            self._process_single_meeting(meeting_request, audio_bytes)
-            for meeting_request, audio_bytes in zip(meetings_list, audios_bytes)
+            self._process_single_meeting_with_config(
+                metadata, audio_bytes, processing_config
+            )
+            for metadata, audio_bytes in zip(
+                batch_request.meetings_metadata, audios_bytes
+            )
         ]
 
-    def _process_single_meeting(
-        self, meeting_request: CreateMeetingRequest, audio_bytes: bytes
+    def _process_single_meeting_with_config(
+        self,
+        meeting_metadata: MeetingMetadata,
+        audio_bytes: bytes,
+        processing_config: Optional[ProcessingConfiguration],
     ) -> MeetingResponse:
-        _logger.debug(f"Processing meeting: {meeting_request.title}")
+        _logger.debug(f"Processing meeting: {meeting_metadata.title}")
 
         audio = self._get_audio_from_bytes(audio_bytes)
 
         transcription = get_transcribed_conversation(
-            meeting_request,
+            meeting_metadata,
             audio,
             self.device,
             self.compute_type,
             self.model_size,
         )
 
+        # Use processing config values or defaults
+        language_model = (
+            processing_config.language_model if processing_config else "llama3.2"
+        )
+        prompt = processing_config.prompt if processing_config else None
+        options = processing_config.options if processing_config else None
+
         summary = summarize_meeting(
-            transcription,
-            language_model=meeting_request.language_model,
-            prompt=meeting_request.prompt,
-            options=meeting_request.options
+            transcription, language_model=language_model, prompt=prompt, options=options
         )
 
-        return self.repository.create_meeting(meeting_request, transcription, summary)
+        return self.repository.create_meeting(meeting_metadata, transcription, summary)
 
     def _get_audio_from_bytes(self, audio_bytes: bytes):
         with tempfile.NamedTemporaryFile(suffix=".wav") as temp_file:
