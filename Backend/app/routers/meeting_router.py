@@ -65,7 +65,8 @@ async def create_meetings(
 
         meeting_service = MeetingService(session)
         return meeting_service.create_meetings(batch_request, audio_bytes_list)
-
+    except HTTPException:
+        raise
     except Exception as e:
         _logger.error(f"Error creating meetings: {str(e)}", exc_info=True)
         _logger.error(f"Exception type: {type(e).__name__}")
