@@ -1,4 +1,5 @@
-from typing import Any, Callable
+from functools import wraps
+from typing import Any, Callable, Optional
 
 import torch
 
@@ -7,25 +8,43 @@ from ...core.logging import setup_logger
 _logger = setup_logger(__name__)
 
 
-def try_on_gpu(device, function: Callable[..., Any], *args, **kwargs):
-    try:
-        return function(*args, **kwargs)
+def try_on_gpu(function: Callable[..., Any]):
+    """
+    Decorator that tries to execute a function on GPU and falls back to CPU on failure.
 
-    except Exception as e:
-        if device != "cuda":
-            raise e
+    Usage:
+    @try_on_gpu
+    def my_function(args, device="cuda"):
+        # function implementation
 
-        _logger.warning(
-            f"{function.__name__.upper()} failed on GPU: {e}. Retrying on CPU"
-        )
+    Args:
+        function: The function to wrap
+    """
 
-        args = _replace_device_in_args(args, device)
-        kwargs = _replace_device_in_kwargs(kwargs)
+    @wraps(function)
+    def wrapper(*args, **kwargs):
+        target_device = kwargs.get("device") or get_device()
 
-        return function(*args, **kwargs)
+        try:
+            return function(*args, **kwargs)
 
-    finally:
-        clear_gpu_cache(device)
+        except Exception as e:
+            if target_device != "cuda":
+                raise e
+
+            _logger.warning(
+                f"{function.__name__.upper()} failed on GPU: {e}. Retrying on CPU"
+            )
+
+            new_args = _replace_device_in_args(args, target_device)
+            new_kwargs = _replace_device_in_kwargs(kwargs)
+
+            return function(*new_args, **new_kwargs)
+
+        finally:
+            clear_gpu_cache(target_device)
+
+    return wrapper
 
 
 def _replace_device_in_args(args: tuple, device) -> tuple:

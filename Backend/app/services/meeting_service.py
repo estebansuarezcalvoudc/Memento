@@ -58,8 +58,7 @@ class MeetingService:
 
         audio = self._get_audio_from_bytes(audio_bytes)
 
-        transcription = log_execution_time(
-            get_transcribed_conversation,
+        transcription = get_transcribed_conversation(
             meeting_metadata,
             audio,
             self.device,
@@ -67,7 +66,7 @@ class MeetingService:
             self.model_size,
         )
 
-        summary = log_execution_time(summarize_meeting, transcription)
+        summary = summarize_meeting(transcription)
 
         return self.repository.create_meeting(meeting_metadata, transcription, summary)
 

@@ -1,8 +1,10 @@
 import ollama
 
 from ...core.settings import settings
+from ...utils.log_execution_time import log_execution_time
 
 
+@log_execution_time
 def summarize_meeting(diarized_dialogue: str) -> str:
     client = ollama.Client(host=settings.ollama_url)
 
