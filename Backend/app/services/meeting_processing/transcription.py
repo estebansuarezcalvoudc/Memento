@@ -1,12 +1,14 @@
 import whisperx
 import whisperx.diarize
 
+from ...core.logging import log_execution_time, setup_logger
 from ...core.settings import settings
-from ...utils.log_execution_time import log_execution_time
 from .gpu_utils import try_on_gpu
 
+_logger = setup_logger(__name__)
 
-@log_execution_time
+
+@log_execution_time(_logger)
 def get_transcribed_conversation(meeting, audio, device, compute_type, model_size):
     transcription = _transcribe_meeting(
         audio, meeting.language, device, compute_type, model_size
@@ -23,7 +25,7 @@ def get_transcribed_conversation(meeting, audio, device, compute_type, model_siz
     return conversation
 
 
-@log_execution_time
+@log_execution_time(_logger)
 @try_on_gpu
 def _transcribe_meeting(
     audio, language=None, device="cpu", compute_type="int8", model_size="tiny"
@@ -41,7 +43,7 @@ def _transcribe_meeting(
     return model.transcribe(audio, batch_size=10)
 
 
-@log_execution_time
+@log_execution_time(_logger)
 @try_on_gpu
 def _align_meeting(transcription, audio, device="cpu"):
     model_a, metadata = whisperx.load_align_model(language_code="es", device=device)
@@ -56,7 +58,7 @@ def _align_meeting(transcription, audio, device="cpu"):
     )
 
 
-@log_execution_time
+@log_execution_time(_logger)
 @try_on_gpu
 def _diarize_meeting(audio, device="cpu", number_of_speakers=None):
     if number_of_speakers:
@@ -74,12 +76,12 @@ def _diarize_meeting(audio, device="cpu", number_of_speakers=None):
     return diarize_model(audio)
 
 
-@log_execution_time
+@log_execution_time(_logger)
 def _assign_word_speakers(segments, aligned):
     return whisperx.assign_word_speakers(segments, aligned)
 
 
-@log_execution_time
+@log_execution_time(_logger)
 def _create_diarized_dialogue(diarized_conversation):
     segments = diarized_conversation["segments"]
     current_speaker = None
