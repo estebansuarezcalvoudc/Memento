@@ -172,27 +172,6 @@ async def retrieve_meeting_transcription(
         )
 
 
-@router.delete(
-    "/meetings/{id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete a meeting",
-    tags=["Meeting"],
-)
-async def delete_meeting(id: int, session: Session = Depends(get_db_session)):
-    try:
-        meeting_service = MeetingService(session)
-        meeting_service.delete_meeting(id)
-    except HTTPException:
-        raise
-    except Exception as e:
-        _logger.error(f"Error deleting meeting {id}: {str(e)}")
-        _logger.error(f"Exception type: {type(e).__name__}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error while deleting meeting",
-        )
-
-
 @router.patch(
     "/meetings/{id}",
     response_model=MeetingMetadataResponse,
@@ -216,4 +195,25 @@ async def update_meeting(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error while updating meeting",
+        )
+
+
+@router.delete(
+    "/meetings/{id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a meeting",
+    tags=["Meeting"],
+)
+async def delete_meeting(id: int, session: Session = Depends(get_db_session)):
+    try:
+        meeting_service = MeetingService(session)
+        meeting_service.delete_meeting(id)
+    except HTTPException:
+        raise
+    except Exception as e:
+        _logger.error(f"Error deleting meeting {id}: {str(e)}")
+        _logger.error(f"Exception type: {type(e).__name__}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error while deleting meeting",
         )
