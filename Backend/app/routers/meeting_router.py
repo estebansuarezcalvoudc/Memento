@@ -56,8 +56,6 @@ async def create_meetings(
     ),
     session: Session = Depends(get_db_session),
 ):
-    _logger.debug("Create meetings was called")
-
     _validate_audio_files(audios)
 
     try:
