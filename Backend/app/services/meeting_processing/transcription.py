@@ -20,9 +20,7 @@ def get_transcribed_conversation(meeting, audio, device, compute_type, model_siz
 
     diarized_conversation = _assign_word_speakers(segments, aligned)
 
-    conversation = _create_diarized_dialogue(diarized_conversation)
-
-    return conversation
+    return _create_diarized_dialogue(diarized_conversation)
 
 
 @log_execution_time(_logger)
