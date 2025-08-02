@@ -25,8 +25,8 @@ def _handle_invalid_id(func):
         except InvalidId as e:
             id_value = kwargs.get("id") or "unknown"
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"The id={id_value} is not valid",
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"The id={id_value} is not a valid id",
             ) from e
 
     return wrapper
