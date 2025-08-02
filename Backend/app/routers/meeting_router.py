@@ -61,7 +61,7 @@ async def create_meetings(
         audio_bytes_list = [await audio.read() for audio in audios]
 
         meeting_service = MeetingService(session)
-        return meeting_service.create_meetings(batch_request, audio_bytes_list)
+        return meeting_service.process_meetings(batch_request, audio_bytes_list)
     except HTTPException:
         raise
     except Exception as e:
@@ -118,7 +118,7 @@ async def retrieve_all_meetings_metadata(
 ) -> list[MeetingMetadataResponse]:
     try:
         meeting_service = MeetingService(session)
-        return meeting_service.get_all_meetings_metadata()
+        return meeting_service.retrieve_all_meetings_metadata()
     except Exception as e:
         _logger.error(f"Error retrieving meetings: {str(e)}")
         _logger.error(f"Exception type: {type(e).__name__}")
@@ -139,7 +139,7 @@ async def retrieve_meeting_summary(
 ) -> MeetingSummaryResponse:
     try:
         meeting_service = MeetingService(session)
-        return meeting_service.get_meeting_summary(id)
+        return meeting_service.retrieve_meeting_summary(id)
     except HTTPException:
         raise
     except Exception as e:
@@ -162,7 +162,7 @@ async def retrieve_meeting_transcription(
 ) -> MeetingTranscriptionResponse:
     try:
         meeting_service = MeetingService(session)
-        return meeting_service.get_meeting_transcription(id)
+        return meeting_service.retrieve_meeting_transcription(id)
     except HTTPException:
         raise
     except Exception as e:

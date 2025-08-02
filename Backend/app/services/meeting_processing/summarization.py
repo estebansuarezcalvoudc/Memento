@@ -8,7 +8,7 @@ _logger = setup_logger(__name__)
 
 
 @log_execution_time(_logger)
-def summarize_meeting(
+def get_meeting_summary(
     diarized_dialogue: str,
     language_model: str = "llama3.2",
     prompt: Optional[str] = None,

@@ -21,7 +21,7 @@ class MeetingRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def create_meeting(
+    def store_meeting(
         self, meeting: MeetingMetadataSchema, transcription: str, summary: str
     ) -> MeetingResponse:
         meeting_metadata = MeetingMetadata(title=meeting.title, date=meeting.date)
