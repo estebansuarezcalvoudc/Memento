@@ -94,16 +94,6 @@ class ConversationRepository:
         return DialogueRetrieve(messages=result["messages"])
 
     @_handle_invalid_id
-    def delete_conversation(self, id: str) -> None:
-        result = self._collection.delete_one({"_id": ObjectId(id)})
-
-        if result.deleted_count == 0:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Conversation with id={id} not found",
-            )
-
-    @_handle_invalid_id
     def update_conversation_metadata(
         self, id: str, metadata: ConversationUpdate
     ) -> None:
@@ -113,6 +103,16 @@ class ConversationRepository:
         )
 
         if result.modified_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Conversation with id={id} not found",
+            )
+
+    @_handle_invalid_id
+    def delete_conversation(self, id: str) -> None:
+        result = self._collection.delete_one({"_id": ObjectId(id)})
+
+        if result.deleted_count == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Conversation with id={id} not found",

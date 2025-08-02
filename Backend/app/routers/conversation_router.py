@@ -92,6 +92,23 @@ async def retrieve_dialogue(id: str) -> DialogueRetrieve:
         )
 
 
+@router.put(
+    "/conversations/{id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Update the metadata of a conversation",
+    tags=["Conversations"],
+)
+async def update_conversation_metadata(id: str, metadata: ConversationUpdate) -> None:
+    try:
+        conversation_service = ConversationService()
+        conversation_service.update_conversation_metadata(id, metadata)
+    except HTTPException:
+        raise
+    except Exception as e:
+        _logger.error(f"Error updating conversation with id={id}: {str(e)}")
+        _logger.error(f"Exception type: {type(e).__name__}")
+
+
 @router.delete(
     "/conversations/{id}",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -111,20 +128,3 @@ async def delete_conversation(id: str) -> None:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error while deleting conversation with id={id}",
         )
-
-
-@router.put(
-    "/conversations/{id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    summary="Update the metadata of a conversation",
-    tags=["Conversations"],
-)
-async def update_conversation_metadata(id: str, metadata: ConversationUpdate) -> None:
-    try:
-        conversation_service = ConversationService()
-        conversation_service.update_conversation_metadata(id, metadata)
-    except HTTPException:
-        raise
-    except Exception as e:
-        _logger.error(f"Error updating conversation with id={id}: {str(e)}")
-        _logger.error(f"Exception type: {type(e).__name__}")
