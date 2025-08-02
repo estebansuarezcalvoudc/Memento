@@ -107,8 +107,10 @@ async def update_conversation_metadata(id: str, metadata: ConversationUpdate) ->
     except Exception as e:
         _logger.error(f"Error updating conversation with id={id}: {str(e)}")
         _logger.error(f"Exception type: {type(e).__name__}")
-
-
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal server error while updating conversation with id={id}",
+        )
 @router.delete(
     "/conversations/{id}",
     status_code=status.HTTP_204_NO_CONTENT,
