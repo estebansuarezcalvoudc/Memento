@@ -12,7 +12,7 @@ participant "Meeting Repository" as Repository
 Client -> Router : POST /meetings
 
 activate Router
-Router -> Service : create_meetings
+Router -> Service : process_meetings
 
 activate Service
 loop
@@ -20,9 +20,10 @@ loop
     Service -> Transcriber : get_transcribed_conversation
 
     activate Transcriber
-    Transcriber -> Transcriber: _do_transcription
+    Transcriber -> Transcriber: _transcribe_meeting
     Transcriber -> Transcriber: _align_meeting
     Transcriber -> Transcriber: _diarize_meeting
+    Transcriber -> Transcriber: _assign_word_speakers
     Transcriber -> Transcriber: _create_diarized_dialogue
     Service <-- Transcriber: transcription
     deactivate Transcriber
@@ -32,7 +33,7 @@ loop
     Service <-- Summarizer: summary
     deactivate Summarizer
 
-    Service -> Repository: create_meeting
+    Service -> Repository: store_meeting
     activate Repository
     Service <-- Repository: meeting_response
     deactivate Repository

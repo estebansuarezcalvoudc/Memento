@@ -10,7 +10,7 @@ participant "Meeting Repository" as Repository
 Client -> Router: GET /meetings
 
 activate Router
-Router -> Service: get_all_meetings_metadata
+Router -> Service: retrieve_all_meetings_metadata
 
 activate Service
 Service-> Repository: retrieve_all_meetings_metadata

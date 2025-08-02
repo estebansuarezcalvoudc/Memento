@@ -10,7 +10,7 @@ participant "Meeting Repository" as Repository
 Client -> Router: Get /meetings/summary{id}
 
 activate Router
-Router -> Service: get_meeting_summary
+Router -> Service: retrieve_meeting_summary
 
 activate Service
 Service -> Repository: retrieve_meeting_summary
