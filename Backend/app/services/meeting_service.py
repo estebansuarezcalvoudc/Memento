@@ -17,7 +17,7 @@ from ..schemas.meeting_schema import (
     UpdateMeetingMetadata,
 )
 from .meeting_processing.gpu_utils import get_device
-from .meeting_processing.summarization import summarize_meeting
+from .meeting_processing.summarization import get_meeting_summary
 from .meeting_processing.transcription import get_transcribed_conversation
 
 _logger = setup_logger(__name__)
@@ -35,7 +35,7 @@ class MeetingService:
         self.compute_type = "int8"
         self.model_size = "tiny"
 
-    def create_meetings(
+    def process_meetings(
         self,
         batch_request: CreateMeetingsBatchRequest,
         audio_bytes_list: list[bytes],
@@ -75,14 +75,14 @@ class MeetingService:
             self.model_size,
         )
 
-        summary = summarize_meeting(
+        summary = get_meeting_summary(
             transcription,
             language_model=processing_config.language_model,
             prompt=processing_config.prompt,
             options=processing_config.options,
         )
 
-        return self.repository.create_meeting(meeting_metadata, transcription, summary)
+        return self.repository.store_meeting(meeting_metadata, transcription, summary)
 
     def _get_audio_from_bytes(self, audio_bytes: bytes):
         with tempfile.NamedTemporaryFile(suffix=".wav") as temp_file:
@@ -90,23 +90,21 @@ class MeetingService:
             temp_file.flush()
             return whisperx.load_audio(temp_file.name)
 
-    def get_all_meetings_metadata(self) -> list[MeetingMetadataResponse]:
+    def retrieve_all_meetings_metadata(self) -> list[MeetingMetadataResponse]:
         _logger.debug("Retrieving all meetings")
         return self.repository.retrieve_all_meetings_metadata()
 
-    def get_meeting_summary(self, id: int) -> MeetingSummaryResponse:
+    def retrieve_meeting_summary(self, id: int) -> MeetingSummaryResponse:
         _logger.debug(f"Retrieving summary of meeting with id={id}")
         return self.repository.retrieve_meeting_summary(id)
 
-    def get_meeting_transcription(self, id: int) -> MeetingTranscriptionResponse:
+    def retrieve_meeting_transcription(self, id: int) -> MeetingTranscriptionResponse:
         _logger.debug(f"Retrieving transcription of meeting with id={id}")
         return self.repository.retrieve_meeting_transcription(id)
 
-    def update_meeting(
-        self, id: int, meeting_data: UpdateMeetingMetadata
-    ) -> MeetingMetadataResponse:
+    def update_meeting(self, id: int, meeting_data: UpdateMeetingMetadata) -> None:
         _logger.debug(f"Updating meeting with ID: {id}")
-        return self.repository.update_meeting_metadata(id, meeting_data)
+        self.repository.update_meeting_metadata(id, meeting_data)
 
     def delete_meeting(self, meeting_id: int) -> None:
         _logger.debug(f"Deleting meeting with ID: {meeting_id}")

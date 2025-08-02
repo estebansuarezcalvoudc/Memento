@@ -25,8 +25,8 @@ def _handle_invalid_id(func):
         except InvalidId as e:
             id_value = kwargs.get("id") or "unknown"
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"The id={id_value} is not valid",
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"The id={id_value} is not a valid id",
             ) from e
 
     return wrapper
@@ -94,16 +94,6 @@ class ConversationRepository:
         return DialogueRetrieve(messages=result["messages"])
 
     @_handle_invalid_id
-    def delete_conversation(self, id: str) -> None:
-        result = self._collection.delete_one({"_id": ObjectId(id)})
-
-        if result.deleted_count == 0:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Conversation with id={id} not found",
-            )
-
-    @_handle_invalid_id
     def update_conversation_metadata(
         self, id: str, metadata: ConversationUpdate
     ) -> None:
@@ -113,6 +103,16 @@ class ConversationRepository:
         )
 
         if result.modified_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Conversation with id={id} not found",
+            )
+
+    @_handle_invalid_id
+    def delete_conversation(self, id: str) -> None:
+        result = self._collection.delete_one({"_id": ObjectId(id)})
+
+        if result.deleted_count == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Conversation with id={id} not found",

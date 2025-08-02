@@ -20,9 +20,7 @@ class ConversationService(metaclass=SingletonMeta):
         self._repository = ConversationRepository()
 
     def create_conversation(self, message: str) -> str:
-        id = self._repository.create_conversation(
-            ConversationCreate(title="New chat")
-        )
+        id = self._repository.create_conversation(ConversationCreate(title="New chat"))
 
         return self.send_message(id, message)
 
@@ -59,8 +57,8 @@ class ConversationService(metaclass=SingletonMeta):
     def retrieve_dialogue(self, id: str) -> DialogueRetrieve:
         return self._repository.retrieve_dialogue(id)
 
-    def delete_conversation(self, id: str) -> None:
-        return self._repository.delete_conversation(id)
-
     def update_conversation_metadata(self, id: str, metadata: ConversationUpdate):
         return self._repository.update_conversation_metadata(id, metadata)
+
+    def delete_conversation(self, id: str) -> None:
+        return self._repository.delete_conversation(id)

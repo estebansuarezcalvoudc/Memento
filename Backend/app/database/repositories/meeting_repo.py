@@ -21,7 +21,7 @@ class MeetingRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def create_meeting(
+    def store_meeting(
         self, meeting: MeetingMetadataSchema, transcription: str, summary: str
     ) -> MeetingResponse:
         meeting_metadata = MeetingMetadata(title=meeting.title, date=meeting.date)
@@ -83,7 +83,7 @@ class MeetingRepository:
 
     def update_meeting_metadata(
         self, id: int, meeting_data: UpdateMeetingMetadata
-    ) -> MeetingMetadataResponse:
+    ) -> None:
         meeting = (
             self.session.query(MeetingMetadata).filter(MeetingMetadata.id == id).first()
         )
@@ -102,8 +102,6 @@ class MeetingRepository:
 
         self.session.commit()
         self.session.refresh(meeting)
-
-        return MeetingMetadataResponse.model_validate(meeting)
 
     def delete_meeting(self, id: int) -> None:
         meeting = (
