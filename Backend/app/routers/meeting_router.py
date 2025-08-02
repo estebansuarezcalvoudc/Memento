@@ -42,7 +42,6 @@ def _parse_meetings_batch_request(
 
 @router.post(
     "/meetings",
-    response_model=list[MeetingResponse],
     status_code=status.HTTP_201_CREATED,
     summary="Create meetings and process them",
     description=create_meetings_docs.description,
@@ -55,7 +54,7 @@ async def create_meetings(
         ..., description=create_meetings_docs.audios_file_description
     ),
     session: Session = Depends(get_db_session),
-):
+) -> list[MeetingResponse]:
     _validate_audio_files(audios)
 
     try:
@@ -110,12 +109,13 @@ def _validate_audio_files(audio_files: list[UploadFile]) -> None:
 
 @router.get(
     "/meetings",
-    response_model=list[MeetingMetadataResponse],
     status_code=status.HTTP_200_OK,
     summary="Retrieve all meetings",
     tags=["Meeting"],
 )
-async def retrieve_all_meetings_metadata(session: Session = Depends(get_db_session)):
+async def retrieve_all_meetings_metadata(
+    session: Session = Depends(get_db_session),
+) -> list[MeetingMetadataResponse]:
     try:
         meeting_service = MeetingService(session)
         return meeting_service.get_all_meetings_metadata()
@@ -130,11 +130,13 @@ async def retrieve_all_meetings_metadata(session: Session = Depends(get_db_sessi
 
 @router.get(
     "/meetings/summary/{id}",
-    response_model=MeetingSummaryResponse,
+    status_code=status.HTTP_200_OK,
     summary="Retrieve the summary of a meeting",
     tags=["Meeting"],
 )
-async def retrieve_meeting_summary(id: int, session: Session = Depends(get_db_session)):
+async def retrieve_meeting_summary(
+    id: int, session: Session = Depends(get_db_session)
+) -> MeetingSummaryResponse:
     try:
         meeting_service = MeetingService(session)
         return meeting_service.get_meeting_summary(id)
@@ -151,13 +153,13 @@ async def retrieve_meeting_summary(id: int, session: Session = Depends(get_db_se
 
 @router.get(
     "/meetings/transcription/{id}",
-    response_model=MeetingTranscriptionResponse,
+    status_code=status.HTTP_200_OK,
     summary="Retrieve the transcription of a meeting",
     tags=["Meeting"],
 )
 async def retrieve_meeting_transcription(
     id: int, session: Session = Depends(get_db_session)
-):
+) -> MeetingTranscriptionResponse:
     try:
         meeting_service = MeetingService(session)
         return meeting_service.get_meeting_transcription(id)
@@ -174,8 +176,7 @@ async def retrieve_meeting_transcription(
 
 @router.patch(
     "/meetings/{id}",
-    response_model=MeetingMetadataResponse,
-    status_code=status.HTTP_200_OK,
+    status_code=status.HTTP_204_NO_CONTENT,
     summary="Update a meeting",
     tags=["Meeting"],
 )
@@ -183,10 +184,10 @@ async def update_meeting(
     id: int,
     meeting_data: UpdateMeetingMetadata,
     session: Session = Depends(get_db_session),
-):
+) -> None:
     try:
         meeting_service = MeetingService(session)
-        return meeting_service.update_meeting(id, meeting_data)
+        meeting_service.update_meeting(id, meeting_data)
     except HTTPException:
         raise
     except Exception as e:
@@ -204,7 +205,7 @@ async def update_meeting(
     summary="Delete a meeting",
     tags=["Meeting"],
 )
-async def delete_meeting(id: int, session: Session = Depends(get_db_session)):
+async def delete_meeting(id: int, session: Session = Depends(get_db_session)) -> None:
     try:
         meeting_service = MeetingService(session)
         meeting_service.delete_meeting(id)

@@ -83,7 +83,7 @@ class MeetingRepository:
 
     def update_meeting_metadata(
         self, id: int, meeting_data: UpdateMeetingMetadata
-    ) -> MeetingMetadataResponse:
+    ) -> None:
         meeting = (
             self.session.query(MeetingMetadata).filter(MeetingMetadata.id == id).first()
         )
@@ -102,8 +102,6 @@ class MeetingRepository:
 
         self.session.commit()
         self.session.refresh(meeting)
-
-        return MeetingMetadataResponse.model_validate(meeting)
 
     def delete_meeting(self, id: int) -> None:
         meeting = (

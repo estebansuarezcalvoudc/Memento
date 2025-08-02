@@ -102,11 +102,9 @@ class MeetingService:
         _logger.debug(f"Retrieving transcription of meeting with id={id}")
         return self.repository.retrieve_meeting_transcription(id)
 
-    def update_meeting(
-        self, id: int, meeting_data: UpdateMeetingMetadata
-    ) -> MeetingMetadataResponse:
+    def update_meeting(self, id: int, meeting_data: UpdateMeetingMetadata) -> None:
         _logger.debug(f"Updating meeting with ID: {id}")
-        return self.repository.update_meeting_metadata(id, meeting_data)
+        self.repository.update_meeting_metadata(id, meeting_data)
 
     def delete_meeting(self, meeting_id: int) -> None:
         _logger.debug(f"Deleting meeting with ID: {meeting_id}")
