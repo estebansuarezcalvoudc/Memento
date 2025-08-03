@@ -10,6 +10,7 @@ from ..schemas.conversation_schema import (
     ConversationRetrieve,
     ConversationUpdateRequest,
     DialogueRetrieve,
+    SendMessageRequest,
 )
 from ..utils.singleton_meta import SingletonMeta
 
@@ -25,29 +26,20 @@ class ConversationService(metaclass=SingletonMeta):
         id = self._repository.store_conversation("New chat")
         return ConversationCreateResponse(
             id=id,
-            assistant_response=self.send_message(
-                id,
-                conversation_create_request.message,
-                language_model=conversation_create_request.language_model,
-            ),
+            assistant_response=self.send_message(id, conversation_create_request),
         )
 
-    def send_message(
-        self, id: str, message: str, language_model: Optional[str] = None
-    ) -> str:
-        if language_model is None:
-            language_model = "llama3.2"
-
+    def send_message(self, id: str, send_message_request: SendMessageRequest) -> str:
         client = ollama.Client(host=settings.ollama_url)
 
-        client.pull(language_model)
+        client.pull(send_message_request.language_model)
 
         conversation_history = self._repository.retrieve_dialogue(id).messages
-        user_message = {"role": "user", "content": message}
+        user_message = {"role": "user", "content": send_message_request.message}
         conversation_history.append(user_message)
 
         response = client.chat(
-            model=language_model,
+            model=send_message_request.language_model,
             messages=conversation_history,
             keep_alive=0,
         )

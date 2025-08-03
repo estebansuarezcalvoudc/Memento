@@ -28,7 +28,7 @@ class MeetingMetadata(BaseModel):
 class ProcessingConfiguration(BaseModel):
     """Configuration for meeting processing (transcription and summarization)."""
 
-    language_model: Optional[str] = Field(
+    language_model: str = Field(
         default="llama3.2", description="Language model to use for summarization"
     )
     prompt: Optional[str] = Field(

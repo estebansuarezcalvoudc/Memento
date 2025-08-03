@@ -7,6 +7,7 @@ from ..schemas.conversation_schema import (
     ConversationRetrieve,
     ConversationUpdateRequest,
     DialogueRetrieve,
+    SendMessageRequest,
 )
 from ..services.conversation_service import ConversationService
 
@@ -21,11 +22,11 @@ router = APIRouter()
     tags=["Conversations"],
 )
 async def create_conversation(
-    message: ConversationCreateRequest,
+    conversation_create_request: ConversationCreateRequest,
 ) -> ConversationCreateResponse:
     try:
         conversation_service = ConversationService()
-        return conversation_service.create_conversation(message)
+        return conversation_service.create_conversation(conversation_create_request)
     except Exception as e:
         _logger.error(f"Error creating conversation: {str(e)}")
         _logger.error(f"Exception type: {type(e).__name__}")
@@ -41,10 +42,10 @@ async def create_conversation(
     summary="Send a message to the chatbot and get a response",
     tags=["Conversations"],
 )
-async def send_message(id: str, message: str) -> str:
+async def send_message(id: str, send_message_request: SendMessageRequest) -> str:
     try:
         conversation_service = ConversationService()
-        return conversation_service.send_message(id, message)
+        return conversation_service.send_message(id, send_message_request)
     except HTTPException:
         raise
     except Exception as e:

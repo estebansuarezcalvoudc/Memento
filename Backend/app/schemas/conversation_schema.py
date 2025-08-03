@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -16,14 +15,13 @@ class ConversationRetrieve(BaseModel):
 
 class SendMessageRequest(BaseModel):
     message: str
-    language_model: Optional[str] = Field(
+    language_model: str = Field(
         default="llama3.2",
         description="Specifies which language model generates the assistant's response",
     )
 
 
-class ConversationCreateRequest(SendMessageRequest):
-    pass
+ConversationCreateRequest = SendMessageRequest
 
 
 class ConversationCreateResponse(BaseModel):
