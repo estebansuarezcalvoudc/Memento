@@ -10,7 +10,7 @@ _logger = setup_logger(__name__)
 @log_execution_time(_logger)
 def get_meeting_summary(
     diarized_dialogue: str,
-    language_model: str = "llama3.2",
+    language_model: str,
     prompt: Optional[str] = None,
     options: Optional[dict] = None,
 ) -> str:

@@ -1,11 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
-
-
-class UserChatbotInteraction(BaseModel):
-    user_message: dict[str, str]
-    assistant_response: dict[str, str]
+from pydantic import BaseModel, Field
 
 
 class DialogueRetrieve(BaseModel):
@@ -18,9 +13,21 @@ class ConversationRetrieve(BaseModel):
     started_at: datetime
 
 
-class ConversationCreate(BaseModel):
-    title: str
+class SendMessageRequest(BaseModel):
+    message: str
+    language_model: str = Field(
+        default="llama3.2",
+        description="Specifies which language model generates the assistant's response",
+    )
 
 
-class ConversationUpdate(BaseModel):
+ConversationCreateRequest = SendMessageRequest
+
+
+class ConversationCreateResponse(BaseModel):
+    id: str
+    assistant_response: str
+
+
+class ConversationUpdateRequest(BaseModel):
     title: str

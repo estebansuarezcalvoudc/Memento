@@ -2,9 +2,12 @@ from fastapi import APIRouter, HTTPException, status
 
 from ..core.logging import setup_logger
 from ..schemas.conversation_schema import (
+    ConversationCreateRequest,
+    ConversationCreateResponse,
     ConversationRetrieve,
-    ConversationUpdate,
+    ConversationUpdateRequest,
     DialogueRetrieve,
+    SendMessageRequest,
 )
 from ..services.conversation_service import ConversationService
 
@@ -18,10 +21,12 @@ router = APIRouter()
     summary="Create a new conversation",
     tags=["Conversations"],
 )
-async def create_conversation(message: str) -> str:
+async def create_conversation(
+    conversation_create_request: ConversationCreateRequest,
+) -> ConversationCreateResponse:
     try:
         conversation_service = ConversationService()
-        return conversation_service.create_conversation(message)
+        return conversation_service.create_conversation(conversation_create_request)
     except Exception as e:
         _logger.error(f"Error creating conversation: {str(e)}")
         _logger.error(f"Exception type: {type(e).__name__}")
@@ -37,10 +42,10 @@ async def create_conversation(message: str) -> str:
     summary="Send a message to the chatbot and get a response",
     tags=["Conversations"],
 )
-async def send_message(id: str, message: str) -> str:
+async def send_message(id: str, send_message_request: SendMessageRequest) -> str:
     try:
         conversation_service = ConversationService()
-        return conversation_service.send_message(id, message)
+        return conversation_service.send_message(id, send_message_request)
     except HTTPException:
         raise
     except Exception as e:
@@ -98,7 +103,9 @@ async def retrieve_dialogue(id: str) -> DialogueRetrieve:
     summary="Update the metadata of a conversation",
     tags=["Conversations"],
 )
-async def update_conversation_metadata(id: str, metadata: ConversationUpdate) -> None:
+async def update_conversation_metadata(
+    id: str, metadata: ConversationUpdateRequest
+) -> None:
     try:
         conversation_service = ConversationService()
         conversation_service.update_conversation_metadata(id, metadata)
@@ -111,6 +118,8 @@ async def update_conversation_metadata(id: str, metadata: ConversationUpdate) ->
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error while updating conversation with id={id}",
         )
+
+
 @router.delete(
     "/conversations/{id}",
     status_code=status.HTTP_204_NO_CONTENT,
