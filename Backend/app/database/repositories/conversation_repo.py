@@ -1,4 +1,5 @@
 from datetime import datetime
+from functools import wraps
 
 import pymongo
 from bson import ObjectId
@@ -7,14 +8,11 @@ from fastapi import HTTPException, status
 
 from ...core.settings import settings
 from ...schemas.conversation_schema import (
-    ConversationCreate,
     ConversationRetrieve,
     ConversationUpdate,
     DialogueRetrieve,
-    UserChatbotInteraction,
 )
 from ..models.conversation_model import ConversationModel
-from functools import wraps
 
 
 def _handle_invalid_id(func):
@@ -38,33 +36,26 @@ class ConversationRepository:
         mydb = myclient["chat_db"]
         self._collection = mydb["conversations"]
 
-    def create_conversation(self, data: ConversationCreate) -> str:
+    def store_conversation(self, conversation_title: str) -> str:
         myclient = pymongo.MongoClient(settings.mongo_url)
         mydb = myclient["chat_db"]
         self._collection = mydb["conversations"]
-        conversation = ConversationModel(title=data.title, started_at=datetime.today())
+        conversation = ConversationModel(
+            title=conversation_title, started_at=datetime.today()
+        )
 
         result = self._collection.insert_one(
             conversation.model_dump(by_alias=True, exclude={"id"})
         )
-        return result.inserted_id
+        return str(result.inserted_id)
 
     @_handle_invalid_id
     def add_user_chatbot_interaction(
-        self, id: str, interaction: UserChatbotInteraction
+        self, id: str, user_message: dict[str, str], assistant_response: dict[str, str]
     ) -> None:
         self._collection.update_one(
             {"_id": ObjectId(id)},
-            {
-                "$push": {
-                    "messages": {
-                        "$each": [
-                            interaction.user_message,
-                            interaction.assistant_response,
-                        ]
-                    }
-                }
-            },
+            {"$push": {"messages": {"$each": [user_message, assistant_response]}}},
         )
 
     def retrieve_all_conversations_metadata(self) -> list[ConversationRetrieve]:

@@ -2,7 +2,9 @@ from fastapi import APIRouter, HTTPException, status
 
 from ..core.logging import setup_logger
 from ..schemas.conversation_schema import (
+    ConversationCreateResponse,
     ConversationRetrieve,
+    ConversationCreateRequest,
     ConversationUpdate,
     DialogueRetrieve,
 )
@@ -18,7 +20,7 @@ router = APIRouter()
     summary="Create a new conversation",
     tags=["Conversations"],
 )
-async def create_conversation(message: str) -> str:
+async def create_conversation(message: ConversationCreateRequest) -> ConversationCreateResponse:
     try:
         conversation_service = ConversationService()
         return conversation_service.create_conversation(message)
@@ -111,6 +113,8 @@ async def update_conversation_metadata(id: str, metadata: ConversationUpdate) ->
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error while updating conversation with id={id}",
         )
+
+
 @router.delete(
     "/conversations/{id}",
     status_code=status.HTTP_204_NO_CONTENT,

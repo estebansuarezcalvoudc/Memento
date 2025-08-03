@@ -3,26 +3,31 @@ import ollama
 from ..core.settings import settings
 from ..database.repositories.conversation_repo import ConversationRepository
 from ..schemas.conversation_schema import (
-    ConversationCreate,
+    ConversationCreateRequest,
+    ConversationCreateResponse,
     ConversationRetrieve,
     ConversationUpdate,
     DialogueRetrieve,
-    UserChatbotInteraction,
 )
 from ..utils.singleton_meta import SingletonMeta
 
 
 class ConversationService(metaclass=SingletonMeta):
     def __init__(self) -> None:
-        self._conversation_history: list[dict] = []
         self._model = "llama3.2"
-
         self._repository = ConversationRepository()
 
-    def create_conversation(self, message: str) -> str:
-        id = self._repository.create_conversation(ConversationCreate(title="New chat"))
-
-        return self.send_message(id, message)
+    def create_conversation(
+        self, conversation_create_request: ConversationCreateRequest
+    ) -> ConversationCreateResponse:
+        self._conversation_history: list[dict] = []
+        id = self._repository.store_conversation("New chat")
+        return ConversationCreateResponse(
+            conversation_id=id,
+            assistant_response=self.send_message(
+                id, conversation_create_request.message
+            ),
+        )
 
     def send_message(self, id: str, message: str) -> str:
         client = ollama.Client(host=settings.ollama_url)
@@ -43,10 +48,7 @@ class ConversationService(metaclass=SingletonMeta):
         self._conversation_history.append(assistant_response)
 
         self._repository.add_user_chatbot_interaction(
-            id,
-            UserChatbotInteraction(
-                user_message=user_message, assistant_response=assistant_response
-            ),
+            id, user_message, assistant_response
         )
 
         return reply
@@ -55,7 +57,9 @@ class ConversationService(metaclass=SingletonMeta):
         return self._repository.retrieve_all_conversations_metadata()
 
     def retrieve_dialogue(self, id: str) -> DialogueRetrieve:
-        return self._repository.retrieve_dialogue(id)
+        dialogue = self._repository.retrieve_dialogue(id)
+        self._conversation_history = dialogue.messages
+        return dialogue
 
     def update_conversation_metadata(self, id: str, metadata: ConversationUpdate):
         return self._repository.update_conversation_metadata(id, metadata)
