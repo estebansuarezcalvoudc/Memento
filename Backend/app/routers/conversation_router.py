@@ -2,9 +2,9 @@ from fastapi import APIRouter, HTTPException, status
 
 from ..core.logging import setup_logger
 from ..schemas.conversation_schema import (
+    ConversationCreateRequest,
     ConversationCreateResponse,
     ConversationRetrieve,
-    ConversationCreateRequest,
     ConversationUpdateRequest,
     DialogueRetrieve,
 )
@@ -20,7 +20,9 @@ router = APIRouter()
     summary="Create a new conversation",
     tags=["Conversations"],
 )
-async def create_conversation(message: ConversationCreateRequest) -> ConversationCreateResponse:
+async def create_conversation(
+    message: ConversationCreateRequest,
+) -> ConversationCreateResponse:
     try:
         conversation_service = ConversationService()
         return conversation_service.create_conversation(message)
@@ -100,7 +102,9 @@ async def retrieve_dialogue(id: str) -> DialogueRetrieve:
     summary="Update the metadata of a conversation",
     tags=["Conversations"],
 )
-async def update_conversation_metadata(id: str, metadata: ConversationUpdateRequest) -> None:
+async def update_conversation_metadata(
+    id: str, metadata: ConversationUpdateRequest
+) -> None:
     try:
         conversation_service = ConversationService()
         conversation_service.update_conversation_metadata(id, metadata)

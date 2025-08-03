@@ -1,3 +1,5 @@
+from typing import Optional
+
 import ollama
 
 from ..core.settings import settings
@@ -24,21 +26,28 @@ class ConversationService(metaclass=SingletonMeta):
         return ConversationCreateResponse(
             id=id,
             assistant_response=self.send_message(
-                id, conversation_create_request.message
+                id,
+                conversation_create_request.message,
+                language_model=conversation_create_request.language_model,
             ),
         )
 
-    def send_message(self, id: str, message: str) -> str:
+    def send_message(
+        self, id: str, message: str, language_model: Optional[str] = None
+    ) -> str:
+        if language_model is None:
+            language_model = "llama3.2"
+
         client = ollama.Client(host=settings.ollama_url)
 
-        client.pull(self._model)
+        client.pull(language_model)
 
         conversation_history = self._repository.retrieve_dialogue(id).messages
         user_message = {"role": "user", "content": message}
         conversation_history.append(user_message)
 
         response = client.chat(
-            model=self._model,
+            model=language_model,
             messages=conversation_history,
             keep_alive=0,
         )
@@ -58,7 +67,9 @@ class ConversationService(metaclass=SingletonMeta):
     def retrieve_dialogue(self, id: str) -> DialogueRetrieve:
         return self._repository.retrieve_dialogue(id)
 
-    def update_conversation_metadata(self, id: str, metadata: ConversationUpdateRequest):
+    def update_conversation_metadata(
+        self, id: str, metadata: ConversationUpdateRequest
+    ):
         return self._repository.update_conversation_metadata(id, metadata)
 
     def delete_conversation(self, id: str) -> None:
