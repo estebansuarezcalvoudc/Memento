@@ -6,7 +6,7 @@ from ..schemas.conversation_schema import (
     ConversationCreateRequest,
     ConversationCreateResponse,
     ConversationRetrieve,
-    ConversationUpdate,
+    ConversationUpdateRequest,
     DialogueRetrieve,
 )
 from ..utils.singleton_meta import SingletonMeta
@@ -20,7 +20,6 @@ class ConversationService(metaclass=SingletonMeta):
     def create_conversation(
         self, conversation_create_request: ConversationCreateRequest
     ) -> ConversationCreateResponse:
-        self._conversation_history: list[dict] = []
         id = self._repository.store_conversation("New chat")
         return ConversationCreateResponse(
             id=id,
@@ -34,18 +33,18 @@ class ConversationService(metaclass=SingletonMeta):
 
         client.pull(self._model)
 
+        conversation_history = self._repository.retrieve_dialogue(id).messages
         user_message = {"role": "user", "content": message}
-        self._conversation_history.append(user_message)
+        conversation_history.append(user_message)
 
         response = client.chat(
             model=self._model,
-            messages=self._conversation_history,
+            messages=conversation_history,
             keep_alive=0,
         )
 
         reply = response.message.content or ""
         assistant_response = {"role": "assistant", "content": reply}
-        self._conversation_history.append(assistant_response)
 
         self._repository.add_user_chatbot_interaction(
             id, user_message, assistant_response
@@ -57,11 +56,9 @@ class ConversationService(metaclass=SingletonMeta):
         return self._repository.retrieve_all_conversations_metadata()
 
     def retrieve_dialogue(self, id: str) -> DialogueRetrieve:
-        dialogue = self._repository.retrieve_dialogue(id)
-        self._conversation_history = dialogue.messages
-        return dialogue
+        return self._repository.retrieve_dialogue(id)
 
-    def update_conversation_metadata(self, id: str, metadata: ConversationUpdate):
+    def update_conversation_metadata(self, id: str, metadata: ConversationUpdateRequest):
         return self._repository.update_conversation_metadata(id, metadata)
 
     def delete_conversation(self, id: str) -> None:

@@ -9,7 +9,7 @@ from fastapi import HTTPException, status
 from ...core.settings import settings
 from ...schemas.conversation_schema import (
     ConversationRetrieve,
-    ConversationUpdate,
+    ConversationUpdateRequest,
     DialogueRetrieve,
 )
 from ..models.conversation_model import ConversationModel
@@ -86,7 +86,7 @@ class ConversationRepository:
 
     @_handle_invalid_id
     def update_conversation_metadata(
-        self, id: str, metadata: ConversationUpdate
+        self, id: str, metadata: ConversationUpdateRequest
     ) -> None:
         result = self._collection.update_one(
             {"_id": ObjectId(id)},

@@ -5,7 +5,7 @@ from ..schemas.conversation_schema import (
     ConversationCreateResponse,
     ConversationRetrieve,
     ConversationCreateRequest,
-    ConversationUpdate,
+    ConversationUpdateRequest,
     DialogueRetrieve,
 )
 from ..services.conversation_service import ConversationService
@@ -100,7 +100,7 @@ async def retrieve_dialogue(id: str) -> DialogueRetrieve:
     summary="Update the metadata of a conversation",
     tags=["Conversations"],
 )
-async def update_conversation_metadata(id: str, metadata: ConversationUpdate) -> None:
+async def update_conversation_metadata(id: str, metadata: ConversationUpdateRequest) -> None:
     try:
         conversation_service = ConversationService()
         conversation_service.update_conversation_metadata(id, metadata)
