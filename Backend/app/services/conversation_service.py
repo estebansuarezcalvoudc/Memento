@@ -23,7 +23,7 @@ class ConversationService(metaclass=SingletonMeta):
         self._conversation_history: list[dict] = []
         id = self._repository.store_conversation("New chat")
         return ConversationCreateResponse(
-            conversation_id=id,
+            id=id,
             assistant_response=self.send_message(
                 id, conversation_create_request.message
             ),

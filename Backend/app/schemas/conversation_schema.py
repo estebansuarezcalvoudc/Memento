@@ -18,7 +18,7 @@ class ConversationCreateRequest(BaseModel):
 
 
 class ConversationCreateResponse(BaseModel):
-    conversation_id: str
+    id: str
     assistant_response: str
 
 
