@@ -25,7 +25,7 @@ async def _get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Us
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
-    except jwt.PyJWTError:
+    except jwt.InvalidTokenError:
         raise credentials_exception
 
     users_repo = UsersRepo()

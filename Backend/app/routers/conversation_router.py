@@ -27,7 +27,7 @@ router = APIRouter()
 )
 async def create_conversation(
     conversation_create_request: ConversationCreateRequest,
-    current_user: Annotated[User, Depends(get_current_active_user)]
+    current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> ConversationCreateResponse:
     try:
         conversation_service = ConversationService()
@@ -48,9 +48,9 @@ async def create_conversation(
     tags=["Conversations"],
 )
 async def send_message(
-    id: str, 
+    id: str,
     send_message_request: SendMessageRequest,
-    current_user: Annotated[User, Depends(get_current_active_user)]
+    current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> str:
     try:
         conversation_service = ConversationService()
@@ -73,7 +73,7 @@ async def send_message(
     tags=["Conversations"],
 )
 async def retrieve_all_conversations_metadata(
-    current_user: Annotated[User, Depends(get_current_active_user)]
+    current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> list[ConversationRetrieve]:
     try:
         conversation_service = ConversationService()
@@ -94,8 +94,7 @@ async def retrieve_all_conversations_metadata(
     tags=["Conversations"],
 )
 async def retrieve_dialogue(
-    id: str,
-    current_user: Annotated[User, Depends(get_current_active_user)]
+    id: str, current_user: Annotated[User, Depends(get_current_active_user)]
 ) -> DialogueRetrieve:
     try:
         conversation_service = ConversationService()
@@ -118,9 +117,9 @@ async def retrieve_dialogue(
     tags=["Conversations"],
 )
 async def update_conversation_metadata(
-    id: str, 
+    id: str,
     metadata: ConversationUpdateRequest,
-    current_user: Annotated[User, Depends(get_current_active_user)]
+    current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> None:
     try:
         conversation_service = ConversationService()
@@ -143,8 +142,7 @@ async def update_conversation_metadata(
     tags=["Conversations"],
 )
 async def delete_conversation(
-    id: str,
-    current_user: Annotated[User, Depends(get_current_active_user)]
+    id: str, current_user: Annotated[User, Depends(get_current_active_user)]
 ) -> None:
     try:
         conversation_service = ConversationService()
