@@ -4,9 +4,9 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     hf_token: str
 
-    auth_secret_key: str
-    auth_algorith: str
-    auth_access_token_expire_minutes: int
+    secret_key: str
+    algorithm: str
+    access_token_expire_minutes: int
 
     postgres_user: str
     postgres_password: str
@@ -42,3 +42,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()  # type: ignore
+

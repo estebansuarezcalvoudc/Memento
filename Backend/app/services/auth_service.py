@@ -26,14 +26,14 @@ class AuthService:
 
     @staticmethod
     def _create_access_token(data: dict) -> Token:
-        expires_delta = timedelta(minutes=settings.auth_access_token_expire_minutes)
+        expires_delta = timedelta(minutes=settings.access_token_expire_minutes)
         expire = datetime.now(timezone.utc) + expires_delta
 
         to_encode = data.copy()
         to_encode.update({"exp": expire})
 
         access_token = jwt.encode(
-            to_encode, settings.auth_secret_key, algorithm=settings.auth_algorith
+            to_encode, settings.secret_key, algorithm=settings.algorithm
         )
         return Token(access_token=access_token, token_type="bearer")
 
