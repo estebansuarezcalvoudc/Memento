@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 
 from ..core.logging import setup_logger
 from ..database.config import get_db_session
+from ..dependencies.auth_dependencies import get_current_active_user
+from ..schemas.auth_schema import User
 from ..schemas.meeting_schema import (
     CreateMeetingsBatchRequest,
     MeetingMetadataResponse,
@@ -49,6 +51,7 @@ def _parse_meetings_batch_request(
     tags=["Meeting"],
 )
 async def create_meetings(
+    current_user: Annotated[User, Depends(get_current_active_user)],
     batch_request: CreateMeetingsBatchRequest = Depends(_parse_meetings_batch_request),
     audios: list[UploadFile] = File(
         ..., description=create_meetings_docs.audios_file_description
@@ -114,6 +117,7 @@ def _validate_audio_files(audio_files: list[UploadFile]) -> None:
     tags=["Meeting"],
 )
 async def retrieve_all_meetings_metadata(
+    current_user: Annotated[User, Depends(get_current_active_user)],
     session: Session = Depends(get_db_session),
 ) -> list[MeetingMetadataResponse]:
     try:
@@ -135,7 +139,9 @@ async def retrieve_all_meetings_metadata(
     tags=["Meeting"],
 )
 async def retrieve_meeting_summary(
-    id: int, session: Session = Depends(get_db_session)
+    id: int,
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    session: Session = Depends(get_db_session),
 ) -> MeetingSummaryResponse:
     try:
         meeting_service = MeetingService(session)
@@ -158,7 +164,9 @@ async def retrieve_meeting_summary(
     tags=["Meeting"],
 )
 async def retrieve_meeting_transcription(
-    id: int, session: Session = Depends(get_db_session)
+    id: int,
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    session: Session = Depends(get_db_session),
 ) -> MeetingTranscriptionResponse:
     try:
         meeting_service = MeetingService(session)
@@ -183,6 +191,7 @@ async def retrieve_meeting_transcription(
 async def update_meeting(
     id: int,
     meeting_data: UpdateMeetingMetadata,
+    current_user: Annotated[User, Depends(get_current_active_user)],
     session: Session = Depends(get_db_session),
 ) -> None:
     try:
@@ -205,7 +214,11 @@ async def update_meeting(
     summary="Delete a meeting",
     tags=["Meeting"],
 )
-async def delete_meeting(id: int, session: Session = Depends(get_db_session)) -> None:
+async def delete_meeting(
+    id: int,
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    session: Session = Depends(get_db_session),
+) -> None:
     try:
         meeting_service = MeetingService(session)
         meeting_service.delete_meeting(id)
