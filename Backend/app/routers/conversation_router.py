@@ -1,6 +1,10 @@
-from fastapi import APIRouter, HTTPException, status
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from ..core.logging import setup_logger
+from ..dependencies.auth_dependencies import get_current_active_user
+from ..schemas.auth_schema import User
 from ..schemas.conversation_schema import (
     ConversationCreateRequest,
     ConversationCreateResponse,
@@ -23,6 +27,7 @@ router = APIRouter()
 )
 async def create_conversation(
     conversation_create_request: ConversationCreateRequest,
+    current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> ConversationCreateResponse:
     try:
         conversation_service = ConversationService()
@@ -42,7 +47,11 @@ async def create_conversation(
     summary="Send a message to the chatbot and get a response",
     tags=["Conversations"],
 )
-async def send_message(id: str, send_message_request: SendMessageRequest) -> str:
+async def send_message(
+    id: str,
+    send_message_request: SendMessageRequest,
+    current_user: Annotated[User, Depends(get_current_active_user)],
+) -> str:
     try:
         conversation_service = ConversationService()
         return conversation_service.send_message(id, send_message_request)
@@ -63,7 +72,9 @@ async def send_message(id: str, send_message_request: SendMessageRequest) -> str
     summary="Retrieve all conversations metadata",
     tags=["Conversations"],
 )
-async def retrieve_all_conversations_metadata() -> list[ConversationRetrieve]:
+async def retrieve_all_conversations_metadata(
+    current_user: Annotated[User, Depends(get_current_active_user)],
+) -> list[ConversationRetrieve]:
     try:
         conversation_service = ConversationService()
         return conversation_service.retrieve_all_conversations_metadata()
@@ -82,7 +93,9 @@ async def retrieve_all_conversations_metadata() -> list[ConversationRetrieve]:
     summary="Retrieve a dialogue between the user and the assistant",
     tags=["Conversations"],
 )
-async def retrieve_dialogue(id: str) -> DialogueRetrieve:
+async def retrieve_dialogue(
+    id: str, current_user: Annotated[User, Depends(get_current_active_user)]
+) -> DialogueRetrieve:
     try:
         conversation_service = ConversationService()
         return conversation_service.retrieve_dialogue(id)
@@ -104,7 +117,9 @@ async def retrieve_dialogue(id: str) -> DialogueRetrieve:
     tags=["Conversations"],
 )
 async def update_conversation_metadata(
-    id: str, metadata: ConversationUpdateRequest
+    id: str,
+    metadata: ConversationUpdateRequest,
+    current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> None:
     try:
         conversation_service = ConversationService()
@@ -126,7 +141,9 @@ async def update_conversation_metadata(
     summary="Delete a conversation",
     tags=["Conversations"],
 )
-async def delete_conversation(id: str) -> None:
+async def delete_conversation(
+    id: str, current_user: Annotated[User, Depends(get_current_active_user)]
+) -> None:
     try:
         conversation_service = ConversationService()
         conversation_service.delete_conversation(id)

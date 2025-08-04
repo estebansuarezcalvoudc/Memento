@@ -55,7 +55,6 @@ services:
 
   mongo_db:
     image: mongodb/mongodb-community-server
-    container_name: mongodb
     ports:
       - 27017:${MONGO_PORT}
     volumes:
