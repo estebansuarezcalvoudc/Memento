@@ -1,13 +1,7 @@
 import pymongo
-from bson import ObjectId
-from bson.errors import InvalidId
 from fastapi import HTTPException, status
-from passlib.hash import bcrypt
-from ...schemas.auth_schema import User
+from ...schemas.auth_schema import UserCreate
 from ...core.settings import settings
-from passlib.context import CryptContext
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class UsersRepo:
@@ -16,7 +10,7 @@ class UsersRepo:
         mydb = myclient["users_db"]
         self._collection = mydb["users"]
 
-    def store_user(self, user: User) -> None:
+    def store_user(self, user: UserCreate) -> None:
         existing_user = self._collection.find_one({"username": user.username})
         if existing_user is not None:
             raise HTTPException(
@@ -24,9 +18,8 @@ class UsersRepo:
                 detail="A user with this username already exists",
             )
 
-        hashed_password = bcrypt.using(rounds=12).hash(user.password)
         self._collection.insert_one(
-            {"username": user.username, "password": hashed_password}
+            {"username": user.username, "password": user.password}
         )
 
     def retrieve_user(self, id: str):
@@ -40,4 +33,4 @@ class UsersRepo:
                 detail=f"User with id={id} not found",
             )
 
-        return User(username=result["username"], password=result["password"])
+        return UserCreate(username=result["username"], password=result["password"])

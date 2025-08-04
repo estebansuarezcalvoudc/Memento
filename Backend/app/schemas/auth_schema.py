@@ -13,7 +13,7 @@ class TokenData(BaseModel):
     username: Optional[str]
 
 
-class User(BaseModel):
+class UserCreate(BaseModel):
     username: str
     password: str
 
