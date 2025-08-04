@@ -37,9 +37,6 @@ class ConversationRepository:
         self._collection = mydb["conversations"]
 
     def store_conversation(self, conversation_title: str) -> str:
-        myclient = pymongo.MongoClient(settings.mongo_url)
-        mydb = myclient["chat_db"]
-        self._collection = mydb["conversations"]
         conversation = ConversationModel(
             title=conversation_title, started_at=datetime.today()
         )
