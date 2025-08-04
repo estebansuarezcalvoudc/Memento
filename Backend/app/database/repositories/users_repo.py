@@ -1,7 +1,10 @@
+from typing import Optional
+
 import pymongo
 from fastapi import HTTPException, status
-from ...schemas.auth_schema import UserCreate
+
 from ...core.settings import settings
+from ...schemas.auth_schema import UserCreate
 
 
 class UsersRepo:
@@ -22,15 +25,12 @@ class UsersRepo:
             {"username": user.username, "password": user.password}
         )
 
-    def retrieve_user(self, id: str):
+    def retrieve_user(self, username: str) -> Optional[UserCreate]:
         result = self._collection.find_one(
-            {"_id": id}, {"_id": False, "username": True, "password": True}
+            {"username": username}, {"_id": False, "username": True, "password": True}
         )
 
         if not result:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"User with id={id} not found",
-            )
+            return None
 
         return UserCreate(username=result["username"], password=result["password"])
