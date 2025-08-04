@@ -18,6 +18,11 @@ class UserCreate(BaseModel):
     password: str
 
 
+class User(BaseModel):
+    """User schema for authenticated users (without password)"""
+    username: str
+
+
 class ActiveSession(BaseModel):
     username: str
     access_token: str
