@@ -1,0 +1,45 @@
+from fastapi import HTTPException, status
+from passlib.context import CryptContext
+
+from ..database.repositories.users_repo import UsersRepo
+from ..schemas.auth_schema import User, Token
+from ..core.settings import settings
+
+from datetime import datetime, timedelta, timezone
+import jwt
+
+
+class AuthService:
+    def __init__(self) -> None:
+        self._repository = UsersRepo()
+
+    def register(self, user: User) -> Token:
+        self._repository.store_user(user)
+        return AuthService._create_access_token(data={"sub": user.username})
+
+    @staticmethod
+    def _create_access_token(data: dict) -> Token:
+        expires_delta = timedelta(minutes=settings.auth_access_token_expire_minutes)
+        expire = datetime.now(timezone.utc) + expires_delta
+
+        to_encode = data.copy()
+        to_encode.update({"exp": expire})
+
+        access_token =  jwt.encode(
+            to_encode, settings.auth_secret_key, algorithm=settings.auth_algorith
+        )
+        return Token(access_token=access_token, token_type="bearer")
+
+    def authenticate_user(
+        self, username: str, password: str, pwd_context: CryptContext
+    ) -> Token:
+        user = self._repository.retrieve_user(username)
+
+        if not user or not pwd_context.verify(password, user.password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect username or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        return AuthService._create_access_token(data={"sub": user.username})
