@@ -7,7 +7,7 @@ from ...core.settings import settings
 from ...schemas.auth_schema import UserCreate
 
 
-class UsersRepo:
+class AuthRepository:
     def __init__(self) -> None:
         myclient = pymongo.MongoClient(settings.mongo_url)
         mydb = myclient["users_db"]
