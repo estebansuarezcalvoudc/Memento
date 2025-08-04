@@ -64,7 +64,9 @@ async def create_meetings(
         audio_bytes_list = [await audio.read() for audio in audios]
 
         meeting_service = MeetingService(session)
-        return meeting_service.process_meetings(batch_request, audio_bytes_list)
+        return meeting_service.process_meetings(
+            batch_request, audio_bytes_list, current_user.username
+        )
     except HTTPException:
         raise
     except Exception as e:
@@ -122,7 +124,7 @@ async def retrieve_all_meetings_metadata(
 ) -> list[MeetingMetadataResponse]:
     try:
         meeting_service = MeetingService(session)
-        return meeting_service.retrieve_all_meetings_metadata()
+        return meeting_service.retrieve_all_meetings_metadata(current_user.username)
     except Exception as e:
         _logger.error(f"Error retrieving meetings: {str(e)}")
         _logger.error(f"Exception type: {type(e).__name__}")
@@ -145,7 +147,7 @@ async def retrieve_meeting_summary(
 ) -> MeetingSummaryResponse:
     try:
         meeting_service = MeetingService(session)
-        return meeting_service.retrieve_meeting_summary(id)
+        return meeting_service.retrieve_meeting_summary(id, current_user.username)
     except HTTPException:
         raise
     except Exception as e:
@@ -170,7 +172,7 @@ async def retrieve_meeting_transcription(
 ) -> MeetingTranscriptionResponse:
     try:
         meeting_service = MeetingService(session)
-        return meeting_service.retrieve_meeting_transcription(id)
+        return meeting_service.retrieve_meeting_transcription(id, current_user.username)
     except HTTPException:
         raise
     except Exception as e:
@@ -196,7 +198,7 @@ async def update_meeting(
 ) -> None:
     try:
         meeting_service = MeetingService(session)
-        meeting_service.update_meeting(id, meeting_data)
+        meeting_service.update_meeting(id, meeting_data, current_user.username)
     except HTTPException:
         raise
     except Exception as e:
@@ -221,7 +223,7 @@ async def delete_meeting(
 ) -> None:
     try:
         meeting_service = MeetingService(session)
-        meeting_service.delete_meeting(id)
+        meeting_service.delete_meeting(id, current_user.username)
     except HTTPException:
         raise
     except Exception as e:

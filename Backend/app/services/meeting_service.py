@@ -36,9 +36,8 @@ class MeetingService:
         self,
         batch_request: CreateMeetingsBatchRequest,
         audio_bytes_list: list[bytes],
+        username: str,
     ) -> list[MeetingResponse]:
-        _logger.debug(f"Processing {len(batch_request.meetings_metadata)} meetings")
-
         if len(batch_request.meetings_metadata) != len(audio_bytes_list):
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -47,7 +46,7 @@ class MeetingService:
 
         return [
             self._process_single_meeting(
-                metadata, audio_bytes, batch_request.processing_configuration
+                metadata, audio_bytes, batch_request.processing_configuration, username
             )
             for metadata, audio_bytes in zip(
                 batch_request.meetings_metadata, audio_bytes_list
@@ -59,6 +58,7 @@ class MeetingService:
         meeting_metadata: MeetingMetadata,
         audio_bytes: bytes,
         processing_config: ProcessingConfiguration,
+        username: str,
     ) -> MeetingResponse:
         audio = self._get_audio_from_bytes(audio_bytes)
 
@@ -77,7 +77,9 @@ class MeetingService:
             options=processing_config.options,
         )
 
-        return self.repository.store_meeting(meeting_metadata, transcription, summary)
+        return self.repository.store_meeting(
+            meeting_metadata, transcription, summary, username
+        )
 
     def _get_audio_from_bytes(self, audio_bytes: bytes):
         with tempfile.NamedTemporaryFile(suffix=".wav") as temp_file:
@@ -85,17 +87,25 @@ class MeetingService:
             temp_file.flush()
             return whisperx.load_audio(temp_file.name)
 
-    def retrieve_all_meetings_metadata(self) -> list[MeetingMetadataResponse]:
+    def retrieve_all_meetings_metadata(
+        self, username: str
+    ) -> list[MeetingMetadataResponse]:
         return self.repository.retrieve_all_meetings_metadata()
 
-    def retrieve_meeting_summary(self, id: int) -> MeetingSummaryResponse:
+    def retrieve_meeting_summary(
+        self, id: int, username: str
+    ) -> MeetingSummaryResponse:
         return self.repository.retrieve_meeting_summary(id)
 
-    def retrieve_meeting_transcription(self, id: int) -> MeetingTranscriptionResponse:
+    def retrieve_meeting_transcription(
+        self, id: int, username: str
+    ) -> MeetingTranscriptionResponse:
         return self.repository.retrieve_meeting_transcription(id)
 
-    def update_meeting(self, id: int, meeting_data: UpdateMeetingMetadata) -> None:
+    def update_meeting(
+        self, id: int, meeting_data: UpdateMeetingMetadata, username: str
+    ) -> None:
         self.repository.update_meeting_metadata(id, meeting_data)
 
-    def delete_meeting(self, meeting_id: int) -> None:
+    def delete_meeting(self, meeting_id: int, username: str) -> None:
         self.repository.delete_meeting(meeting_id)

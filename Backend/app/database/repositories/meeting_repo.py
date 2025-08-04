@@ -22,7 +22,11 @@ class MeetingRepository:
         self.session = session
 
     def store_meeting(
-        self, meeting: MeetingMetadataSchema, transcription: str, summary: str
+        self,
+        meeting: MeetingMetadataSchema,
+        transcription: str,
+        summary: str,
+        username: str,
     ) -> MeetingResponse:
         meeting_metadata = MeetingMetadata(title=meeting.title, date=meeting.date)
         self.session.add(meeting_metadata)
