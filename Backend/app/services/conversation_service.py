@@ -1,7 +1,7 @@
 import ollama
 
 from ..core.settings import settings
-from ..database.repositories.conversation_repo import ConversationRepository
+from ..repositories.conversation_repo import ConversationRepository
 from ..schemas.conversation_schema import (
     ConversationCreateRequest,
     ConversationCreateResponse,

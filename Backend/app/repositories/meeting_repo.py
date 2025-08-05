@@ -3,9 +3,9 @@ from datetime import datetime
 from bson import ObjectId
 from fastapi import HTTPException, status
 
-from ...core.settings import settings
-from ...schemas.meeting_schema import MeetingMetadata as MeetingMetadataSchema
-from ...schemas.meeting_schema import (
+from ..core.settings import settings
+from ..schemas.meeting_schema import MeetingMetadata as MeetingMetadataSchema
+from ..schemas.meeting_schema import (
     MeetingMetadataResponse,
     MeetingSummaryResponse,
     MeetingTranscriptionResponse,

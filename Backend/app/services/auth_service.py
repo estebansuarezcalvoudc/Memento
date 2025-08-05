@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from passlib.context import CryptContext
 
 from ..core.settings import settings
-from ..database.repositories.auth_repo import AuthRepository
+from ..repositories.auth_repo import AuthRepository
 from ..schemas.auth_schema import Token, UserCreate
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

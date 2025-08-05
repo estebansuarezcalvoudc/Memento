@@ -4,8 +4,8 @@ import pymongo
 from bson import ObjectId
 from fastapi import HTTPException, status
 
-from ...core.settings import settings
-from ...schemas.conversation_schema import (
+from ..core.settings import settings
+from ..schemas.conversation_schema import (
     ConversationRetrieve,
     ConversationUpdateRequest,
     DialogueRetrieve,
