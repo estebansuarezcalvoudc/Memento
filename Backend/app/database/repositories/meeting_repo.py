@@ -14,6 +14,7 @@ from ...schemas.meeting_schema import (
 
 from .handle_invalid_id import handle_invalid_id
 
+
 class MeetingRepository:
     """
     Repository layer for meeting database operations.
@@ -72,7 +73,7 @@ class MeetingRepository:
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Dialogue with id={id} for user={username} not found",
+                detail=f"Meeting with id={id} for user={username} not found",
             )
 
         return MeetingSummaryResponse(summary=result["summary"])
@@ -81,13 +82,14 @@ class MeetingRepository:
         self, id: str, username: str
     ) -> MeetingTranscriptionResponse:
         result = self._collection.find_one(
-            {"username": username, "_id": ObjectId(id)}, {"_id": False, "transcription": True}
+            {"username": username, "_id": ObjectId(id)},
+            {"_id": False, "transcription": True},
         )
 
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Dialogue with id={id} not found",
+                detail=f"Meeting with id={id} not found",
             )
 
         return MeetingTranscriptionResponse(transcription=result["transcription"])
@@ -115,7 +117,7 @@ class MeetingRepository:
         if result.modified_count == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Conversation with id={id} not found",
+                detail=f"Meeting with id={id} not found",
             )
 
     @handle_invalid_id
@@ -127,5 +129,5 @@ class MeetingRepository:
         if result.deleted_count == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Conversation with id={id} not found",
+                detail=f"Meeting with id={id} not found",
             )
