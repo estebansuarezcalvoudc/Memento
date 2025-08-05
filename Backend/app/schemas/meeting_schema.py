@@ -57,7 +57,7 @@ class UpdateMeetingMetadata(BaseModel):
 
 
 class MeetingMetadataResponse(BaseModel):
-    id: str
+    id: int
     title: str
     date: date_type
 
@@ -65,12 +65,14 @@ class MeetingMetadataResponse(BaseModel):
 
 
 class MeetingSummaryResponse(BaseModel):
+    id: int
     summary: str
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class MeetingTranscriptionResponse(BaseModel):
+    id: int
     transcription: str
 
     model_config = ConfigDict(from_attributes=True)
