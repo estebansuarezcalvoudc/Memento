@@ -1,9 +1,7 @@
 from datetime import datetime
-from functools import wraps
 
 import pymongo
 from bson import ObjectId
-from bson.errors import InvalidId
 from fastapi import HTTPException, status
 
 from ...core.settings import settings
@@ -13,21 +11,7 @@ from ...schemas.conversation_schema import (
     DialogueRetrieve,
 )
 from ..models.conversation_model import ConversationModel
-
-
-def _handle_invalid_id(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except InvalidId as e:
-            id_value = kwargs.get("id") or "unknown"
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"The id={id_value} is not a valid id",
-            ) from e
-
-    return wrapper
+from .handle_invalid_id import handle_invalid_id
 
 
 class ConversationRepository:
@@ -46,7 +30,7 @@ class ConversationRepository:
         )
         return str(result.inserted_id)
 
-    @_handle_invalid_id
+    @handle_invalid_id
     def add_user_chatbot_interaction(
         self, id: str, user_message: dict[str, str], assistant_response: dict[str, str]
     ) -> None:
@@ -67,7 +51,7 @@ class ConversationRepository:
             for conversation in result
         ]
 
-    @_handle_invalid_id
+    @handle_invalid_id
     def retrieve_dialogue(self, id: str) -> DialogueRetrieve:
         result = self._collection.find_one(
             {"_id": ObjectId(id)}, {"_id": False, "messages": True}
@@ -81,7 +65,7 @@ class ConversationRepository:
 
         return DialogueRetrieve(messages=result["messages"])
 
-    @_handle_invalid_id
+    @handle_invalid_id
     def update_conversation_metadata(
         self, id: str, metadata: ConversationUpdateRequest
     ) -> None:
@@ -96,7 +80,7 @@ class ConversationRepository:
                 detail=f"Conversation with id={id} not found",
             )
 
-    @_handle_invalid_id
+    @handle_invalid_id
     def delete_conversation(self, id: str) -> None:
         result = self._collection.delete_one({"_id": ObjectId(id)})
 

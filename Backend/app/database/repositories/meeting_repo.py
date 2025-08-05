@@ -12,6 +12,7 @@ from ...schemas.meeting_schema import (
     UpdateMeetingMetadata,
 )
 
+from .handle_invalid_id import handle_invalid_id
 
 class MeetingRepository:
     """
@@ -91,6 +92,7 @@ class MeetingRepository:
 
         return MeetingTranscriptionResponse(transcription=result["transcription"])
 
+    @handle_invalid_id
     def update_meeting_metadata(
         self, id: str, meeting_data: UpdateMeetingMetadata, username: str
     ) -> None:
@@ -116,6 +118,7 @@ class MeetingRepository:
                 detail=f"Conversation with id={id} not found",
             )
 
+    @handle_invalid_id
     def delete_meeting(self, id: str, username) -> None:
         result = self._collection.delete_one(
             {"username": username, "_id": ObjectId(id)}
