@@ -12,7 +12,7 @@ from ...schemas.meeting_schema import (
     UpdateMeetingMetadata,
 )
 
-from .handle_invalid_id import handle_invalid_id
+from .utils.handle_invalid_id import handle_invalid_id
 
 
 class MeetingRepository:

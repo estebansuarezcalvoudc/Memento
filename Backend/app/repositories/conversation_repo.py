@@ -10,7 +10,7 @@ from ...schemas.conversation_schema import (
     ConversationUpdateRequest,
     DialogueRetrieve,
 )
-from .handle_invalid_id import handle_invalid_id
+from .utils.handle_invalid_id import handle_invalid_id
 
 
 class ConversationRepository:
