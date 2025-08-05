@@ -2,16 +2,13 @@ import json
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from sqlalchemy.orm import Session
 
 from ..core.logging import setup_logger
-from ..database.config import get_db_session
 from ..dependencies.auth_dependencies import get_current_active_user
 from ..schemas.auth_schema import User
 from ..schemas.meeting_schema import (
     CreateMeetingsBatchRequest,
     MeetingMetadataResponse,
-    MeetingResponse,
     MeetingSummaryResponse,
     MeetingTranscriptionResponse,
     UpdateMeetingMetadata,
@@ -56,15 +53,14 @@ async def create_meetings(
     audios: list[UploadFile] = File(
         ..., description=create_meetings_docs.audios_file_description
     ),
-    session: Session = Depends(get_db_session),
-) -> list[MeetingResponse]:
+) -> None:
     _validate_audio_files(audios)
 
     try:
         audio_bytes_list = [await audio.read() for audio in audios]
 
-        meeting_service = MeetingService(session)
-        return meeting_service.process_meetings(
+        meeting_service = MeetingService()
+        meeting_service.process_meetings(
             batch_request, audio_bytes_list, current_user.username
         )
     except HTTPException:
@@ -120,10 +116,9 @@ def _validate_audio_files(audio_files: list[UploadFile]) -> None:
 )
 async def retrieve_all_meetings_metadata(
     current_user: Annotated[User, Depends(get_current_active_user)],
-    session: Session = Depends(get_db_session),
 ) -> list[MeetingMetadataResponse]:
     try:
-        meeting_service = MeetingService(session)
+        meeting_service = MeetingService()
         return meeting_service.retrieve_all_meetings_metadata(current_user.username)
     except Exception as e:
         _logger.error(f"Error retrieving meetings: {str(e)}")
@@ -141,12 +136,10 @@ async def retrieve_all_meetings_metadata(
     tags=["Meeting"],
 )
 async def retrieve_meeting_summary(
-    id: int,
-    current_user: Annotated[User, Depends(get_current_active_user)],
-    session: Session = Depends(get_db_session),
+    id: str, current_user: Annotated[User, Depends(get_current_active_user)]
 ) -> MeetingSummaryResponse:
     try:
-        meeting_service = MeetingService(session)
+        meeting_service = MeetingService()
         return meeting_service.retrieve_meeting_summary(id, current_user.username)
     except HTTPException:
         raise
@@ -166,12 +159,10 @@ async def retrieve_meeting_summary(
     tags=["Meeting"],
 )
 async def retrieve_meeting_transcription(
-    id: int,
-    current_user: Annotated[User, Depends(get_current_active_user)],
-    session: Session = Depends(get_db_session),
+    id: str, current_user: Annotated[User, Depends(get_current_active_user)]
 ) -> MeetingTranscriptionResponse:
     try:
-        meeting_service = MeetingService(session)
+        meeting_service = MeetingService()
         return meeting_service.retrieve_meeting_transcription(id, current_user.username)
     except HTTPException:
         raise
@@ -191,13 +182,12 @@ async def retrieve_meeting_transcription(
     tags=["Meeting"],
 )
 async def update_meeting(
-    id: int,
+    id: str,
     meeting_data: UpdateMeetingMetadata,
     current_user: Annotated[User, Depends(get_current_active_user)],
-    session: Session = Depends(get_db_session),
 ) -> None:
     try:
-        meeting_service = MeetingService(session)
+        meeting_service = MeetingService()
         meeting_service.update_meeting(id, meeting_data, current_user.username)
     except HTTPException:
         raise
@@ -217,12 +207,10 @@ async def update_meeting(
     tags=["Meeting"],
 )
 async def delete_meeting(
-    id: int,
-    current_user: Annotated[User, Depends(get_current_active_user)],
-    session: Session = Depends(get_db_session),
+    id: str, current_user: Annotated[User, Depends(get_current_active_user)]
 ) -> None:
     try:
-        meeting_service = MeetingService(session)
+        meeting_service = MeetingService()
         meeting_service.delete_meeting(id, current_user.username)
     except HTTPException:
         raise
