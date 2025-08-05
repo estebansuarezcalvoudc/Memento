@@ -2,15 +2,12 @@ import tempfile
 
 import whisperx
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
 
-from ..core.logging import setup_logger
 from ..database.repositories.meeting_repo import MeetingRepository
 from ..schemas.meeting_schema import (
     CreateMeetingsBatchRequest,
     MeetingMetadata,
     MeetingMetadataResponse,
-    MeetingResponse,
     MeetingSummaryResponse,
     MeetingTranscriptionResponse,
     ProcessingConfiguration,
@@ -20,8 +17,6 @@ from .meeting_processing.gpu_utils import get_device
 from .meeting_processing.summarization import get_meeting_summary
 from .meeting_processing.transcription import get_transcribed_conversation
 
-_logger = setup_logger(__name__)
-
 
 class MeetingService:
     """
@@ -29,8 +24,8 @@ class MeetingService:
     Handles all business logic and communicates with the repository layer.
     """
 
-    def __init__(self, session: Session):
-        self.repository = MeetingRepository(session)
+    def __init__(self) -> None:
+        self.repository = MeetingRepository()
         self.device = get_device()
         self.compute_type = "int8"
         self.model_size = "tiny"
@@ -39,32 +34,28 @@ class MeetingService:
         self,
         batch_request: CreateMeetingsBatchRequest,
         audio_bytes_list: list[bytes],
-    ) -> list[MeetingResponse]:
-        _logger.debug(f"Processing {len(batch_request.meetings_metadata)} meetings")
-
+        username: str,
+    ) -> None:
         if len(batch_request.meetings_metadata) != len(audio_bytes_list):
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="The number of metadata objects must match the number of audio files",
             )
 
-        return [
+        for metadata, audio_bytes in zip(
+            batch_request.meetings_metadata, audio_bytes_list
+        ):
             self._process_single_meeting(
-                metadata, audio_bytes, batch_request.processing_configuration
+                metadata, audio_bytes, batch_request.processing_configuration, username
             )
-            for metadata, audio_bytes in zip(
-                batch_request.meetings_metadata, audio_bytes_list
-            )
-        ]
 
     def _process_single_meeting(
         self,
         meeting_metadata: MeetingMetadata,
         audio_bytes: bytes,
         processing_config: ProcessingConfiguration,
-    ) -> MeetingResponse:
-        _logger.debug(f"Processing meeting: {meeting_metadata.title}")
-
+        username: str,
+    ) -> None:
         audio = self._get_audio_from_bytes(audio_bytes)
 
         transcription = get_transcribed_conversation(
@@ -82,7 +73,9 @@ class MeetingService:
             options=processing_config.options,
         )
 
-        return self.repository.store_meeting(meeting_metadata, transcription, summary)
+        self.repository.store_meeting(
+            meeting_metadata, summary, transcription, username
+        )
 
     def _get_audio_from_bytes(self, audio_bytes: bytes):
         with tempfile.NamedTemporaryFile(suffix=".wav") as temp_file:
@@ -90,22 +83,25 @@ class MeetingService:
             temp_file.flush()
             return whisperx.load_audio(temp_file.name)
 
-    def retrieve_all_meetings_metadata(self) -> list[MeetingMetadataResponse]:
-        _logger.debug("Retrieving all meetings")
-        return self.repository.retrieve_all_meetings_metadata()
+    def retrieve_all_meetings_metadata(
+        self, username: str
+    ) -> list[MeetingMetadataResponse]:
+        return self.repository.retrieve_all_meetings_metadata(username)
 
-    def retrieve_meeting_summary(self, id: int) -> MeetingSummaryResponse:
-        _logger.debug(f"Retrieving summary of meeting with id={id}")
-        return self.repository.retrieve_meeting_summary(id)
+    def retrieve_meeting_summary(
+        self, id: str, username: str
+    ) -> MeetingSummaryResponse:
+        return self.repository.retrieve_meeting_summary(id, username)
 
-    def retrieve_meeting_transcription(self, id: int) -> MeetingTranscriptionResponse:
-        _logger.debug(f"Retrieving transcription of meeting with id={id}")
-        return self.repository.retrieve_meeting_transcription(id)
+    def retrieve_meeting_transcription(
+        self, id: str, username: str
+    ) -> MeetingTranscriptionResponse:
+        return self.repository.retrieve_meeting_transcription(id, username)
 
-    def update_meeting(self, id: int, meeting_data: UpdateMeetingMetadata) -> None:
-        _logger.debug(f"Updating meeting with ID: {id}")
-        self.repository.update_meeting_metadata(id, meeting_data)
+    def update_meeting(
+        self, id: str, meeting_data: UpdateMeetingMetadata, username: str
+    ) -> None:
+        self.repository.update_meeting_metadata(id, meeting_data, username)
 
-    def delete_meeting(self, meeting_id: int) -> None:
-        _logger.debug(f"Deleting meeting with ID: {meeting_id}")
-        self.repository.delete_meeting(meeting_id)
+    def delete_meeting(self, meeting_id: str, username: str) -> None:
+        self.repository.delete_meeting(meeting_id, username)

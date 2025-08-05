@@ -1,15 +1,18 @@
+import pymongo
+from datetime import datetime
+from bson import ObjectId
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
 
+from ...core.settings import settings
 from ...schemas.meeting_schema import MeetingMetadata as MeetingMetadataSchema
 from ...schemas.meeting_schema import (
     MeetingMetadataResponse,
-    MeetingResponse,
     MeetingSummaryResponse,
     MeetingTranscriptionResponse,
     UpdateMeetingMetadata,
 )
-from ..models.meeting_model import MeetingMetadata, MeetingSummary, MeetingTranscription
+
+from .handle_invalid_id import handle_invalid_id
 
 
 class MeetingRepository:
@@ -18,101 +21,113 @@ class MeetingRepository:
     Handles all database interactions for meetings.
     """
 
-    def __init__(self, session: Session):
-        self.session = session
+    def __init__(self) -> None:
+        myclient = pymongo.MongoClient(settings.mongo_url)
+        mydb = myclient["meetings_db"]
+        self._collection = mydb["meetings"]
+        self._collection.create_index("username", background=True)
 
     def store_meeting(
-        self, meeting: MeetingMetadataSchema, transcription: str, summary: str
-    ) -> MeetingResponse:
-        meeting_metadata = MeetingMetadata(title=meeting.title, date=meeting.date)
-        self.session.add(meeting_metadata)
-        self.session.flush()
-
-        meeting_summary = MeetingSummary(id=meeting_metadata.id, summary=summary)
-        self.session.add(meeting_summary)
-
-        meeting_transcription = MeetingTranscription(
-            id=meeting_metadata.id, transcription=transcription
-        )
-        self.session.add(meeting_transcription)
-
-        self.session.commit()
-        self.session.refresh(meeting_metadata)
-        self.session.refresh(meeting_summary)
-        self.session.refresh(meeting_transcription)
-
-        return MeetingResponse(
-            id=meeting_metadata.id,
-            title=meeting_metadata.title,
-            date=meeting_metadata.date,
-            summary=meeting_summary.summary,
-            transcription=meeting_transcription.transcription,
-        )
-
-    def retrieve_all_meetings_metadata(self) -> list[MeetingMetadataResponse]:
-        meetings = self.session.query(MeetingMetadata).all()
-        return [MeetingMetadataResponse.model_validate(meeting) for meeting in meetings]
-
-    def retrieve_meeting_summary(self, id: int) -> MeetingSummaryResponse:
-        meeting = (
-            self.session.query(MeetingSummary).filter(MeetingSummary.id == id).first()
-        )
-
-        if not meeting:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Meeting summary with id={id} not found",
-            )
-
-        return MeetingSummaryResponse.model_validate(meeting)
-
-    def retrieve_meeting_transcription(self, id: int) -> MeetingTranscriptionResponse:
-        meeting = (
-            self.session.query(MeetingTranscription)
-            .filter(MeetingTranscription.id == id)
-            .first()
-        )
-
-        if not meeting:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Meeting transcription with id={id} not found",
-            )
-
-        return MeetingTranscriptionResponse.model_validate(meeting)
-
-    def update_meeting_metadata(
-        self, id: int, meeting_data: UpdateMeetingMetadata
+        self,
+        meeting_metadata: MeetingMetadataSchema,
+        summary: str,
+        transcription: str,
+        username: str,
     ) -> None:
-        meeting = (
-            self.session.query(MeetingMetadata).filter(MeetingMetadata.id == id).first()
+        # Convert date to datetime for MongoDB compatibility
+        meeting_date = datetime.combine(meeting_metadata.date, datetime.min.time())
+
+        self._collection.insert_one(
+            {
+                "username": username,
+                "title": meeting_metadata.title,
+                "date": meeting_date,
+                "summary": summary,
+                "transcription": transcription,
+            }
         )
 
-        if not meeting:
+    def retrieve_all_meetings_metadata(
+        self, username: str
+    ) -> list[MeetingMetadataResponse]:
+        result = self._collection.find(
+            {"username": username}, {"_id": True, "title": True, "date": True}
+        )
+
+        return [
+            MeetingMetadataResponse(
+                id=str(meeting_metadata["_id"]),
+                title=meeting_metadata["title"],
+                date=meeting_metadata["date"].date(),  # Convert datetime back to date
+            )
+            for meeting_metadata in result
+        ]
+
+    def retrieve_meeting_summary(
+        self, id: str, username: str
+    ) -> MeetingSummaryResponse:
+        result = self._collection.find_one(
+            {"username": username, "_id": ObjectId(id)}, {"_id": False, "summary": True}
+        )
+
+        if not result:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Meeting with id={id} for user={username} not found",
+            )
+
+        return MeetingSummaryResponse(summary=result["summary"])
+
+    def retrieve_meeting_transcription(
+        self, id: str, username: str
+    ) -> MeetingTranscriptionResponse:
+        result = self._collection.find_one(
+            {"username": username, "_id": ObjectId(id)},
+            {"_id": False, "transcription": True},
+        )
+
+        if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Meeting with id={id} not found",
             )
 
+        return MeetingTranscriptionResponse(transcription=result["transcription"])
+
+    @handle_invalid_id
+    def update_meeting_metadata(
+        self, id: str, meeting_data: UpdateMeetingMetadata, username: str
+    ) -> None:
+        update_data = {}
         if meeting_data.title is not None:
-            meeting.title = meeting_data.title
-
+            update_data["title"] = meeting_data.title
         if meeting_data.date is not None:
-            meeting.date = meeting_data.date
+            update_data["date"] = datetime.combine(
+                meeting_data.date, datetime.min.time()
+            )
 
-        self.session.commit()
-        self.session.refresh(meeting)
+        if not update_data:
+            return  # Nothing to update
 
-    def delete_meeting(self, id: int) -> None:
-        meeting = (
-            self.session.query(MeetingMetadata).filter(MeetingMetadata.id == id).first()
+        result = self._collection.update_one(
+            {"username": username, "_id": ObjectId(id)},
+            {"$set": update_data},
         )
 
-        if not meeting:
+        if result.modified_count == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Meeting with id={id} not found",
             )
 
-        self.session.delete(meeting)
-        self.session.commit()
+    @handle_invalid_id
+    def delete_meeting(self, id: str, username) -> None:
+        result = self._collection.delete_one(
+            {"username": username, "_id": ObjectId(id)}
+        )
+
+        if result.deleted_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Meeting with id={id} not found",
+            )
