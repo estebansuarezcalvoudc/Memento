@@ -31,7 +31,9 @@ async def create_conversation(
 ) -> ConversationCreateResponse:
     try:
         conversation_service = ConversationService()
-        return conversation_service.create_conversation(conversation_create_request)
+        return conversation_service.create_conversation(
+            conversation_create_request, current_user.username
+        )
     except Exception as e:
         _logger.error(f"Error creating conversation: {str(e)}")
         _logger.error(f"Exception type: {type(e).__name__}")
@@ -54,7 +56,9 @@ async def send_message(
 ) -> str:
     try:
         conversation_service = ConversationService()
-        return conversation_service.send_message(id, send_message_request)
+        return conversation_service.send_message(
+            id, send_message_request, current_user.username
+        )
     except HTTPException:
         raise
     except Exception as e:
@@ -77,9 +81,11 @@ async def retrieve_all_conversations_metadata(
 ) -> list[ConversationRetrieve]:
     try:
         conversation_service = ConversationService()
-        return conversation_service.retrieve_all_conversations_metadata()
+        return conversation_service.retrieve_all_conversations_metadata(
+            current_user.username
+        )
     except Exception as e:
-        _logger.error(f"Error retrieving all conversations metadata: {str(e)}")
+        _logger.error(f"Error retrieving all conversations metadata: {str(e)}", exc_info=True)
         _logger.error(f"Exception type: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -98,11 +104,13 @@ async def retrieve_dialogue(
 ) -> DialogueRetrieve:
     try:
         conversation_service = ConversationService()
-        return conversation_service.retrieve_dialogue(id)
+        return conversation_service.retrieve_dialogue(id, current_user.username)
     except HTTPException:
         raise
     except Exception as e:
-        _logger.error(f"Error retrieving dialogue with id={id}: {str(e)}")
+        _logger.error(
+            f"Error retrieving dialogue with id={id}: {str(e)}", exc_info=True
+        )
         _logger.error(f"Exception type: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -123,7 +131,9 @@ async def update_conversation_metadata(
 ) -> None:
     try:
         conversation_service = ConversationService()
-        conversation_service.update_conversation_metadata(id, metadata)
+        conversation_service.update_conversation_metadata(
+            id, metadata, current_user.username
+        )
     except HTTPException:
         raise
     except Exception as e:
@@ -146,7 +156,7 @@ async def delete_conversation(
 ) -> None:
     try:
         conversation_service = ConversationService()
-        conversation_service.delete_conversation(id)
+        conversation_service.delete_conversation(id, current_user.username)
     except HTTPException:
         raise
     except Exception as e:

@@ -1,9 +1,7 @@
 from datetime import datetime
-from functools import wraps
 
 import pymongo
 from bson import ObjectId
-from bson.errors import InvalidId
 from fastapi import HTTPException, status
 
 from ...core.settings import settings
@@ -12,22 +10,7 @@ from ...schemas.conversation_schema import (
     ConversationUpdateRequest,
     DialogueRetrieve,
 )
-from ..models.conversation_model import ConversationModel
-
-
-def _handle_invalid_id(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except InvalidId as e:
-            id_value = kwargs.get("id") or "unknown"
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"The id={id_value} is not a valid id",
-            ) from e
-
-    return wrapper
+from .utils.handle_invalid_id import handle_invalid_id
 
 
 class ConversationRepository:
@@ -36,27 +19,34 @@ class ConversationRepository:
         mydb = myclient["chat_db"]
         self._collection = mydb["conversations"]
 
-    def store_conversation(self, conversation_title: str) -> str:
-        conversation = ConversationModel(
-            title=conversation_title, started_at=datetime.today()
-        )
-
+    def store_conversation(self, conversation_title: str, username: str) -> str:
         result = self._collection.insert_one(
-            conversation.model_dump(by_alias=True, exclude={"id"})
+            {
+                "username": username,
+                "title": conversation_title,
+                "started_at": datetime.today(),
+                "messages": [],
+            }
         )
         return str(result.inserted_id)
 
-    @_handle_invalid_id
+    @handle_invalid_id
     def add_user_chatbot_interaction(
-        self, id: str, user_message: dict[str, str], assistant_response: dict[str, str]
+        self,
+        id: str,
+        user_message: dict[str, str],
+        assistant_response: dict[str, str],
+        username: str,
     ) -> None:
         self._collection.update_one(
-            {"_id": ObjectId(id)},
+            {"username": username, "_id": ObjectId(id)},
             {"$push": {"messages": {"$each": [user_message, assistant_response]}}},
         )
 
-    def retrieve_all_conversations_metadata(self) -> list[ConversationRetrieve]:
-        result = self._collection.find({}, {"messages": False})
+    def retrieve_all_conversations_metadata(
+        self, username: str
+    ) -> list[ConversationRetrieve]:
+        result = self._collection.find({"username": username}, {"messages": False})
 
         return [
             ConversationRetrieve(
@@ -67,10 +57,11 @@ class ConversationRepository:
             for conversation in result
         ]
 
-    @_handle_invalid_id
-    def retrieve_dialogue(self, id: str) -> DialogueRetrieve:
+    @handle_invalid_id
+    def retrieve_dialogue(self, id: str, username: str) -> DialogueRetrieve:
         result = self._collection.find_one(
-            {"_id": ObjectId(id)}, {"_id": False, "messages": True}
+            {"username": username, "_id": ObjectId(id)},
+            {"_id": False, "messages": True},
         )
 
         if not result:
@@ -81,12 +72,12 @@ class ConversationRepository:
 
         return DialogueRetrieve(messages=result["messages"])
 
-    @_handle_invalid_id
+    @handle_invalid_id
     def update_conversation_metadata(
-        self, id: str, metadata: ConversationUpdateRequest
+        self, id: str, metadata: ConversationUpdateRequest, username: str
     ) -> None:
         result = self._collection.update_one(
-            {"_id": ObjectId(id)},
+            {"username": username, "_id": ObjectId(id)},
             {"$set": {"title": metadata.title}},
         )
 
@@ -96,9 +87,11 @@ class ConversationRepository:
                 detail=f"Conversation with id={id} not found",
             )
 
-    @_handle_invalid_id
-    def delete_conversation(self, id: str) -> None:
-        result = self._collection.delete_one({"_id": ObjectId(id)})
+    @handle_invalid_id
+    def delete_conversation(self, id: str, username: str) -> None:
+        result = self._collection.delete_one(
+            {"username": username, "_id": ObjectId(id)}
+        )
 
         if result.deleted_count == 0:
             raise HTTPException(
