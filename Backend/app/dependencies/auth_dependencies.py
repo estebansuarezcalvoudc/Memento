@@ -5,7 +5,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
 from ..core.settings import settings
-from ..database.repositories.auth_repo import AuthRepository
+from ..repositories.auth_repo import AuthRepository
 from ..schemas.auth_schema import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")

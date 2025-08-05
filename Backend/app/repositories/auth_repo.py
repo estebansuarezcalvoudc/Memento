@@ -3,8 +3,8 @@ from typing import Optional
 import pymongo
 from fastapi import HTTPException, status
 
-from ...core.settings import settings
-from ...schemas.auth_schema import UserCreate
+from ..core.settings import settings
+from ..schemas.auth_schema import UserCreate
 
 
 class AuthRepository:
