@@ -31,7 +31,7 @@ async def create_conversation(
 ) -> ConversationCreateResponse:
     try:
         conversation_service = ConversationService()
-        return conversation_service.create_conversation(
+        return await conversation_service.create_conversation(
             conversation_create_request, current_user.username
         )
     except Exception as e:
@@ -56,7 +56,7 @@ async def send_message(
 ) -> str:
     try:
         conversation_service = ConversationService()
-        return conversation_service.send_message(
+        return await conversation_service.send_message(
             id, send_message_request, current_user.username
         )
     except HTTPException:
