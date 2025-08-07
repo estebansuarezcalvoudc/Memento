@@ -35,7 +35,7 @@ async def create_conversation(
             conversation_create_request, current_user.username
         )
     except Exception as e:
-        _logger.error(f"Error creating conversation: {str(e)}")
+        _logger.error(f"Error creating conversation: {str(e)}", exc_info=True)
         _logger.error(f"Exception type: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -85,7 +85,9 @@ async def retrieve_all_conversations_metadata(
             current_user.username
         )
     except Exception as e:
-        _logger.error(f"Error retrieving all conversations metadata: {str(e)}", exc_info=True)
+        _logger.error(
+            f"Error retrieving all conversations metadata: {str(e)}", exc_info=True
+        )
         _logger.error(f"Exception type: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

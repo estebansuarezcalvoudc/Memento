@@ -3,6 +3,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     hf_token: str
+    anthropic_key: str
 
     secret_key: str
     algorithm: str
@@ -42,4 +43,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()  # type: ignore
-
