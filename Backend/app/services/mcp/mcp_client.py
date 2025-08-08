@@ -46,9 +46,7 @@ class MCPClient:
 
     async def process_query(self, conversation_history: list[dict[str, str]]) -> str:
         """Process a query using Claude and available tools"""
-        _logger.debug("process_query called")
-
-        response = await self.session.list_tools()  # type: ignore
+        response = await self.session.list_tools()  # type:ignore
         available_tools = [
             {
                 "name": tool.name,
@@ -62,11 +60,15 @@ class MCPClient:
         response = self.anthropic.messages.create(
             model="claude-3-5-sonnet-20241022",
             max_tokens=1000,
-            messages=conversation_history,  # type: ignore
-            tools=available_tools,  # type: ignore
+            messages=conversation_history,  # type:ignore
+            tools=available_tools,  # type:ignore
         )
 
-        # Process response and handle tool calls
+        return await self._process_response(response, conversation_history)
+
+    async def _process_response(
+        self, response, conversation_history: list[dict[str, str]]
+    ) -> str:
         final_text = []
 
         assistant_message_content = []
@@ -78,9 +80,10 @@ class MCPClient:
                 tool_name = content.name
                 tool_args = content.input
 
-                # Execute tool call
-                result = await self.session.call_tool(tool_name, tool_args)  # type: ignore
-                final_text.append(f"[Calling tool {tool_name} with args {tool_args}]")
+                _logger.info(f"Calling tool {tool_name} with args {tool_args}")
+                result = await self.session.call_tool(  # type:ignore
+                    tool_name, tool_args  # type: ignore
+                )
 
                 assistant_message_content.append(content)
                 conversation_history.append(
@@ -98,22 +101,20 @@ class MCPClient:
                                 "tool_use_id": content.id,
                                 "content": result.content,
                             }
-                        ],  # type: ignore
+                        ],  # type:ignore
                     }
                 )
 
-                # Get next response from Claude
                 response = self.anthropic.messages.create(
                     model="claude-3-5-sonnet-20241022",
                     max_tokens=1000,
-                    messages=conversation_history,  # type: ignore
-                    tools=available_tools,  # type: ignore
+                    messages=conversation_history,  # type:ignore
+                    tools=available_tools,  # type:ignore
                 )
 
                 final_text.append(response.content[0].text)  # type:ignore
 
         return "\n".join(final_text)
-
 
     async def send_message(self, conversation_history: list[dict[str, str]]) -> str:
         try:
