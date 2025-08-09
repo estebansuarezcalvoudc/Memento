@@ -1,6 +1,6 @@
 import json
 from contextlib import AsyncExitStack
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import ollama
 from mcp import ClientSession, StdioServerParameters
@@ -12,10 +12,8 @@ from ...core.settings import settings
 
 _logger = setup_logger(__name__)
 
-# Constants
-DEFAULT_SERVER_PATH = "/Backend/app/services/mcp/mcp_server.py"
-DEFAULT_MAX_TOKENS = 1000
-OPENAI_API_KEY = "ollama"
+_SERVER_PATH = "/Backend/app/services/mcp/mcp_server.py"
+_MAX_TOKENS = 1000
 
 
 class MCPClient:
@@ -45,7 +43,8 @@ class MCPClient:
             server_script_path: Path to the server script (.py or .js)
         """
         if not server_script_path:
-            server_script_path = DEFAULT_SERVER_PATH
+            server_script_path = _SERVER_PATH
+
         server_params = StdioServerParameters(
             command="python", args=[server_script_path], env=None
         )
@@ -96,7 +95,7 @@ class MCPClient:
             model=self._model,
             messages=conversation_history,  # type:ignore
             tools=available_tools,  # type:ignore
-            max_tokens=DEFAULT_MAX_TOKENS,
+            max_tokens=_MAX_TOKENS,
         )
 
         return await self._process_response(
@@ -125,9 +124,9 @@ class MCPClient:
 
     async def _process_tool_call(
         self,
-        available_tools: List[Dict[str, Any]],
-        conversation_history: List[Dict[str, Any]],
-        final_text: List[str],
+        available_tools: list[dict[str, Any]],
+        conversation_history: list[dict[str, Any]],
+        final_text: list[str],
         message: Any,
     ) -> None:
         self._append_tool_call_to_conversation_history(conversation_history, message)
@@ -139,14 +138,14 @@ class MCPClient:
             model=self._model,
             messages=conversation_history,  # type:ignore
             tools=available_tools,  # type:ignore
-            max_tokens=DEFAULT_MAX_TOKENS,
+            max_tokens=_MAX_TOKENS,
         )
 
         if response.choices[0].message.content:
             final_text.append(response.choices[0].message.content)
 
     def _append_tool_call_to_conversation_history(
-        self, conversation_history: List[Dict[str, Any]], message: Any
+        self, conversation_history: list[dict[str, Any]], message: Any
     ) -> None:
         conversation_history.append(
             {
@@ -167,7 +166,7 @@ class MCPClient:
         )
 
     async def _execute_tool_call(
-        self, conversation_history: List[Dict[str, Any]], tool_call: Any
+        self, conversation_history: list[dict[str, Any]], tool_call: Any
     ) -> None:
         if self._session is None:
             raise RuntimeError(
