@@ -18,22 +18,17 @@ class MCPClient:
         self._session: Optional[ClientSession] = None
         self.exit_stack = AsyncExitStack()
 
-        # Configure Ollama client
-        self.ollama_client = ollama.Client(host=settings.ollama_url)
+        ollama_client = ollama.Client(host=settings.ollama_url)
 
-        # Try to pull the model, but handle errors gracefully
         try:
-            self.ollama_client.pull(self._model)
+            ollama_client.pull(self._model)
             _logger.info(f"Successfully pulled model: {self._model}")
         except Exception as e:
-            _logger.warning(
-                f"Could not pull model {self._model}: {e}. Will attempt to use existing model."
-            )
+            raise ValueError()
 
-        # Configure OpenAI client to use Ollama
         self.openai = OpenAI(
-            base_url=settings.ollama_url + "/v1",  # Ollama's OpenAI-compatible endpoint
-            api_key="ollama",  # Ollama doesn't require a real API key, but OpenAI client expects one
+            base_url=settings.ollama_url + "/v1",
+            api_key="ollama",
         )
 
     async def connect_to_server(self, server_script_path: Optional[str] = None):
@@ -61,11 +56,15 @@ class MCPClient:
 
         await self._session.initialize()
 
-        response = await self._session.list_tools()
-        tools = response.tools
-        print("\nConnected to server with tools:", [tool.name for tool in tools])
+    async def send_message(self, conversation_history: list[dict[str, Any]]) -> str:
+        try:
+            _logger.debug("send_message called")
+            return await self._process_query(conversation_history)
+        except Exception as e:
+            _logger.error(f"Error sending message to MCP client: {str(e)}")
+            raise e
 
-    async def process_query(self, conversation_history: list[dict[str, Any]]) -> str:
+    async def _process_query(self, conversation_history: list[dict[str, Any]]) -> str:
         """Process a query using Ollama via OpenAI API and available tools"""
         response = await self._session.list_tools()  # type:ignore
 
@@ -110,7 +109,7 @@ class MCPClient:
                 available_tools, conversation_history, final_text, message
             )
 
-        return "\n".join(filter(None, final_text))  # Filter out None values
+        return "\n".join(filter(None, final_text))
 
     async def _process_tool_call(
         self, available_tools, conversation_history, final_text, message
@@ -150,7 +149,7 @@ class MCPClient:
 
     async def _execute_tool_call(self, conversation_history, tool_call):
         tool_name = tool_call.function.name
-        tool_args = eval(tool_call.function.arguments)  # Convert JSON string to dict
+        tool_args = eval(tool_call.function.arguments)
 
         _logger.info(f"Calling tool {tool_name} with args {tool_args}")
         result = await self._session.call_tool(  # type:ignore
@@ -164,14 +163,6 @@ class MCPClient:
                 "content": str(result.content),
             }
         )  # type:ignore
-
-    async def send_message(self, conversation_history: list[dict[str, Any]]) -> str:
-        try:
-            _logger.debug("send_message called")
-            return await self.process_query(conversation_history)
-        except Exception as e:
-            _logger.error(f"Error sending message to MCP client: {str(e)}")
-            raise e
 
     async def cleanup(self):
         """Clean up resources"""
