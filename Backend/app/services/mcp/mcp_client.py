@@ -1,11 +1,11 @@
-from typing import Optional
 from contextlib import AsyncExitStack
+from typing import Any, Optional
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
+from openai import OpenAI
 
-from anthropic import Anthropic
-
+import ollama
 from ...core.logging import setup_logger
 from ...core.settings import settings
 
@@ -13,10 +13,28 @@ _logger = setup_logger(__name__)
 
 
 class MCPClient:
-    def __init__(self):
-        self.session: Optional[ClientSession] = None
+    def __init__(self, model: str):
+        self._model = model
+        self._session: Optional[ClientSession] = None
         self.exit_stack = AsyncExitStack()
-        self.anthropic = Anthropic(api_key=settings.anthropic_key)
+
+        # Configure Ollama client
+        self.ollama_client = ollama.Client(host=settings.ollama_url)
+
+        # Try to pull the model, but handle errors gracefully
+        try:
+            self.ollama_client.pull(self._model)
+            _logger.info(f"Successfully pulled model: {self._model}")
+        except Exception as e:
+            _logger.warning(
+                f"Could not pull model {self._model}: {e}. Will attempt to use existing model."
+            )
+
+        # Configure OpenAI client to use Ollama
+        self.openai = OpenAI(
+            base_url=settings.ollama_url + "/v1",  # Ollama's OpenAI-compatible endpoint
+            api_key="ollama",  # Ollama doesn't require a real API key, but OpenAI client expects one
+        )
 
     async def connect_to_server(self, server_script_path: Optional[str] = None):
         """Connect to an MCP server
@@ -34,89 +52,120 @@ class MCPClient:
             stdio_client(server_params)
         )
         self.stdio, self.write = stdio_transport
-        self.session = await self.exit_stack.enter_async_context(
+        self._session = await self.exit_stack.enter_async_context(
             ClientSession(self.stdio, self.write)
         )
 
-        await self.session.initialize()
+        if self._session is None:
+            raise ValueError()
 
-        response = await self.session.list_tools()
+        await self._session.initialize()
+
+        response = await self._session.list_tools()
         tools = response.tools
         print("\nConnected to server with tools:", [tool.name for tool in tools])
 
-    async def process_query(self, conversation_history: list[dict[str, str]]) -> str:
-        """Process a query using Claude and available tools"""
-        response = await self.session.list_tools()  # type:ignore
+    async def process_query(self, conversation_history: list[dict[str, Any]]) -> str:
+        """Process a query using Ollama via OpenAI API and available tools"""
+        response = await self._session.list_tools()  # type:ignore
+
         available_tools = [
             {
-                "name": tool.name,
-                "description": tool.description,
-                "input_schema": tool.inputSchema,
+                "type": "function",
+                "function": {
+                    "name": tool.name,
+                    "description": tool.description,
+                    "parameters": tool.inputSchema,
+                },
             }
             for tool in response.tools
         ]
 
-        # Initial Claude API call
-        response = self.anthropic.messages.create(
-            model="claude-3-5-sonnet-20241022",
-            max_tokens=1000,
+        response = self.openai.chat.completions.create(
+            model=self._model,
             messages=conversation_history,  # type:ignore
             tools=available_tools,  # type:ignore
+            max_tokens=1000,
         )
 
-        return await self._process_response(response, conversation_history)
+        return await self._process_response(
+            response, conversation_history, available_tools
+        )
 
     async def _process_response(
-        self, response, conversation_history: list[dict[str, str]]
+        self,
+        response,
+        conversation_history: list[dict[str, Any]],
+        available_tools: list,
     ) -> str:
         final_text = []
 
-        assistant_message_content = []
-        for content in response.content:
-            if content.type == "text":
-                final_text.append(content.text)
-                assistant_message_content.append(content)
-            elif content.type == "tool_use":
-                tool_name = content.name
-                tool_args = content.input
+        message = response.choices[0].message
 
-                _logger.info(f"Calling tool {tool_name} with args {tool_args}")
-                result = await self.session.call_tool(  # type:ignore
-                    tool_name, tool_args  # type: ignore
-                )
+        if message.content:
+            final_text.append(message.content)
 
-                assistant_message_content.append(content)
-                conversation_history.append(
+        if message.tool_calls:
+            await self._process_tool_call(
+                available_tools, conversation_history, final_text, message
+            )
+
+        return "\n".join(filter(None, final_text))  # Filter out None values
+
+    async def _process_tool_call(
+        self, available_tools, conversation_history, final_text, message
+    ):
+        self._append_tool_call_to_conversation_history(conversation_history, message)
+
+        for tool_call in message.tool_calls:
+            await self._execute_tool_call(conversation_history, tool_call)
+
+        response = self.openai.chat.completions.create(
+            model=self._model,
+            messages=conversation_history,  # type:ignore
+            tools=available_tools,  # type:ignore
+            max_tokens=1000,
+        )
+
+        final_text.append(response.choices[0].message.content)
+
+    def _append_tool_call_to_conversation_history(self, conversation_history, message):
+        conversation_history.append(
+            {
+                "role": "assistant",
+                "content": message.content,
+                "tool_calls": [
                     {
-                        "role": "assistant",
-                        "content": assistant_message_content,  # type:ignore
+                        "id": tool_call.id,
+                        "type": "function",
+                        "function": {
+                            "name": tool_call.function.name,
+                            "arguments": tool_call.function.arguments,
+                        },
                     }
-                )
-                conversation_history.append(
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "tool_result",
-                                "tool_use_id": content.id,
-                                "content": result.content,
-                            }
-                        ],  # type:ignore
-                    }
-                )
+                    for tool_call in message.tool_calls
+                ],
+            }
+        )
 
-                response = self.anthropic.messages.create(
-                    model="claude-3-5-sonnet-20241022",
-                    max_tokens=1000,
-                    messages=conversation_history,  # type:ignore
-                    tools=available_tools,  # type:ignore
-                )
+    async def _execute_tool_call(self, conversation_history, tool_call):
+        tool_name = tool_call.function.name
+        tool_args = eval(tool_call.function.arguments)  # Convert JSON string to dict
 
-                final_text.append(response.content[0].text)  # type:ignore
+        _logger.info(f"Calling tool {tool_name} with args {tool_args}")
+        result = await self._session.call_tool(  # type:ignore
+            tool_name, tool_args  # type: ignore
+        )
 
-        return "\n".join(final_text)
+        conversation_history.append(
+            {
+                "role": "tool",
+                "tool_call_id": tool_call.id,
+                "content": str(result.content),
+            }
+        )  # type:ignore
 
-    async def send_message(self, conversation_history: list[dict[str, str]]) -> str:
+    async def send_message(self, conversation_history: list[dict[str, Any]]) -> str:
         try:
             _logger.debug("send_message called")
             return await self.process_query(conversation_history)

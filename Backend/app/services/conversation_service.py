@@ -16,9 +16,9 @@ _logger = setup_logger(__name__)
 
 class ConversationService(metaclass=SingletonMeta):
     def __init__(self) -> None:
-        self._model = "llama3.2"
+        self._model = "qwen3:0.6b"  # Changed to a more commonly available model
         self._repository = ConversationRepository()
-        self._mcp_client = MCPClient()
+        self._mcp_client = MCPClient(self._model)
         self._initialized = False
 
     async def _ensure_initialized(self) -> None:
