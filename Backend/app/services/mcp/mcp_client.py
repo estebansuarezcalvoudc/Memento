@@ -1,15 +1,21 @@
+import json
 from contextlib import AsyncExitStack
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional
 
+import ollama
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from openai import OpenAI
 
-import ollama
 from ...core.logging import setup_logger
 from ...core.settings import settings
 
 _logger = setup_logger(__name__)
+
+# Constants
+DEFAULT_SERVER_PATH = "/Backend/app/services/mcp/mcp_server.py"
+DEFAULT_MAX_TOKENS = 1000
+OPENAI_API_KEY = "ollama"
 
 
 class MCPClient:
@@ -24,7 +30,8 @@ class MCPClient:
             ollama_client.pull(self._model)
             _logger.info(f"Successfully pulled model: {self._model}")
         except Exception as e:
-            raise ValueError()
+            _logger.error(f"Failed to pull model {self._model}: {str(e)}")
+            raise ValueError(f"Failed to initialize model {self._model}: {str(e)}")
 
         self.openai = OpenAI(
             base_url=settings.ollama_url + "/v1",
@@ -38,7 +45,7 @@ class MCPClient:
             server_script_path: Path to the server script (.py or .js)
         """
         if not server_script_path:
-            server_script_path = "/Backend/app/services/mcp/mcp_server.py"
+            server_script_path = DEFAULT_SERVER_PATH
         server_params = StdioServerParameters(
             command="python", args=[server_script_path], env=None
         )
@@ -52,7 +59,7 @@ class MCPClient:
         )
 
         if self._session is None:
-            raise ValueError()
+            raise RuntimeError("Failed to establish MCP session")
 
         await self._session.initialize()
 
@@ -66,6 +73,11 @@ class MCPClient:
 
     async def _process_query(self, conversation_history: list[dict[str, Any]]) -> str:
         """Process a query using Ollama via OpenAI API and available tools"""
+        if self._session is None:
+            raise RuntimeError(
+                "MCP session not initialized. Call connect_to_server() first."
+            )
+
         response = await self._session.list_tools()  # type:ignore
 
         available_tools = [
@@ -84,7 +96,7 @@ class MCPClient:
             model=self._model,
             messages=conversation_history,  # type:ignore
             tools=available_tools,  # type:ignore
-            max_tokens=1000,
+            max_tokens=DEFAULT_MAX_TOKENS,
         )
 
         return await self._process_response(
@@ -112,8 +124,12 @@ class MCPClient:
         return "\n".join(filter(None, final_text))
 
     async def _process_tool_call(
-        self, available_tools, conversation_history, final_text, message
-    ):
+        self,
+        available_tools: List[Dict[str, Any]],
+        conversation_history: List[Dict[str, Any]],
+        final_text: List[str],
+        message: Any,
+    ) -> None:
         self._append_tool_call_to_conversation_history(conversation_history, message)
 
         for tool_call in message.tool_calls:
@@ -123,12 +139,15 @@ class MCPClient:
             model=self._model,
             messages=conversation_history,  # type:ignore
             tools=available_tools,  # type:ignore
-            max_tokens=1000,
+            max_tokens=DEFAULT_MAX_TOKENS,
         )
 
-        final_text.append(response.choices[0].message.content)
+        if response.choices[0].message.content:
+            final_text.append(response.choices[0].message.content)
 
-    def _append_tool_call_to_conversation_history(self, conversation_history, message):
+    def _append_tool_call_to_conversation_history(
+        self, conversation_history: List[Dict[str, Any]], message: Any
+    ) -> None:
         conversation_history.append(
             {
                 "role": "assistant",
@@ -147,9 +166,22 @@ class MCPClient:
             }
         )
 
-    async def _execute_tool_call(self, conversation_history, tool_call):
+    async def _execute_tool_call(
+        self, conversation_history: List[Dict[str, Any]], tool_call: Any
+    ) -> None:
+        if self._session is None:
+            raise RuntimeError(
+                "MCP session not initialized. Call connect_to_server() first."
+            )
+
         tool_name = tool_call.function.name
-        tool_args = eval(tool_call.function.arguments)
+        try:
+            tool_args = json.loads(tool_call.function.arguments)
+        except json.JSONDecodeError as e:
+            _logger.error(f"Failed to parse tool arguments: {e}")
+            raise ValueError(
+                f"Invalid tool arguments format: {tool_call.function.arguments}"
+            )
 
         _logger.info(f"Calling tool {tool_name} with args {tool_args}")
         result = await self._session.call_tool(  # type:ignore
@@ -164,6 +196,10 @@ class MCPClient:
             }
         )  # type:ignore
 
-    async def cleanup(self):
-        """Clean up resources"""
+    async def __aenter__(self):
+        """Async context manager entry"""
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit - clean up resources"""
         await self.exit_stack.aclose()
