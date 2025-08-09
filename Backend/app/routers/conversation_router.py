@@ -31,11 +31,11 @@ async def create_conversation(
 ) -> ConversationCreateResponse:
     try:
         conversation_service = ConversationService()
-        return conversation_service.create_conversation(
+        return await conversation_service.create_conversation(
             conversation_create_request, current_user.username
         )
     except Exception as e:
-        _logger.error(f"Error creating conversation: {str(e)}")
+        _logger.error(f"Error creating conversation: {str(e)}", exc_info=True)
         _logger.error(f"Exception type: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -56,7 +56,7 @@ async def send_message(
 ) -> str:
     try:
         conversation_service = ConversationService()
-        return conversation_service.send_message(
+        return await conversation_service.send_message(
             id, send_message_request, current_user.username
         )
     except HTTPException:
@@ -85,7 +85,9 @@ async def retrieve_all_conversations_metadata(
             current_user.username
         )
     except Exception as e:
-        _logger.error(f"Error retrieving all conversations metadata: {str(e)}", exc_info=True)
+        _logger.error(
+            f"Error retrieving all conversations metadata: {str(e)}", exc_info=True
+        )
         _logger.error(f"Exception type: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

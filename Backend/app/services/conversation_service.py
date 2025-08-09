@@ -1,6 +1,4 @@
-import ollama
-
-from ..core.settings import settings
+from ..core.logging import setup_logger
 from ..repositories.conversation_repo import ConversationRepository
 from ..schemas.conversation_schema import (
     ConversationCreateRequest,
@@ -11,49 +9,61 @@ from ..schemas.conversation_schema import (
     SendMessageRequest,
 )
 from ..utils.singleton_meta import SingletonMeta
+from .mcp.mcp_client import MCPClient
+
+_logger = setup_logger(__name__)
 
 
 class ConversationService(metaclass=SingletonMeta):
     def __init__(self) -> None:
-        self._model = "llama3.2"
+        self._model = "qwen3:0.6b"
         self._repository = ConversationRepository()
 
-    def create_conversation(
+    async def create_conversation(
         self, conversation_create_request: ConversationCreateRequest, username: str
     ) -> ConversationCreateResponse:
         id = self._repository.store_conversation("New chat", username)
+
+        assistant_response = await self._process_message(
+            id, conversation_create_request, username
+        )
+
         return ConversationCreateResponse(
             id=id,
-            assistant_response=self.send_message(
-                id, conversation_create_request, username
-            ),
+            assistant_response=assistant_response,
         )
 
-    def send_message(
+    async def send_message(
         self, id: str, send_message_request: SendMessageRequest, username: str
     ) -> str:
-        client = ollama.Client(host=settings.ollama_url)
+        return await self._process_message(id, send_message_request, username)
 
-        client.pull(send_message_request.language_model)
+    async def _process_message(
+        self,
+        id: str,
+        send_message_request: SendMessageRequest,
+        username: str,
+    ) -> str:
+        """Process a message using MCP client with automatic resource management"""
+        async with MCPClient(self._model) as client:
+            await client.connect_to_server()
 
-        conversation_history = self._repository.retrieve_dialogue(id, username).messages
-        user_message = {"role": "user", "content": send_message_request.message}
-        conversation_history.append(user_message)
+            _logger.debug("send_message triggered")
 
-        response = client.chat(
-            model=send_message_request.language_model,
-            messages=conversation_history,
-            keep_alive=0,
-        )
+            conversation_history = self._repository.retrieve_dialogue(
+                id, username
+            ).messages
+            user_message = {"role": "user", "content": send_message_request.message}
+            conversation_history.append(user_message)
 
-        reply = response.message.content or ""
-        assistant_response = {"role": "assistant", "content": reply}
+            reply = await client.send_message(conversation_history)
+            assistant_response = {"role": "assistant", "content": reply}
 
-        self._repository.add_user_chatbot_interaction(
-            id, user_message, assistant_response, username
-        )
+            self._repository.add_user_chatbot_interaction(
+                id, user_message, assistant_response, username
+            )
 
-        return reply
+            return reply
 
     def retrieve_all_conversations_metadata(
         self, username: str
