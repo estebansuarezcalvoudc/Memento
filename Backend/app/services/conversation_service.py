@@ -51,7 +51,7 @@ class ConversationService(metaclass=SingletonMeta):
             raise
 
     async def _process_message(self, id, send_message_request, username):
-        async with MCPClient(self._model) as client:
+        async with MCPClient(self._model, username) as client:
             await client.connect_to_server()
 
             _logger.debug("send_message triggered")

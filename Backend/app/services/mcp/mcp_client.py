@@ -18,8 +18,9 @@ _MAX_TOKENS = 2000
 
 
 class MCPClient:
-    def __init__(self, model: str):
+    def __init__(self, model: str, username: str = ""):
         self._model = model
+        self._username = username
         self._session: Optional[ClientSession] = None
         self.exit_stack = AsyncExitStack()
 
@@ -49,7 +50,9 @@ class MCPClient:
             raise FileNotFoundError(f"MCP server script not found at: {_SERVER_PATH}")
 
         server_params = StdioServerParameters(
-            command="python", args=[_SERVER_PATH], env=None
+            command="python",
+            args=[_SERVER_PATH],
+            env={**os.environ, "MCP_USERNAME": self._username},
         )
 
         try:
