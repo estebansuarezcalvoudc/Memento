@@ -6,17 +6,16 @@ from functools import wraps
 from typing import Any, Callable
 
 _LOG_DIR = "./logs"
-_LOG_FILE = "app.log"
 
 os.makedirs(_LOG_DIR, exist_ok=True)
 
 
-def setup_logger(name: str) -> logging.Logger:
+def setup_logger(name: str, log_file: str = "app.log") -> logging.Logger:
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
 
     if not logger.handlers:
-        log_path = os.path.join(_LOG_DIR, _LOG_FILE)
+        log_path = os.path.join(_LOG_DIR, log_file)
         file_handler = logging.FileHandler(log_path, mode="a", encoding="utf-8")
 
         formatter = logging.Formatter(

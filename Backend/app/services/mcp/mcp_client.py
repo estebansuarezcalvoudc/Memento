@@ -5,16 +5,17 @@ from typing import Any, Optional
 import ollama
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
+from mcp.types import TextContent
 from openai import OpenAI
 
 from ...core.logging import setup_logger
 from ...core.settings import settings
 import os
 
-_logger = setup_logger(__name__)
+_logger = setup_logger(__name__, log_file="mcp_client.log")
 
 _SERVER_PATH = os.path.join(os.path.dirname(__file__), "mcp_server.py")
-_MAX_TOKENS = 2000
+_MAX_TOKENS = 4000
 
 
 class MCPClient:
@@ -105,11 +106,29 @@ class MCPClient:
             for tool in response.tools
         ]
 
+        if not conversation_history or conversation_history[0].get("role") != "system":
+            system_message = {
+                "role": "system",
+                "content": (
+                    "You are a helpful assistant with access to tools. "
+                    "When a user asks about meetings or dates, use the available tools to get accurate information. "
+                    "If a user asks about 'today's meeting' or similar, first use get_current_date to get today's date, "
+                    "then use get_meeting_info_by_date with that date to get the meeting information. "
+                    "Always use tools when you need current date information or meeting data. "
+                ),
+            }
+            conversation_history = [system_message] + conversation_history
+
         response = self.openai.chat.completions.create(
             model=self._model,
             messages=conversation_history,  # type:ignore
             tools=available_tools,  # type:ignore
             max_tokens=_MAX_TOKENS,
+        )
+
+        tool_calls = response.choices[0].message.tool_calls
+        _logger.debug(
+            f"Calling {len(tool_calls) if tool_calls else 0} tools: {tool_calls}"
         )
 
         return await self._process_response(
@@ -125,16 +144,21 @@ class MCPClient:
         final_text = []
 
         message = response.choices[0].message
+        _logger.debug(
+            f"Received message: content={message.content}, tool_calls={bool(message.tool_calls)}"
+        )
 
         if message.content:
             final_text.append(message.content)
 
         if message.tool_calls:
+            _logger.info(f"Processing {len(message.tool_calls)} tool calls")
             await self._process_tool_call(
                 available_tools, conversation_history, final_text, message
             )
 
-        return "\n".join(filter(None, final_text))
+        result = "\n".join(filter(None, final_text))
+        return result
 
     async def _process_tool_call(
         self,
@@ -207,7 +231,7 @@ class MCPClient:
                 "tool_call_id": tool_call.id,
                 "content": str(result.content),
             }
-        )  # type:ignore
+        )
 
     async def __aenter__(self):
         """Async context manager entry"""
