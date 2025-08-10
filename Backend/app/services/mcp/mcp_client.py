@@ -12,7 +12,7 @@ from ...core.logging import setup_logger
 from ...core.settings import settings
 import os
 
-_logger = setup_logger(__name__, log_file="mcp_client.log")
+_logger = setup_logger(__name__, log_file="mcp_client.log", show_file_name=False)
 
 _SERVER_PATH = os.path.join(os.path.dirname(__file__), "mcp_server.py")
 _MAX_TOKENS = 4000
