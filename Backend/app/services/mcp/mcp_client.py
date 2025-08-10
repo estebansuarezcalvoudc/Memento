@@ -9,11 +9,12 @@ from openai import OpenAI
 
 from ...core.logging import setup_logger
 from ...core.settings import settings
+import os
 
 _logger = setup_logger(__name__)
 
-_SERVER_PATH = "/Backend/app/services/mcp/mcp_server.py"
-_MAX_TOKENS = 1000
+_SERVER_PATH = os.path.join(os.path.dirname(__file__), "mcp_server.py")
+_MAX_TOKENS = 2000
 
 
 class MCPClient:
@@ -36,31 +37,41 @@ class MCPClient:
             api_key="ollama",
         )
 
-    async def connect_to_server(self, server_script_path: Optional[str] = None):
+    async def connect_to_server(self):
         """Connect to an MCP server
 
         Args:
             server_script_path: Path to the server script (.py or .js)
         """
-        if not server_script_path:
-            server_script_path = _SERVER_PATH
+        _logger.info(f"Attempting to connect to MCP server at: {_SERVER_PATH}")
+
+        if not os.path.exists(_SERVER_PATH):
+            raise FileNotFoundError(f"MCP server script not found at: {_SERVER_PATH}")
 
         server_params = StdioServerParameters(
-            command="python", args=[server_script_path], env=None
+            command="python", args=[_SERVER_PATH], env=None
         )
 
-        stdio_transport = await self.exit_stack.enter_async_context(
-            stdio_client(server_params)
-        )
-        self.stdio, self.write = stdio_transport
-        self._session = await self.exit_stack.enter_async_context(
-            ClientSession(self.stdio, self.write)
-        )
+        try:
+            stdio_transport = await self.exit_stack.enter_async_context(
+                stdio_client(server_params)
+            )
+            self.stdio, self.write = stdio_transport
+            self._session = await self.exit_stack.enter_async_context(
+                ClientSession(self.stdio, self.write)
+            )
 
-        if self._session is None:
-            raise RuntimeError("Failed to establish MCP session")
+            if self._session is None:
+                raise RuntimeError("Failed to establish MCP session")
 
-        await self._session.initialize()
+            _logger.info("MCP session created, initializing...")
+            await self._session.initialize()
+            _logger.info("MCP session initialized successfully")
+
+        except Exception as e:
+            _logger.error(f"Failed to connect to MCP server: {str(e)}")
+            _logger.error(f"Server script path: {_SERVER_PATH}")
+            raise RuntimeError(f"MCP connection failed: {str(e)}") from e
 
     async def send_message(self, conversation_history: list[dict[str, Any]]) -> str:
         try:
