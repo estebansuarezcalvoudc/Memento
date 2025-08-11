@@ -5,7 +5,6 @@ from typing import Any, Optional
 import ollama
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
-from mcp.types import TextContent
 from openai import OpenAI
 
 from ...core.logging import setup_logger
@@ -15,8 +14,8 @@ import os
 _logger = setup_logger(__name__, log_file="mcp_client.log", show_file_name=False)
 
 _SERVER_PATH = os.path.join(os.path.dirname(__file__), "mcp_server.py")
-_MAX_TOKENS = 4000
-
+_MAX_TOKENS = 800
+_TEMPERATURE = 0.1
 
 class MCPClient:
     def __init__(self, model: str, username: str = ""):
@@ -106,24 +105,14 @@ class MCPClient:
             for tool in response.tools
         ]
 
-        if not conversation_history or conversation_history[0].get("role") != "system":
-            system_message = {
-                "role": "system",
-                "content": (
-                    "You are a helpful assistant with access to tools. "
-                    "When a user asks about meetings or dates, use the available tools to get accurate information. "
-                    "If a user asks about 'today's meeting' or similar, first use get_current_date to get today's date, "
-                    "then use get_meeting_info_by_date with that date to get the meeting information. "
-                    "Always use tools when you need current date information or meeting data. "
-                ),
-            }
-            conversation_history = [system_message] + conversation_history
+        conversation_history = self._add_system_prompt(conversation_history)
 
         response = self.openai.chat.completions.create(
             model=self._model,
             messages=conversation_history,  # type:ignore
             tools=available_tools,  # type:ignore
             max_tokens=_MAX_TOKENS,
+            temperature=_TEMPERATURE,
         )
 
         tool_calls = response.choices[0].message.tool_calls
@@ -134,6 +123,40 @@ class MCPClient:
         return await self._process_response(
             response, conversation_history, available_tools
         )
+
+    def _add_system_prompt(self, conversation_history):
+        if not conversation_history or conversation_history[0].get("role") != "system":
+            system_message = {
+                "role": "system",
+                "content": (
+                    "You are a meeting assistant with access to tools.\n\n"
+                    "MANDATORY TOOL CALLING RULE: When users ask about meetings using relative dates (yesterday, today, last Monday, etc.), "
+                    "you MUST make exactly TWO function calls in this order:\n"
+                    "1. FIRST CALL: get_current_date() - no exceptions\n"
+                    "2. SECOND CALL: get_meeting_info_by_date(calculated_date)\n\n"
+                    "CRITICAL DATE CALCULATION RULES:\n"
+                    "- ALWAYS use the date returned by get_current_date() as your reference point\n"
+                    "- NEVER use any other date you think you know\n"
+                    "- Calculate relative dates by adding/subtracting days from the current date\n"
+                    "- Use YYYY-MM-DD format for all dates passed to get_meeting_info_by_date\n"
+                    "- Examples of calculations:\n"
+                    "  * If current date is 2024-02-11, then yesterday = 2024-02-10\n"
+                    "  * If current date is 2025-05-07, then today = 2025-05-07\n"
+                    "  * If current date is 2025-08-04 (Monday), then last Friday = 2025-08-01\n\n"
+                    "Do NOT provide any response to the user until you have made BOTH function calls. "
+                    "Do NOT skip the get_current_date call even if you think you know the date.\n\n"
+                    "Example workflow:\n"
+                    "User: 'What happened in yesterday's meeting?'\n"
+                    "Your actions: \n"
+                    "1. Call get_current_date() → receives '2025-08-11'\n"
+                    "2. Calculate yesterday: 2025-08-11 minus 1 day = 2025-08-10\n"
+                    "3. Call get_meeting_info_by_date('2025-08-10')\n"
+                    "4. Then provide response to user based on the meeting data\n\n"
+                    "IMPORTANT: Always double-check your date calculations before making the second tool call."
+                ),
+            }
+            conversation_history = [system_message] + conversation_history
+        return conversation_history
 
     async def _process_response(
         self,
@@ -177,6 +200,7 @@ class MCPClient:
             messages=conversation_history,  # type:ignore
             tools=available_tools,  # type:ignore
             max_tokens=_MAX_TOKENS,
+            temperature=_TEMPERATURE
         )
 
         if response.choices[0].message.content:

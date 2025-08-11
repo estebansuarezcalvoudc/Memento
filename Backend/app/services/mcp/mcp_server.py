@@ -25,7 +25,7 @@ async def get_current_date() -> str:
     to call get_meeting_info_by_date.
 
     Returns:
-        str: Current date in YYYY-MM-DD format (e.g., "2025-08-10")
+            str: Current date in YYYY-MM-DD format
     """
     now = datetime.now()
     return now.strftime("%Y-%m-%d")
@@ -81,7 +81,7 @@ class MeetingRepository:
         )
 
         if not result:
-            return f"Meeting with date={date} for user={username} not found"
+            return f"Meeting with date={date}"
 
         return {"summary": result["summary"], "transcription": result["transcription"]}
 
