@@ -16,7 +16,6 @@ _logger = setup_logger(__name__)
 
 class ConversationService(metaclass=SingletonMeta):
     def __init__(self) -> None:
-        self._model = "qwen3:1.7b"
         self._repository = ConversationRepository()
 
     async def create_conversation(
@@ -50,8 +49,10 @@ class ConversationService(metaclass=SingletonMeta):
             _logger.error(f"Error in _process_message: {type(e).__name__}: {str(e)}")
             raise
 
-    async def _process_message(self, id, send_message_request, username):
-        async with MCPClient(self._model, username) as client:
+    async def _process_message(
+        self, id: str, send_message_request: SendMessageRequest, username: str
+    ):
+        async with MCPClient(username) as client:
             await client.connect_to_server()
 
             _logger.debug("send_message triggered")
@@ -62,7 +63,9 @@ class ConversationService(metaclass=SingletonMeta):
             user_message = {"role": "user", "content": send_message_request.message}
             conversation_history.append(user_message)
 
-            reply = await client.send_message(conversation_history)
+            reply = await client.send_message(
+                conversation_history, send_message_request.language_model
+            )
             assistant_response = {"role": "assistant", "content": reply}
 
             self._repository.add_user_chatbot_interaction(

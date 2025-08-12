@@ -1,4 +1,6 @@
 import json
+import os
+import traceback
 from contextlib import AsyncExitStack
 from typing import Any, Optional
 
@@ -8,32 +10,23 @@ from openai import OpenAI
 
 from ...core.logging import setup_logger
 from ...core.settings import settings
-import os
 
 _logger = setup_logger(__name__, log_file="mcp_client.log", show_file_name=False)
 
 _SERVER_PATH = os.path.join(os.path.dirname(__file__), "mcp_server.py")
-_MAX_TOKENS = 1000
+_MAX_COMPLETION_TOKENS = 1000
 _TEMPERATURE = 0.1
 
 
 class MCPClient:
-    def __init__(self, model: str = "gpt-4o", username: str = ""):
-        self._model = "gpt-4o-mini"
+    def __init__(self, username: str):
         self._username = username
         self._session: Optional[ClientSession] = None
         self.exit_stack = AsyncExitStack()
 
         self.openai = OpenAI(api_key=settings.openai_key)
 
-        _logger.info(f"Using model model: {self._model}")
-
     async def connect_to_server(self):
-        """Connect to an MCP server
-
-        Args:
-            server_script_path: Path to the server script (.py or .js)
-        """
         _logger.info(f"Attempting to connect to MCP server at: {_SERVER_PATH}")
 
         if not os.path.exists(_SERVER_PATH):
@@ -85,19 +78,23 @@ class MCPClient:
 
         return available_tools
 
-    async def send_message(self, conversation_history: list[dict[str, Any]]) -> str:
+    async def send_message(
+        self, conversation_history: list[dict[str, Any]], language_model: str
+    ) -> str:
+        _logger.info(f"Using model {language_model}")
         try:
-            result = await self._process_query(conversation_history)
+            result = await self._process_query(conversation_history, language_model)
             return result
         except Exception as e:
             _logger.error(f"Error sending message to MCP client: {str(e)}")
             _logger.error(f"Exception type: {type(e).__name__}")
-            import traceback
 
             _logger.error(f"Full traceback: {traceback.format_exc()}")
             raise e
 
-    async def _process_query(self, conversation_history: list[dict[str, Any]]) -> str:
+    async def _process_query(
+        self, conversation_history: list[dict[str, Any]], language_model: str
+    ) -> str:
         """Process a query using Ollama via OpenAI API and available tools"""
         if self._session is None:
             raise RuntimeError(
@@ -108,10 +105,10 @@ class MCPClient:
 
         _logger.info("Making initial OpenAI API call")
         response = self.openai.chat.completions.create(
-            model=self._model,
+            model=language_model,
             messages=conversation_history,  # type:ignore
             tools=self._available_tools,  # type:ignore
-            max_tokens=_MAX_TOKENS,
+            max_completion_tokens=_MAX_COMPLETION_TOKENS,
             temperature=_TEMPERATURE,
         )
 
@@ -121,7 +118,7 @@ class MCPClient:
         )
 
         return await self._process_response(
-            response, conversation_history, self._available_tools
+            response, conversation_history, self._available_tools, language_model
         )
 
     def _add_system_prompt(self, conversation_history):
@@ -188,6 +185,7 @@ class MCPClient:
         response,
         conversation_history: list[dict[str, Any]],
         available_tools: list,
+        language_model: str,
     ) -> str:
         try:
             final_text = []
@@ -203,7 +201,11 @@ class MCPClient:
 
             if message.tool_calls:
                 await self._process_tool_call(
-                    available_tools, conversation_history, final_text, message
+                    available_tools,
+                    conversation_history,
+                    final_text,
+                    message,
+                    language_model,
                 )
             else:
                 _logger.debug("No tool calls to process")
@@ -226,6 +228,7 @@ class MCPClient:
         conversation_history: list[dict[str, Any]],
         final_text: list[str],
         message: Any,
+        language_model: str,
     ) -> None:
         try:
             self._append_tool_call_to_conversation_history(
@@ -239,10 +242,10 @@ class MCPClient:
                 await self._execute_tool_call(conversation_history, tool_call)
 
             response = self.openai.chat.completions.create(
-                model=self._model,
+                model=language_model,
                 messages=conversation_history,  # type:ignore
                 tools=available_tools,  # type:ignore
-                max_tokens=_MAX_TOKENS,
+                max_completion_tokens=_MAX_COMPLETION_TOKENS,
                 temperature=_TEMPERATURE,
             )
 
@@ -253,9 +256,15 @@ class MCPClient:
                 )
             elif response.choices[0].message.tool_calls:
                 # Model wants to make more tool calls - handle them recursively
-                _logger.info(f"Model wants to make {len(response.choices[0].message.tool_calls)} additional tool calls")
+                _logger.info(
+                    f"Model wants to make {len(response.choices[0].message.tool_calls)} additional tool calls"
+                )
                 await self._process_tool_call(
-                    available_tools, conversation_history, final_text, response.choices[0].message
+                    available_tools,
+                    conversation_history,
+                    final_text,
+                    response.choices[0].message,
+                    language_model,
                 )
                 _logger.warning("Model response has no content")
 
@@ -310,7 +319,7 @@ class MCPClient:
             result = await self._session.call_tool(  # type:ignore
                 tool_name, tool_args  # type: ignore
             )
-            _logger.debug(f"Tool {tool_name} result: {result.content}")
+            _logger.debug(f"Tool {tool_name} result: {str(result.content)[:100]}...")
         except Exception as e:
             _logger.error(f"Failed to execute tool {tool_name}: {str(e)}")
             _logger.error(f"Tool arguments were: {tool_args}")
