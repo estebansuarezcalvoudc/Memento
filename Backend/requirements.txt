@@ -16,6 +16,5 @@ ctranslate2==4.4.0
 pymongo
 pyjwt
 passlib[bcrypt]
-anthropic
-httpx
+openai
 mcp[cli]
