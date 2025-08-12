@@ -17,6 +17,7 @@ _SERVER_PATH = os.path.join(os.path.dirname(__file__), "mcp_server.py")
 _MAX_TOKENS = 800
 _TEMPERATURE = 0.1
 
+
 class MCPClient:
     def __init__(self, model: str, username: str = ""):
         self._model = model
@@ -33,10 +34,7 @@ class MCPClient:
             _logger.error(f"Failed to pull model {self._model}: {str(e)}")
             raise ValueError(f"Failed to initialize model {self._model}: {str(e)}")
 
-        self.openai = OpenAI(
-            base_url=settings.ollama_url + "/v1",
-            api_key="ollama",
-        )
+        self.openai = OpenAI(base_url=settings.ollama_url + "/v1", api_key="ollama")
 
     async def connect_to_server(self):
         """Connect to an MCP server
@@ -126,37 +124,62 @@ class MCPClient:
 
     def _add_system_prompt(self, conversation_history):
         if not conversation_history or conversation_history[0].get("role") != "system":
+            tool_instructions = self._get_tool_calling_instructions()
+            formatting_instructions = self._get_formatting_instructions()
+
             system_message = {
                 "role": "system",
-                "content": (
-                    "You are a meeting assistant with access to tools.\n\n"
-                    "MANDATORY TOOL CALLING RULE: When users ask about meetings using relative dates (yesterday, today, last Monday, etc.), "
-                    "you MUST make exactly TWO function calls in this order:\n"
-                    "1. FIRST CALL: get_current_date() - no exceptions\n"
-                    "2. SECOND CALL: get_meeting_info_by_date(calculated_date)\n\n"
-                    "CRITICAL DATE CALCULATION RULES:\n"
-                    "- ALWAYS use the date returned by get_current_date() as your reference point\n"
-                    "- NEVER use any other date you think you know\n"
-                    "- Calculate relative dates by adding/subtracting days from the current date\n"
-                    "- Use YYYY-MM-DD format for all dates passed to get_meeting_info_by_date\n"
-                    "- Examples of calculations:\n"
-                    "  * If current date is 2024-02-11, then yesterday = 2024-02-10\n"
-                    "  * If current date is 2025-05-07, then today = 2025-05-07\n"
-                    "  * If current date is 2025-08-04 (Monday), then last Friday = 2025-08-01\n\n"
-                    "Do NOT provide any response to the user until you have made BOTH function calls. "
-                    "Do NOT skip the get_current_date call even if you think you know the date.\n\n"
-                    "Example workflow:\n"
-                    "User: 'What happened in yesterday's meeting?'\n"
-                    "Your actions: \n"
-                    "1. Call get_current_date() → receives '2025-08-11'\n"
-                    "2. Calculate yesterday: 2025-08-11 minus 1 day = 2025-08-10\n"
-                    "3. Call get_meeting_info_by_date('2025-08-10')\n"
-                    "4. Then provide response to user based on the meeting data\n\n"
-                    "IMPORTANT: Always double-check your date calculations before making the second tool call."
-                ),
+                "content": f"You are a meeting assistant with access to tools.\n\n{tool_instructions}\n\n{formatting_instructions}",
             }
             conversation_history = [system_message] + conversation_history
         return conversation_history
+
+    def _get_tool_calling_instructions(self) -> str:
+        """Get the tool calling instructions for the system prompt"""
+        return (
+            "MANDATORY TOOL CALLING RULE: When users ask about meetings using relative dates (yesterday, today, last Monday, etc.), "
+            "you MUST make exactly TWO function calls in this order:\n"
+            "1. FIRST CALL: get_current_date() - no exceptions\n"
+            "2. SECOND CALL: get_meeting_info_by_date(calculated_date)\n\n"
+            "CRITICAL DATE CALCULATION RULES:\n"
+            "- ALWAYS use the date returned by get_current_date() as your reference point\n"
+            "- NEVER use any other date you think you know\n"
+            "- Calculate relative dates by subtracting days from the current date\n"
+            "- If the user asks about a week day (for instance, Monday), you will have to retrieve the current date, if it is Friday, for example, you will have to substract 4 days to the current day, since Monday is 4 days before Friday"
+            "- Use YYYY-MM-DD format for all dates passed to get_meeting_info_by_date\n"
+            "- Examples of calculations:\n"
+            "  * If current date is 2024-02-11, then yesterday = 2024-02-10\n"
+            "  * If current date is 2025-05-07, then today = 2025-05-07\n"
+            "  * If current date is 2025-08-04 (Monday), then last Friday = 2025-08-01\n\n"
+            "Instructions on how to calculate the date when the user asks about a week day (for instance, last Monday):\n"
+            "- Call the get_current_date function to retrieve the current date\n"
+            "- Calculate how many days there are between the week day the user asked and the actual date. There are 7 days in a week: Monday (1), Tuesday (2), Wednesday (3), Thusday (4), Friday (5), Saturday (6), Sunday (7). In order to calculate the date the user asks, you will have to count the days between the day the user asked and the current day. Examples:\n "
+            "  - Today is Thursday and the user asks about last Tuesday, then it will be 2 days ago (count Tuesday and Wednesday, 2 days)."
+            "  - Today is Monday and the user asks about last Friday, then the date will be 3 days ago (count Friday, Saturday and Sunday, 3 days). So, to retrieve the difference, you will have to count how many days are in between. "
+            "Do NOT provide any response to the user until you have made BOTH function calls. "
+            "Do NOT skip the get_current_date call even if you think you know the date.\n\n"
+            "Example workflow:\n"
+            "User: 'What happened in yesterday's meeting?'\n"
+            "Your actions: \n"
+            "1. Call get_current_date() → receives '2025-08-11'\n"
+            "2. Calculate yesterday: 2025-08-11 minus 1 day = 2025-08-10\n"
+            "3. Call get_meeting_info_by_date('2025-08-10')\n"
+            "4. Then provide response to user based on the meeting data\n\n"
+            "IMPORTANT: Always double-check your date calculations before making the second tool call."
+        )
+
+    def _get_formatting_instructions(self) -> str:
+        """Get the response formatting instructions for the system prompt"""
+        return (
+            "RESPONSE FORMATTING RULES:\n"
+            "- ALWAYS follow the user's specific formatting requests exactly\n"
+            "- If the user asks for a single sentence, respond with only one sentence\n"
+            "- If the user asks for a short summary, provide a concise summary\n"
+            "- If the user asks for detailed information, provide comprehensive details\n"
+            "- If the user asks for bullet points, format your response as bullet points\n"
+            "- If the user specifies a particular length or style, match it precisely\n"
+            "- Pay attention to keywords like 'briefly', 'detailed', 'list', 'summarize', etc."
+        )
 
     async def _process_response(
         self,
@@ -200,7 +223,7 @@ class MCPClient:
             messages=conversation_history,  # type:ignore
             tools=available_tools,  # type:ignore
             max_tokens=_MAX_TOKENS,
-            temperature=_TEMPERATURE
+            temperature=_TEMPERATURE,
         )
 
         if response.choices[0].message.content:

@@ -18,17 +18,17 @@ mcp = FastMCP("weather")
 
 @mcp.tool()
 async def get_current_date() -> str:
-    """Get the current date in YYYY-MM-DD format.
+    """Get the current date in <YYYY-MM-DD week_day> format (week_day is the day of the week, Friday for instance).
 
-    This tool returns the current date in a standardized format that can be used
-    with other tools that require date parameters. Use this when you need today's date
-    to call get_meeting_info_by_date.
 
     Returns:
-            str: Current date in YYYY-MM-DD format
+            str: Current date in YYYY-MM-DD format followed by the day of the week
+                 (e.g., "2024-01-15 Monday")
     """
     now = datetime.now()
-    return now.strftime("%Y-%m-%d")
+    date_str = now.strftime("%Y-%m-%d")
+    day_of_week = now.strftime("%A")
+    return f"{date_str} {day_of_week}"
 
 
 @mcp.tool()
@@ -36,9 +36,6 @@ async def get_meeting_info_by_date(date_str: str) -> dict[str, str] | str:
     """
     Retrieves meeting information for a specific date. This tool fetches the meeting
     summary and transcription from the repository for the given date.
-
-    IMPORTANT: Use this tool after getting the date from get_current_date when the user
-    asks about "today's meeting" or meetings for a specific date.
 
     Args:
         date_str (str): The date string in format 'YYYY-MM-DD' for which to retrieve
