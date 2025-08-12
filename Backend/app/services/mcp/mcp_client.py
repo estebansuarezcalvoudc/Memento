@@ -2,7 +2,6 @@ import json
 from contextlib import AsyncExitStack
 from typing import Any, Optional
 
-import ollama
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from openai import OpenAI
@@ -14,27 +13,20 @@ import os
 _logger = setup_logger(__name__, log_file="mcp_client.log", show_file_name=False)
 
 _SERVER_PATH = os.path.join(os.path.dirname(__file__), "mcp_server.py")
-_MAX_TOKENS = 800
+_MAX_TOKENS = 1000
 _TEMPERATURE = 0.1
 
 
 class MCPClient:
-    def __init__(self, model: str, username: str = ""):
-        self._model = model
+    def __init__(self, model: str = "gpt-4o", username: str = ""):
+        self._model = "gpt-4o-mini"
         self._username = username
         self._session: Optional[ClientSession] = None
         self.exit_stack = AsyncExitStack()
 
-        ollama_client = ollama.Client(host=settings.ollama_url)
+        self.openai = OpenAI(api_key=settings.openai_key)
 
-        try:
-            ollama_client.pull(self._model)
-            _logger.info(f"Successfully pulled model: {self._model}")
-        except Exception as e:
-            _logger.error(f"Failed to pull model {self._model}: {str(e)}")
-            raise ValueError(f"Failed to initialize model {self._model}: {str(e)}")
-
-        self.openai = OpenAI(base_url=settings.ollama_url + "/v1", api_key="ollama")
+        _logger.info(f"Using model model: {self._model}")
 
     async def connect_to_server(self):
         """Connect to an MCP server
@@ -69,26 +61,14 @@ class MCPClient:
             await self._session.initialize()
             _logger.info("MCP session initialized successfully")
 
+            self._available_tools = await self._retrieve_available_tools()
+
         except Exception as e:
             _logger.error(f"Failed to connect to MCP server: {str(e)}")
             _logger.error(f"Server script path: {_SERVER_PATH}")
             raise RuntimeError(f"MCP connection failed: {str(e)}") from e
 
-    async def send_message(self, conversation_history: list[dict[str, Any]]) -> str:
-        try:
-            _logger.debug("send_message called")
-            return await self._process_query(conversation_history)
-        except Exception as e:
-            _logger.error(f"Error sending message to MCP client: {str(e)}")
-            raise e
-
-    async def _process_query(self, conversation_history: list[dict[str, Any]]) -> str:
-        """Process a query using Ollama via OpenAI API and available tools"""
-        if self._session is None:
-            raise RuntimeError(
-                "MCP session not initialized. Call connect_to_server() first."
-            )
-
+    async def _retrieve_available_tools(self):
         response = await self._session.list_tools()  # type:ignore
 
         available_tools = [
@@ -103,12 +83,34 @@ class MCPClient:
             for tool in response.tools
         ]
 
+        return available_tools
+
+    async def send_message(self, conversation_history: list[dict[str, Any]]) -> str:
+        try:
+            result = await self._process_query(conversation_history)
+            return result
+        except Exception as e:
+            _logger.error(f"Error sending message to MCP client: {str(e)}")
+            _logger.error(f"Exception type: {type(e).__name__}")
+            import traceback
+
+            _logger.error(f"Full traceback: {traceback.format_exc()}")
+            raise e
+
+    async def _process_query(self, conversation_history: list[dict[str, Any]]) -> str:
+        """Process a query using Ollama via OpenAI API and available tools"""
+        if self._session is None:
+            raise RuntimeError(
+                "MCP session not initialized. Call connect_to_server() first."
+            )
+
         conversation_history = self._add_system_prompt(conversation_history)
 
+        _logger.info("Making initial OpenAI API call")
         response = self.openai.chat.completions.create(
             model=self._model,
             messages=conversation_history,  # type:ignore
-            tools=available_tools,  # type:ignore
+            tools=self._available_tools,  # type:ignore
             max_tokens=_MAX_TOKENS,
             temperature=_TEMPERATURE,
         )
@@ -119,7 +121,7 @@ class MCPClient:
         )
 
         return await self._process_response(
-            response, conversation_history, available_tools
+            response, conversation_history, self._available_tools
         )
 
     def _add_system_prompt(self, conversation_history):
@@ -187,24 +189,36 @@ class MCPClient:
         conversation_history: list[dict[str, Any]],
         available_tools: list,
     ) -> str:
-        final_text = []
+        try:
+            final_text = []
 
-        message = response.choices[0].message
-        _logger.debug(
-            f"Received message: content={message.content}, tool_calls={bool(message.tool_calls)}"
-        )
-
-        if message.content:
-            final_text.append(message.content)
-
-        if message.tool_calls:
-            _logger.info(f"Processing {len(message.tool_calls)} tool calls")
-            await self._process_tool_call(
-                available_tools, conversation_history, final_text, message
+            message = response.choices[0].message
+            _logger.debug(f"Received message: {message}")
+            _logger.debug(
+                f"Received message: content={message.content}, tool_calls={bool(message.tool_calls)}"
             )
 
-        result = "\n".join(filter(None, final_text))
-        return result
+            if message.content:
+                final_text.append(message.content)
+
+            if message.tool_calls:
+                await self._process_tool_call(
+                    available_tools, conversation_history, final_text, message
+                )
+            else:
+                _logger.debug("No tool calls to process")
+
+            result = "\n".join(filter(None, final_text))
+            _logger.debug(f"Final result length: {len(result)} characters")
+
+            return result
+
+        except Exception as e:
+            _logger.error(f"Error in _process_response: {str(e)}")
+            _logger.error(
+                f"Available tools: {[tool['function']['name'] for tool in available_tools]}"
+            )
+            raise
 
     async def _process_tool_call(
         self,
@@ -213,21 +227,44 @@ class MCPClient:
         final_text: list[str],
         message: Any,
     ) -> None:
-        self._append_tool_call_to_conversation_history(conversation_history, message)
+        try:
+            self._append_tool_call_to_conversation_history(
+                conversation_history, message
+            )
 
-        for tool_call in message.tool_calls:
-            await self._execute_tool_call(conversation_history, tool_call)
+            for i, tool_call in enumerate(message.tool_calls):
+                _logger.debug(
+                    f"Executing tool call {i+1}/{len(message.tool_calls)}: {tool_call.function.name}"
+                )
+                await self._execute_tool_call(conversation_history, tool_call)
 
-        response = self.openai.chat.completions.create(
-            model=self._model,
-            messages=conversation_history,  # type:ignore
-            tools=available_tools,  # type:ignore
-            max_tokens=_MAX_TOKENS,
-            temperature=_TEMPERATURE,
-        )
+            response = self.openai.chat.completions.create(
+                model=self._model,
+                messages=conversation_history,  # type:ignore
+                tools=available_tools,  # type:ignore
+                max_tokens=_MAX_TOKENS,
+                temperature=_TEMPERATURE,
+            )
 
-        if response.choices[0].message.content:
-            final_text.append(response.choices[0].message.content)
+            if response.choices[0].message.content:
+                final_text.append(response.choices[0].message.content)
+                _logger.debug(
+                    f"Added final response to result: {response.choices[0].message.content[:100]}..."
+                )
+            elif response.choices[0].message.tool_calls:
+                # Model wants to make more tool calls - handle them recursively
+                _logger.info(f"Model wants to make {len(response.choices[0].message.tool_calls)} additional tool calls")
+                await self._process_tool_call(
+                    available_tools, conversation_history, final_text, response.choices[0].message
+                )
+                _logger.warning("Model response has no content")
+
+        except Exception as e:
+            _logger.error(f"Error in _process_tool_call: {str(e)}")
+            _logger.error(
+                f"Tool calls: {[tc.function.name for tc in message.tool_calls]}"
+            )
+            raise
 
     def _append_tool_call_to_conversation_history(
         self, conversation_history: list[dict[str, Any]], message: Any
@@ -268,9 +305,18 @@ class MCPClient:
             )
 
         _logger.info(f"Calling tool {tool_name} with args {tool_args}")
-        result = await self._session.call_tool(  # type:ignore
-            tool_name, tool_args  # type: ignore
-        )
+
+        try:
+            result = await self._session.call_tool(  # type:ignore
+                tool_name, tool_args  # type: ignore
+            )
+            _logger.debug(f"Tool {tool_name} result: {result.content}")
+        except Exception as e:
+            _logger.error(f"Failed to execute tool {tool_name}: {str(e)}")
+            _logger.error(f"Tool arguments were: {tool_args}")
+            raise RuntimeError(
+                f"Tool execution failed for {tool_name}: {str(e)}"
+            ) from e
 
         conversation_history.append(
             {
