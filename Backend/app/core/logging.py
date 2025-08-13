@@ -19,9 +19,6 @@ def setup_logger(
     if not logger.handlers:
         log_path = os.path.join(_LOG_DIR, log_file)
 
-        with open(log_path, "a", encoding="utf-8") as f:
-            f.write("\n\n--------------------------------------\n\n\n")
-
         file_handler = logging.FileHandler(log_path, mode="a", encoding="utf-8")
 
         formatter = logging.Formatter(
