@@ -4,10 +4,6 @@ from ..language_models_utils import create_openai_client
 
 _logger = setup_logger(__name__)
 
-# TODO inyect these options as a dependency from the router
-_MAX_COMPLETION_TOKENS = 600
-_TEMPERATURE = 0.2
-
 _DEFAULT_PROMPT = """
     Analyze this meeting transcript and provide a structured summary with the following:
 
@@ -64,8 +60,7 @@ def get_meeting_summary(
             {"role": "system", "content": _DEFAULT_PROMPT},
             {"role": "user", "content": diarized_dialogue},
         ],
-        max_completion_tokens=_MAX_COMPLETION_TOKENS,
-        temperature=_TEMPERATURE,
+        **processing_config.language_model_configuration.options,  # type: ignore
     )
 
     model = processing_config.language_model_configuration.model

@@ -16,8 +16,6 @@ from .prompts import SYSTEM_PROMPT
 _logger = setup_logger(__name__, log_file="mcp_client.log", show_file_name=False)
 
 _SERVER_PATH = os.path.join(os.path.dirname(__file__), "mcp_server.py")
-_MAX_COMPLETION_TOKENS = 1000
-_TEMPERATURE = 0.1
 
 
 class MCPClient:
@@ -104,8 +102,7 @@ class MCPClient:
             model=self._model_configuration.model,
             messages=conversation_history,  # type:ignore
             tools=self._available_tools,  # type:ignore
-            max_completion_tokens=_MAX_COMPLETION_TOKENS,
-            temperature=_TEMPERATURE,
+            **self._model_configuration.options,
         )
 
         tool_calls = response.choices[0].message.tool_calls
@@ -163,8 +160,7 @@ class MCPClient:
             model=self._model_configuration.model,
             messages=conversation_history,  # type:ignore
             tools=self._available_tools,  # type:ignore
-            max_completion_tokens=_MAX_COMPLETION_TOKENS,
-            temperature=_TEMPERATURE,
+            **self._model_configuration.options,
         )
 
         if response.choices[0].message.content:
