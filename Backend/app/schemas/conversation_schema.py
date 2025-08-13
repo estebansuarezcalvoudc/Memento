@@ -16,7 +16,7 @@ class ConversationRetrieve(BaseModel):
 class SendMessageRequest(BaseModel):
     message: str
     language_model: str = Field(
-        default="llama3.2",
+        default="gpt-4o-mini",
         description="Specifies which language model generates the assistant's response",
     )
 

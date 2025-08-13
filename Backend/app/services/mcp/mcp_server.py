@@ -1,97 +1,86 @@
-from typing import Any
-import httpx
+import os
+import sys
+from datetime import datetime, date as date_type
+from pathlib import Path
+
+import pymongo
 from mcp.server.fastmcp import FastMCP
 
+if __name__ == "__main__":
+    backend_path = str(Path(__file__).parents[3])
+    if backend_path not in sys.path:
+        sys.path.insert(0, backend_path)
 
-# Initialize FastMCP server
+from app.core.settings import settings
+
 mcp = FastMCP("weather")
 
-# Constants
-NWS_API_BASE = "https://api.weather.gov"
-USER_AGENT = "weather-app/1.0"
+
+@mcp.tool()
+async def get_current_date() -> str:
+    """Get the current date in <YYYY-MM-DD week_day> format (week_day is the day of the week, Friday for instance).
 
 
-# Helper functions
-async def make_nws_request(url: str) -> dict[str, Any] | None:
-    """Make a request to the NWS API with proper error handling."""
-    headers = {"User-Agent": USER_AGENT, "Accept": "application/geo+json"}
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(url, headers=headers, timeout=30.0)
-            response.raise_for_status()
-            return response.json()
-        except Exception:
-            return None
-
-
-def format_alert(feature: dict) -> str:
-    """Format an alert feature into readable string."""
-    props = feature["properties"]
-    return f""""
-        Event: {props.get('event', 'Unknown')}
-        Area: {props.get('areaDesc', 'Unknown')}
-        Severity: {props.get('severity', 'Unknown')}
-        Description: {props.get('description', 'No description available')}
-        Instructions: {props.get('instruction', 'No specific instructions provided')}
+    Returns:
+            str: Current date in YYYY-MM-DD format followed by the day of the week
+                 (e.g., "2024-01-15 Monday")
     """
+    now = datetime.now()
+    date_str = now.strftime("%Y-%m-%d")
+    day_of_week = now.strftime("%A")
+    return f"{date_str} {day_of_week}"
 
 
 @mcp.tool()
-async def get_alerts(state: str) -> str:
-    """Get weather alerts for a US state.
+async def get_meeting_info_by_date(date_str: str) -> dict[str, str] | str:
+    """
+    Retrieves meeting information for a specific date. This tool fetches the meeting
+    summary and transcription from the repository for the given date.
 
     Args:
-        state: Two-letter US state code (e.g. CA, NY)
+        date_str (str): The date string in format 'YYYY-MM-DD' for which to retrieve
+        meeting information. Use the exact format returned by get_current_date.
+
+    Returns:
+        dict[str, str] | str: A dictionary containing meeting summary and transcription,
+                              or a string message if no meeting is found. The dictionary
+                              has the following structure: {
+                                  'summary': 'meeting summary text',
+                                  'transcription': 'meeting transcription text'
+                              }
     """
-    url = f"{NWS_API_BASE}/alerts/active/area/{state}"
-    data = await make_nws_request(url)
+    try:
+        date = datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        return "Invalid date format. Please use YYYY-MM-DD"
 
-    if not data or "features" not in data:
-        return "Unable to fetch alerts or no alerts found."
-
-    if not data["features"]:
-        return "No active alerts for this state."
-
-    alerts = [format_alert(feature) for feature in data["features"]]
-    return "\n---\n".join(alerts)
+    username = os.getenv("MCP_USERNAME", "")
+    meeting_repository = MeetingRepository()
+    return meeting_repository.retrieve_meeting_summary_and_transcription_by_date(
+        date, username
+    )
 
 
-@mcp.tool()
-async def get_forecast(latitude: float, longitude: float) -> str:
-    """Get weather forecast for a location.
+class MeetingRepository:
+    def __init__(self) -> None:
+        myclient = pymongo.MongoClient(settings.mongo_url)
+        mydb = myclient["meetings_db"]
+        self._collection = mydb["meetings"]
 
-    Args:
-        latitude: Latitude of the location
-        longitude: Longitude of the location
-    """
-    # First get the forecast grid endpoints
-    points_url = f"{NWS_API_BASE}/points/{latitude},{longitude}"
-    points_data = await make_nws_request(points_url)
+    def retrieve_meeting_summary_and_transcription_by_date(
+        self, date: date_type, username: str
+    ) -> dict[str, str] | str:
+        meeting_date = datetime.combine(date, datetime.min.time())
 
-    if not points_data:
-        return "Unable to fetch forecast data for this location."
+        result = self._collection.find_one(
+            {"username": username, "date": meeting_date},
+            {"_id": False, "summary": True, "transcription": True},
+        )
 
-    # Get the forecast URL for the points response
-    forecast_url = points_data["properties"]["forecast"]
-    forecast_data = await make_nws_request(forecast_url)
+        if not result:
+            return f"Meeting with date={date}"
 
-    if not forecast_data:
-        return "Unable to fetch detailed forecast."
-
-    # Format the periods into a readable forecast
-    periods = forecast_data["properties"]["periods"]
-    forecasts = []
-    for period in periods[:5]:  # Only show next 5 periods
-        forecast = f"""
-            {period['name']}:
-            Temperature: {period['temperature']}°{period['temperatureUnit']}
-            Wind: {period['windSpeed']} {period['windDirection']}
-            Forecast: {period['detailedForecast']}
-        """
-
-        forecasts.append(forecast)
-
-    return "\n---\n".join(forecasts)
+        return {"summary": result["summary"], "transcription": result["transcription"]}
 
 
 if __name__ == "__main__":

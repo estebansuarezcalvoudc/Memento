@@ -16,7 +16,6 @@ _logger = setup_logger(__name__)
 
 class ConversationService(metaclass=SingletonMeta):
     def __init__(self) -> None:
-        self._model = "qwen3:0.6b"
         self._repository = ConversationRepository()
 
     async def create_conversation(
@@ -24,7 +23,7 @@ class ConversationService(metaclass=SingletonMeta):
     ) -> ConversationCreateResponse:
         id = self._repository.store_conversation("New chat", username)
 
-        assistant_response = await self._process_message(
+        assistant_response = await self._try_process_message(
             id, conversation_create_request, username
         )
 
@@ -36,16 +35,24 @@ class ConversationService(metaclass=SingletonMeta):
     async def send_message(
         self, id: str, send_message_request: SendMessageRequest, username: str
     ) -> str:
-        return await self._process_message(id, send_message_request, username)
+        return await self._try_process_message(id, send_message_request, username)
 
-    async def _process_message(
+    async def _try_process_message(
         self,
         id: str,
         send_message_request: SendMessageRequest,
         username: str,
     ) -> str:
-        """Process a message using MCP client with automatic resource management"""
-        async with MCPClient(self._model) as client:
+        try:
+            return await self._process_message(id, send_message_request, username)
+        except Exception as e:
+            _logger.error(f"Error in _process_message: {type(e).__name__}: {str(e)}")
+            raise
+
+    async def _process_message(
+        self, id: str, send_message_request: SendMessageRequest, username: str
+    ):
+        async with MCPClient(username) as client:
             await client.connect_to_server()
 
             _logger.debug("send_message triggered")
@@ -56,7 +63,9 @@ class ConversationService(metaclass=SingletonMeta):
             user_message = {"role": "user", "content": send_message_request.message}
             conversation_history.append(user_message)
 
-            reply = await client.send_message(conversation_history)
+            reply = await client.send_message(
+                conversation_history, send_message_request.language_model
+            )
             assistant_response = {"role": "assistant", "content": reply}
 
             self._repository.add_user_chatbot_interaction(

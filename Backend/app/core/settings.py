@@ -4,6 +4,8 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     hf_token: str
 
+    openai_key: str
+
     secret_key: str
     algorithm: str
     access_token_expire_minutes: int

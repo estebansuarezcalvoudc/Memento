@@ -17,15 +17,15 @@ RUN apt-get update \
 RUN add-apt-repository ppa:deadsnakes/ppa \
     && apt-get update \
     && apt-get install -y \
-    python3.10 \
-    python3.10-dev \
-    python3.10-venv \
-    python3.10-distutils \
+    python3.11 \
+    python3.11-dev \
+    python3.11-venv \
+    python3.11-distutils \
     libcudnn8 \
     libcudnn8-dev \
     ffmpeg
 
-RUN ln -s /usr/bin/python3.10 /usr/bin/python \
+RUN ln -s /usr/bin/python3.11 /usr/bin/python \
     && curl -sS https://bootstrap.pypa.io/get-pip.py | python
 
 WORKDIR /Backend
@@ -36,6 +36,5 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 RUN pip install debugpy
 
 EXPOSE 8000
-EXPOSE 8001
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
