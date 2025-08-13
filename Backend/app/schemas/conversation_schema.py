@@ -1,6 +1,23 @@
 from datetime import datetime
+from enum import Enum
 
 from pydantic import BaseModel, Field
+
+
+class ProviderType(str, Enum):
+    OPENAI = "openai"
+    OLLAMA = "ollama"
+
+
+class ModelConfiguration(BaseModel):
+    provider: ProviderType = Field(
+        default=ProviderType.OPENAI,
+        description="The provider to use for the language model",
+    )
+    model: str = Field(
+        default="gpt-4o-mini",
+        description="The specific model to use for generating responses",
+    )
 
 
 class DialogueRetrieve(BaseModel):
@@ -15,9 +32,9 @@ class ConversationRetrieve(BaseModel):
 
 class SendMessageRequest(BaseModel):
     message: str
-    language_model: str = Field(
-        default="gpt-4o-mini",
-        description="Specifies which language model generates the assistant's response",
+    model_configuration: ModelConfiguration = Field(
+        default_factory=ModelConfiguration,
+        description="Configuration for the language model and provider",
     )
 
 
