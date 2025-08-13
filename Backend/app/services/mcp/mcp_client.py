@@ -9,7 +9,7 @@ from mcp.client.stdio import stdio_client
 from openai.types.chat import ChatCompletion
 
 from ...core.logging import setup_logger
-from ...schemas.conversation_schema import ModelConfiguration
+from ...schemas.conversation_schema import LanguageModelConfiguration
 from ..language_models_utils import create_openai_client
 from .prompts import SYSTEM_PROMPT
 
@@ -21,13 +21,13 @@ _TEMPERATURE = 0.1
 
 
 class MCPClient:
-    def __init__(self, username: str, model_config: ModelConfiguration):
+    def __init__(self, username: str, model_config: LanguageModelConfiguration):
         self._username = username
         self._model_configuration = model_config
         self._session: Optional[ClientSession] = None
         self.exit_stack = AsyncExitStack()
 
-        self.openai = create_openai_client(self._model_configuration)
+        self.openai = create_openai_client(self._model_configuration, _logger)
 
     async def connect_to_server(self) -> None:
         _logger.info(f"Attempting to connect to MCP server at: {_SERVER_PATH}")

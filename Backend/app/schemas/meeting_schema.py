@@ -4,6 +4,8 @@ from typing import Any, Dict, List, Optional
 import whisper.tokenizer  # whisperx uses whisper's tokenizer
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from .language_models_schema import LanguageModelConfiguration
+
 
 class MeetingMetadata(BaseModel):
     """Basic meeting metadata without processing configuration."""
@@ -28,8 +30,9 @@ class MeetingMetadata(BaseModel):
 class ProcessingConfiguration(BaseModel):
     """Configuration for meeting processing (transcription and summarization)."""
 
-    language_model: str = Field(
-        default="llama3.2", description="Language model to use for summarization"
+    language_model_configuration: LanguageModelConfiguration = Field(
+        default_factory=LanguageModelConfiguration,
+        description="Configuration for the language model and provider",
     )
     prompt: Optional[str] = Field(
         default=None,

@@ -1,43 +1,14 @@
-import ollama
-from typing import Optional
-
 from ...core.logging import log_execution_time, setup_logger
-from ...core.settings import settings
+from ...schemas.meeting_schema import ProcessingConfiguration
+from ..language_models_utils import create_openai_client
 
 _logger = setup_logger(__name__)
 
+# TODO inyect these options as a dependency from the router
+_MAX_COMPLETION_TOKENS = 600
+_TEMPERATURE = 0.2
 
-@log_execution_time(_logger)
-def get_meeting_summary(
-    diarized_dialogue: str,
-    language_model: str,
-    prompt: Optional[str] = None,
-    options: Optional[dict] = None,
-) -> str:
-    if prompt is None:
-        prompt = _default_prompt
-
-    if options is None:
-        options = {"temperature": 0.2, "num_predict": 600}
-
-    client = ollama.Client(host=settings.ollama_url)
-
-    client.pull(language_model)
-    client.create(model="summarizer", from_=language_model, system=prompt)
-
-    response = client.chat(
-        model="summarizer",
-        messages=[{"role": "user", "content": diarized_dialogue}],
-        options=options,
-        keep_alive=0,
-    )
-
-    summary = response.message.content
-
-    return summary or ""
-
-
-_default_prompt = """
+_DEFAULT_PROMPT = """
     Analyze this meeting transcript and provide a structured summary with the following:
 
     1. Meeting Overview
@@ -77,3 +48,27 @@ _default_prompt = """
     If any of these elements are not discussed in the meeting, note their absence rather
     than making assumptions.
 """.strip()
+
+
+@log_execution_time(_logger)
+def get_meeting_summary(
+    diarized_dialogue: str, processing_config: ProcessingConfiguration
+) -> str:
+    openai = create_openai_client(
+        processing_config.language_model_configuration, _logger
+    )
+
+    response = openai.chat.completions.create(
+        model=processing_config.language_model_configuration.model,
+        messages=[
+            {"role": "system", "content": _DEFAULT_PROMPT},
+            {"role": "user", "content": diarized_dialogue},
+        ],
+        max_completion_tokens=_MAX_COMPLETION_TOKENS,
+        temperature=_TEMPERATURE,
+    )
+
+    model = processing_config.language_model_configuration.model
+    _logger.info(f"Meeting summary created using model {model}")
+
+    return response.choices[0].message.content or ""

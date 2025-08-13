@@ -53,7 +53,7 @@ class ConversationService(metaclass=SingletonMeta):
         self, id: str, send_message_request: SendMessageRequest, username: str
     ):
         async with MCPClient(
-            username, send_message_request.model_configuration
+            username, send_message_request.language_model_configuration
         ) as client:
             await client.connect_to_server()
 
