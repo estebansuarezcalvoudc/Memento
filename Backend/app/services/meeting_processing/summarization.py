@@ -13,13 +13,15 @@ def get_meeting_summary(
         processing_config.language_model_configuration, _logger
     )
 
+    model_options = processing_config.language_model_configuration.options or {}
+
     response = openai.chat.completions.create(
         model=processing_config.language_model_configuration.model,
         messages=[
             {"role": "system", "content": processing_config.system_prompt},
             {"role": "user", "content": diarized_dialogue},
         ],
-        **processing_config.language_model_configuration.options,  # type: ignore
+        **model_options,
     )
 
     model = processing_config.language_model_configuration.model
