@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
+from .language_models_schema import LanguageModelConfiguration
+
 
 class DialogueRetrieve(BaseModel):
     messages: list[dict[str, str]]
@@ -15,9 +17,9 @@ class ConversationRetrieve(BaseModel):
 
 class SendMessageRequest(BaseModel):
     message: str
-    language_model: str = Field(
-        default="gpt-4o-mini",
-        description="Specifies which language model generates the assistant's response",
+    language_model_configuration: LanguageModelConfiguration = Field(
+        default_factory=LanguageModelConfiguration,
+        description="Configuration for the language model and provider",
     )
 
 

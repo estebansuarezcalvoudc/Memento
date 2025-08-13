@@ -66,12 +66,7 @@ class MeetingService:
             self.model_size,
         )
 
-        summary = get_meeting_summary(
-            transcription,
-            language_model=processing_config.language_model,
-            prompt=processing_config.prompt,
-            options=processing_config.options,
-        )
+        summary = get_meeting_summary(transcription, processing_config)
 
         self.repository.store_meeting(
             meeting_metadata, summary, transcription, username

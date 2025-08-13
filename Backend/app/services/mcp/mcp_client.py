@@ -6,28 +6,28 @@ from typing import Any, Optional
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
-from openai import OpenAI
+from openai.types.chat import ChatCompletion
 
 from ...core.logging import setup_logger
-from ...core.settings import settings
+from ...schemas.conversation_schema import LanguageModelConfiguration
+from ..language_models_utils import create_openai_client
 from .prompts import SYSTEM_PROMPT
 
 _logger = setup_logger(__name__, log_file="mcp_client.log", show_file_name=False)
 
 _SERVER_PATH = os.path.join(os.path.dirname(__file__), "mcp_server.py")
-_MAX_COMPLETION_TOKENS = 1000
-_TEMPERATURE = 0.1
 
 
 class MCPClient:
-    def __init__(self, username: str):
+    def __init__(self, username: str, model_config: LanguageModelConfiguration):
         self._username = username
+        self._model_configuration = model_config
         self._session: Optional[ClientSession] = None
         self.exit_stack = AsyncExitStack()
 
-        self.openai = OpenAI(api_key=settings.openai_key)
+        self.openai = create_openai_client(self._model_configuration, _logger)
 
-    async def connect_to_server(self):
+    async def connect_to_server(self) -> None:
         _logger.info(f"Attempting to connect to MCP server at: {_SERVER_PATH}")
 
         if not os.path.exists(_SERVER_PATH):
@@ -76,12 +76,12 @@ class MCPClient:
             for tool in response.tools
         ]
 
-    async def send_message(
-        self, conversation_history: list[dict], language_model: str
-    ) -> str:
-        _logger.info(f"Using model {language_model}")
+    async def send_message(self, conversation_history: list[dict]) -> str:
+        _logger.info(
+            f"Using model {self._model_configuration.model} with provider {self._model_configuration.provider}"
+        )
         try:
-            result = await self._process_query(conversation_history, language_model)
+            result = await self._process_query(conversation_history)
             return result
         except Exception as e:
             _logger.error(f"Error sending message to MCP client: {str(e)}")
@@ -89,9 +89,7 @@ class MCPClient:
             _logger.error(f"Full traceback: {traceback.format_exc()}")
             raise e
 
-    async def _process_query(
-        self, conversation_history: list[dict], language_model: str
-    ) -> str:
+    async def _process_query(self, conversation_history: list[dict]) -> str:
         if self._session is None:
             raise RuntimeError(
                 "MCP session not initialized. Call connect_to_server() first."
@@ -101,11 +99,10 @@ class MCPClient:
 
         _logger.info("Making initial OpenAI API call")
         response = self.openai.chat.completions.create(
-            model=language_model,
+            model=self._model_configuration.model,
             messages=conversation_history,  # type:ignore
             tools=self._available_tools,  # type:ignore
-            max_completion_tokens=_MAX_COMPLETION_TOKENS,
-            temperature=_TEMPERATURE,
+            **self._model_configuration.options,
         )
 
         tool_calls = response.choices[0].message.tool_calls
@@ -113,20 +110,17 @@ class MCPClient:
             f"Calling {len(tool_calls) if tool_calls else 0} tools: {tool_calls}"
         )
 
-        return await self._process_response(
-            response, conversation_history, language_model
-        )
+        return await self._process_response(response, conversation_history)
 
-    def _add_system_prompt(self, conversation_history):
+    def _add_system_prompt(self, conversation_history: list[dict]) -> list[dict]:
         if not conversation_history or conversation_history[0].get("role") != "system":
             conversation_history = [SYSTEM_PROMPT] + conversation_history
         return conversation_history
 
     async def _process_response(
         self,
-        response,
+        response: ChatCompletion,
         conversation_history: list[dict],
-        language_model: str,
     ) -> str:
         final_text = []
 
@@ -144,7 +138,6 @@ class MCPClient:
                 conversation_history,
                 final_text,
                 message,
-                language_model,
             )
 
         result = "\n".join(filter(None, final_text))
@@ -157,7 +150,6 @@ class MCPClient:
         conversation_history: list[dict],
         final_text: list[str],
         message: Any,
-        language_model: str,
     ) -> None:
         self._append_tool_call_to_conversation_history(conversation_history, message)
 
@@ -165,11 +157,10 @@ class MCPClient:
             await self._execute_tool_call(conversation_history, tool_call)
 
         response = self.openai.chat.completions.create(
-            model=language_model,
+            model=self._model_configuration.model,
             messages=conversation_history,  # type:ignore
             tools=self._available_tools,  # type:ignore
-            max_completion_tokens=_MAX_COMPLETION_TOKENS,
-            temperature=_TEMPERATURE,
+            **self._model_configuration.options,
         )
 
         if response.choices[0].message.content:
@@ -182,7 +173,6 @@ class MCPClient:
                 conversation_history,
                 final_text,
                 response.choices[0].message,
-                language_model,
             )
 
     @staticmethod

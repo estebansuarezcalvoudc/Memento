@@ -52,7 +52,9 @@ class ConversationService(metaclass=SingletonMeta):
     async def _process_message(
         self, id: str, send_message_request: SendMessageRequest, username: str
     ):
-        async with MCPClient(username) as client:
+        async with MCPClient(
+            username, send_message_request.language_model_configuration
+        ) as client:
             await client.connect_to_server()
 
             _logger.debug("send_message triggered")
@@ -63,9 +65,7 @@ class ConversationService(metaclass=SingletonMeta):
             user_message = {"role": "user", "content": send_message_request.message}
             conversation_history.append(user_message)
 
-            reply = await client.send_message(
-                conversation_history, send_message_request.language_model
-            )
+            reply = await client.send_message(conversation_history)
             assistant_response = {"role": "assistant", "content": reply}
 
             self._repository.add_user_chatbot_interaction(
