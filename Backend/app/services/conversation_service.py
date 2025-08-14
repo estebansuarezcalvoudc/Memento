@@ -17,13 +17,14 @@ _logger = setup_logger(__name__)
 class ConversationService(metaclass=SingletonMeta):
     def __init__(self) -> None:
         self._repository = ConversationRepository()
+        self._mcp_client = MCPClient()
 
     async def create_conversation(
         self, conversation_create_request: ConversationCreateRequest, username: str
     ) -> ConversationCreateResponse:
         id = self._repository.store_conversation("New chat", username)
 
-        assistant_response = await self._try_process_message(
+        assistant_response = await self._process_message(
             id, conversation_create_request, username
         )
 
@@ -35,28 +36,15 @@ class ConversationService(metaclass=SingletonMeta):
     async def send_message(
         self, id: str, send_message_request: SendMessageRequest, username: str
     ) -> str:
-        return await self._try_process_message(id, send_message_request, username)
+        return await self._process_message(id, send_message_request, username)
 
-    async def _try_process_message(
+    async def _process_message(
         self,
         id: str,
         send_message_request: SendMessageRequest,
         username: str,
     ) -> str:
         try:
-            return await self._process_message(id, send_message_request, username)
-        except Exception as e:
-            _logger.error(f"Error in _process_message: {type(e).__name__}: {str(e)}")
-            raise
-
-    async def _process_message(
-        self, id: str, send_message_request: SendMessageRequest, username: str
-    ):
-        async with MCPClient(
-            username, send_message_request.language_model_configuration
-        ) as client:
-            await client.connect_to_server()
-
             _logger.debug("send_message triggered")
 
             conversation_history = self._repository.retrieve_dialogue(
@@ -65,7 +53,11 @@ class ConversationService(metaclass=SingletonMeta):
             user_message = {"role": "user", "content": send_message_request.message}
             conversation_history.append(user_message)
 
-            reply = await client.send_message(conversation_history)
+            reply = await self._mcp_client.send_message(
+                conversation_history,
+                send_message_request.language_model_configuration,
+                username,
+            )
             assistant_response = {"role": "assistant", "content": reply}
 
             self._repository.add_user_chatbot_interaction(
@@ -73,6 +65,9 @@ class ConversationService(metaclass=SingletonMeta):
             )
 
             return reply
+        except Exception as e:
+            _logger.error(f"Error in _process_message: {type(e).__name__}: {str(e)}")
+            raise
 
     def retrieve_all_conversations_metadata(
         self, username: str

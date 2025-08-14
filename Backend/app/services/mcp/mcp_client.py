@@ -13,31 +13,62 @@ from ...schemas.conversation_schema import LanguageModelConfiguration
 from ..language_models_utils import create_openai_client
 from .prompts import SYSTEM_PROMPT
 
-_logger = setup_logger(__name__, log_file="mcp_client.log", show_file_name=False)
+_logger = setup_logger(__name__, log_file="Fmcp_client.log", show_file_name=False)
 
 _SERVER_PATH = os.path.join(os.path.dirname(__file__), "mcp_server.py")
 
 
 class MCPClient:
-    def __init__(self, username: str, model_config: LanguageModelConfiguration):
-        self._username = username
-        self._model_configuration = model_config
+    def __init__(self):
         self._session: Optional[ClientSession] = None
         self.exit_stack = AsyncExitStack()
 
-        self.openai = create_openai_client(self._model_configuration, _logger)
+    async def _get_available_tools(self) -> list[dict]:
+        response = await self._session.list_tools()  # type:ignore
 
-    async def connect_to_server(self) -> None:
+        return [
+            {
+                "type": "function",
+                "function": {
+                    "name": tool.name,
+                    "description": tool.description,
+                    "parameters": tool.inputSchema,
+                },
+            }
+            for tool in response.tools
+        ]
+
+    async def send_message(
+        self,
+        conversation_history: list[dict],
+        model_config: LanguageModelConfiguration,
+        username: str,
+    ) -> str:
+        _logger.info(
+            f"Using model {model_config.model} with provider {model_config.provider}"
+        )
+
+        if self._session is None:
+            await self._connect_to_server()
+
+        try:
+            result = await self._process_query(
+                conversation_history, model_config, username
+            )
+            return result
+        except Exception as e:
+            _logger.error(f"Error sending message to MCP client: {str(e)}")
+            _logger.error(f"Exception type: {type(e).__name__}")
+            _logger.error(f"Full traceback: {traceback.format_exc()}")
+            raise e
+
+    async def _connect_to_server(self) -> None:
         _logger.info(f"Attempting to connect to MCP server at: {_SERVER_PATH}")
 
         if not os.path.exists(_SERVER_PATH):
             raise FileNotFoundError(f"MCP server script not found at: {_SERVER_PATH}")
 
-        server_params = StdioServerParameters(
-            command="python",
-            args=[_SERVER_PATH],
-            env={**os.environ, "MCP_USERNAME": self._username},
-        )
+        server_params = StdioServerParameters(command="python", args=[_SERVER_PATH])
 
         try:
             stdio_transport = await self.exit_stack.enter_async_context(
@@ -61,35 +92,12 @@ class MCPClient:
             _logger.error(f"Server script path: {_SERVER_PATH}")
             raise RuntimeError(f"MCP connection failed: {str(e)}") from e
 
-    async def _get_available_tools(self) -> list[dict]:
-        response = await self._session.list_tools()  # type:ignore
-
-        return [
-            {
-                "type": "function",
-                "function": {
-                    "name": tool.name,
-                    "description": tool.description,
-                    "parameters": tool.inputSchema,
-                },
-            }
-            for tool in response.tools
-        ]
-
-    async def send_message(self, conversation_history: list[dict]) -> str:
-        _logger.info(
-            f"Using model {self._model_configuration.model} with provider {self._model_configuration.provider}"
-        )
-        try:
-            result = await self._process_query(conversation_history)
-            return result
-        except Exception as e:
-            _logger.error(f"Error sending message to MCP client: {str(e)}")
-            _logger.error(f"Exception type: {type(e).__name__}")
-            _logger.error(f"Full traceback: {traceback.format_exc()}")
-            raise e
-
-    async def _process_query(self, conversation_history: list[dict]) -> str:
+    async def _process_query(
+        self,
+        conversation_history: list[dict],
+        model_config: LanguageModelConfiguration,
+        username: str,
+    ) -> str:
         if self._session is None:
             raise RuntimeError(
                 "MCP session not initialized. Call connect_to_server() first."
@@ -98,11 +106,12 @@ class MCPClient:
         conversation_history = self._add_system_prompt(conversation_history)
 
         _logger.info("Making initial OpenAI API call")
-        response = self.openai.chat.completions.create(
-            model=self._model_configuration.model,
+        openai = create_openai_client(model_config, _logger)
+        response = openai.chat.completions.create(
+            model=model_config.model,
             messages=conversation_history,  # type:ignore
             tools=self._available_tools,  # type:ignore
-            **self._model_configuration.options,
+            **model_config.options,
         )
 
         tool_calls = response.choices[0].message.tool_calls
@@ -110,7 +119,9 @@ class MCPClient:
             f"Calling {len(tool_calls) if tool_calls else 0} tools: {tool_calls}"
         )
 
-        return await self._process_response(response, conversation_history)
+        return await self._process_response(
+            response, conversation_history, model_config, username
+        )
 
     def _add_system_prompt(self, conversation_history: list[dict]) -> list[dict]:
         if not conversation_history or conversation_history[0].get("role") != "system":
@@ -121,6 +132,8 @@ class MCPClient:
         self,
         response: ChatCompletion,
         conversation_history: list[dict],
+        model_config: LanguageModelConfiguration,
+        username: str,
     ) -> str:
         final_text = []
 
@@ -135,9 +148,7 @@ class MCPClient:
 
         if message.tool_calls:
             await self._process_tool_call(
-                conversation_history,
-                final_text,
-                message,
+                conversation_history, final_text, message, model_config, username
             )
 
         result = "\n".join(filter(None, final_text))
@@ -150,17 +161,20 @@ class MCPClient:
         conversation_history: list[dict],
         final_text: list[str],
         message: Any,
+        model_config: LanguageModelConfiguration,
+        username: str,
     ) -> None:
         self._append_tool_call_to_conversation_history(conversation_history, message)
 
         for tool_call in message.tool_calls:
-            await self._execute_tool_call(conversation_history, tool_call)
+            await self._execute_tool_call(conversation_history, tool_call, username)
 
-        response = self.openai.chat.completions.create(
-            model=self._model_configuration.model,
+        openai = create_openai_client(model_config, _logger)
+        response = openai.chat.completions.create(
+            model=model_config.model,
             messages=conversation_history,  # type:ignore
             tools=self._available_tools,  # type:ignore
-            **self._model_configuration.options,
+            **model_config.options,
         )
 
         if response.choices[0].message.content:
@@ -173,6 +187,8 @@ class MCPClient:
                 conversation_history,
                 final_text,
                 response.choices[0].message,
+                model_config,
+                username,
             )
 
     @staticmethod
@@ -198,7 +214,7 @@ class MCPClient:
         )
 
     async def _execute_tool_call(
-        self, conversation_history: list[dict], tool_call: Any
+        self, conversation_history: list[dict], tool_call: Any, username: str
     ) -> None:
         if self._session is None:
             raise RuntimeError(
@@ -207,6 +223,12 @@ class MCPClient:
 
         tool_name = tool_call.function.name
         tool_args = MCPClient._get_tool_args(tool_call)
+
+        if self._tool_requires_username(tool_name):
+            tool_args["username"] = username
+            _logger.info(
+                f"Injecting username '{username}' into tool args for {tool_name}"
+            )
 
         _logger.info(f"Calling tool {tool_name} with args {tool_args}")
 
@@ -218,6 +240,13 @@ class MCPClient:
                 "tool_call_id": tool_call.id,
                 "content": str(result.content),
             }
+        )
+
+    def _tool_requires_username(self, tool_name: str) -> bool:
+        return any(
+            tool["function"]["name"] == tool_name
+            and "username" in tool["function"]["parameters"].get("properties", {})
+            for tool in self._available_tools
         )
 
     @staticmethod

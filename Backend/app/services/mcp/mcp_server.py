@@ -32,7 +32,9 @@ async def get_current_date() -> str:
 
 
 @mcp.tool()
-async def get_meeting_info_by_date(date_str: str) -> list[dict[str, str]] | str:
+async def get_meeting_info_by_date(
+    date_str: str, username: str
+) -> list[dict[str, str]] | str:
     """
     Retrieves meeting information for a specific date. This tool fetches the meeting
     summaries and transcriptions from the repository for the given date.
@@ -40,6 +42,7 @@ async def get_meeting_info_by_date(date_str: str) -> list[dict[str, str]] | str:
     Args:
         date_str (str): The date string in format 'YYYY-MM-DD' for which to retrieve
         meeting information. Use the exact format returned by get_current_date.
+        username (str): The username to filter meetings by.
 
     Returns:
         list[dict[str, str]] | str: A list of dictionaries containing meeting summaries
@@ -55,7 +58,9 @@ async def get_meeting_info_by_date(date_str: str) -> list[dict[str, str]] | str:
     except ValueError:
         return "Invalid date format. Please use YYYY-MM-DD"
 
-    username = os.getenv("MCP_USERNAME", "")
+    if not username:
+        return "Error: No username provided"
+
     meeting_repository = MeetingRepository()
     return meeting_repository.retrieve_meeting_summary_and_transcription_by_date(
         date, username
