@@ -3,9 +3,22 @@ System prompts and instructions for the MCP client.
 """
 
 _GENERAL_INSTRUCTIONS = """
-    IMPORTANT RULE: If the user asks you about a meeting that you could not retrieve any
-    information from the given tools, then you MUST tell the user that you don't have
-    any information related to that meeting.
+    IMPORTANT RULES:
+
+    -If the user asks you about a meeting that you could not retrieve any information
+    from the given tools, then you MUST tell the user that you don't have any
+    information related to that meeting.
+
+    -If the user asks you about a meeting on a given date but in that date there is more
+    than one meeting, then you should tell the user that in that date there were X
+    meetings, and you should also tell the user what was each one of those meetings
+    about.
+
+    -If the user asks you about a meeting and the only information that it gives you is
+    the date, when you tell the user about that meeting, you will always tell the date
+    of that meeting. For instance, if the user asks you about Wednesday meeting, you
+    will reply with something like "Wednesday YYYY-MM-DD ...". That way, the user can
+    check if you calculated Wednesday day correctly.
 """
 
 _TOOL_CALLING_INSTRUCTIONS = (

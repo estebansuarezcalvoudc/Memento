@@ -32,22 +32,23 @@ async def get_current_date() -> str:
 
 
 @mcp.tool()
-async def get_meeting_info_by_date(date_str: str) -> dict[str, str] | str:
+async def get_meeting_info_by_date(date_str: str) -> list[dict[str, str]] | str:
     """
     Retrieves meeting information for a specific date. This tool fetches the meeting
-    summary and transcription from the repository for the given date.
+    summaries and transcriptions from the repository for the given date.
 
     Args:
         date_str (str): The date string in format 'YYYY-MM-DD' for which to retrieve
         meeting information. Use the exact format returned by get_current_date.
 
     Returns:
-        dict[str, str] | str: A dictionary containing meeting summary and transcription,
-                              or a string message if no meeting is found. The dictionary
-                              has the following structure: {
-                                  'summary': 'meeting summary text',
-                                  'transcription': 'meeting transcription text'
-                              }
+        list[dict[str, str]] | str: A list of dictionaries containing meeting summaries
+                                   and transcriptions, or a string message if no meeting
+                                   is found. Each dictionary in the list has the
+                                   following structure: {
+                                       'summary': 'meeting summary text',
+                                       'transcription': 'meeting transcription text'
+                                   } Multiple meetings can exist for the same date.
     """
     try:
         date = datetime.strptime(date_str, "%Y-%m-%d").date()
@@ -69,18 +70,21 @@ class MeetingRepository:
 
     def retrieve_meeting_summary_and_transcription_by_date(
         self, date: date_type, username: str
-    ) -> dict[str, str] | str:
+    ) -> list[dict[str, str]] | str:
         meeting_date = datetime.combine(date, datetime.min.time())
 
-        result = self._collection.find_one(
+        results = self._collection.find(
             {"username": username, "date": meeting_date},
             {"_id": False, "summary": True, "transcription": True},
         )
 
-        if not result:
+        if not results:
             return f"Meeting with date={date}"
 
-        return {"summary": result["summary"], "transcription": result["transcription"]}
+        return [
+            {"summary": result["summary"], "transcription": result["transcription"]}
+            for result in results
+        ]
 
 
 if __name__ == "__main__":
