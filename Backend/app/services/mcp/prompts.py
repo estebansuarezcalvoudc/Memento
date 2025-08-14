@@ -2,6 +2,12 @@
 System prompts and instructions for the MCP client.
 """
 
+_GENERAL_INSTRUCTIONS = """
+    IMPORTANT RULE: If the user asks you about a meeting that you could not retrieve any
+    information from the given tools, then you MUST tell the user that you don't have
+    any information related to that meeting.
+"""
+
 _TOOL_CALLING_INSTRUCTIONS = (
     "MANDATORY TOOL CALLING RULE: When users ask about meetings using relative dates (yesterday, today, last Monday, etc.), "
     "you MUST make exactly TWO function calls in this order:\n"
@@ -47,5 +53,5 @@ _FORMATTING_INSTRUCTIONS = (
 
 SYSTEM_PROMPT = {
     "role": "system",
-    "content": f"You are a meeting assistant with access to tools.\n\n{_TOOL_CALLING_INSTRUCTIONS}\n\n{_FORMATTING_INSTRUCTIONS}",
+    "content": f"You are a meeting assistant with access to tools.\n\n{_GENERAL_INSTRUCTIONS}\n\n{_TOOL_CALLING_INSTRUCTIONS}\n\n{_FORMATTING_INSTRUCTIONS}",
 }
