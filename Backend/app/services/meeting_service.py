@@ -13,22 +13,23 @@ from ..schemas.meeting_schema import (
     ProcessingConfiguration,
     UpdateMeetingMetadata,
 )
+from ..utils.singleton_meta import SingletonMeta
 from .meeting_processing.gpu_utils import get_device
 from .meeting_processing.summarization import get_meeting_summary
 from .meeting_processing.transcription import get_transcribed_conversation
 
 
-class MeetingService:
+class MeetingService(metaclass=SingletonMeta):
     """
     Service layer for meeting operations.
     Handles all business logic and communicates with the repository layer.
     """
 
     def __init__(self) -> None:
-        self.repository = MeetingRepository()
-        self.device = get_device()
-        self.compute_type = "int8"
-        self.model_size = "tiny"
+        self._repository = MeetingRepository()
+        self._device = get_device()
+        self._compute_type = "int8"
+        self._model_size = "tiny"
 
     def process_meetings(
         self,
@@ -61,14 +62,14 @@ class MeetingService:
         transcription = get_transcribed_conversation(
             meeting_metadata,
             audio,
-            self.device,
-            self.compute_type,
-            self.model_size,
+            self._device,
+            self._compute_type,
+            self._model_size,
         )
 
         summary = get_meeting_summary(transcription, processing_config)
 
-        self.repository.store_meeting(
+        self._repository.store_meeting(
             meeting_metadata, summary, transcription, username
         )
 
@@ -81,22 +82,22 @@ class MeetingService:
     def retrieve_all_meetings_metadata(
         self, username: str
     ) -> list[MeetingMetadataResponse]:
-        return self.repository.retrieve_all_meetings_metadata(username)
+        return self._repository.retrieve_all_meetings_metadata(username)
 
     def retrieve_meeting_summary(
         self, id: str, username: str
     ) -> MeetingSummaryResponse:
-        return self.repository.retrieve_meeting_summary(id, username)
+        return self._repository.retrieve_meeting_summary(id, username)
 
     def retrieve_meeting_transcription(
         self, id: str, username: str
     ) -> MeetingTranscriptionResponse:
-        return self.repository.retrieve_meeting_transcription(id, username)
+        return self._repository.retrieve_meeting_transcription(id, username)
 
     def update_meeting(
         self, id: str, meeting_data: UpdateMeetingMetadata, username: str
     ) -> None:
-        self.repository.update_meeting_metadata(id, meeting_data, username)
+        self._repository.update_meeting_metadata(id, meeting_data, username)
 
     def delete_meeting(self, meeting_id: str, username: str) -> None:
-        self.repository.delete_meeting(meeting_id, username)
+        self._repository.delete_meeting(meeting_id, username)
