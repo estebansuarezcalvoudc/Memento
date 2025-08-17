@@ -101,6 +101,7 @@ class MeetingMetadataResponse(BaseModel):
     id: str
     title: str
     date: date_type
+    language: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -112,16 +113,6 @@ class MeetingSummaryResponse(BaseModel):
 
 
 class MeetingTranscriptionResponse(BaseModel):
-    transcription: str
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class MeetingResponse(BaseModel):
-    id: int
-    title: str
-    date: date_type
-    summary: str
     transcription: str
 
     model_config = ConfigDict(from_attributes=True)

@@ -59,7 +59,7 @@ class MeetingService(metaclass=SingletonMeta):
     ) -> None:
         audio = self._get_audio_from_bytes(audio_bytes)
 
-        transcription = get_transcribed_conversation(
+        transcription, detected_language = get_transcribed_conversation(
             meeting_metadata,
             audio,
             self._device,

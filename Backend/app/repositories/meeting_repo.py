@@ -42,6 +42,7 @@ class MeetingRepository:
                 "username": username,
                 "title": meeting_metadata.title,
                 "date": meeting_date,
+                "language": meeting_metadata.language,
                 "summary": summary,
                 "transcription": transcription,
             }
@@ -51,7 +52,8 @@ class MeetingRepository:
         self, username: str
     ) -> list[MeetingMetadataResponse]:
         result = self._collection.find(
-            {"username": username}, {"_id": True, "title": True, "date": True}
+            {"username": username},
+            {"_id": True, "title": True, "date": True, "language": True},
         )
 
         return [
@@ -59,6 +61,7 @@ class MeetingRepository:
                 id=str(meeting_metadata["_id"]),
                 title=meeting_metadata["title"],
                 date=meeting_metadata["date"].date(),  # Convert datetime back to date
+                language=meeting_metadata.get("language"),
             )
             for meeting_metadata in result
         ]
@@ -107,7 +110,7 @@ class MeetingRepository:
             )
 
         if not update_data:
-            return  # Nothing to update
+            return
 
         result = self._collection.update_one(
             {"username": username, "_id": ObjectId(id)},
