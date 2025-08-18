@@ -7,6 +7,8 @@ import pymongo
 from elasticsearch import Elasticsearch
 from mcp.server.fastmcp import FastMCP
 
+from ...utils.supported_languages import SUPPORTED_LANGUAGES
+
 if __name__ == "__main__":
     backend_path = str(Path(__file__).parents[3])
     if backend_path not in sys.path:
@@ -76,13 +78,13 @@ async def get_meetings_by_content(
 ) -> dict[str, dict[str, str]]:
     """
     Search for meetings by content across summaries and transcriptions using semantic search.
-    
+
     Use this tool when the user asks about:
     - Specific topics, technologies, or subjects discussed in meetings
     - Questions like "which meeting discussed X?", "what was said about Y?"
     - Information about projects, decisions, or technologies mentioned in meetings
     - Any content-based queries that don't specify a particular date
-    
+
     This tool searches across ALL meetings regardless of date and returns relevant matches
     ranked by relevance score.
 
@@ -107,10 +109,9 @@ async def get_meetings_by_content(
         ssl_show_warn=False,
     )
 
-    supported_languages = ["en", "es", "fr", "de", "it", "pt"]
     all_results = {}
 
-    for language in supported_languages:
+    for language in SUPPORTED_LANGUAGES:
         index_name = f"meetings_{language}"
 
         try:
