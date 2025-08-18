@@ -45,8 +45,6 @@ class ConversationService(metaclass=SingletonMeta):
         username: str,
     ) -> str:
         try:
-            _logger.debug("send_message triggered")
-
             conversation_history = self._repository.retrieve_dialogue(
                 id, username
             ).messages

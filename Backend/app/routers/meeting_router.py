@@ -192,7 +192,7 @@ async def update_meeting(
     except HTTPException:
         raise
     except Exception as e:
-        _logger.error(f"Error updating meeting {id}: {str(e)}")
+        _logger.error(f"Error updating meeting {id}: {str(e)}", exc_info=True)
         _logger.error(f"Exception type: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

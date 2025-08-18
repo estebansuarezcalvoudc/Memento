@@ -1,9 +1,10 @@
-import os
 import sys
-from datetime import datetime, date as date_type
+from datetime import date as date_type
+from datetime import datetime
 from pathlib import Path
 
 import pymongo
+from elasticsearch import Elasticsearch
 from mcp.server.fastmcp import FastMCP
 
 if __name__ == "__main__":
@@ -11,9 +12,11 @@ if __name__ == "__main__":
     if backend_path not in sys.path:
         sys.path.insert(0, backend_path)
 
+from app.core.logging import setup_logger
 from app.core.settings import settings
 
 mcp = FastMCP("weather")
+_logger = setup_logger(__name__)
 
 
 @mcp.tool()
@@ -65,6 +68,113 @@ async def get_meeting_info_by_date(
     return meeting_repository.retrieve_meeting_summary_and_transcription_by_date(
         date, username
     )
+
+
+@mcp.tool()
+async def get_meetings_by_content(
+    query: str, username: str
+) -> dict[str, dict[str, str]]:
+    """
+    Search for meetings by content across summaries and transcriptions using semantic search.
+    
+    Use this tool when the user asks about:
+    - Specific topics, technologies, or subjects discussed in meetings
+    - Questions like "which meeting discussed X?", "what was said about Y?"
+    - Information about projects, decisions, or technologies mentioned in meetings
+    - Any content-based queries that don't specify a particular date
+    
+    This tool searches across ALL meetings regardless of date and returns relevant matches
+    ranked by relevance score.
+
+    Args:
+        query (str): The search query to look for in meeting summaries and transcriptions.
+                    Use key terms, topics, or phrases the user is asking about.
+        username (str): The username to filter meetings by
+
+    Returns:
+        dict[str, dict[str, str]]: A dictionary where keys are meeting IDs and values are
+                                  dictionaries containing meeting information with keys:
+                                  'title', 'date', 'summary', 'transcription', 'language', 'score'
+                                  Results are ordered by relevance score (higher is more relevant).
+    """
+    if not query.strip():
+        return {}
+
+    elastic_search = Elasticsearch(
+        hosts=[settings.elastic_search_url],
+        basic_auth=settings.elastic_search_auth,
+        verify_certs=False,
+        ssl_show_warn=False,
+    )
+
+    supported_languages = ["en", "es", "fr", "de", "it", "pt"]
+    all_results = {}
+
+    for language in supported_languages:
+        index_name = f"meetings_{language}"
+
+        try:
+            _search_index_for_meetings(
+                elastic_search, index_name, language, query, username, all_results
+            )
+        except Exception as e:
+            _logger.error(f"Error searching in index {index_name}: {e}")
+
+    return all_results
+
+
+def _search_index_for_meetings(
+    elastic_search: Elasticsearch,
+    index_name: str,
+    language: str,
+    query: str,
+    username: str,
+    results_dict: dict[str, dict[str, str]],
+) -> None:
+    if not elastic_search.indices.exists(index=index_name):
+        return
+
+    search_body = _build_search_body(query, username, 100)
+    response = elastic_search.search(index=index_name, body=search_body)
+
+    for hit in response["hits"]["hits"]:
+        meeting_id = hit["_id"]
+        source = hit["_source"]
+
+        results_dict[meeting_id] = {
+            "title": source.get("title", ""),
+            "date": source.get("date", ""),
+            "summary": source.get("summary", ""),
+            "transcription": source.get("transcription", ""),
+            "language": language,
+            "score": str(hit["_score"]),
+        }
+
+
+def _build_search_body(query: str, username: str, size: int) -> dict:
+    return {
+        "query": {
+            "bool": {
+                "must": [
+                    {"term": {"username": username}},
+                    {
+                        "multi_match": {
+                            "query": query,
+                            "fields": [
+                                "title^2",
+                                "summary^1.5",
+                                "transcription",
+                            ],
+                            "type": "best_fields",
+                            "fuzziness": "AUTO",
+                        }
+                    },
+                ]
+            }
+        },
+        "size": size,  # Limit results
+        "_source": ["title", "date", "summary", "transcription"],
+    }
 
 
 class MeetingRepository:

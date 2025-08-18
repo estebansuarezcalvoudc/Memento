@@ -154,9 +154,11 @@ class MeetingRepository:
     def update_meeting_metadata(
         self, id: str, meeting_data: UpdateMeetingMetadata, username: str
     ) -> None:
-        update_data = self._get_update_data(meeting_data)
+        update_data_mongo, update_data_elastic_search = self._get_update_data(
+            meeting_data
+        )
 
-        if not update_data:
+        if not update_data_mongo:
             return
 
         meeting_language = self._get_meeting_language(id, username)
@@ -169,22 +171,27 @@ class MeetingRepository:
 
         self._collection.update_one(
             {"username": username, "_id": ObjectId(id)},
-            {"$set": update_data},
+            {"$set": update_data_mongo},
         )
         self._elastic_search.update(
-            index=f"meetings_{meeting_language}", id=id, doc=update_data
+            index=f"meetings_{meeting_language}", id=id, doc=update_data_elastic_search
         )
 
-    def _get_update_data(self, meeting_data: UpdateMeetingMetadata) -> Optional[dict]:
-        update_data = {}
+    def _get_update_data(
+        self, meeting_data: UpdateMeetingMetadata
+    ) -> tuple[dict, dict]:
+        update_data_mongo = {}
+        update_data_elastic_search = {}
         if meeting_data.title is not None:
-            update_data["title"] = meeting_data.title
+            update_data_mongo["title"] = meeting_data.title
+            update_data_elastic_search["title"] = meeting_data.title
         if meeting_data.date is not None:
-            update_data["date"] = datetime.combine(
+            update_data_mongo["date"] = datetime.combine(
                 meeting_data.date, datetime.min.time()
             )
+            update_data_elastic_search["date"] = meeting_data.date
 
-        return update_data
+        return update_data_mongo, update_data_elastic_search
 
     def _get_meeting_language(self, id: str, username: str) -> Optional[str]:
         current_meeting = self._collection.find_one(
