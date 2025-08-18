@@ -190,7 +190,16 @@ class MeetingRepository:
         )
         self._elastic_search.update(
             index=f"meetings_{meeting_language}", id=id, doc=update_data_elastic_search
-        )
+        try:
+            self._elastic_search.update(
+                index=f"meetings_{meeting_language}", id=id, doc=update_data_elastic_search
+            )
+        except Exception as e:
+            _logger.error(f"Failed to update Elasticsearch for meeting id={id}: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to update meeting metadata in Elasticsearch for meeting id={id}",
+            )
 
     def _get_update_data(
         self, meeting_data: UpdateMeetingMetadata
