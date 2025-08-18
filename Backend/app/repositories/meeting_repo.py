@@ -1,9 +1,12 @@
-from typing import Optional
-import pymongo
 from datetime import datetime
+from typing import Optional
+
+import pymongo
 from bson import ObjectId
+from elasticsearch import Elasticsearch
 from fastapi import HTTPException, status
 
+from ..core.logging import setup_logger
 from ..core.settings import settings
 from ..schemas.meeting_schema import MeetingMetadata as MeetingMetadataSchema
 from ..schemas.meeting_schema import (
@@ -12,9 +15,10 @@ from ..schemas.meeting_schema import (
     MeetingTranscriptionResponse,
     UpdateMeetingMetadata,
 )
-
+from ..utils.supported_languages import SUPPORTED_LANGUAGES
 from .utils.handle_invalid_id import handle_invalid_id
-from elasticsearch import Elasticsearch
+
+_logger = setup_logger(__name__)
 
 
 class MeetingRepository:
@@ -31,19 +35,10 @@ class MeetingRepository:
             ssl_show_warn=False,
         )
 
-        # Initialize indexes for supported languages
         self._initialize_indexes()
 
     def _initialize_indexes(self) -> None:
         """Initialize Elasticsearch indexes for different languages."""
-        supported_languages = [
-            "en",
-            "es",
-            "fr",
-            "de",
-            "it",
-            "pt",
-        ]  # Add more languages as needed
 
         index_mapping = {
             "mappings": {
@@ -57,7 +52,7 @@ class MeetingRepository:
             }
         }
 
-        for language in supported_languages:
+        for language in SUPPORTED_LANGUAGES:
             index_name = f"meetings_{language}"
             try:
                 if not self._elastic_search.indices.exists(index=index_name):
@@ -65,8 +60,7 @@ class MeetingRepository:
                         index=index_name, body=index_mapping
                     )
             except Exception as e:
-                # Log the error but don't fail the initialization
-                print(f"Warning: Could not create index {index_name}: {e}")
+                _logger.warning(f"Warning: Could not create index {index_name}: {e}")
 
     def store_meeting(
         self,
@@ -76,13 +70,15 @@ class MeetingRepository:
         username: str,
     ) -> None:
         # Convert date to datetime for MongoDB compatibility
-        meeting_date = datetime.combine(meeting_metadata.date, datetime.min.time())
+        meeting_date_mongo = datetime.combine(
+            meeting_metadata.date, datetime.min.time()
+        )
 
         result = self._collection.insert_one(
             {
                 "username": username,
                 "title": meeting_metadata.title,
-                "date": meeting_date,
+                "date": meeting_date_mongo,
                 "language": meeting_metadata.language,
                 "summary": summary,
                 "transcription": transcription,
