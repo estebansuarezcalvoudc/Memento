@@ -96,7 +96,26 @@ class MeetingRepository:
                 "transcription": transcription,
             },
         )
-
+        try:
+            self._elastic_search.index(
+                index=f"meetings_{meeting_metadata.language}",
+                id=str(result.inserted_id),
+                document={
+                    "username": username,
+                    "title": meeting_metadata.title,
+                    "date": str(meeting_metadata.date),
+                    "summary": summary,
+                    "transcription": transcription,
+                },
+            )
+        except Exception as e:
+            # Rollback MongoDB insert to maintain consistency
+            self._collection.delete_one({"_id": result.inserted_id})
+            _logger.error(f"Failed to index meeting in Elasticsearch, rolled back MongoDB insert: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to store meeting due to Elasticsearch error.",
+            )
     def retrieve_all_meetings_metadata(
         self, username: str
     ) -> list[MeetingMetadataResponse]:
