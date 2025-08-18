@@ -18,6 +18,11 @@ class Settings(BaseSettings):
     mongo_password: str
     mongo_port: int
 
+    elastic_search_host: str
+    elastic_search_port: str
+    elastic_search_username: str
+    elastic_search_password: str
+
     @property
     def ollama_url(self) -> str:
         return f"http://{self.ollama_host}:{self.ollama_port}"
@@ -25,6 +30,14 @@ class Settings(BaseSettings):
     @property
     def mongo_url(self) -> str:
         return f"mongodb://{self.mongo_user}:{self.mongo_password}@{self.mongo_host}:{self.mongo_port}"
+
+    @property
+    def elastic_search_url(self) -> str:
+        return f"http://{self.elastic_search_host}:{self.elastic_search_port}"
+
+    @property
+    def elastic_search_auth(self) -> tuple[str, str]:
+        return (self.elastic_search_username, self.elastic_search_password)
 
     class Config:
         env_file = ["/.env.docker", "/Backend/.env"]

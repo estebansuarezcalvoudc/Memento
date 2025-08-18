@@ -8,9 +8,9 @@ from ..schemas.auth_schema import User
 from ..schemas.conversation_schema import (
     ConversationCreateRequest,
     ConversationCreateResponse,
-    ConversationRetrieve,
+    ConversationDialogueRetrieve,
+    ConversationMetadataRetrieve,
     ConversationUpdateRequest,
-    DialogueRetrieve,
     SendMessageRequest,
 )
 from ..services.conversation_service import ConversationService
@@ -78,7 +78,7 @@ async def send_message(
 )
 async def retrieve_all_conversations_metadata(
     current_user: Annotated[User, Depends(get_current_active_user)],
-) -> list[ConversationRetrieve]:
+) -> list[ConversationMetadataRetrieve]:
     try:
         conversation_service = ConversationService()
         return conversation_service.retrieve_all_conversations_metadata(
@@ -103,7 +103,7 @@ async def retrieve_all_conversations_metadata(
 )
 async def retrieve_dialogue(
     id: str, current_user: Annotated[User, Depends(get_current_active_user)]
-) -> DialogueRetrieve:
+) -> ConversationDialogueRetrieve:
     try:
         conversation_service = ConversationService()
         return conversation_service.retrieve_dialogue(id, current_user.username)

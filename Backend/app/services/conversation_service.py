@@ -3,9 +3,9 @@ from ..repositories.conversation_repo import ConversationRepository
 from ..schemas.conversation_schema import (
     ConversationCreateRequest,
     ConversationCreateResponse,
-    ConversationRetrieve,
+    ConversationDialogueRetrieve,
+    ConversationMetadataRetrieve,
     ConversationUpdateRequest,
-    DialogueRetrieve,
     SendMessageRequest,
 )
 from ..utils.singleton_meta import SingletonMeta
@@ -45,11 +45,9 @@ class ConversationService(metaclass=SingletonMeta):
         username: str,
     ) -> str:
         try:
-            _logger.debug("send_message triggered")
+            dialogue = self._repository.fetch_conversation(id, username)
+            conversation_history = dialogue.messages.copy()
 
-            conversation_history = self._repository.retrieve_dialogue(
-                id, username
-            ).messages
             user_message = {"role": "user", "content": send_message_request.message}
             conversation_history.append(user_message)
 
@@ -58,10 +56,14 @@ class ConversationService(metaclass=SingletonMeta):
                 send_message_request.language_model_configuration,
                 username,
             )
-            assistant_response = {"role": "assistant", "content": reply}
 
-            self._repository.add_user_chatbot_interaction(
-                id, user_message, assistant_response, username
+            assistant_response = {"role": "assistant", "content": reply}
+            conversation_history.append(assistant_response)
+
+            new_messages = conversation_history[len(dialogue.messages) :]
+
+            self._repository.append_new_messages_to_conversation(
+                id, new_messages, username
             )
 
             return reply
@@ -71,11 +73,33 @@ class ConversationService(metaclass=SingletonMeta):
 
     def retrieve_all_conversations_metadata(
         self, username: str
-    ) -> list[ConversationRetrieve]:
+    ) -> list[ConversationMetadataRetrieve]:
         return self._repository.retrieve_all_conversations_metadata(username)
 
-    def retrieve_dialogue(self, id: str, username: str) -> DialogueRetrieve:
-        return self._repository.retrieve_dialogue(id, username)
+    def retrieve_dialogue(self, id: str, username: str) -> ConversationDialogueRetrieve:
+        dialogue = self._repository.fetch_conversation(id, username)
+        visible_messages = self._filter_displayable_messages(dialogue.messages)
+        return ConversationDialogueRetrieve(messages=visible_messages)
+
+    def _filter_displayable_messages(
+        self, messages: list[dict]
+    ) -> list[dict[str, str]]:
+        visible_messages = []
+
+        for message in messages:
+            role = message.get("role")
+
+            if role == "user":
+                visible_messages.append(
+                    {"role": role, "content": message.get("content", "")}
+                )
+            elif role == "assistant" and "tool_calls" not in message:
+                if message.get("content"):  # Solo si tiene contenido
+                    visible_messages.append(
+                        {"role": role, "content": message.get("content", "")}
+                    )
+
+        return visible_messages
 
     def update_conversation_metadata(
         self, id: str, metadata: ConversationUpdateRequest, username: str

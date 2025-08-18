@@ -18,3 +18,4 @@ pyjwt
 passlib[bcrypt]
 openai
 mcp[cli]
+elasticsearch

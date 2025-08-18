@@ -6,9 +6,9 @@ from fastapi import HTTPException, status
 
 from ..core.settings import settings
 from ..schemas.conversation_schema import (
-    ConversationRetrieve,
+    ConversationMetadataRetrieve,
     ConversationUpdateRequest,
-    DialogueRetrieve,
+    ConversationDialogueRetrieve,
 )
 from .utils.handle_invalid_id import handle_invalid_id
 
@@ -31,25 +31,24 @@ class ConversationRepository:
         return str(result.inserted_id)
 
     @handle_invalid_id
-    def add_user_chatbot_interaction(
+    def append_new_messages_to_conversation(
         self,
-        id: str,
-        user_message: dict[str, str],
-        assistant_response: dict[str, str],
+        conversation_id: str,
+        new_messages: list[dict],
         username: str,
     ) -> None:
         self._collection.update_one(
-            {"username": username, "_id": ObjectId(id)},
-            {"$push": {"messages": {"$each": [user_message, assistant_response]}}},
+            {"username": username, "_id": ObjectId(conversation_id)},
+            {"$push": {"messages": {"$each": new_messages}}},
         )
 
     def retrieve_all_conversations_metadata(
         self, username: str
-    ) -> list[ConversationRetrieve]:
+    ) -> list[ConversationMetadataRetrieve]:
         result = self._collection.find({"username": username}, {"messages": False})
 
         return [
-            ConversationRetrieve(
+            ConversationMetadataRetrieve(
                 id=str(conversation["_id"]),
                 title=conversation["title"],
                 started_at=conversation["started_at"],
@@ -58,7 +57,7 @@ class ConversationRepository:
         ]
 
     @handle_invalid_id
-    def retrieve_dialogue(self, id: str, username: str) -> DialogueRetrieve:
+    def fetch_conversation(self, id: str, username: str) -> ConversationDialogueRetrieve:
         result = self._collection.find_one(
             {"username": username, "_id": ObjectId(id)},
             {"_id": False, "messages": True},
@@ -70,7 +69,7 @@ class ConversationRepository:
                 detail=f"Dialogue with id={id} not found",
             )
 
-        return DialogueRetrieve(messages=result["messages"])
+        return ConversationDialogueRetrieve(messages=result["messages"])
 
     @handle_invalid_id
     def update_conversation_metadata(

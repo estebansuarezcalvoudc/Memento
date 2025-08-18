@@ -13,7 +13,7 @@ from ...schemas.conversation_schema import LanguageModelConfiguration
 from ..language_models_utils import create_openai_client
 from .prompts import SYSTEM_PROMPT
 
-_logger = setup_logger(__name__, log_file="Fmcp_client.log", show_file_name=False)
+_logger = setup_logger(__name__, log_file="mcp_client.log", show_file_name=False)
 
 _SERVER_PATH = os.path.join(os.path.dirname(__file__), "mcp_server.py")
 
@@ -138,7 +138,6 @@ class MCPClient:
         final_text = []
 
         message = response.choices[0].message
-        _logger.debug(f"Received message: {message}")
         _logger.debug(
             f"Received message: content={message.content}, tool_calls={bool(message.tool_calls)}"
         )
@@ -242,13 +241,6 @@ class MCPClient:
             }
         )
 
-    def _tool_requires_username(self, tool_name: str) -> bool:
-        for tool in self._available_tools:
-            func = tool["function"]
-            if func["name"] == tool_name:
-                return "username" in func["parameters"].get("properties", {})
-        return False
-
     @staticmethod
     def _get_tool_args(tool_call):
         try:
@@ -261,12 +253,19 @@ class MCPClient:
 
         return tool_args
 
+    def _tool_requires_username(self, tool_name: str) -> bool:
+        for tool in self._available_tools:
+            func = tool["function"]
+            if func["name"] == tool_name:
+                return "username" in func["parameters"].get("properties", {})
+        return False
+
     async def _get_tool_call_result(self, tool_name: str, tool_args):
         try:
             result = await self._session.call_tool(  # type:ignore
                 tool_name, tool_args  # type: ignore
             )
-            _logger.debug(f"Tool {tool_name} result: {str(result.content)[:120]}...")
+            _logger.debug(f"Tool {tool_name} result: {str(result.content)[:250]}...")
             return result
         except Exception as e:
             _logger.error(f"Failed to execute tool {tool_name}: {str(e)}")
