@@ -241,13 +241,6 @@ class MCPClient:
             }
         )
 
-    def _tool_requires_username(self, tool_name: str) -> bool:
-        for tool in self._available_tools:
-            func = tool["function"]
-            if func["name"] == tool_name:
-                return "username" in func["parameters"].get("properties", {})
-        return False
-
     @staticmethod
     def _get_tool_args(tool_call):
         try:
@@ -259,6 +252,13 @@ class MCPClient:
             )
 
         return tool_args
+
+    def _tool_requires_username(self, tool_name: str) -> bool:
+        for tool in self._available_tools:
+            func = tool["function"]
+            if func["name"] == tool_name:
+                return "username" in func["parameters"].get("properties", {})
+        return False
 
     async def _get_tool_call_result(self, tool_name: str, tool_args):
         try:
