@@ -5,11 +5,11 @@ from pydantic import BaseModel, Field
 from .language_models_schema import LanguageModelConfiguration
 
 
-class DialogueRetrieve(BaseModel):
-    messages: list[dict[str, str]]
+class ConversationDialogueRetrieve(BaseModel):
+    messages: list[dict]
 
 
-class ConversationRetrieve(BaseModel):
+class ConversationMetadataRetrieve(BaseModel):
     id: str
     title: str
     started_at: datetime
