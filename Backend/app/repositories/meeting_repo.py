@@ -35,9 +35,9 @@ class MeetingRepository:
             ssl_show_warn=False,
         )
 
-        self._initialize_indexes()
+        self._initialize_elasticsearch_indexes()
 
-    def _initialize_indexes(self) -> None:
+    def _initialize_elasticsearch_indexes(self) -> None:
         """Initialize Elasticsearch indexes for different languages."""
 
         index_mapping = {
