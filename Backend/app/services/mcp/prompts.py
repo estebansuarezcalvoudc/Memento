@@ -56,7 +56,7 @@ _RELATIVE_DATE_TOOL_INSTRUCTIONS = """
 
     - Calculate how many days there are between the week day the user asked and the
       actual date. There are 7 days in a week: Monday (1), Tuesday (2), Wednesday (3),
-      Thursday(4), Friday (5), Saturday (6), Sunday (7). In order to calculate the date
+      Thusday(4), Friday (5), Saturday (6), Sunday (7). In order to calculate the date
       the user asks, you will have to count the days between the day the user asked and
       the current day. Examples:
 

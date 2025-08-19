@@ -88,7 +88,7 @@ class MeetingRepository:
         try:
             self._elastic_search.index(
                 index=f"meetings_{meeting_metadata.language}",
-                id=str(result.inserted_id),
+                id=result.inserted_id,
                 document={
                     "username": username,
                     "title": meeting_metadata.title,
@@ -98,15 +98,11 @@ class MeetingRepository:
                 },
             )
         except Exception as e:
-            # Rollback MongoDB insert to maintain consistency
             self._collection.delete_one({"_id": result.inserted_id})
             _logger.error(
-                f"Failed to index meeting in Elasticsearch, rolled back MongoDB insert: {e}"
+                f"Failed to index meeting in elastic search, rolled back MongoDB insert: {str(e)}"
             )
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to store meeting due to Elasticsearch error.",
-            )
+            raise e
 
     def retrieve_all_meetings_metadata(
         self, username: str
@@ -159,40 +155,59 @@ class MeetingRepository:
 
     @handle_invalid_id
     def update_meeting_metadata(
-        self, id: str, meeting_data: UpdateMeetingMetadata, username: str
+        self, id: str, new_meeting_metadata: UpdateMeetingMetadata, username: str
     ) -> None:
-        update_data_mongo, update_data_elastic_search = self._get_update_data(
-            meeting_data
+        previous_data = self._collection.find_one(
+            {"username": username, "_id": ObjectId(id)},
+            {"_id": False, "title": True, "date": True, "language": True},
         )
 
-        if not update_data_mongo:
-            return
-
-        meeting_language = self._get_meeting_language(id, username)
-
-        if not meeting_language:
+        if not previous_data:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Meeting with id={id} not found",
             )
 
-        self._collection.update_one(
-            {"username": username, "_id": ObjectId(id)},
-            {"$set": update_data_mongo},
+        update_data_mongo, update_data_elastic_search = self._get_update_data(
+            new_meeting_metadata
         )
+        if not update_data_mongo:
+            return
 
+        self._update_mongo_meeting(id, username, update_data_mongo)
         try:
-            self._elastic_search.update(
-                index=f"meetings_{meeting_language}",
-                id=id,
-                doc=update_data_elastic_search,
+            self._update_elastic_meeting(
+                id, previous_data["language"], update_data_elastic_search
             )
         except Exception as e:
-            _logger.error(f"Failed to update Elasticsearch for meeting id={id}: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to update meeting metadata in Elasticsearch for meeting id={id}",
+            self._rollback_mongo_update(id, username, previous_data)
+            _logger.error(
+                f"Failed to update meeting with id={id} in Elasticsearch: {str(e)}"
             )
+            raise e
+
+    def _update_mongo_meeting(self, id: str, username: str, update_data: dict) -> None:
+        self._collection.update_one(
+            {"username": username, "_id": ObjectId(id)},
+            {"$set": update_data},
+        )
+
+    def _update_elastic_meeting(
+        self, id: str, language: str, update_data: dict
+    ) -> None:
+        self._elastic_search.update(
+            index=f"meetings_{language}",
+            id=id,
+            doc=update_data,
+        )
+
+    def _rollback_mongo_update(
+        self, id: str, username: str, previous_data: dict
+    ) -> None:
+        self._collection.update_one(
+            {"username": username, "_id": ObjectId(id)},
+            {"$set": previous_data},
+        )
 
     def _get_update_data(
         self, meeting_data: UpdateMeetingMetadata

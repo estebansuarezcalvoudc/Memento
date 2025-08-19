@@ -10,6 +10,7 @@ from ..schemas.conversation_schema import (
 )
 from ..utils.singleton_meta import SingletonMeta
 from .mcp.mcp_client import MCPClient
+from .mcp.prompts import SYSTEM_PROMPT
 
 _logger = setup_logger(__name__)
 
@@ -22,7 +23,7 @@ class ConversationService(metaclass=SingletonMeta):
     async def create_conversation(
         self, conversation_create_request: ConversationCreateRequest, username: str
     ) -> ConversationCreateResponse:
-        id = self._repository.store_conversation("New chat", username)
+        id = self._repository.store_conversation("New chat", username, [SYSTEM_PROMPT])
 
         assistant_response = await self._process_message(
             id, conversation_create_request, username
@@ -47,6 +48,7 @@ class ConversationService(metaclass=SingletonMeta):
         try:
             dialogue = self._repository.fetch_conversation(id, username)
             conversation_history = dialogue.messages.copy()
+            original_length = len(conversation_history)
 
             user_message = {"role": "user", "content": send_message_request.message}
             conversation_history.append(user_message)
@@ -60,7 +62,7 @@ class ConversationService(metaclass=SingletonMeta):
             assistant_response = {"role": "assistant", "content": reply}
             conversation_history.append(assistant_response)
 
-            new_messages = conversation_history[len(dialogue.messages) :]
+            new_messages = conversation_history[original_length:]
 
             self._repository.append_new_messages_to_conversation(
                 id, new_messages, username

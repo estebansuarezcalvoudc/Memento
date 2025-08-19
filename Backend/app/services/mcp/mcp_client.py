@@ -11,7 +11,6 @@ from openai.types.chat import ChatCompletion
 from ...core.logging import setup_logger
 from ...schemas.conversation_schema import LanguageModelConfiguration
 from ..language_models_utils import create_openai_client
-from .prompts import SYSTEM_PROMPT
 
 _logger = setup_logger(__name__, log_file="mcp_client.log", show_file_name=False)
 
@@ -52,10 +51,10 @@ class MCPClient:
             await self._connect_to_server()
 
         try:
-            result = await self._process_query(
+            assistant_response = await self._process_query(
                 conversation_history, model_config, username
             )
-            return result
+            return assistant_response
         except Exception as e:
             _logger.error(f"Error sending message to MCP client: {str(e)}")
             _logger.error(f"Exception type: {type(e).__name__}")
@@ -103,8 +102,6 @@ class MCPClient:
                 "MCP session not initialized. Call connect_to_server() first."
             )
 
-        conversation_history = self._add_system_prompt(conversation_history)
-
         _logger.info("Making initial OpenAI API call")
         openai = create_openai_client(model_config, _logger)
         response = openai.chat.completions.create(
@@ -122,11 +119,6 @@ class MCPClient:
         return await self._process_response(
             response, conversation_history, model_config, username
         )
-
-    def _add_system_prompt(self, conversation_history: list[dict]) -> list[dict]:
-        if not conversation_history or conversation_history[0].get("role") != "system":
-            conversation_history = [SYSTEM_PROMPT] + conversation_history
-        return conversation_history
 
     async def _process_response(
         self,

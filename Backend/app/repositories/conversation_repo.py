@@ -6,9 +6,9 @@ from fastapi import HTTPException, status
 
 from ..core.settings import settings
 from ..schemas.conversation_schema import (
+    ConversationDialogueRetrieve,
     ConversationMetadataRetrieve,
     ConversationUpdateRequest,
-    ConversationDialogueRetrieve,
 )
 from .utils.handle_invalid_id import handle_invalid_id
 
@@ -19,13 +19,21 @@ class ConversationRepository:
         mydb = myclient["chat_db"]
         self._collection = mydb["conversations"]
 
-    def store_conversation(self, conversation_title: str, username: str) -> str:
+    def store_conversation(
+        self,
+        conversation_title: str,
+        username: str,
+        initial_messages: list[dict] = [],
+    ) -> str:
+        if initial_messages is None:
+            initial_messages = []
+
         result = self._collection.insert_one(
             {
                 "username": username,
                 "title": conversation_title,
                 "started_at": datetime.today(),
-                "messages": [],
+                "messages": initial_messages,
             }
         )
         return str(result.inserted_id)
@@ -57,7 +65,9 @@ class ConversationRepository:
         ]
 
     @handle_invalid_id
-    def fetch_conversation(self, id: str, username: str) -> ConversationDialogueRetrieve:
+    def fetch_conversation(
+        self, id: str, username: str
+    ) -> ConversationDialogueRetrieve:
         result = self._collection.find_one(
             {"username": username, "_id": ObjectId(id)},
             {"_id": False, "messages": True},
