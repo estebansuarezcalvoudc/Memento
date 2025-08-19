@@ -7,8 +7,6 @@ import pymongo
 from elasticsearch import Elasticsearch
 from mcp.server.fastmcp import FastMCP
 
-from ...utils.supported_languages import SUPPORTED_LANGUAGES
-
 if __name__ == "__main__":
     backend_path = str(Path(__file__).parents[3])
     if backend_path not in sys.path:
@@ -16,6 +14,7 @@ if __name__ == "__main__":
 
 from app.core.logging import setup_logger
 from app.core.settings import settings
+from app.utils.supported_languages import SUPPORTED_LANGUAGES
 
 mcp = FastMCP("weather")
 _logger = setup_logger(__name__)
