@@ -74,7 +74,7 @@ async def get_meeting_info_by_date(
 @mcp.tool()
 async def get_meetings_by_content(
     query: str, username: str
-) -> dict[str, dict[str, str]]:
+) -> list[dict[str, dict[str, str]]]:
     """
     Search for meetings by content across summaries and transcriptions using semantic
     search.
@@ -95,14 +95,14 @@ async def get_meetings_by_content(
         username (str): The username to filter meetings by
 
     Returns:
-        dict[str, dict[str, str]]:A dictionary where keys are meeting IDs and values are
-                                  dictionaries containing meeting information with keys:
-                                  'title', 'date', 'summary', 'transcription',
-                                  'language', 'score' Results are ordered by relevance
-                                  score (higher is more relevant).
+        list[dict[str, dict[str, str]]]: A list of dictionaries where each element is a
+                                        dictionary with meeting ID as key and meeting info
+                                        as value. Meeting info contains: 'title', 'date',
+                                        'summary', 'transcription', 'language', 'score'.
+                                        Results are ordered by relevance score (higher is more relevant).
     """
     if not query.strip():
-        return {}
+        return []
 
     elastic_search = Elasticsearch(
         hosts=[settings.elastic_search_url],
@@ -111,15 +111,15 @@ async def get_meetings_by_content(
         ssl_show_warn=False,
     )
 
-    all_results = {}
+    all_results = []
 
     for language in SUPPORTED_LANGUAGES:
         index_name = f"meetings_{language}"
-
         try:
-            _search_index_for_meetings(
-                elastic_search, index_name, language, query, username, all_results
+            language_results = _search_index_for_meetings(
+                elastic_search, index_name, language, query, username
             )
+            all_results.extend(language_results)
         except Exception as e:
             _logger.error(f"Error searching in index {index_name}: {e}")
 
@@ -132,26 +132,26 @@ def _search_index_for_meetings(
     language: str,
     query: str,
     username: str,
-    results_dict: dict[str, dict[str, str]],
-) -> None:
+) -> list[dict[str, dict[str, str]]]:
     if not elastic_search.indices.exists(index=index_name):
-        return
+        return []
 
     search_body = _build_search_body(query, username, 100)
     response = elastic_search.search(index=index_name, body=search_body)
 
-    for hit in response["hits"]["hits"]:
-        meeting_id = hit["_id"]
-        source = hit["_source"]
-
-        results_dict[meeting_id] = {
-            "title": source.get("title", ""),
-            "date": source.get("date", ""),
-            "summary": source.get("summary", ""),
-            "transcription": source.get("transcription", ""),
-            "language": language,
-            "score": str(hit["_score"]),
+    return [
+        {
+            hit["_id"]: {
+                "title": hit["_source"].get("title", ""),
+                "date": hit["_source"].get("date", ""),
+                "summary": hit["_source"].get("summary", ""),
+                "transcription": hit["_source"].get("transcription", ""),
+                "language": language,
+                "score": str(hit["_score"]),
+            }
         }
+        for hit in response["hits"]["hits"]
+    ]
 
 
 def _build_search_body(query: str, username: str, size: int) -> dict:
