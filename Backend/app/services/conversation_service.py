@@ -48,6 +48,7 @@ class ConversationService(metaclass=SingletonMeta):
         try:
             dialogue = self._repository.fetch_conversation(id, username)
             conversation_history = dialogue.messages.copy()
+            original_length = len(conversation_history)
 
             user_message = {"role": "user", "content": send_message_request.message}
             conversation_history.append(user_message)
@@ -61,7 +62,7 @@ class ConversationService(metaclass=SingletonMeta):
             assistant_response = {"role": "assistant", "content": reply}
             conversation_history.append(assistant_response)
 
-            new_messages = conversation_history[len(dialogue.messages) :]
+            new_messages = conversation_history[original_length:]
 
             self._repository.append_new_messages_to_conversation(
                 id, new_messages, username
