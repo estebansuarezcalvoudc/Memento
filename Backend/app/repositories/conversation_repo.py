@@ -18,6 +18,7 @@ class ConversationRepository:
         myclient = pymongo.MongoClient(settings.mongo_url)
         mydb = myclient["chat_db"]
         self._collection = mydb["conversations"]
+        self._collection.create_index("username", background=True)
 
     def store_conversation(
         self,
