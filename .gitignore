@@ -214,8 +214,6 @@ core.*
 
 # Frontend
 
-package-lock.json
-
 # Logs
 logs
 *.log
