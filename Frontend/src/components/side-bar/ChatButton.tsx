@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ChatButtonSpan from "./ChatButtonSpan";
 
 const editImage = (
   <svg
@@ -67,11 +68,8 @@ export default function ChatButton({
   conversationName: string;
 }) {
   const [isDivHovered, setDivIsHovered] = useState(false);
-  const [isOptionsHovered, setIsOptionsHovered] = useState(false);
 
-  const classes = `w-full rounded-xl flex items-center ${
-    isDivHovered && !isOptionsHovered ? "bg-stone-300" : ""
-  }`;
+  const classes = "w-full rounded-xl flex items-center hover:bg-stone-300";
 
   return (
     <div
@@ -80,16 +78,14 @@ export default function ChatButton({
       onMouseLeave={() => setDivIsHovered(false)}
     >
       <button
-        className="text-stone-700 text-sm text-left flex-1 truncate py-1.5 rounded-l-xl"
+        className="text-stone-700 text-left flex-1 truncate py-1.5 rounded-l-xl"
         onClick={() => console.log("conversation button triggered")}
       >
-        <span className="ml-1.5 truncate">{conversationName}</span>
+        <ChatButtonSpan>{conversationName}</ChatButtonSpan>
       </button>
       {isDivHovered && (
         <button
-          className="justify-end ml-auto py-1.5 rounded-r-xl"
-          onMouseEnter={() => setIsOptionsHovered(true)}
-          onMouseLeave={() => setIsOptionsHovered(false)}
+          className="justify-end ml-auto py-1.5 px-2 rounded-r-xl"
           onClick={() => console.log("options button triggered")}
         >
           {optionsImage}
