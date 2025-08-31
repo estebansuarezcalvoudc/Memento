@@ -5,6 +5,21 @@ const conversations = [
   "Unnamed conversation 2",
   "Unnamed conversation 3",
   "Unnamed conversation 4",
+  "Unnamed conversation 2",
+  "Unnamed conversation 3",
+  "Unnamed conversation 4",
+  "Unnamed conversation 2",
+  "Unnamed conversation 3",
+  "Unnamed conversation 4",
+  "Unnamed conversation 2",
+  "Unnamed conversation 3",
+  "Unnamed conversation 4",
+  "Unnamed conversation 2",
+  "Unnamed conversation 3",
+  "Unnamed conversation 4",
+  "Unnamed conversation 2",
+  "Unnamed conversation 3",
+  "Unnamed conversation 4",
 ];
 
 export default function ChatsList() {
@@ -14,9 +29,9 @@ export default function ChatsList() {
         Chats
       </h2>
       <hr className="my-2 border-stone-400" />
-      <ul>
+      <ul className="overflow-auto max-h-2/3">
         {conversations.map((title) => (
-          <li>
+          <li key={title}>
             <ChatButton conversationName={title} />
           </li>
         ))}
