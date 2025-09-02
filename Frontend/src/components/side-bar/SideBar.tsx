@@ -8,19 +8,23 @@ import ChatsList from "./ChatsList";
 
 export default function SideBar() {
   return (
-    <aside className="fixed h-full w-3/8 px-3 border-r-2 border-stone-300 bg-stone-100 text-stone-50 md:w-72">
-      <div className="flex items-center justify-between px-2">
+    <aside className="fixed h-full w-3/8 px-3 border-r-2 border-stone-300 bg-stone-100 text-stone-50 md:w-72 flex flex-col">
+      <div className="flex items-center justify-between flex-shrink-0">
         <span className="font-dongle text-6xl uppercase text-stone-700 p-1">
           TFG
         </span>
         {hideSidebarIcon}
       </div>
 
-      <Button svg={newChatImage} text="New Chat" />
-      <Button svg={meetingsImage} text="My Meetings" />
-      <Button svg={uploadMeetingsImage} text="Upload Meetings" />
+      <div className="flex-shrink-0">
+        <Button svg={newChatImage} text="New Chat" />
+        <Button svg={meetingsImage} text="My Meetings" />
+        <Button svg={uploadMeetingsImage} text="Upload Meetings" />
+      </div>
 
-      <ChatsList />
+      <div className="flex-1 min-h-0">
+        <ChatsList />
+      </div>
     </aside>
   );
 }

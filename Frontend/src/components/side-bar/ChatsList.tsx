@@ -24,17 +24,17 @@ const conversations = [
 
 export default function ChatsList() {
   return (
-    <>
-      <h2 className="font-ubuntu text-sm ml-1.5 truncate text-stone-400 mt-8">
+    <div className="flex flex-col h-full overflow-hidden">
+      <h2 className="font-ubuntu text-sm ml-1.5 truncate text-stone-400 mt-8 flex-shrink-0 mb-2">
         Chats
       </h2>
-      <ul className="overflow-auto max-h-2/3 custom-scrollbar">
-        {conversations.map((title) => (
-          <li>
+      <ul className="flex-1 overflow-y-auto custom-scrollbar">
+        {conversations.map((title, index) => (
+          <li key={index}>
             <ChatButton chatTitle={title} />
           </li>
         ))}
       </ul>
-    </>
+    </div>
   );
 }

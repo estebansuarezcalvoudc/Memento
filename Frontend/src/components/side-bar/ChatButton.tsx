@@ -10,7 +10,7 @@ export default function ChatButton({
   const [isDivHovered, setDivIsHovered] = useState(false);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
 
-  const classes = "w-full rounded-xl flex items-center hover:bg-stone-300";
+  const classes = "w-full rounded-xl flex items-center hover:bg-stone-200";
 
   const openChatButton = (
     <button
