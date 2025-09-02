@@ -1,4 +1,4 @@
-import ChatButton from "./chats-list/ChatButton";
+import ChatButton from "./ChatButton";
 
 const conversations = [
   "Unnamed conversation",
