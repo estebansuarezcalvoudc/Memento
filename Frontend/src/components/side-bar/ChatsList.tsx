@@ -25,14 +25,13 @@ const conversations = [
 export default function ChatsList() {
   return (
     <>
-      <h2 className="font-ubuntu text-base ml-1.5 truncate text-stone-400 mt-8">
+      <h2 className="font-ubuntu text-sm ml-1.5 truncate text-stone-400 mt-8">
         Chats
       </h2>
-      <hr className="my-2 border-stone-400" />
       <ul className="overflow-auto max-h-2/3">
         {conversations.map((title) => (
-          <li key={title}>
-            <ChatButton conversationName={title} />
+          <li>
+            <ChatButton chatTitle={title} />
           </li>
         ))}
       </ul>
