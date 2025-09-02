@@ -8,7 +8,7 @@ import ChatsList from "./ChatsList";
 
 export default function SideBar() {
   return (
-    <aside className="fixed h-full w-3/8 px-3 border-r-2 border-stone-300 bg-stone-100 text-stone-50 md:w-72 flex flex-col">
+    <aside className="fixed h-full w-3/8 px-3 border-r-1 border-stone-300 bg-stone-100 text-stone-50 md:w-72 flex flex-col">
       <div className="flex items-center justify-between flex-shrink-0">
         <span className="font-dongle text-6xl uppercase text-stone-700 p-1">
           TFG
