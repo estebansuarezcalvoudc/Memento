@@ -14,7 +14,7 @@ export default function ChatButton({
 
   const openChatButton = (
     <button
-      className="text-stone-700 text-left flex-1 truncate py-1.5 rounded-l-xl"
+      className="text-stone-700 text-left flex-1 truncate py-1.5 rounded-l-xl cursor-pointer"
       onClick={() => console.log("conversation button triggered")}
     >
       <ChatButtonSpan>{conversationName}</ChatButtonSpan>
@@ -23,7 +23,7 @@ export default function ChatButton({
 
   const toogleOptionsButton = (
     <button
-      className="group relative justify-end ml-auto py-1.5 px-2 rounded-r-xl"
+      className="group relative justify-end ml-auto py-1.5 px-2 rounded-r-xl cursor-pointer"
       onClick={() => setDropdownOpen((wasDropdownOpen) => !wasDropdownOpen)}
     >
       {optionsImage}

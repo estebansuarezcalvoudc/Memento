@@ -9,7 +9,7 @@ export default function Button({
   text: string;
   textColor?: string;
 }) {
-  const classes = `w-full ${textColor} hover:bg-stone-300 rounded-xl py-2 px-2 text-left flex items-center gap-2`;
+  const classes = `w-full ${textColor} hover:bg-stone-300 rounded-xl py-2 px-2 text-left flex items-center gap-2 cursor-pointer`;
 
   return (
     <button className={classes}>
