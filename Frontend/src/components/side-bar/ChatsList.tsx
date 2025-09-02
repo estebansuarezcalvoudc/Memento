@@ -28,7 +28,7 @@ export default function ChatsList() {
       <h2 className="font-ubuntu text-sm ml-1.5 truncate text-stone-400 mt-8">
         Chats
       </h2>
-      <ul className="overflow-auto max-h-2/3">
+      <ul className="overflow-auto max-h-2/3 custom-scrollbar">
         {conversations.map((title) => (
           <li>
             <ChatButton chatTitle={title} />
