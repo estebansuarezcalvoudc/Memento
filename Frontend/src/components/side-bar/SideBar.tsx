@@ -2,9 +2,10 @@ import {
   newChatImage,
   meetingsImage,
   uploadMeetingsImage,
-} from "../../assets/buttonsImages"
-import Button from "./Button"
-import ChatsList from "./ChatsList"
+  settingsImage,
+} from "../../assets/buttonsImages";
+import Button from "./Button";
+import ChatsList from "./ChatsList";
 
 export default function SideBar() {
   return (
@@ -25,8 +26,11 @@ export default function SideBar() {
       <div className="min-h-0 flex-1">
         <ChatsList />
       </div>
+
+      <hr className="my-4 border-t border-stone-400" />
+      <Button svg={settingsImage} text="Settings" className="mb-2.5" />
     </aside>
-  )
+  );
 }
 
 const hideSidebarIcon = (
@@ -49,4 +53,4 @@ const hideSidebarIcon = (
       <path d="M15 10l-2 2l2 2" />
     </svg>
   </button>
-)
+);
