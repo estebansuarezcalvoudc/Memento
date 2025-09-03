@@ -1,4 +1,10 @@
+import SideBar from "./components/side-bar/SideBar"
+
 function App() {
-  return <h1 className="font-bold text-red-400">Hello World!</h1>;
+  return (
+    <>
+      <SideBar />
+    </>
+  )
 }
-export default App;
+export default App
