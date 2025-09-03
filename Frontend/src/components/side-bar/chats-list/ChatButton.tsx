@@ -1,16 +1,16 @@
-import { useState } from "react"
-import ChatOptions from "./ChatOptions"
-import ChatButtonSpan from "./ChatButtonSpan"
+import { useState } from "react";
+import ChatOptions from "./ChatOptions";
+import ChatButtonSpan from "./ChatButtonSpan";
 
 export default function ChatButton({
   chatTitle: conversationName,
 }: {
-  chatTitle: string
+  chatTitle: string;
 }) {
-  const [isDivHovered, setDivIsHovered] = useState(false)
-  const [isDropdownOpen, setDropdownOpen] = useState(false)
+  const [isDivHovered, setDivIsHovered] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const classes = "w-full rounded-xl flex items-center hover:bg-stone-200"
+  const classes = "w-full rounded-xl flex items-center hover:bg-stone-200";
 
   const openChatButton = (
     <button
@@ -19,19 +19,18 @@ export default function ChatButton({
     >
       <ChatButtonSpan>{conversationName}</ChatButtonSpan>
     </button>
-  )
+  );
+
+  const shouldShowOptions = isDivHovered || isMenuOpen;
 
   return (
     <div
       className={classes}
       onMouseEnter={() => setDivIsHovered(true)}
-      onMouseLeave={() => {
-        setDivIsHovered(false)
-        setDropdownOpen(false)
-      }}
+      onMouseLeave={() => setDivIsHovered(false)}
     >
       {openChatButton}
-      {isDivHovered && <ChatOptions />}
+      {shouldShowOptions && <ChatOptions onMenuStateChange={setIsMenuOpen} />}
     </div>
-  )
+  );
 }

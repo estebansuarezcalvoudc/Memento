@@ -1,24 +1,40 @@
 import { Menu, MenuButton, MenuItems } from "@headlessui/react";
 import Button from "../Button";
 
-export default function ChatOptions() {
-  return (
-    <Menu as="div" className="relative inline-block">
-      <MenuButton className="inline-flex w-full justify-center gap-x-1.5 rounded-md px-3 py-2 shadow-xs">
-        {optionsImage}
-      </MenuButton>
+interface ChatOptionsProps {
+  onMenuStateChange: (isOpen: boolean) => void;
+}
 
-      <MenuItems
-        transition
-        portal
-        anchor="bottom end"
-        className="mt-2 origin-top-right rounded-md bg-white shadow-lg outline-1 outline-stone-300 transition data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
-      >
-        <div className="py-1">
-          <Button svg={editImage} text="Rename" />
-          <Button svg={deleteImage} text="Delete" textColor="text-red-500" />
-        </div>
-      </MenuItems>
+export default function ChatOptions({ onMenuStateChange }: ChatOptionsProps) {
+  return (
+    <Menu>
+      {({ open }) => {
+        onMenuStateChange(open);
+
+        return (
+          <>
+            <MenuButton className="inline-flex justify-center items-center rounded-md p-2 hover:bg-stone-200 cursor-pointer">
+              {optionsImage}
+            </MenuButton>
+
+            <MenuItems
+              portal
+              anchor="bottom end"
+              className="mt-2 px-1.5 origin-top-right rounded-md bg-white shadow-lg outline-1 outline-stone-300"
+            >
+              <div className="py-1">
+                <Button svg={editImage} text="Rename" />
+                <Button
+                  svg={deleteImage}
+                  text="Delete"
+                  textColor="text-red-500"
+                  hoverColor="hover:bg-red-50"
+                />
+              </div>
+            </MenuItems>
+          </>
+        );
+      }}
     </Menu>
   );
 }
