@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ChatOptions from "./ChatOptions";
+import ChatOptionsDropdown from "./ChatOptionsDropdown";
 import ChatButtonSpan from "./ChatButtonSpan";
 
 export default function ChatButton({
@@ -30,7 +30,9 @@ export default function ChatButton({
       onMouseLeave={() => setDivIsHovered(false)}
     >
       {openChatButton}
-      {shouldShowOptions && <ChatOptions onMenuStateChange={setIsMenuOpen} />}
+      {shouldShowOptions && (
+        <ChatOptionsDropdown onMenuStateChange={setIsMenuOpen} />
+      )}
     </div>
   );
 }

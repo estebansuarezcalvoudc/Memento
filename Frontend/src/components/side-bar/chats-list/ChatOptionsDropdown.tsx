@@ -1,11 +1,13 @@
 import { Menu, MenuButton, MenuItems } from "@headlessui/react";
 import Button from "../Button";
 
-interface ChatOptionsProps {
+type ChatOptionsProps = {
   onMenuStateChange: (isOpen: boolean) => void;
-}
+};
 
-export default function ChatOptions({ onMenuStateChange }: ChatOptionsProps) {
+export default function ChatOptionsDropdown({
+  onMenuStateChange,
+}: ChatOptionsProps) {
   return (
     <Menu>
       {({ open }) => {
