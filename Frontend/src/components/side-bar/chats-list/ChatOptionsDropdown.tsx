@@ -15,7 +15,7 @@ export default function ChatOptionsDropdown({
 
         return (
           <>
-            <MenuButton className="inline-flex justify-center items-center rounded-md p-2 hover:bg-stone-200 cursor-pointer">
+            <MenuButton className="inline-flex justify-center items-center rounded-md p-2 cursor-pointer">
               {optionsImage}
             </MenuButton>
 
