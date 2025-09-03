@@ -16,7 +16,7 @@ export const newChatImage = (
     <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
     <path d="M16 5l3 3" />
   </svg>
-);
+)
 
 export const meetingsImage = (
   <svg
@@ -40,7 +40,7 @@ export const meetingsImage = (
     <path d="M14 9l4 -1" />
     <path d="M16 16l3.923 -.98" />
   </svg>
-);
+)
 
 export const uploadMeetingsImage = (
   <svg
@@ -60,4 +60,4 @@ export const uploadMeetingsImage = (
     <path d="M7 9l5 -5l5 5" />
     <path d="M12 4l0 12" />
   </svg>
-);
+)

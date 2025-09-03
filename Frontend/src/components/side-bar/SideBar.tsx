@@ -2,15 +2,15 @@ import {
   newChatImage,
   meetingsImage,
   uploadMeetingsImage,
-} from "../../assets/buttonsImages";
-import Button from "./Button";
-import ChatsList from "./ChatsList";
+} from "../../assets/buttonsImages"
+import Button from "./Button"
+import ChatsList from "./ChatsList"
 
 export default function SideBar() {
   return (
-    <aside className="fixed h-full w-3/8 px-3 border-r-1 border-stone-300 bg-stone-100 text-stone-50 md:w-72 flex flex-col">
-      <div className="flex items-center justify-between flex-shrink-0">
-        <span className="font-dongle text-6xl uppercase text-stone-700 p-1">
+    <aside className="fixed flex h-full w-3/8 flex-col border-r-1 border-stone-300 bg-stone-100 px-3 text-stone-50 md:w-72">
+      <div className="flex flex-shrink-0 items-center justify-between">
+        <span className="font-dongle p-1 text-6xl text-stone-700 uppercase">
           TFG
         </span>
         {hideSidebarIcon}
@@ -22,15 +22,15 @@ export default function SideBar() {
         <Button svg={uploadMeetingsImage} text="Upload Meetings" />
       </div>
 
-      <div className="flex-1 min-h-0">
+      <div className="min-h-0 flex-1">
         <ChatsList />
       </div>
     </aside>
-  );
+  )
 }
 
 const hideSidebarIcon = (
-  <button className="px-1.5 py-1.5 hover:bg-stone-200 rounded-xl cursor-pointer">
+  <button className="cursor-pointer rounded-xl px-1.5 py-1.5 hover:bg-stone-200">
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="24"
@@ -49,4 +49,4 @@ const hideSidebarIcon = (
       <path d="M15 10l-2 2l2 2" />
     </svg>
   </button>
-);
+)

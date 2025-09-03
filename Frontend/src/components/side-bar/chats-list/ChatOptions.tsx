@@ -1,4 +1,47 @@
+import { Menu, MenuButton, MenuItems } from "@headlessui/react";
 import Button from "../Button";
+
+export default function ChatOptions() {
+  return (
+    <Menu as="div" className="relative inline-block">
+      <MenuButton className="inline-flex w-full justify-center gap-x-1.5 rounded-md px-3 py-2 shadow-xs">
+        {optionsImage}
+      </MenuButton>
+
+      <MenuItems
+        transition
+        portal
+        anchor="bottom end"
+        className="mt-2 origin-top-right rounded-md bg-white shadow-lg outline-1 outline-stone-300 transition data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
+      >
+        <div className="py-1">
+          <Button svg={editImage} text="Rename" />
+          <Button svg={deleteImage} text="Delete" textColor="text-red-500" />
+        </div>
+      </MenuItems>
+    </Menu>
+  );
+}
+
+const optionsImage = (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="#000000"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="icon icon-tabler icons-tabler-outline icon-tabler-dots mr-1.5"
+  >
+    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+    <path d="M5 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+    <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+    <path d="M19 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+  </svg>
+);
 
 const editImage = (
   <svg
@@ -40,14 +83,3 @@ const deleteImage = (
     <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
   </svg>
 );
-
-export default function ChatOptions() {
-  return (
-    <div className="absolute top-full right-0 shadow-xl rounded-2xl py-1 px-1 border-1 border-stone-400 bg-stone-50 text-stone-800 font-ubuntu">
-      <ul>
-        <Button svg={editImage} text="Rename" />
-        <Button svg={deleteImage} text="Delete" textColor="text-red-500" />
-      </ul>
-    </div>
-  );
-}
