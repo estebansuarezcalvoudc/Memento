@@ -16,14 +16,14 @@ export default function ChatOptionsDropdown({
 
         return (
           <>
-            <MenuButton className="inline-flex justify-center items-center rounded-md p-2 cursor-pointer">
+            <MenuButton className="inline-flex cursor-pointer items-center justify-center rounded-md p-2">
               {optionsImage}
             </MenuButton>
 
             <MenuItems
               portal
               anchor="bottom end"
-              className="mt-2 px-1.5 origin-top-right rounded-md bg-white shadow-lg outline-1 outline-stone-300"
+              className="mt-2 origin-top-right rounded-md bg-white px-1.5 shadow-lg outline-1 outline-stone-300"
             >
               <div className="py-1">
                 <Button svg={editImage} text="Rename" />
