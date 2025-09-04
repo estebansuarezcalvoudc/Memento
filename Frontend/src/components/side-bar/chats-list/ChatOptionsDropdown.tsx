@@ -1,9 +1,10 @@
-import { Menu, MenuButton, MenuItems } from "@headlessui/react";
-import Button from "../Button";
+import { Menu, MenuButton, MenuItems } from '@headlessui/react'
 
-type ChatOptionsProps = {
-  onMenuStateChange: (isOpen: boolean) => void;
-};
+import Button from '../Button'
+
+interface ChatOptionsProps {
+  onMenuStateChange: (isOpen: boolean) => void
+}
 
 export default function ChatOptionsDropdown({
   onMenuStateChange,
@@ -11,18 +12,18 @@ export default function ChatOptionsDropdown({
   return (
     <Menu>
       {({ open }) => {
-        onMenuStateChange(open);
+        onMenuStateChange(open)
 
         return (
           <>
-            <MenuButton className="inline-flex justify-center items-center rounded-md p-2 cursor-pointer">
+            <MenuButton className="inline-flex cursor-pointer items-center justify-center rounded-md p-2">
               {optionsImage}
             </MenuButton>
 
             <MenuItems
               portal
               anchor="bottom end"
-              className="mt-2 px-1.5 origin-top-right rounded-md bg-white shadow-lg outline-1 outline-stone-300"
+              className="mt-2 origin-top-right rounded-md bg-white px-1.5 shadow-lg outline-1 outline-stone-300"
             >
               <div className="py-1">
                 <Button svg={editImage} text="Rename" />
@@ -35,10 +36,10 @@ export default function ChatOptionsDropdown({
               </div>
             </MenuItems>
           </>
-        );
+        )
       }}
     </Menu>
-  );
+  )
 }
 
 const optionsImage = (
@@ -59,7 +60,7 @@ const optionsImage = (
     <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
     <path d="M19 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
   </svg>
-);
+)
 
 const editImage = (
   <svg
@@ -78,7 +79,7 @@ const editImage = (
     <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
     <path d="M13.5 6.5l4 4" />
   </svg>
-);
+)
 
 const deleteImage = (
   <svg
@@ -100,4 +101,4 @@ const deleteImage = (
     <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
     <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
   </svg>
-);
+)
