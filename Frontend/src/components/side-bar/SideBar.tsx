@@ -14,16 +14,16 @@ export default function SideBar() {
 
   return (
     <aside
-      className={`fixed flex h-full ${isSideBarOpen ? 'w-3xs' : 'w-14'} flex-col border-r-1 border-stone-300 bg-stone-100 px-3 text-stone-50`}
+      className={`fixed flex h-full ${isSideBarOpen ? 'w-3xs' : 'w-15'} flex-col border-r-1 border-stone-300 bg-stone-100 px-3 text-stone-50`}
     >
-      <div className="mt-5 mb-3 flex h-8 flex-shrink-0 items-center justify-between">
+      <div className="mt-5 mb-5 flex h-8 flex-shrink-0 items-center justify-between">
         {isSideBarOpen && (
           <span className="font-dongle p-1 text-6xl text-stone-700 uppercase">
             TFG
           </span>
         )}
         <button
-          className="cursor-pointer rounded-xl px-1.5 py-1.5 hover:bg-stone-200"
+          className="flex size-9 cursor-pointer items-center justify-center rounded-xl hover:bg-stone-200"
           onClick={toogleSideBar}
         >
           {isSideBarOpen ? hideSidebarIcon : showSidebarIcon}
@@ -45,11 +45,7 @@ export default function SideBar() {
         </>
       )}
 
-      <Button
-        svg={settingsImage}
-        text="Settings"
-        className="mt-auto mb-2.5"
-      />
+      <Button svg={settingsImage} text="Settings" className="mt-auto mb-2.5" />
     </aside>
   )
 }

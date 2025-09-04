@@ -20,15 +20,14 @@ export default function Button({
 }: ButtonProps) {
   const isSideBarOpen = useStore(state => state.isSideBarOpen)
 
-  const classes = `w-full ${textColor} ${hoverColor} rounded-xl py-2 ${isSideBarOpen && 'px-2'} flex ${isSideBarOpen ? 'place-content-left' : 'place-content-center'} gap-2 cursor-pointer ${className}`
+  // TODO mejorar cómo cambian los estilos al abrir y cerrar la barra lateral
+  const classes = `${isSideBarOpen ? 'flex items-center w-full' : 'w-9'} ${textColor} ${hoverColor} rounded-xl py-2 gap-2 cursor-pointer ${className}`
 
   return (
     <button className={classes} {...props}>
-      {svg}
+      <div className="ml-1.5">{svg}</div>
       {isSideBarOpen && (
-        <span className="font-ubuntu ml-1.5 truncate text-left text-sm">
-          {text}
-        </span>
+        <span className="font-ubuntu ml-1.5 text-left text-sm">{text}</span>
       )}
     </button>
   )
