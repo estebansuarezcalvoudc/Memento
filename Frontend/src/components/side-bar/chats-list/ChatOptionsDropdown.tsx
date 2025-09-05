@@ -15,7 +15,7 @@ export default function ChatOptionsDropdown({
         onMenuStateChange(open)
 
         return (
-          <>
+          <div>
             <MenuButton className="inline-flex cursor-pointer items-center justify-center rounded-md p-2">
               {optionsImage}
             </MenuButton>
@@ -35,7 +35,7 @@ export default function ChatOptionsDropdown({
                 />
               </div>
             </MenuItems>
-          </>
+          </div>
         )
       }}
     </Menu>
