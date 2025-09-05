@@ -1,27 +1,10 @@
-import { useEffect, useRef } from 'react'
-
+import { useDelayedDisplay } from '../../hooks/useDelayedDisplay'
 import { useStore } from '../../store/store'
 
 export default function Header() {
   const isSideBarOpen = useStore(state => state.isSideBarOpen)
   const toogleSideBar = useStore(state => state.toogleSideBar)
-  const titleRef = useRef<HTMLSpanElement>(null)
-
-  useEffect(() => {
-    if (isSideBarOpen && titleRef.current) {
-      // Initially hide the element completely (no layout impact)
-      titleRef.current.style.display = 'none'
-
-      // After a delay, show it and start the animation
-      const timer = setTimeout(() => {
-        if (titleRef.current) {
-          titleRef.current.style.display = 'block'
-        }
-      }, 100) // Delay of 100ms
-
-      return () => clearTimeout(timer)
-    }
-  }, [isSideBarOpen])
+  const titleRef = useDelayedDisplay<HTMLSpanElement>(isSideBarOpen, 'block')
 
   return (
     <div className="mt-5 mb-5 flex h-8 flex-shrink-0 items-center justify-between">
