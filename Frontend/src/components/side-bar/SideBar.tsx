@@ -34,22 +34,20 @@ export default function SideBar() {
 
       <div
         className={`min-h-0 flex-1 transition-opacity duration-300 ${
-          isSideBarOpen ? 'opacity-100 delay-150' : 'opacity-0 delay-[0ms]'
+          isSideBarOpen
+            ? 'block opacity-100 delay-150'
+            : 'hidden opacity-0 delay-[0ms]'
         }`}
-        style={{
-          display: isSideBarOpen ? 'block' : 'none',
-        }}
       >
         <ChatsList />
       </div>
 
       <hr
         className={`my-4 border-t border-stone-400 transition-opacity duration-300 ${
-          isSideBarOpen ? 'opacity-100 delay-150' : 'opacity-0 delay-[0ms]'
+          isSideBarOpen
+            ? 'block opacity-100 delay-150'
+            : 'hidden opacity-0 delay-[0ms]'
         }`}
-        style={{
-          display: isSideBarOpen ? 'block' : 'none',
-        }}
       />
 
       <Button svg={settingsImage} text="Settings" className="mt-auto mb-2.5" />
