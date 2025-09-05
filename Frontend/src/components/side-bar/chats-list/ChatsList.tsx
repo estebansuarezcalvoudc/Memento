@@ -1,11 +1,10 @@
-import { useSidebarStore } from '../../../stores/sidebarStore'
-import ChatButton from './ChatButton'
+import { useIsSidebarOpen } from '../../../stores/sidebarStore'
+import ChatItem from './ChatItem'
 
-// Define the conversation type to match your backend schema
 interface Conversation {
   id: string
   title: string
-  started_at?: string // ISO date string
+  started_at?: string
 }
 
 const conversations: Conversation[] = [
@@ -31,7 +30,7 @@ const conversations: Conversation[] = [
 ]
 
 export default function ChatsList() {
-  const isSidebarOpen = useSidebarStore(state => state.isSidebarOpen)
+  const isSidebarOpen = useIsSidebarOpen()
 
   return (
     <div
@@ -47,7 +46,7 @@ export default function ChatsList() {
       <ul className="custom-scrollbar flex-1 overflow-y-auto">
         {conversations.map(conversation => (
           <li key={conversation.id}>
-            <ChatButton chatTitle={conversation.title} />
+            <ChatItem chatTitle={conversation.title} />
           </li>
         ))}
       </ul>

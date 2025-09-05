@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
-import { useDelayedDisplay } from '../../hooks/useDelayedDisplay'
-import { useSidebarStore } from '../../stores/sidebarStore'
+import { useDelayedDisplay } from '../../../hooks/side-bar/useDelayedDisplay'
+import { useIsSidebarOpen } from '../../../stores/sidebarStore'
 
 interface SidebarButtonProps {
   svg: ReactNode
@@ -15,7 +15,7 @@ export default function SidebarButton({
   className = '',
   ...props
 }: SidebarButtonProps) {
-  const isSidebarOpen = useSidebarStore(state => state.isSidebarOpen)
+  const isSidebarOpen = useIsSidebarOpen()
   const textRef = useDelayedDisplay<HTMLSpanElement>(isSidebarOpen, 'inline')
 
   return (

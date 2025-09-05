@@ -2,8 +2,8 @@ import {
   meetingsImage,
   newChatImage,
   uploadMeetingsImage,
-} from '../../assets/buttonsImages'
-import SidebarButton from './SidebarButton'
+} from '../../../assets/buttonsImages'
+import SidebarButton from '../navigation/SidebarButton'
 
 export default function SidebarButtons() {
   const buttons = [

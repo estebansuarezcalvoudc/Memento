@@ -1,15 +1,14 @@
 import { useState } from 'react'
 
-import ChatButtonSpan from './ChatButtonSpan'
-import ChatOptionsDropdown from './ChatOptionsDropdown'
+import ChatOptionsDropdown from './chat-options/ChatOptionsDropdown'
 
-interface chatButtonProps {
+interface ChatItemProps {
   chatTitle: string
 }
 
-export default function ChatButton({
+export default function ChatItem({
   chatTitle: conversationName,
-}: chatButtonProps) {
+}: ChatItemProps) {
   const [isDivHovered, setDivIsHovered] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
@@ -25,7 +24,9 @@ export default function ChatButton({
         className="flex-1 cursor-pointer truncate rounded-l-xl py-1.5 text-left text-stone-700"
         onClick={() => console.log('conversation button triggered')}
       >
-        <ChatButtonSpan>{conversationName}</ChatButtonSpan>
+        <span className="font-ubuntu ml-1.5 truncate text-sm">
+          {conversationName}
+        </span>
       </button>
 
       {shouldShowOptions && (

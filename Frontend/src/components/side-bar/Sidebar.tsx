@@ -1,12 +1,12 @@
 import { settingsImage } from '../../assets/buttonsImages'
-import { useSidebarStore } from '../../stores/sidebarStore'
+import { useIsSidebarOpen } from '../../stores/sidebarStore'
 import ChatsList from './chats-list/ChatsList'
-import Header from './Header'
-import SidebarButton from './SidebarButton'
-import SidebarButtons from './SidebarButtons'
+import Header from './header/Header'
+import SidebarButton from './navigation/SidebarButton'
+import SidebarButtons from './navigation/SidebarButtons'
 
 export default function Sidebar() {
-  const isSidebarOpen = useSidebarStore(state => state.isSidebarOpen)
+  const isSidebarOpen = useIsSidebarOpen()
 
   return (
     <aside

@@ -1,9 +1,12 @@
-import { useDelayedDisplay } from '../../hooks/useDelayedDisplay'
-import { useSidebarStore } from '../../stores/sidebarStore'
+import { useDelayedDisplay } from '../../../hooks/side-bar/useDelayedDisplay'
+import {
+  useIsSidebarOpen,
+  useToggleSidebar,
+} from '../../../stores/sidebarStore'
 
 export default function Header() {
-  const isSidebarOpen = useSidebarStore(state => state.isSidebarOpen)
-  const toogleSidebar = useSidebarStore(state => state.toggleSidebar)
+  const isSidebarOpen = useIsSidebarOpen()
+  const toggleSidebar = useToggleSidebar()
   const titleRef = useDelayedDisplay<HTMLSpanElement>(isSidebarOpen, 'block')
 
   return (
@@ -18,7 +21,7 @@ export default function Header() {
       )}
       <button
         className="flex size-9 cursor-pointer items-center justify-center rounded-xl hover:bg-stone-200"
-        onClick={toogleSidebar}
+        onClick={toggleSidebar}
       >
         {isSidebarOpen ? hideSidebarIcon : showSidebarIcon}
       </button>
