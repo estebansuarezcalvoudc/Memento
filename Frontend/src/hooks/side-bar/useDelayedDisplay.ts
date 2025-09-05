@@ -11,7 +11,7 @@ import { useEffect, useRef } from 'react'
 export function useDelayedDisplay<T extends HTMLElement>(
   isVisible: boolean,
   displayValue = 'block',
-  delay = 100,
+  delay = 150,
 ) {
   const elementRef = useRef<T>(null)
 

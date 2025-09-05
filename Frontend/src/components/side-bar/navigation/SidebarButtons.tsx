@@ -2,8 +2,8 @@ import {
   meetingsImage,
   newChatImage,
   uploadMeetingsImage,
-} from '../../assets/buttonsImages'
-import Button from './Button'
+} from '../../../assets/buttonsImages'
+import SidebarButton from '../navigation/SidebarButton'
 
 export default function SidebarButtons() {
   const buttons = [
@@ -16,7 +16,7 @@ export default function SidebarButtons() {
     <ul className="flex-shrink-0">
       {buttons.map(button => (
         <li key={button.text}>
-          <Button svg={button.image} text={button.text} />
+          <SidebarButton svg={button.image} text={button.text} />
         </li>
       ))}
     </ul>
