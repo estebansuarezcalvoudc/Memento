@@ -3,7 +3,7 @@ import { useSidebarStore } from '../../stores/sidebarStore'
 
 export default function Header() {
   const isSidebarOpen = useSidebarStore(state => state.isSidebarOpen)
-  const toogleSidebar = useSidebarStore(state => state.toogleSidebar)
+  const toogleSidebar = useSidebarStore(state => state.toggleSidebar)
   const titleRef = useDelayedDisplay<HTMLSpanElement>(isSidebarOpen, 'block')
 
   return (
