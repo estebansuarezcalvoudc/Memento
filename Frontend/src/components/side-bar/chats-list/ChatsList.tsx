@@ -1,3 +1,4 @@
+import { useSidebarStore } from '../../../stores/sidebarStore'
 import ChatButton from './ChatButton'
 
 const conversations = [
@@ -23,8 +24,16 @@ const conversations = [
 ]
 
 export default function ChatsList() {
+  const isSidebarOpen = useSidebarStore(state => state.isSidebarOpen)
+
   return (
-    <div className="flex h-full flex-col overflow-hidden">
+    <div
+      className={`min-h-0 flex-1 transition-opacity duration-300 ${
+        isSidebarOpen
+          ? 'block opacity-100 delay-150'
+          : 'hidden opacity-0 delay-[0ms]'
+      } flex h-full flex-col overflow-hidden`}
+    >
       <h2 className="font-ubuntu mt-8 mb-2 ml-1.5 flex-shrink-0 truncate text-sm text-stone-400">
         Chats
       </h2>
