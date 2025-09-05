@@ -1,6 +1,5 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 
-import SidebarButton from '../SidebarButton'
 import ChatOptionsButton from './ChatOptionButton'
 
 interface ChatOptionsProps {
@@ -25,7 +24,7 @@ export default function ChatOptionsDropdown({
               portal
               transition
               anchor="bottom end"
-              className="rounded-md bg-white shadow-lg outline-1 outline-stone-300 transition data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
+              className="rounded-md bg-white shadow-lg outline-1 outline-stone-300 transition data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-200 data-enter:ease-out data-leave:duration-150 data-leave:ease-in"
             >
               <MenuItem>
                 <ChatOptionsButton svg={editImage} text="Rename" />
