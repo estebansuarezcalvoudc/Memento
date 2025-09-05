@@ -1,4 +1,4 @@
-import { useSideBarStore } from '../../../stores/sideBarStore'
+import { useSidebarStore } from '../../../stores/sidebarStore'
 import ChatButton from './ChatButton'
 
 const conversations = [
@@ -24,12 +24,12 @@ const conversations = [
 ]
 
 export default function ChatsList() {
-  const isSideBarOpen = useSideBarStore(state => state.isSideBarOpen)
+  const isSidebarOpen = useSidebarStore(state => state.isSidebarOpen)
 
   return (
     <div
       className={`min-h-0 flex-1 transition-opacity duration-300 ${
-        isSideBarOpen
+        isSidebarOpen
           ? 'block opacity-100 delay-150'
           : 'hidden opacity-0 delay-[0ms]'
       } flex h-full flex-col overflow-hidden`}
