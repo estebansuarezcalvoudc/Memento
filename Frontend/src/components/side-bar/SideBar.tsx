@@ -26,21 +26,13 @@ export default function SideBar() {
 
       <ul className="flex-shrink-0">
         {buttons.map(button => (
-          <li id={button.text}>
+          <li key={button.text}>
             <Button svg={button.image} text={button.text} />
           </li>
         ))}
       </ul>
 
-      <div
-        className={`min-h-0 flex-1 transition-opacity duration-300 ${
-          isSideBarOpen
-            ? 'block opacity-100 delay-150'
-            : 'hidden opacity-0 delay-[0ms]'
-        }`}
-      >
-        <ChatsList />
-      </div>
+      <ChatsList />
 
       <hr
         className={`my-4 border-t border-stone-400 transition-opacity duration-300 ${
