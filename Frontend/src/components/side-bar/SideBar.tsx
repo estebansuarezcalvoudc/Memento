@@ -4,13 +4,13 @@ import {
   settingsImage,
   uploadMeetingsImage,
 } from '../../assets/buttonsImages'
-import { useStore } from '../../store/store'
+import { useSideBarStore } from '../../stores/sideBarStore'
 import Button from './Button'
 import ChatsList from './ChatsList'
 import Header from './Header'
 
 export default function SideBar() {
-  const isSideBarOpen = useStore(state => state.isSideBarOpen)
+  const isSideBarOpen = useSideBarStore(state => state.isSideBarOpen)
 
   const buttons = [
     { image: newChatImage, text: 'New Chat' },

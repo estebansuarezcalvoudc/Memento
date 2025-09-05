@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 import { useDelayedDisplay } from '../../hooks/useDelayedDisplay'
-import { useStore } from '../../store/store'
+import { useSideBarStore } from '../../stores/sideBarStore'
 
 interface ButtonProps {
   svg: ReactNode
@@ -19,7 +19,7 @@ export default function Button({
   className = '',
   ...props
 }: ButtonProps) {
-  const isSideBarOpen = useStore(state => state.isSideBarOpen)
+  const isSideBarOpen = useSideBarStore(state => state.isSideBarOpen)
   const textRef = useDelayedDisplay<HTMLSpanElement>(isSideBarOpen, 'inline')
 
   const classes = `${isSideBarOpen ? 'flex items-center w-full' : 'w-9'} ${textColor} ${hoverColor} rounded-xl py-2 cursor-pointer ${className} ${isSideBarOpen ? 'gap-2' : ''}`

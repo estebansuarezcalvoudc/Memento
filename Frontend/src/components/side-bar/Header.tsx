@@ -1,9 +1,9 @@
 import { useDelayedDisplay } from '../../hooks/useDelayedDisplay'
-import { useStore } from '../../store/store'
+import { useSideBarStore } from '../../stores/sideBarStore'
 
 export default function Header() {
-  const isSideBarOpen = useStore(state => state.isSideBarOpen)
-  const toogleSideBar = useStore(state => state.toogleSideBar)
+  const isSideBarOpen = useSideBarStore(state => state.isSideBarOpen)
+  const toogleSideBar = useSideBarStore(state => state.toogleSideBar)
   const titleRef = useDelayedDisplay<HTMLSpanElement>(isSideBarOpen, 'block')
 
   return (
