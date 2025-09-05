@@ -1,8 +1,8 @@
 import { settingsImage } from '../../assets/buttonsImages'
 import { useSidebarStore } from '../../stores/sidebarStore'
-import Button from './Button'
 import ChatsList from './chats-list/ChatsList'
 import Header from './Header'
+import SidebarButton from './SidebarButton'
 import SidebarButtons from './SidebarButtons'
 
 export default function Sidebar() {
@@ -24,7 +24,11 @@ export default function Sidebar() {
         }`}
       />
 
-      <Button svg={settingsImage} text="Settings" className="mt-auto mb-2.5" />
+      <SidebarButton
+        svg={settingsImage}
+        text="Settings"
+        className="mt-auto mb-2.5"
+      />
     </aside>
   )
 }

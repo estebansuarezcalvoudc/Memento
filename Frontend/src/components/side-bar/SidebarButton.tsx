@@ -3,29 +3,26 @@ import type { ReactNode } from 'react'
 import { useDelayedDisplay } from '../../hooks/useDelayedDisplay'
 import { useSidebarStore } from '../../stores/sidebarStore'
 
-interface ButtonProps {
+interface SidebarButtonProps {
   svg: ReactNode
   text: string
-  textColor?: string // Debe ser la clase completa, ej: 'text-red-500'
-  hoverColor?: string // Debe ser la clase completa, ej: 'hover:bg-red-200'
   className?: string
 }
 
-export default function Button({
+export default function SidebarButton({
   svg,
   text,
-  textColor = 'text-stone-700',
-  hoverColor = 'hover:bg-stone-200',
   className = '',
   ...props
-}: ButtonProps) {
+}: SidebarButtonProps) {
   const isSidebarOpen = useSidebarStore(state => state.isSidebarOpen)
   const textRef = useDelayedDisplay<HTMLSpanElement>(isSidebarOpen, 'inline')
 
-  const classes = `${isSidebarOpen ? 'flex items-center w-full' : 'w-9'} ${textColor} ${hoverColor} rounded-xl py-2 cursor-pointer ${className} ${isSidebarOpen ? 'gap-2' : ''}`
-
   return (
-    <button className={classes} {...props}>
+    <button
+      className={`${isSidebarOpen ? 'flex w-full items-center' : 'w-9'} cursor-pointer rounded-xl py-2 ${className} ${isSidebarOpen && 'gap-2'} text-stone-700 hover:bg-stone-200`}
+      {...props}
+    >
       <div className="ml-1.5">{svg}</div>
       {isSidebarOpen && (
         <span
