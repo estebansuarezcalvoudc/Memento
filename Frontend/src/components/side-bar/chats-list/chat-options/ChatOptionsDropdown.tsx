@@ -1,4 +1,5 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
+import { useEffect } from 'react'
 
 import ChatOptionsButton from './ChatOptionButton'
 
@@ -11,37 +12,49 @@ export default function ChatOptionsDropdown({
 }: ChatOptionsDropdownProps) {
   return (
     <Menu>
-      {({ open }) => {
-        onMenuStateChange(open)
-
-        return (
-          <div>
-            <MenuButton className="inline-flex cursor-pointer items-center justify-center rounded-md p-2">
-              {optionsImage}
-            </MenuButton>
-
-            <MenuItems
-              portal
-              transition
-              anchor="bottom end"
-              className="rounded-md bg-white shadow-lg outline-1 outline-stone-300 transition data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-200 data-enter:ease-out data-leave:duration-150 data-leave:ease-in"
-            >
-              <MenuItem>
-                <ChatOptionsButton svg={editImage} text="Rename" />
-              </MenuItem>
-              <MenuItem>
-                <ChatOptionsButton
-                  svg={deleteImage}
-                  text="Delete"
-                  textColor="text-red-500"
-                  hoverColor="hover:bg-red-50"
-                />
-              </MenuItem>
-            </MenuItems>
-          </div>
-        )
-      }}
+      {({ open }) => (
+        <ChatActionsDropdown
+          open={open}
+          onMenuStateChange={onMenuStateChange}
+        />
+      )}
     </Menu>
+  )
+}
+
+interface ChatActionsDropdown {
+  open: boolean
+  onMenuStateChange: (open: boolean) => void
+}
+
+function ChatActionsDropdown({ open, onMenuStateChange }: ChatActionsDropdown) {
+  useEffect(() => onMenuStateChange(open), [open, onMenuStateChange])
+
+  return (
+    <div>
+      <MenuButton className="inline-flex cursor-pointer items-center justify-center rounded-r-2xl p-2">
+        {optionsImage}
+      </MenuButton>
+
+      <MenuItems
+        portal
+        transition
+        anchor="bottom end"
+        className="rounded-md bg-white shadow-lg outline-1 outline-stone-300 transition data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-200 data-enter:ease-out data-leave:duration-150 data-leave:ease-in"
+      >
+        <MenuItem>
+          <ChatOptionsButton svg={editImage} text="Rename" />
+        </MenuItem>
+        <MenuItem>
+          <ChatOptionsButton
+            svg={deleteImage}
+            text="Delete"
+            textColor="text-red-500"
+            hoverColor="hover:bg-red-50"
+          />
+        </MenuItem>
+      </MenuItems>
+    </div>
   )
 }
 
