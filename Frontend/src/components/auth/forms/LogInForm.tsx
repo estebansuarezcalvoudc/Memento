@@ -11,33 +11,6 @@ interface FormState {
   }
 }
 
-function loginAction(_prevFormState: FormState, formData: FormData): FormState {
-  const email = (formData.get('email') ?? '') as string
-  const password = (formData.get('password') ?? '') as string
-
-  const errors = []
-
-  if (email.trim() === '') {
-    errors.push('You must provide your email')
-  }
-
-  if (password.trim() === '') {
-    errors.push('You must provide your password')
-  }
-
-  if (errors.length > 0) {
-    return {
-      errors,
-      enteredValues: { email, password },
-    }
-  }
-
-  return {
-    errors: null,
-    enteredValues: { email, password },
-  }
-}
-
 export default function LogInForm() {
   const [formState, formAction] = useActionState<FormState, FormData>(
     loginAction,
@@ -74,4 +47,104 @@ export default function LogInForm() {
       <FormButton text="Sign in" />
     </form>
   )
+}
+
+interface LoginResponse {
+  access_token: string
+  token_type: string
+}
+
+async function loginAction(
+  _prevFormState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const email = (formData.get('email') ?? '') as string
+  const password = (formData.get('password') ?? '') as string
+
+  const errors = []
+
+  if (email.trim() === '') {
+    errors.push('You must provide your email')
+  }
+
+  if (password.trim() === '') {
+    errors.push('You must provide your password')
+  }
+
+  if (errors.length > 0) {
+    return {
+      errors,
+      enteredValues: { email, password },
+    }
+  }
+
+  return await processLogin(email, password)
+}
+
+async function processLogin(
+  email: string,
+  password: string,
+): Promise<FormState> {
+  try {
+    const response = await sendLoginData(email, password)
+
+    if (!response.ok) {
+      return await handleLoginError(response, email, password)
+    }
+
+    const data: LoginResponse = await response.json()
+    const { access_token } = data
+    localStorage.setItem('access_token', access_token)
+
+    return {
+      errors: null,
+      enteredValues: { email, password },
+    }
+  } catch {
+    return {
+      errors: ['Network error or server unavailable'],
+      enteredValues: { email, password },
+    }
+  }
+}
+
+async function sendLoginData(
+  email: string,
+  password: string,
+): Promise<Response> {
+  const formData = new FormData()
+  formData.append('username', email)
+  formData.append('password', password)
+
+  return await fetch('http://localhost:8000/auth/token', {
+    method: 'POST',
+    body: formData,
+  })
+}
+
+async function handleLoginError(
+  response: Response,
+  email: string,
+  password: string,
+): Promise<FormState> {
+  if (response.status !== 401) {
+    const errorData = await response.text()
+    return {
+      errors: [`Login failed: ${errorData || response.statusText}`],
+      enteredValues: { email, password },
+    }
+  }
+
+  try {
+    const errorData = await response.json()
+    return {
+      errors: [errorData.detail || 'Invalid credentials'],
+      enteredValues: { email, password },
+    }
+  } catch {
+    return {
+      errors: ['Invalid credentials'],
+      enteredValues: { email, password },
+    }
+  }
 }
