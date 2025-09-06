@@ -10,7 +10,7 @@ export default function Input({ label, id, ...props }: InputProps) {
     <div className="mt-3 flex flex-col align-middle">
       <label
         htmlFor={id}
-        className="font-ubuntu mb-1 ml-1 items-center justify-center text-stone-600"
+        className="font-ubuntu mb-1 ml-1 items-center justify-center text-stone-600 text-sm"
       >
         {label}
       </label>
