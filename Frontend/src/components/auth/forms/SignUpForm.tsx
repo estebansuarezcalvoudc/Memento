@@ -1,7 +1,7 @@
 import { useActionState } from 'react'
 
-import FormButton from './FormButton'
-import Input from './Input'
+import FormButton from './utils/FormButton'
+import Input from './utils/Input'
 
 interface FormState {
   errors: null | string[]
