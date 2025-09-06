@@ -22,12 +22,12 @@ export default function ChatOptionsDropdown({
   )
 }
 
-interface ChatActionsDropdown {
+interface ChatActionsDropdownProps {
   open: boolean
   onMenuStateChange: (open: boolean) => void
 }
 
-function ChatActionsDropdown({ open, onMenuStateChange }: ChatActionsDropdown) {
+function ChatActionsDropdown({ open, onMenuStateChange }: ChatActionsDropdownProps) {
   useEffect(() => onMenuStateChange(open), [open, onMenuStateChange])
 
   return (
