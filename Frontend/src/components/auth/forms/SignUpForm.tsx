@@ -8,12 +8,17 @@ interface FormState {
   enteredValues?: {
     email: string
     password: string
+    confirmedPassword: string
   }
 }
 
-function loginAction(_prevFormState: FormState, formData: FormData): FormState {
+function signupAction(
+  _prevFormState: FormState,
+  formData: FormData,
+): FormState {
   const email = (formData.get('email') ?? '') as string
   const password = (formData.get('password') ?? '') as string
+  const confirmedPassword = (formData.get('confirmedPassword') ?? '') as string
 
   const errors = []
 
@@ -25,22 +30,30 @@ function loginAction(_prevFormState: FormState, formData: FormData): FormState {
     errors.push('You must provide your password')
   }
 
+  if (confirmedPassword.trim() === '') {
+    errors.push('You must confirm your password')
+  }
+
+  if (password !== confirmedPassword) {
+    errors.push('Provided passwords do not match')
+  }
+
   if (errors.length > 0) {
     return {
       errors,
-      enteredValues: { email, password },
+      enteredValues: { email, password, confirmedPassword },
     }
   }
 
   return {
     errors: null,
-    enteredValues: { email, password },
+    enteredValues: { email, password, confirmedPassword },
   }
 }
 
-export default function LogInForm() {
+export default function SignUpForm() {
   const [formState, formAction] = useActionState<FormState, FormData>(
-    loginAction,
+    signupAction,
     {
       errors: null,
     },
@@ -62,6 +75,13 @@ export default function LogInForm() {
         type="password"
         defaultValue={formState.enteredValues?.password}
       />
+      <Input
+        label="confirm password"
+        id="confirmedPassword"
+        name="confirmedPassword"
+        type="password"
+        defaultValue={formState.enteredValues?.confirmedPassword}
+      />
 
       {formState.errors && (
         <ul className="font-ubuntu mt-8 rounded-xl border-red-700 bg-red-200 px-3 py-1 text-sm text-red-700">
@@ -71,7 +91,7 @@ export default function LogInForm() {
         </ul>
       )}
 
-      <FormButton text="Sign in" />
+      <FormButton text="Sign up" />
     </form>
   )
 }
