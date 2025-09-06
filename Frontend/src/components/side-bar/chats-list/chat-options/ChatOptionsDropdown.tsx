@@ -32,7 +32,7 @@ function ChatActionsDropdown({ open, onMenuStateChange }: ChatActionsDropdown) {
 
   return (
     <div>
-      <MenuButton className="inline-flex cursor-pointer items-center justify-center rounded-r-2xl p-2">
+      <MenuButton className="inline-flex cursor-pointer items-center justify-center rounded-r-2xl p-2 focus:ring-0 focus:outline-none">
         {optionsImage}
       </MenuButton>
 
