@@ -1,5 +1,7 @@
 import { useActionState } from 'react'
+import { useNavigate, type NavigateFunction } from 'react-router-dom'
 
+import { useSetIsUserAuth, type SetIsUserAuth } from '../../../stores/authStore'
 import FormButton from './utils/FormButton'
 import FormErrors from './utils/FormErrors'
 import Input from './utils/Input'
@@ -14,8 +16,11 @@ interface FormState {
 }
 
 export default function SignUpForm() {
+  const navigate = useNavigate()
+  const setIsUserAuth = useSetIsUserAuth()
   const [formState, formAction] = useActionState<FormState, FormData>(
-    signupAction,
+    (prevState, formData) =>
+      signupAction(prevState, formData, navigate, setIsUserAuth),
     {
       errors: null,
     },
@@ -57,6 +62,8 @@ export default function SignUpForm() {
 async function signupAction(
   _prevFormState: FormState,
   formData: FormData,
+  navigate: NavigateFunction,
+  setIsUserAuth: SetIsUserAuth,
 ): Promise<FormState> {
   const email = (formData.get('email') ?? '') as string
   const password = (formData.get('password') ?? '') as string
@@ -87,7 +94,13 @@ async function signupAction(
     }
   }
 
-  return await processSignup(email, password, confirmedPassword)
+  return await processSignup(
+    email,
+    password,
+    confirmedPassword,
+    navigate,
+    setIsUserAuth,
+  )
 }
 
 interface SignupResponse {
@@ -99,6 +112,8 @@ async function processSignup(
   email: string,
   password: string,
   confirmedPassword: string,
+  navigate: NavigateFunction,
+  setIsUserAuth: SetIsUserAuth,
 ): Promise<FormState> {
   try {
     const response = await sendSignupData(email, password)
@@ -115,6 +130,9 @@ async function processSignup(
     const data: SignupResponse = await response.json()
     const { access_token } = data
     localStorage.setItem('access_token', access_token)
+    setIsUserAuth(true)
+
+    navigate('/')
 
     return {
       errors: null,
