@@ -1,3 +1,6 @@
+import { useEffect, useState } from 'react'
+
+import { backendURL } from '../../../config/urls'
 import { useIsSidebarOpen } from '../../../stores/sidebarStore'
 import ChatItem from './ChatItem'
 
@@ -7,30 +10,67 @@ interface Conversation {
   started_at?: string
 }
 
-const conversations: Conversation[] = [
-  { id: 'conv_1', title: 'Unnamed conversation' },
-  { id: 'conv_2', title: 'Unnamed conversation 2' },
-  { id: 'conv_3', title: 'Unnamed conversation 3' },
-  { id: 'conv_4', title: 'Unnamed conversation 4' },
-  { id: 'conv_5', title: 'Unnamed conversation 2' },
-  { id: 'conv_6', title: 'Unnamed conversation 3' },
-  { id: 'conv_7', title: 'Unnamed conversation 4' },
-  { id: 'conv_8', title: 'Unnamed conversation 2' },
-  { id: 'conv_9', title: 'Unnamed conversation 3' },
-  { id: 'conv_10', title: 'Unnamed conversation 4' },
-  { id: 'conv_11', title: 'Unnamed conversation 2' },
-  { id: 'conv_12', title: 'Unnamed conversation 3' },
-  { id: 'conv_13', title: 'Unnamed conversation 4' },
-  { id: 'conv_14', title: 'Unnamed conversation 2' },
-  { id: 'conv_15', title: 'Unnamed conversation 3' },
-  { id: 'conv_16', title: 'Unnamed conversation 4' },
-  { id: 'conv_17', title: 'Unnamed conversation 2' },
-  { id: 'conv_18', title: 'Unnamed conversation 3' },
-  { id: 'conv_19', title: 'Unnamed conversation 4' },
-]
+type ChatListState = 'loading' | 'error' | 'empty' | 'loaded'
 
 export default function ChatsList() {
+  const [conversations, setConversations] = useState<Conversation[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const isSidebarOpen = useIsSidebarOpen()
+
+  useEffect(() => {
+    const fetchConversations = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const data = await retrieveChats()
+        setConversations(data)
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'Failed to fetch conversations',
+        )
+        console.error('Error fetching conversations:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchConversations()
+  }, [])
+
+  const getState = (): ChatListState => {
+    if (loading) return 'loading'
+    if (error) return 'error'
+    if (conversations.length === 0) return 'empty'
+    return 'loaded'
+  }
+
+  const renderChatContent = () => {
+    switch (getState()) {
+      case 'loading':
+        return (
+          <li className="p-4 text-center text-stone-400">
+            Loading conversations...
+          </li>
+        )
+      case 'error':
+        return <li className="p-4 text-center text-red-400">Error: {error}</li>
+      case 'empty':
+        return (
+          <li className="p-4 text-center text-stone-400">
+            No conversations yet
+          </li>
+        )
+      case 'loaded':
+        return conversations.map(conversation => (
+          <li key={conversation.id}>
+            <ChatItem chatTitle={conversation.title} />
+          </li>
+        ))
+      default:
+        return null
+    }
+  }
 
   return (
     <div
@@ -44,12 +84,30 @@ export default function ChatsList() {
         Chats
       </h2>
       <ul className="custom-scrollbar flex-1 overflow-y-auto">
-        {conversations.map(conversation => (
-          <li key={conversation.id}>
-            <ChatItem chatTitle={conversation.title} />
-          </li>
-        ))}
+        {renderChatContent()}
       </ul>
     </div>
   )
+}
+
+async function retrieveChats() {
+  const token = localStorage.getItem('access_token')
+
+  if (!token) {
+    throw new Error('No access token found')
+  }
+
+  const response = await fetch(`${backendURL}/conversations`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`)
+  }
+
+  return await response.json()
 }
