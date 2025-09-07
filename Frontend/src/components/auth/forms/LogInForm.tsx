@@ -1,6 +1,7 @@
 import { useActionState } from 'react'
 
 import FormButton from './utils/FormButton'
+import FormErrors from './utils/FormErrors'
 import Input from './utils/Input'
 
 interface FormState {
@@ -28,6 +29,7 @@ export default function LogInForm() {
         type="email"
         defaultValue={formState.enteredValues?.email}
       />
+
       <Input
         label="password"
         id="password"
@@ -36,13 +38,7 @@ export default function LogInForm() {
         defaultValue={formState.enteredValues?.password}
       />
 
-      {formState.errors && (
-        <ul className="font-ubuntu mt-8 rounded-xl border-red-700 bg-red-200 px-3 py-1 text-sm text-red-700">
-          {formState.errors.map(error => (
-            <li key={error}>{`${error}`}</li>
-          ))}
-        </ul>
-      )}
+      <FormErrors errors={formState.errors} />
 
       <FormButton text="Sign in" />
     </form>
