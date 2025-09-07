@@ -27,7 +27,10 @@ interface ChatActionsDropdownProps {
   onMenuStateChange: (open: boolean) => void
 }
 
-function ChatActionsDropdown({ open, onMenuStateChange }: ChatActionsDropdownProps) {
+function ChatActionsDropdown({
+  open,
+  onMenuStateChange,
+}: ChatActionsDropdownProps) {
   useEffect(() => onMenuStateChange(open), [open, onMenuStateChange])
 
   return (
