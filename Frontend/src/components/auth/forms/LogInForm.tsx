@@ -1,6 +1,7 @@
 import { useActionState } from 'react'
 import { useNavigate, type NavigateFunction } from 'react-router-dom'
 
+import { backendURL } from '../../../config/urls'
 import { useSetIsUserAuth, type SetIsUserAuth } from '../../../stores/authStore'
 import FormButton from './utils/FormButton'
 import FormErrors from './utils/FormErrors'
@@ -117,7 +118,7 @@ async function sendLoginData(
   formData.append('username', email)
   formData.append('password', password)
 
-  return await fetch('http://localhost:8000/auth/token', {
+  return await fetch(`${backendURL}/auth/token`, {
     method: 'POST',
     body: formData,
   })
