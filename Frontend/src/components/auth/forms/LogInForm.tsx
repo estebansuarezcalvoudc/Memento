@@ -49,11 +49,6 @@ export default function LogInForm() {
   )
 }
 
-interface LoginResponse {
-  access_token: string
-  token_type: string
-}
-
 async function loginAction(
   _prevFormState: FormState,
   formData: FormData,
@@ -79,6 +74,11 @@ async function loginAction(
   }
 
   return await processLogin(email, password)
+}
+
+interface LoginResponse {
+  access_token: string
+  token_type: string
 }
 
 async function processLogin(
