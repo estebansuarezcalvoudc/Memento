@@ -1,8 +1,10 @@
 import { create } from 'zustand'
 
+export type SetIsUserAuth = (isAuth: boolean) => void
+
 interface AuthStore {
   isUserAuth: boolean
-  setIsUserAuth: (isAuth: boolean) => void
+  setIsUserAuth: SetIsUserAuth
 }
 
 const useAuthStore = create<AuthStore>()(set => ({

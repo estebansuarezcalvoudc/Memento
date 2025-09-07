@@ -1,5 +1,7 @@
 import { useActionState } from 'react'
+import { useNavigate, type NavigateFunction } from 'react-router-dom'
 
+import { useSetIsUserAuth, type SetIsUserAuth } from '../../../stores/authStore'
 import FormButton from './utils/FormButton'
 import FormErrors from './utils/FormErrors'
 import Input from './utils/Input'
@@ -13,8 +15,11 @@ interface FormState {
 }
 
 export default function LogInForm() {
+  const navigate = useNavigate()
+  const setIsUserAuth = useSetIsUserAuth()
   const [formState, formAction] = useActionState<FormState, FormData>(
-    loginAction,
+    (prevState, formData) =>
+      loginAction(prevState, formData, navigate, setIsUserAuth),
     {
       errors: null,
     },
@@ -48,6 +53,8 @@ export default function LogInForm() {
 async function loginAction(
   _prevFormState: FormState,
   formData: FormData,
+  navigate: NavigateFunction,
+  setIsUserAuth: SetIsUserAuth,
 ): Promise<FormState> {
   const email = (formData.get('email') ?? '') as string
   const password = (formData.get('password') ?? '') as string
@@ -69,7 +76,7 @@ async function loginAction(
     }
   }
 
-  return await processLogin(email, password)
+  return await processLogin(email, password, navigate, setIsUserAuth)
 }
 
 interface LoginResponse {
@@ -80,6 +87,8 @@ interface LoginResponse {
 async function processLogin(
   email: string,
   password: string,
+  navigate: NavigateFunction,
+  setIsUserAuth: SetIsUserAuth,
 ): Promise<FormState> {
   try {
     const response = await sendLoginData(email, password)
@@ -91,6 +100,9 @@ async function processLogin(
     const data: LoginResponse = await response.json()
     const { access_token } = data
     localStorage.setItem('access_token', access_token)
+    setIsUserAuth(true)
+
+    navigate('/')
 
     return {
       errors: null,
