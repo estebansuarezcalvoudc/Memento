@@ -10,8 +10,6 @@ interface FormState {
   errors: null | string[]
   enteredValues?: {
     email: string
-    password: string
-    confirmedPassword: string
   }
 }
 
@@ -36,20 +34,13 @@ export default function SignUpForm() {
         defaultValue={formState.enteredValues?.email}
       />
 
-      <Input
-        label="password"
-        id="password"
-        name="password"
-        type="password"
-        defaultValue={formState.enteredValues?.password}
-      />
+      <Input label="password" id="password" name="password" type="password" />
 
       <Input
         label="confirm password"
         id="confirmedPassword"
         name="confirmedPassword"
         type="password"
-        defaultValue={formState.enteredValues?.confirmedPassword}
       />
 
       <FormErrors errors={formState.errors} />
@@ -90,17 +81,11 @@ async function signupAction(
   if (errors.length > 0) {
     return {
       errors,
-      enteredValues: { email, password, confirmedPassword },
+      enteredValues: { email },
     }
   }
 
-  return await processSignup(
-    email,
-    password,
-    confirmedPassword,
-    navigate,
-    setIsUserAuth,
-  )
+  return await processSignup(email, password, navigate, setIsUserAuth)
 }
 
 interface SignupResponse {
@@ -111,7 +96,6 @@ interface SignupResponse {
 async function processSignup(
   email: string,
   password: string,
-  confirmedPassword: string,
   navigate: NavigateFunction,
   setIsUserAuth: SetIsUserAuth,
 ): Promise<FormState> {
@@ -119,12 +103,7 @@ async function processSignup(
     const response = await sendSignupData(email, password)
 
     if (!response.ok) {
-      return await handleSignupError(
-        response,
-        email,
-        password,
-        confirmedPassword,
-      )
+      return await handleSignupError(response, email)
     }
 
     const data: SignupResponse = await response.json()
@@ -136,12 +115,12 @@ async function processSignup(
 
     return {
       errors: null,
-      enteredValues: { email, password, confirmedPassword },
+      enteredValues: { email },
     }
   } catch {
     return {
       errors: ['Network error or server unavailable'],
-      enteredValues: { email, password, confirmedPassword },
+      enteredValues: { email },
     }
   }
 }
@@ -157,7 +136,7 @@ async function sendSignupData(
     },
     body: JSON.stringify({
       username: email,
-      password: password,
+      password,
     }),
   })
 }
@@ -165,14 +144,12 @@ async function sendSignupData(
 async function handleSignupError(
   response: Response,
   email: string,
-  password: string,
-  confirmedPassword: string,
 ): Promise<FormState> {
   if (response.status !== 400) {
     const errorData = await response.text()
     return {
       errors: [`Signup failed: ${errorData || response.statusText}`],
-      enteredValues: { email, password, confirmedPassword },
+      enteredValues: { email },
     }
   }
 
@@ -180,12 +157,12 @@ async function handleSignupError(
     const errorData = await response.json()
     return {
       errors: [errorData.detail || 'Could not sign up'],
-      enteredValues: { email, password, confirmedPassword },
+      enteredValues: { email },
     }
   } catch {
     return {
       errors: ['Could not sign up'],
-      enteredValues: { email, password, confirmedPassword },
+      enteredValues: { email },
     }
   }
 }

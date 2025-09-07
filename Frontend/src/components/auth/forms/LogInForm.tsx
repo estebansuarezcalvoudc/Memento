@@ -10,7 +10,6 @@ interface FormState {
   errors: null | string[]
   enteredValues?: {
     email: string
-    password: string
   }
 }
 
@@ -35,13 +34,7 @@ export default function LogInForm() {
         defaultValue={formState.enteredValues?.email}
       />
 
-      <Input
-        label="password"
-        id="password"
-        name="password"
-        type="password"
-        defaultValue={formState.enteredValues?.password}
-      />
+      <Input label="password" id="password" name="password" type="password" />
 
       <FormErrors errors={formState.errors} />
 
@@ -72,7 +65,7 @@ async function loginAction(
   if (errors.length > 0) {
     return {
       errors,
-      enteredValues: { email, password },
+      enteredValues: { email },
     }
   }
 
@@ -94,7 +87,7 @@ async function processLogin(
     const response = await sendLoginData(email, password)
 
     if (!response.ok) {
-      return await handleLoginError(response, email, password)
+      return await handleLoginError(response, email)
     }
 
     const data: LoginResponse = await response.json()
@@ -106,12 +99,12 @@ async function processLogin(
 
     return {
       errors: null,
-      enteredValues: { email, password },
+      enteredValues: { email },
     }
   } catch {
     return {
       errors: ['Network error or server unavailable'],
-      enteredValues: { email, password },
+      enteredValues: { email },
     }
   }
 }
@@ -133,13 +126,12 @@ async function sendLoginData(
 async function handleLoginError(
   response: Response,
   email: string,
-  password: string,
 ): Promise<FormState> {
   if (response.status !== 401) {
     const errorData = await response.text()
     return {
       errors: [`Login failed: ${errorData || response.statusText}`],
-      enteredValues: { email, password },
+      enteredValues: { email },
     }
   }
 
@@ -147,12 +139,12 @@ async function handleLoginError(
     const errorData = await response.json()
     return {
       errors: [errorData.detail || 'Invalid credentials'],
-      enteredValues: { email, password },
+      enteredValues: { email },
     }
   } catch {
     return {
       errors: ['Invalid credentials'],
-      enteredValues: { email, password },
+      enteredValues: { email },
     }
   }
 }
