@@ -2,6 +2,7 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { useEffect } from 'react'
 
 import { backendURL } from '../../../../config/urls'
+import { useDeleteChat } from '../../../../stores/chatsStore'
 import ChatOptionsButton from './ChatOptionButton'
 
 interface ChatOptionsDropdownProps {
@@ -38,6 +39,7 @@ function ChatActionsDropdown({
   onMenuStateChange,
 }: ChatActionsDropdownProps) {
   useEffect(() => onMenuStateChange(open), [open, onMenuStateChange])
+  const deleteChat = useDeleteChat()
 
   return (
     <div>
@@ -60,7 +62,10 @@ function ChatActionsDropdown({
             text="Delete"
             textColor="text-red-500"
             hoverColor="hover:bg-red-50"
-            onClick={() => handleDelete(chatId)}
+            onClick={() => {
+              handleDelete(chatId)
+              deleteChat(chatId)
+            }}
           />
         </MenuItem>
       </MenuItems>
@@ -84,8 +89,6 @@ async function handleDelete(chatId: string) {
       Authorization: `Bearer ${token}`,
     },
   })
-
-  console.log(response.status)
 
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)

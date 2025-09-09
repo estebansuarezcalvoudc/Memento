@@ -3,17 +3,16 @@ import { useEffect, useState } from 'react'
 import { backendURL } from '../../../config/urls'
 import { useIsSidebarOpen } from '../../../stores/sidebarStore'
 import ChatItem from './ChatItem'
+import { useChats, useSetChats } from '../../../stores/chatsStore'
 
-interface Conversation {
-  id: string
-  title: string
-  started_at?: string
-}
+
 
 type ChatListState = 'loading' | 'error' | 'empty' | 'loaded'
 
 export default function ChatsList() {
-  const [conversations, setConversations] = useState<Conversation[]>([])
+  const chats = useChats()
+  const setChats = useSetChats()
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const isSidebarOpen = useIsSidebarOpen()
@@ -24,7 +23,7 @@ export default function ChatsList() {
         setLoading(true)
         setError(null)
         const data = await retrieveChats()
-        setConversations(data)
+        setChats(data)
       } catch (err) {
         setError(
           err instanceof Error ? err.message : 'Failed to fetch conversations',
@@ -36,12 +35,12 @@ export default function ChatsList() {
     }
 
     fetchConversations()
-  }, [])
+  }, [setChats])
 
   const getState = (): ChatListState => {
     if (loading) return 'loading'
     if (error) return 'error'
-    if (conversations.length === 0) return 'empty'
+    if (chats.length === 0) return 'empty'
     return 'loaded'
   }
 
@@ -62,7 +61,7 @@ export default function ChatsList() {
           </li>
         )
       case 'loaded':
-        return conversations.map(conversation => (
+        return chats.map(conversation => (
           <ChatItem key={conversation.id} chatId={conversation.id} chatTitle={conversation.title} />
         ))
       default:
