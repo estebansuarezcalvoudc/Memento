@@ -63,9 +63,7 @@ export default function ChatsList() {
         )
       case 'loaded':
         return conversations.map(conversation => (
-          <li key={conversation.id}>
-            <ChatItem chatTitle={conversation.title} />
-          </li>
+          <ChatItem key={conversation.id} chatId={conversation.id} chatTitle={conversation.title} />
         ))
       default:
         return null

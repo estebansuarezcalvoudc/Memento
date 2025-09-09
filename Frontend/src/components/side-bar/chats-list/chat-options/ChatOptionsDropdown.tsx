@@ -1,19 +1,23 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { useEffect } from 'react'
 
+import { backendURL } from '../../../../config/urls'
 import ChatOptionsButton from './ChatOptionButton'
 
 interface ChatOptionsDropdownProps {
+  chatId: string
   onMenuStateChange: (isOpen: boolean) => void
 }
 
 export default function ChatOptionsDropdown({
+  chatId,
   onMenuStateChange,
 }: ChatOptionsDropdownProps) {
   return (
     <Menu>
       {({ open }) => (
         <ChatActionsDropdown
+          chatId={chatId}
           open={open}
           onMenuStateChange={onMenuStateChange}
         />
@@ -23,11 +27,13 @@ export default function ChatOptionsDropdown({
 }
 
 interface ChatActionsDropdownProps {
+  chatId: string
   open: boolean
   onMenuStateChange: (open: boolean) => void
 }
 
 function ChatActionsDropdown({
+  chatId,
   open,
   onMenuStateChange,
 }: ChatActionsDropdownProps) {
@@ -54,11 +60,36 @@ function ChatActionsDropdown({
             text="Delete"
             textColor="text-red-500"
             hoverColor="hover:bg-red-50"
+            onClick={() => handleDelete(chatId)}
           />
         </MenuItem>
       </MenuItems>
     </div>
   )
+}
+
+async function handleDelete(chatId: string) {
+  const token = localStorage.getItem('access_token')
+
+  if (!token) {
+    throw new Error('No access token found')
+  }
+
+  const url = `${backendURL}/conversations/${chatId}`
+  console.log(url)
+  const response = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  console.log(response.status)
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`)
+  }
 }
 
 const optionsImage = (
