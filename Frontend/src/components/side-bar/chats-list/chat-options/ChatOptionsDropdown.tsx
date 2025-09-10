@@ -50,7 +50,12 @@ function ChatActionsDropdown({
   const handleRename = () => {
     inputRef.current.disabled = false
 
-    inputRef.current.onblur = async () => {
+    setTimeout(() => {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }, 0)
+
+    const saveChanges = async () => {
       inputRef.current.disabled = true
 
       const token = localStorage.getItem('access_token')
@@ -74,6 +79,14 @@ function ChatActionsDropdown({
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
+      }
+    }
+
+    inputRef.current.onblur = saveChanges
+
+    inputRef.current.onkeydown = event => {
+      if (event.key === 'Enter') {
+        inputRef.current.blur()
       }
     }
   }
