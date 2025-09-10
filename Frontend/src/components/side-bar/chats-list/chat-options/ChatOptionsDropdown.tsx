@@ -78,6 +78,28 @@ function ChatActionsDropdown({
     }
   }
 
+  const handleDelete = async () => {
+    const token = localStorage.getItem('access_token')
+
+    if (!token) {
+      throw new Error('No access token found')
+    }
+
+    const url = `${backendURL}/conversations/${chatId}`
+    console.log(url)
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+  }
+
   return (
     <div>
       <MenuButton className="inline-flex cursor-pointer items-center justify-center rounded-r-2xl p-2 focus:ring-0 focus:outline-none">
@@ -104,7 +126,7 @@ function ChatActionsDropdown({
             textColor="text-red-500"
             hoverColor="hover:bg-red-50"
             onClick={() => {
-              handleDelete(chatId)
+              handleDelete()
               deleteChat(chatId)
             }}
           />
@@ -112,28 +134,6 @@ function ChatActionsDropdown({
       </MenuItems>
     </div>
   )
-}
-
-async function handleDelete(chatId: string) {
-  const token = localStorage.getItem('access_token')
-
-  if (!token) {
-    throw new Error('No access token found')
-  }
-
-  const url = `${backendURL}/conversations/${chatId}`
-  console.log(url)
-  const response = await fetch(url, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`)
-  }
 }
 
 const optionsImage = (
