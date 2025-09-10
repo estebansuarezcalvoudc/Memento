@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import ChatOptionsDropdown from './chat-options/ChatOptionsDropdown'
 
@@ -16,6 +16,8 @@ export default function ChatItem({
 
   const shouldShowOptions = isDivHovered || isMenuOpen
 
+  const inputRef = useRef<HTMLInputElement>(null)
+
   return (
     <li>
       <div
@@ -27,13 +29,17 @@ export default function ChatItem({
           className="flex-1 cursor-pointer truncate rounded-l-xl py-1.5 text-left text-stone-700"
           onClick={() => console.log('conversation button triggered')}
         >
-          <span className="font-ubuntu ml-1.5 truncate text-sm">
-            {conversationName}
-          </span>
+          <input
+            ref={inputRef}
+            className="font-ubuntu ml-1.5 truncate text-sm"
+            defaultValue={conversationName}
+            disabled
+          />
         </button>
 
         {shouldShowOptions && (
           <ChatOptionsDropdown
+            inputRef={inputRef}
             chatId={chatId}
             onMenuStateChange={setIsMenuOpen}
           />

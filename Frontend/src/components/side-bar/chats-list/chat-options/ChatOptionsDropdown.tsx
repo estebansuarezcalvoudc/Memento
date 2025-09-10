@@ -1,16 +1,18 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { useEffect } from 'react'
+import { useEffect, type RefObject } from 'react'
 
 import { backendURL } from '../../../../config/urls'
 import { useDeleteChat } from '../../../../stores/chatsStore'
 import ChatOptionsButton from './ChatOptionButton'
 
 interface ChatOptionsDropdownProps {
+  inputRef: RefObject<HTMLInputElement>
   chatId: string
   onMenuStateChange: (isOpen: boolean) => void
 }
 
 export default function ChatOptionsDropdown({
+  inputRef,
   chatId,
   onMenuStateChange,
 }: ChatOptionsDropdownProps) {
@@ -18,6 +20,7 @@ export default function ChatOptionsDropdown({
     <Menu>
       {({ open }) => (
         <ChatActionsDropdown
+          inputRef={inputRef}
           chatId={chatId}
           open={open}
           onMenuStateChange={onMenuStateChange}
@@ -28,18 +31,52 @@ export default function ChatOptionsDropdown({
 }
 
 interface ChatActionsDropdownProps {
+  inputRef: RefObject<HTMLInputElement>
   chatId: string
   open: boolean
   onMenuStateChange: (open: boolean) => void
 }
 
 function ChatActionsDropdown({
+  inputRef,
   chatId,
   open,
   onMenuStateChange,
 }: ChatActionsDropdownProps) {
   useEffect(() => onMenuStateChange(open), [open, onMenuStateChange])
+
   const deleteChat = useDeleteChat()
+
+  const handleRename = () => {
+    inputRef.current.disabled = false
+
+    inputRef.current.onblur = async () => {
+      inputRef.current.disabled = true
+
+      const token = localStorage.getItem('access_token')
+
+      if (!token) {
+        throw new Error('No access token found')
+      }
+
+      const url = `${backendURL}/conversations/${chatId}`
+      console.log(url)
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: inputRef.current.value,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+    }
+  }
 
   return (
     <div>
@@ -54,7 +91,11 @@ function ChatActionsDropdown({
         className="rounded-md bg-white shadow-lg outline-1 outline-stone-300 transition data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-200 data-enter:ease-out data-leave:duration-150 data-leave:ease-in"
       >
         <MenuItem>
-          <ChatOptionsButton svg={editImage} text="Rename" />
+          <ChatOptionsButton
+            svg={editImage}
+            text="Rename"
+            onClick={handleRename}
+          />
         </MenuItem>
         <MenuItem>
           <ChatOptionsButton
