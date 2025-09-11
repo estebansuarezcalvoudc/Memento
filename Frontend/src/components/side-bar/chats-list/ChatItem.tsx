@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import ChatOptionsDropdown from './chat-options/ChatOptionsDropdown'
 
@@ -25,17 +26,17 @@ export default function ChatItem({
         onMouseEnter={() => setDivIsHovered(true)}
         onMouseLeave={() => setDivIsHovered(false)}
       >
-        <button
+        <Link
+          to={`/chats/${chatId}`}
           className="flex-1 cursor-pointer truncate rounded-l-xl py-1.5 text-left text-stone-700"
-          onClick={() => console.log('conversation button triggered')}
         >
           <input
             ref={inputRef}
-            className="font-ubuntu ml-1.5 truncate text-sm"
+            className="font-ubuntu ml-1.5 truncate text-sm pointer-events-none"
             defaultValue={conversationName}
             disabled
           />
-        </button>
+        </Link>
 
         {shouldShowOptions && (
           <ChatOptionsDropdown

@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import './index.css'
 
+import Chat from './pages/Chat'
 import Home from './pages/Home'
 import LogIn from './pages/LogIn'
 import NotFound from './pages/NotFound'
@@ -17,6 +18,7 @@ createRoot(document.getElementById('root')!).render(
         <Route index element={<Home />} />
         <Route path="login" element={<LogIn />} />
         <Route path="signup" element={<SignUp />} />
+        <Route path="chats/:chatId" element={<Chat />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

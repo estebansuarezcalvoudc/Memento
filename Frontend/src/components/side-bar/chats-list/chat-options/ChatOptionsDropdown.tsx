@@ -6,7 +6,7 @@ import { useDeleteChat } from '../../../../stores/chatsStore'
 import ChatOptionsButton from './ChatOptionButton'
 
 interface ChatOptionsDropdownProps {
-  inputRef: RefObject<HTMLInputElement>
+  inputRef: RefObject<HTMLInputElement | null>
   chatId: string
   onMenuStateChange: (isOpen: boolean) => void
 }
@@ -31,7 +31,7 @@ export default function ChatOptionsDropdown({
 }
 
 interface ChatActionsDropdownProps {
-  inputRef: RefObject<HTMLInputElement>
+  inputRef: RefObject<HTMLInputElement | null>
   chatId: string
   open: boolean
   onMenuStateChange: (open: boolean) => void
@@ -48,14 +48,19 @@ function ChatActionsDropdown({
   const deleteChat = useDeleteChat()
 
   const handleRename = () => {
+    if (!inputRef.current) return
+    
     inputRef.current.disabled = false
 
     setTimeout(() => {
+      if (!inputRef.current) return
       inputRef.current.focus()
       inputRef.current.select()
     }, 0)
 
     const saveChanges = async () => {
+      if (!inputRef.current) return
+      
       inputRef.current.disabled = true
 
       const token = localStorage.getItem('access_token')
@@ -85,7 +90,7 @@ function ChatActionsDropdown({
     inputRef.current.onblur = saveChanges
 
     inputRef.current.onkeydown = event => {
-      if (event.key === 'Enter') {
+      if (event.key === 'Enter' && inputRef.current) {
         inputRef.current.blur()
       }
     }
