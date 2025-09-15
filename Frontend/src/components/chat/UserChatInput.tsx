@@ -1,9 +1,9 @@
 export default function UserChatInput() {
   return (
-    <div className="font-ubuntu m-3  mb-2.5 flex h-12 items-center rounded-3xl bg-stone-200 pl-3 text-sm">
+    <div className="font-ubuntu m-3 mb-2.5 flex h-12 items-center rounded-3xl bg-stone-200 pl-3 text-sm">
       <input
         className="flex-1 bg-transparent text-stone-800 outline-none"
-        defaultValue="Some message ..."
+	placeholder="Some message..."
       />
       <button className="mr-2 cursor-pointer rounded-4xl p-1.5 text-stone-700 hover:bg-sky-300">
         {sendMessageImage}
