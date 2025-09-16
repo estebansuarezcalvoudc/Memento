@@ -18,7 +18,7 @@ export default function UserChatInput({
       return
     }
 
-    const message = userMessage
+    setMessages(prevMessages => [...prevMessages, { role: 'user', content: userMessage }])
     setUserMessage('')
 
     const token = localStorage.getItem('access_token')
@@ -39,7 +39,6 @@ export default function UserChatInput({
     const assistantResponse = response.text()
     setMessages(prevMessages => [
       ...prevMessages,
-      { role: 'user', content: message },
       { role: 'assistant', content: assistantResponse },
     ])
   }
