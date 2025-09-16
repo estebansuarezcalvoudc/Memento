@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 import AssistantMessage from '../components/chat/AssistantMessage'
@@ -13,6 +13,7 @@ export interface Message {
 export default function Chat() {
   const { chatId } = useParams<{ chatId: string }>()
   const [messages, setMessages] = useState<Message[]>([])
+  const chatDivRef = useRef<HTMLUListElement | null>(null)
 
   useEffect(() => {
     if (!chatId) return
@@ -53,14 +54,19 @@ export default function Chat() {
         console.error('Error fetching conversation:', error)
         setMessages([])
       }
-
     }
     fetchConversation()
   }, [chatId])
 
+  useEffect(() => {
+    if (chatDivRef.current) {
+      chatDivRef.current.scrollTop = chatDivRef.current.scrollHeight
+    }
+  }, [messages])
+
   return (
-    <div className="flex h-screen w-full flex-col">
-      <ul className="m-5 flex-1 overflow-y-auto">
+    <div className="flex h-screen w-full flex-col px-3">
+      <ul className="my-3 flex-1 flex-col-reverse overflow-y-auto" ref={chatDivRef}>
         {messages.map(({ role, content }, index) => {
           if (role === 'user') {
             return <UserMessage key={index} text={content} />
@@ -69,7 +75,7 @@ export default function Chat() {
           }
         })}
       </ul>
-      <UserChatInput chatId={chatId} setMessages={setMessages}/>
+      <UserChatInput chatId={chatId} setMessages={setMessages} />
     </div>
   )
 }

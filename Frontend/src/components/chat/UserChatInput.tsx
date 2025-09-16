@@ -22,6 +22,7 @@ export default function UserChatInput({
     setUserMessage('')
 
     const token = localStorage.getItem('access_token')
+
     const response = await fetch(`${backendURL}/conversations/${chatId}/chat`, {
       method: 'POST',
       headers: {
@@ -44,7 +45,7 @@ export default function UserChatInput({
   }
 
   return (
-    <div className="font-ubuntu m-3 mb-2.5 flex h-12 items-center rounded-3xl bg-stone-200 pl-3 text-sm">
+    <div className="font-ubuntu mb-2.5 flex h-12 items-center rounded-3xl bg-stone-200 pl-3 text-sm">
       <input
         className="flex-1 bg-transparent text-stone-800 outline-none"
         placeholder="Some message..."
