@@ -53,7 +53,7 @@ export default function UserChatInput({
         onChange={inputEvent => setUserMessage(inputEvent.target.value)}
       />
       <button
-        className="mr-2 cursor-pointer rounded-4xl p-1.5 text-stone-700 hover:bg-sky-300 disabled:opacity-50"
+        className="mr-2 cursor-pointer rounded-4xl p-1.5 text-stone-900 hover:bg-stone-400 disabled:opacity-50"
         onClick={handleSubmitMessage}
         disabled={userMessage.trim() === ''}
       >
