@@ -5,7 +5,7 @@ import AssistantMessage from '../components/chat/AssistantMessage'
 import UserChatInput from '../components/chat/UserChatInput'
 import UserMessage from '../components/chat/UserMessage'
 
-interface Message {
+export interface Message {
   role: 'user' | 'assistant'
   content: string
 }
@@ -53,8 +53,8 @@ export default function Chat() {
         console.error('Error fetching conversation:', error)
         setMessages([])
       }
-    }
 
+    }
     fetchConversation()
   }, [chatId])
 
@@ -69,7 +69,7 @@ export default function Chat() {
           }
         })}
       </ul>
-      <UserChatInput  />
+      <UserChatInput chatId={chatId} setMessages={setMessages}/>
     </div>
   )
 }

@@ -1,11 +1,62 @@
-export default function UserChatInput() {
+import { useState } from 'react'
+
+import { backendURL } from '../../config/urls'
+
+interface UserChatInputProps {
+  chatId: string
+  setMessages: any
+}
+
+export default function UserChatInput({
+  chatId,
+  setMessages,
+}: UserChatInputProps) {
+  const [userMessage, setUserMessage] = useState('')
+
+  const handleSubmitMessage = async () => {
+    if (!userMessage) {
+      return
+    }
+
+    const message = userMessage
+    setUserMessage('')
+
+    const token = localStorage.getItem('access_token')
+    const response = await fetch(`${backendURL}/conversations/${chatId}/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ message: userMessage }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const assistantResponse = response.text()
+    setMessages(prevMessages => [
+      ...prevMessages,
+      { role: 'user', content: message },
+      { role: 'assistant', content: assistantResponse },
+    ])
+  }
+
   return (
     <div className="font-ubuntu m-3 mb-2.5 flex h-12 items-center rounded-3xl bg-stone-200 pl-3 text-sm">
       <input
         className="flex-1 bg-transparent text-stone-800 outline-none"
-	placeholder="Some message..."
+        placeholder="Some message..."
+        value={userMessage}
+        onChange={inputEvent => setUserMessage(inputEvent.target.value)}
       />
-      <button className="mr-2 cursor-pointer rounded-4xl p-1.5 text-stone-700 hover:bg-sky-300">
+      <button
+        className="mr-2 cursor-pointer rounded-4xl p-1.5 text-stone-700 hover:bg-sky-300 disabled:opacity-50"
+        onClick={handleSubmitMessage}
+        disabled={userMessage.trim() === ''}
+      >
         {sendMessageImage}
       </button>
     </div>
