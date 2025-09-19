@@ -27,6 +27,7 @@ export default function Sidebar() {
       <SidebarButton
         svg={settingsImage}
         text="Settings"
+        to=''
         className="mt-auto mb-2.5"
       />
     </aside>

@@ -28,7 +28,6 @@ ConversationCreateRequest = SendMessageRequest
 
 class ConversationCreateResponse(BaseModel):
     id: str
-    assistant_response: str
 
 
 class ConversationUpdateRequest(BaseModel):

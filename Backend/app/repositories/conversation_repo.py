@@ -6,6 +6,7 @@ from fastapi import HTTPException, status
 
 from ..core.settings import settings
 from ..schemas.conversation_schema import (
+    ConversationCreateResponse,
     ConversationDialogueRetrieve,
     ConversationMetadataRetrieve,
     ConversationUpdateRequest,
@@ -25,10 +26,7 @@ class ConversationRepository:
         conversation_title: str,
         username: str,
         initial_messages: list[dict] = [],
-    ) -> str:
-        if initial_messages is None:
-            initial_messages = []
-
+    ) -> ConversationCreateResponse:
         result = self._collection.insert_one(
             {
                 "username": username,
@@ -37,7 +35,8 @@ class ConversationRepository:
                 "messages": initial_messages,
             }
         )
-        return str(result.inserted_id)
+
+        return ConversationCreateResponse(id=str(result.inserted_id))
 
     @handle_invalid_id
     def append_new_messages_to_conversation(

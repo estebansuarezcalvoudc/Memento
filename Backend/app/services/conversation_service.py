@@ -1,3 +1,5 @@
+import asyncio
+
 from ..core.logging import setup_logger
 from ..repositories.conversation_repo import ConversationRepository
 from ..schemas.conversation_schema import (
@@ -25,14 +27,11 @@ class ConversationService(metaclass=SingletonMeta):
     ) -> ConversationCreateResponse:
         id = self._repository.store_conversation("New chat", username, [SYSTEM_PROMPT])
 
-        assistant_response = await self._process_message(
-            id, conversation_create_request, username
+        asyncio.create_task(
+            self._process_message(id, conversation_create_request, username)
         )
 
-        return ConversationCreateResponse(
-            id=id,
-            assistant_response=assistant_response,
-        )
+        return id
 
     async def send_message(
         self, id: str, send_message_request: SendMessageRequest, username: str
@@ -68,6 +67,7 @@ class ConversationService(metaclass=SingletonMeta):
                 id, new_messages, username
             )
 
+            _logger.debug("message processed")
             return reply
         except Exception as e:
             _logger.error(f"Error in _process_message: {type(e).__name__}: {str(e)}")
