@@ -27,16 +27,22 @@ class ConversationRepository:
         username: str,
         initial_messages: list[dict] = [],
     ) -> ConversationCreateResponse:
+        started_at = datetime.today()
+        
         result = self._collection.insert_one(
             {
                 "username": username,
                 "title": conversation_title,
-                "started_at": datetime.today(),
+                "started_at": started_at,
                 "messages": initial_messages,
             }
         )
 
-        return ConversationCreateResponse(id=str(result.inserted_id))
+        return ConversationCreateResponse(
+            id=str(result.inserted_id),
+            title=conversation_title,
+            started_at=started_at,
+        )
 
     @handle_invalid_id
     def append_new_messages_to_conversation(

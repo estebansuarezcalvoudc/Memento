@@ -26,8 +26,7 @@ class SendMessageRequest(BaseModel):
 ConversationCreateRequest = SendMessageRequest
 
 
-class ConversationCreateResponse(BaseModel):
-    id: str
+ConversationCreateResponse = ConversationMetadataRetrieve
 
 
 class ConversationUpdateRequest(BaseModel):

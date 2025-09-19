@@ -25,20 +25,19 @@ class ConversationService(metaclass=SingletonMeta):
     async def create_conversation(
         self, conversation_create_request: ConversationCreateRequest, username: str
     ) -> ConversationCreateResponse:
-        id = self._repository.store_conversation("New chat", username, [SYSTEM_PROMPT])
-
-        asyncio.create_task(
-            self._process_message(id, conversation_create_request, username)
+        created_conversation = self._repository.store_conversation(
+            "New chat", username, [SYSTEM_PROMPT]
         )
 
-        return id
+        asyncio.create_task(
+            self.send_message(
+                created_conversation.id, conversation_create_request, username
+            )
+        )
+
+        return created_conversation
 
     async def send_message(
-        self, id: str, send_message_request: SendMessageRequest, username: str
-    ) -> str:
-        return await self._process_message(id, send_message_request, username)
-
-    async def _process_message(
         self,
         id: str,
         send_message_request: SendMessageRequest,
@@ -70,7 +69,10 @@ class ConversationService(metaclass=SingletonMeta):
             _logger.debug("message processed")
             return reply
         except Exception as e:
-            _logger.error(f"Error in _process_message: {type(e).__name__}: {str(e)}")
+            _logger.error(
+                f"Error in _process_message: {type(e).__name__}: {str(e)}",
+                exc_info=True,
+            )
             raise
 
     def retrieve_all_conversations_metadata(

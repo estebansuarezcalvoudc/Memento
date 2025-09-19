@@ -34,7 +34,6 @@ async def create_conversation(
         response = await conversation_service.create_conversation(
             conversation_create_request, current_user.username
         )
-        _logger.debug("convesation created")
         return response
     except Exception as e:
         _logger.error(f"Error creating conversation: {str(e)}", exc_info=True)
