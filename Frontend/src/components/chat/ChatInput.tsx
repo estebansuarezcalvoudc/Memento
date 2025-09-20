@@ -9,7 +9,7 @@ interface UserChatInputProps {
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>
 }
 
-export default function UserChatInput({
+export default function ChatInput({
   chatId,
   setMessages,
 }: UserChatInputProps) {

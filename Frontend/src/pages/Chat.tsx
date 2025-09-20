@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 import AssistantMessage from '../components/chat/AssistantMessage'
-import UserChatInput from '../components/chat/UserChatInput'
+import ChatInput from '../components/chat/ChatInput'
 import UserMessage from '../components/chat/UserMessage'
 import { backendURL } from '../config/urls'
 
@@ -78,7 +78,7 @@ export default function Chat() {
           }
         })}
       </ul>
-      <UserChatInput chatId={chatId} setMessages={setMessages} />
+      <ChatInput chatId={chatId} setMessages={setMessages} />
     </div>
   )
 }
