@@ -27,7 +27,7 @@ export default function ChatInput({
 
     const token = localStorage.getItem('access_token')
 
-    const response = await fetch('/api/conversations/${chatId}/chat', {
+    const response = await fetch(`/api/conversations/${chatId}/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
