@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom'
 import AssistantMessage from '../components/chat/AssistantMessage'
 import UserChatInput from '../components/chat/UserChatInput'
 import UserMessage from '../components/chat/UserMessage'
+import { backendURL } from '../config/urls'
 
 export interface Message {
   role: 'user' | 'assistant'
@@ -16,7 +17,9 @@ export default function Chat() {
   const chatDivRef = useRef<HTMLUListElement | null>(null)
 
   useEffect(() => {
-    if (!chatId) return
+    if (!chatId) {
+      return
+    }
 
     const fetchConversation = async () => {
       try {
@@ -26,16 +29,13 @@ export default function Chat() {
           throw new Error('No access token found')
         }
 
-        const response = await fetch(
-          `http://localhost:8000/conversations/${chatId}`,
-          {
-            method: 'GET',
-            headers: {
-              accept: 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
+        const response = await fetch(`${backendURL}/conversations/${chatId}`, {
+          method: 'GET',
+          headers: {
+            accept: 'application/json',
+            Authorization: `Bearer ${token}`,
           },
-        )
+        })
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
@@ -66,7 +66,10 @@ export default function Chat() {
 
   return (
     <div className="flex h-screen w-full flex-col px-3">
-      <ul className="my-3 flex-1 flex-col-reverse overflow-y-auto" ref={chatDivRef}>
+      <ul
+        className="my-3 flex-1 flex-col-reverse overflow-y-auto"
+        ref={chatDivRef}
+      >
         {messages.map(({ role, content }, index) => {
           if (role === 'user') {
             return <UserMessage key={index} text={content} />

@@ -70,7 +70,7 @@ class ConversationService(metaclass=SingletonMeta):
             return reply
         except Exception as e:
             _logger.error(
-                f"Error in _process_message: {type(e).__name__}: {str(e)}",
+                f"Error in send_message: {type(e).__name__}: {str(e)}",
                 exc_info=True,
             )
             raise

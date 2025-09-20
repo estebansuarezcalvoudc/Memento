@@ -1,11 +1,12 @@
 import { useState } from 'react'
 
 import { backendURL } from '../../config/urls'
+import { type Message } from '../../pages/Chat'
 import SendMessageButton from './SendMessageButton'
 
 interface UserChatInputProps {
   chatId: string
-  setMessages: any
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>
 }
 
 export default function UserChatInput({
@@ -19,7 +20,10 @@ export default function UserChatInput({
       return
     }
 
-    setMessages(prevMessages => [...prevMessages, { role: 'user', content: userMessage }])
+    setMessages(prevMessages => [
+      ...prevMessages,
+      { role: 'user', content: userMessage },
+    ])
     setUserMessage('')
 
     const token = localStorage.getItem('access_token')
@@ -38,7 +42,7 @@ export default function UserChatInput({
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const assistantResponse = response.text()
+    const assistantResponse = await response.text()
     setMessages(prevMessages => [
       ...prevMessages,
       { role: 'assistant', content: assistantResponse },
@@ -46,14 +50,17 @@ export default function UserChatInput({
   }
 
   return (
-    <div className="font-ubuntu mb-2.5 px-2 flex h-12 items-center rounded-3xl bg-stone-200 pl-3 text-sm">
+    <div className="font-ubuntu mb-2.5 flex h-12 items-center rounded-3xl bg-stone-200 px-2 pl-3 text-sm">
       <input
         className="flex-1 bg-transparent text-stone-800 outline-none"
         placeholder="Some message..."
         value={userMessage}
         onChange={inputEvent => setUserMessage(inputEvent.target.value)}
       />
-      <SendMessageButton disabled={userMessage.trim() === ''} onClick={handleSubmitMessage} />
+      <SendMessageButton
+        disabled={userMessage.trim() === ''}
+        onClick={handleSubmitMessage}
+      />
     </div>
   )
 }

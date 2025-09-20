@@ -49,7 +49,7 @@ function ChatActionsDropdown({
 
   const handleRename = () => {
     if (!inputRef.current) return
-    
+
     inputRef.current.disabled = false
 
     setTimeout(() => {
@@ -60,7 +60,7 @@ function ChatActionsDropdown({
 
     const saveChanges = async () => {
       if (!inputRef.current) return
-      
+
       inputRef.current.disabled = true
 
       const token = localStorage.getItem('access_token')
@@ -70,7 +70,6 @@ function ChatActionsDropdown({
       }
 
       const url = `${backendURL}/conversations/${chatId}`
-      console.log(url)
       const response = await fetch(url, {
         method: 'PUT',
         headers: {
@@ -104,7 +103,6 @@ function ChatActionsDropdown({
     }
 
     const url = `${backendURL}/conversations/${chatId}`
-    console.log(url)
     const response = await fetch(url, {
       method: 'DELETE',
       headers: {
@@ -116,6 +114,8 @@ function ChatActionsDropdown({
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
+
+    deleteChat(chatId)
   }
 
   return (
@@ -145,7 +145,6 @@ function ChatActionsDropdown({
             hoverColor="hover:bg-red-50"
             onClick={() => {
               handleDelete()
-              deleteChat(chatId)
             }}
           />
         </MenuItem>

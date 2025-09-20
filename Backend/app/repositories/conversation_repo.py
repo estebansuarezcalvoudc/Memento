@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 import pymongo
 from bson import ObjectId
@@ -25,10 +26,13 @@ class ConversationRepository:
         self,
         conversation_title: str,
         username: str,
-        initial_messages: list[dict] = [],
+        initial_messages: Optional[list[dict]] = None,
     ) -> ConversationCreateResponse:
+        if initial_messages is None:
+            initial_messages = []
+
         started_at = datetime.today()
-        
+
         result = self._collection.insert_one(
             {
                 "username": username,
