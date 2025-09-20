@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react'
 import { NavLink } from 'react-router-dom'
+import { useRef, useState } from 'react'
 
 import ChatOptionsDropdown from './chat-options/ChatOptionsDropdown'
 
@@ -10,7 +10,7 @@ interface ChatItemProps {
 
 export default function ChatItem({
   chatId,
-  chatTitle: conversationName,
+  chatTitle,
 }: ChatItemProps) {
   const [isDivHovered, setDivIsHovered] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -32,7 +32,7 @@ export default function ChatItem({
               <input
                 ref={inputRef}
                 className="font-ubuntu pointer-events-none ml-1.5 truncate text-sm"
-                defaultValue={conversationName}
+                defaultValue={chatTitle}
                 disabled
               />
             </div>
