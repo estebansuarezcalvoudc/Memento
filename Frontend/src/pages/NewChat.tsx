@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import SendMessageButton from '../components/chat/SendMessageButton'
-import { backendURL } from '../config/urls'
 import { useUnshiftChat, type Chat } from '../stores/chatsStore'
 
 export default function NewChat() {
@@ -19,7 +18,7 @@ export default function NewChat() {
 
     const token = localStorage.getItem('access_token')
 
-    const response = await fetch(`${backendURL}/conversations`, {
+    const response = await fetch('/api/conversations', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

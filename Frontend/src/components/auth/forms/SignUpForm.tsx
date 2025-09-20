@@ -1,7 +1,6 @@
 import { useActionState } from 'react'
 import { useNavigate, type NavigateFunction } from 'react-router-dom'
 
-import { backendURL } from '../../../config/urls'
 import { useSetIsUserAuth, type SetIsUserAuth } from '../../../stores/authStore'
 import FormButton from './utils/FormButton'
 import FormErrors from './utils/FormErrors'
@@ -130,7 +129,7 @@ async function sendSignupData(
   email: string,
   password: string,
 ): Promise<Response> {
-  return await fetch(`${backendURL}/auth/register`, {
+  return await fetch('/api/auth/register', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

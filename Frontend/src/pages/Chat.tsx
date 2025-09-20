@@ -4,7 +4,6 @@ import { useParams } from 'react-router-dom'
 import AssistantMessage from '../components/chat/AssistantMessage'
 import ChatInput from '../components/chat/ChatInput'
 import UserMessage from '../components/chat/UserMessage'
-import { backendURL } from '../config/urls'
 
 export interface Message {
   role: 'user' | 'assistant'
@@ -29,7 +28,7 @@ export default function Chat() {
           throw new Error('No access token found')
         }
 
-        const response = await fetch(`${backendURL}/conversations/${chatId}`, {
+        const response = await fetch(`/api/conversations/${chatId}`, {
           method: 'GET',
           headers: {
             accept: 'application/json',

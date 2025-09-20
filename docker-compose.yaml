@@ -1,4 +1,16 @@
 services:
+  frontend:
+    build: ./Frontend
+    ports:
+      - "5173:${FRONTEND_PORT}"
+    volumes:
+      - ./Frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - front_net
+
   backend:
     build: ./Backend
     ports:
@@ -25,6 +37,7 @@ services:
       - OLLAMA_PORT=${OLLAMA_PORT}
     networks:
       - back_net
+      - front_net
     restart: unless-stopped
 
   ollama:
@@ -70,3 +83,4 @@ volumes:
 
 networks:
   back_net:
+  front_net:

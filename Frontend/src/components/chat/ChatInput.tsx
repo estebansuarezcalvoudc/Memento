@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import { backendURL } from '../../config/urls'
 import { type Message } from '../../pages/Chat'
 import SendMessageButton from './SendMessageButton'
 
@@ -28,7 +27,7 @@ export default function ChatInput({
 
     const token = localStorage.getItem('access_token')
 
-    const response = await fetch(`${backendURL}/conversations/${chatId}/chat`, {
+    const response = await fetch('/api/conversations/${chatId}/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
