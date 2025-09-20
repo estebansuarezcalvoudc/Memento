@@ -1,4 +1,14 @@
 services:
+  frontend:
+    build: ./Frontend
+    ports:
+      - "5173:${FRONTEND_PORT}"
+    volumes:
+      - ./Frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
   backend:
     build: ./Backend
     ports:
