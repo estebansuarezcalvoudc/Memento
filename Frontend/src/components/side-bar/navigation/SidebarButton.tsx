@@ -25,7 +25,7 @@ export default function SidebarLink({
     <NavLink
       to={to}
       className={({ isActive }) =>
-        ` ${isSidebarOpen ? 'flex w-full items-center' : 'w-9'} cursor-pointer rounded-xl py-2 ${className || ''} ${isSidebarOpen ? 'gap-2' : ''} text-stone-700 hover:bg-stone-200 ${isActive ? 'bg-stone-200' : ''} `
+        ` ${isSidebarOpen ? 'flex w-full items-center' : 'w-9'} h-14 cursor-pointer rounded-xl py-2 ${className || ''} ${isSidebarOpen ? 'gap-2' : ''} text-stone-700 hover:bg-stone-200 ${isActive ? 'bg-stone-200' : ''} `
       }
       {...props}
     >
