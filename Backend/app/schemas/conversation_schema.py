@@ -26,9 +26,7 @@ class SendMessageRequest(BaseModel):
 ConversationCreateRequest = SendMessageRequest
 
 
-class ConversationCreateResponse(BaseModel):
-    id: str
-    assistant_response: str
+ConversationCreateResponse = ConversationMetadataRetrieve
 
 
 class ConversationUpdateRequest(BaseModel):

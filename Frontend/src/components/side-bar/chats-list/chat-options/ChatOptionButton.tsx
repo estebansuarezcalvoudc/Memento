@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react'
+import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
-interface ChatOptionsButtonProps {
+interface ChatOptionsButtonProps
+  extends ButtonHTMLAttributes<HTMLButtonElement> {
   svg: ReactNode
   text: string
   textColor?: string

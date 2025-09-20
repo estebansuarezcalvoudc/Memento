@@ -1,19 +1,27 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { useEffect } from 'react'
+import { useEffect, type RefObject } from 'react'
 
+import { backendURL } from '../../../../config/urls'
+import { useDeleteChat } from '../../../../stores/chatsStore'
 import ChatOptionsButton from './ChatOptionButton'
 
 interface ChatOptionsDropdownProps {
+  inputRef: RefObject<HTMLInputElement | null>
+  chatId: string
   onMenuStateChange: (isOpen: boolean) => void
 }
 
 export default function ChatOptionsDropdown({
+  inputRef,
+  chatId,
   onMenuStateChange,
 }: ChatOptionsDropdownProps) {
   return (
     <Menu>
       {({ open }) => (
         <ChatActionsDropdown
+          inputRef={inputRef}
+          chatId={chatId}
           open={open}
           onMenuStateChange={onMenuStateChange}
         />
@@ -23,15 +31,92 @@ export default function ChatOptionsDropdown({
 }
 
 interface ChatActionsDropdownProps {
+  inputRef: RefObject<HTMLInputElement | null>
+  chatId: string
   open: boolean
   onMenuStateChange: (open: boolean) => void
 }
 
 function ChatActionsDropdown({
+  inputRef,
+  chatId,
   open,
   onMenuStateChange,
 }: ChatActionsDropdownProps) {
   useEffect(() => onMenuStateChange(open), [open, onMenuStateChange])
+
+  const deleteChat = useDeleteChat()
+
+  const handleRename = () => {
+    if (!inputRef.current) return
+
+    inputRef.current.disabled = false
+
+    setTimeout(() => {
+      if (!inputRef.current) return
+      inputRef.current.focus()
+      inputRef.current.select()
+    }, 0)
+
+    const saveChanges = async () => {
+      if (!inputRef.current) return
+
+      inputRef.current.disabled = true
+
+      const token = localStorage.getItem('access_token')
+
+      if (!token) {
+        throw new Error('No access token found')
+      }
+
+      const url = `${backendURL}/conversations/${chatId}`
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: inputRef.current.value,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+    }
+
+    inputRef.current.onblur = saveChanges
+
+    inputRef.current.onkeydown = event => {
+      if (event.key === 'Enter' && inputRef.current) {
+        inputRef.current.blur()
+      }
+    }
+  }
+
+  const handleDelete = async () => {
+    const token = localStorage.getItem('access_token')
+
+    if (!token) {
+      throw new Error('No access token found')
+    }
+
+    const url = `${backendURL}/conversations/${chatId}`
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    deleteChat(chatId)
+  }
 
   return (
     <div>
@@ -46,7 +131,11 @@ function ChatActionsDropdown({
         className="rounded-md bg-white shadow-lg outline-1 outline-stone-300 transition data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-200 data-enter:ease-out data-leave:duration-150 data-leave:ease-in"
       >
         <MenuItem>
-          <ChatOptionsButton svg={editImage} text="Rename" />
+          <ChatOptionsButton
+            svg={editImage}
+            text="Rename"
+            onClick={handleRename}
+          />
         </MenuItem>
         <MenuItem>
           <ChatOptionsButton
@@ -54,6 +143,9 @@ function ChatActionsDropdown({
             text="Delete"
             textColor="text-red-500"
             hoverColor="hover:bg-red-50"
+            onClick={() => {
+              handleDelete()
+            }}
           />
         </MenuItem>
       </MenuItems>

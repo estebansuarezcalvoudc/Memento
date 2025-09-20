@@ -2,16 +2,19 @@ import type { ReactNode } from 'react'
 
 import { useDelayedDisplay } from '../../../hooks/side-bar/useDelayedDisplay'
 import { useIsSidebarOpen } from '../../../stores/sidebarStore'
+import { Link } from 'react-router-dom'
 
 interface SidebarButtonProps {
   svg: ReactNode
   text: string
+  to: string
   className?: string
 }
 
-export default function SidebarButton({
+export default function SidebarLink({
   svg,
   text,
+  to,
   className = '',
   ...props
 }: SidebarButtonProps) {
@@ -19,7 +22,8 @@ export default function SidebarButton({
   const textRef = useDelayedDisplay<HTMLSpanElement>(isSidebarOpen, 'inline')
 
   return (
-    <button
+    <Link
+      to={to}
       className={`${isSidebarOpen ? 'flex w-full items-center' : 'w-9'} cursor-pointer rounded-xl py-2 ${className} ${isSidebarOpen && 'gap-2'} text-stone-700 hover:bg-stone-200`}
       {...props}
     >
@@ -32,6 +36,6 @@ export default function SidebarButton({
           {text}
         </span>
       )}
-    </button>
+    </Link>
   )
 }

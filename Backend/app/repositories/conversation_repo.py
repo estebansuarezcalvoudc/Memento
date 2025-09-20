@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 import pymongo
 from bson import ObjectId
@@ -6,6 +7,7 @@ from fastapi import HTTPException, status
 
 from ..core.settings import settings
 from ..schemas.conversation_schema import (
+    ConversationCreateResponse,
     ConversationDialogueRetrieve,
     ConversationMetadataRetrieve,
     ConversationUpdateRequest,
@@ -24,20 +26,27 @@ class ConversationRepository:
         self,
         conversation_title: str,
         username: str,
-        initial_messages: list[dict] = [],
-    ) -> str:
+        initial_messages: Optional[list[dict]] = None,
+    ) -> ConversationCreateResponse:
         if initial_messages is None:
             initial_messages = []
+
+        started_at = datetime.today()
 
         result = self._collection.insert_one(
             {
                 "username": username,
                 "title": conversation_title,
-                "started_at": datetime.today(),
+                "started_at": started_at,
                 "messages": initial_messages,
             }
         )
-        return str(result.inserted_id)
+
+        return ConversationCreateResponse(
+            id=str(result.inserted_id),
+            title=conversation_title,
+            started_at=started_at,
+        )
 
     @handle_invalid_id
     def append_new_messages_to_conversation(
