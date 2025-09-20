@@ -1,16 +1,21 @@
 interface SendMessageButtonProps {
-  disabled: boolean,
+  disabled: boolean
   onClick: () => Promise<void>
-
 }
-export default function SendMessageButton({ disabled, onClick }: SendMessageButtonProps) {
-  return <button
-    className="cursor-pointer rounded-4xl p-1.5 text-stone-900 hover:bg-stone-400 disabled:opacity-50"
-    onClick={onClick}
-    disabled={disabled}
-  >
-    {sendMessageImage}
-  </button>
+
+export default function SendMessageButton({
+  disabled,
+  onClick,
+}: SendMessageButtonProps) {
+  return (
+    <button
+      className="cursor-pointer rounded-4xl p-1.5 text-stone-900 hover:bg-stone-400 disabled:opacity-50"
+      onClick={onClick}
+      disabled={disabled}
+    >
+      {sendMessageImage}
+    </button>
+  )
 }
 
 const sendMessageImage = (
