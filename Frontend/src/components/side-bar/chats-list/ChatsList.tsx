@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react'
 
-import { backendURL } from '../../../config/urls'
+import { useChats, useSetChats } from '../../../stores/chatsStore'
 import { useIsSidebarOpen } from '../../../stores/sidebarStore'
 import ChatItem from './ChatItem'
-import { useChats, useSetChats } from '../../../stores/chatsStore'
-
-
 
 type ChatListState = 'loading' | 'error' | 'empty' | 'loaded'
 
@@ -62,7 +59,11 @@ export default function ChatsList() {
         )
       case 'loaded':
         return chats.map(conversation => (
-          <ChatItem key={conversation.id} chatId={conversation.id} chatTitle={conversation.title} />
+          <ChatItem
+            key={conversation.id}
+            chatId={conversation.id}
+            chatTitle={conversation.title}
+          />
         ))
       default:
         return null
@@ -71,11 +72,10 @@ export default function ChatsList() {
 
   return (
     <div
-      className={`min-h-0 flex-1 transition-opacity duration-300 ${
-        isSidebarOpen
-          ? 'block opacity-100 delay-150'
-          : 'hidden opacity-0 delay-[0ms]'
-      } flex h-full flex-col overflow-hidden`}
+      className={`min-h-0 flex-1 transition-opacity duration-300 ${isSidebarOpen
+        ? 'block opacity-100 delay-150'
+        : 'hidden opacity-0 delay-[0ms]'
+        } flex h-full flex-col overflow-hidden`}
     >
       <h2 className="font-ubuntu mt-8 mb-2 ml-1.5 flex-shrink-0 truncate text-sm text-stone-400">
         Chats
@@ -94,7 +94,7 @@ async function retrieveChats() {
     throw new Error('No access token found')
   }
 
-  const response = await fetch(`${backendURL}/conversations`, {
+  const response = await fetch('/api/conversations', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

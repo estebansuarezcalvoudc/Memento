@@ -1,7 +1,6 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { useEffect, type RefObject } from 'react'
 
-import { backendURL } from '../../../../config/urls'
 import { useDeleteChat } from '../../../../stores/chatsStore'
 import ChatOptionsButton from './ChatOptionButton'
 
@@ -69,7 +68,7 @@ function ChatActionsDropdown({
         throw new Error('No access token found')
       }
 
-      const url = `${backendURL}/conversations/${chatId}`
+      const url = `/api/conversations/${chatId}`
       const response = await fetch(url, {
         method: 'PUT',
         headers: {
@@ -102,7 +101,7 @@ function ChatActionsDropdown({
       throw new Error('No access token found')
     }
 
-    const url = `${backendURL}/conversations/${chatId}`
+    const url = `/api/conversations/${chatId}`
     const response = await fetch(url, {
       method: 'DELETE',
       headers: {
