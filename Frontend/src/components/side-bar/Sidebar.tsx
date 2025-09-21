@@ -3,7 +3,7 @@ import { useIsSidebarOpen } from '../../stores/sidebarStore'
 import ChatsList from './chats-list/ChatsList'
 import Header from './header/Header'
 import SidebarButtons from './navigation/SidebarButtons'
-import SidebarButton from './navigation/SidebarButton'
+import { SidebarButton } from './navigation/SidebarButton'
 
 export default function Sidebar() {
   const isSidebarOpen = useIsSidebarOpen()
@@ -25,10 +25,11 @@ export default function Sidebar() {
       />
 
       <SidebarButton
+        type='button'
         svg={settingsImage}
         text="Settings"
         onClick={() => console.log('Settings clicked')}
-        className="mt-auto mb-2.5"
+        className="mb-2.5"
       />
     </aside>
   )
