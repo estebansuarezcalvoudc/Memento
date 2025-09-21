@@ -1,5 +1,7 @@
 import { useImperativeHandle, useRef } from 'react'
 
+import UploadMeetingsList from './UploadMeetingsList'
+
 export interface UploadFilesDialogHandler {
   open: () => void
   close: () => void
@@ -9,16 +11,57 @@ interface UploadFilesDialogProps {
   dialogRef: React.RefObject<UploadFilesDialogHandler>
 }
 
-export default function UploadFilesDialog({ dialogRef }: UploadFilesDialogProps) {
+export default function UploadFilesDialog({
+  dialogRef,
+}: UploadFilesDialogProps) {
   const innerRef = useRef<HTMLDialogElement>(null)
 
   useImperativeHandle(dialogRef, () => ({
     open: () => innerRef.current?.showModal(),
     close: () => innerRef.current?.close(),
   }))
+
   return (
-    <dialog ref={innerRef}>
-      <h2>Upload Files</h2>
+    <dialog
+      ref={innerRef}
+      className="fixed top-1/2 left-1/2 h-[80vh] max-h-[90vh] w-[90vw] max-w-4xl -translate-x-1/2 -translate-y-1/2 rounded-3xl bg-white px-4 pt-5 shadow-xl"
+    >
+      <div className="mb-1 flex items-center justify-between">
+        <div className="w-8" />
+
+        <h2 className="font-dongle flex-1 text-center text-5xl text-stone-700">
+          Upload Files
+        </h2>
+
+        <button
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-2xl p-1 text-stone-400 hover:bg-stone-200"
+          onClick={() => innerRef.current?.close()}
+        >
+          {closeImage}
+        </button>
+      </div>
+      <div className="scroll-auto">
+        <UploadMeetingsList />
+      </div>
     </dialog>
   )
 }
+
+const closeImage = (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="icon icon-tabler icons-tabler-outline icon-tabler-x"
+  >
+    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+    <path d="M18 6l-12 12" />
+    <path d="M6 6l12 12" />
+  </svg>
+)
