@@ -8,8 +8,7 @@ import {
 import UploadFilesDialog, {
   type UploadFilesDialogHandler,
 } from '../../upload-files/UploadFilesDialog'
-import SidebarLink from '../navigation/SidebarLink'
-import SidebarButton from './SidebarButton'
+import { SidebarButton } from './SidebarButton'
 
 export default function SidebarButtons() {
   const dialogRef = useRef<UploadFilesDialogHandler>(null)
@@ -23,11 +22,17 @@ export default function SidebarButtons() {
     <ul className="flex-shrink-0">
       {buttons.map(button => (
         <li key={button.text}>
-          <SidebarLink svg={button.image} text={button.text} to={button.link} />
+          <SidebarButton
+            type="link"
+            svg={button.image}
+            text={button.text}
+            to={button.link}
+          />
         </li>
       ))}
 
       <SidebarButton
+        type="button"
         svg={uploadMeetingsImage}
         text="Upload Meetings"
         onClick={() => dialogRef.current?.open()}
