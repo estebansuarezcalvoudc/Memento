@@ -10,7 +10,7 @@ interface Meeting {
   speakers?: number
 }
 
-export default function UploadMeetingsList() {
+export default function UploadMeetingsForm() {
   const [meetings, setMeetings] = useState<Meeting[]>([{ title: '' }])
 
   const addMeeting = () => {

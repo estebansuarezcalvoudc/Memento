@@ -1,6 +1,6 @@
 import { useImperativeHandle, useRef } from 'react'
 
-import UploadMeetingsList from './UploadMeetingsList'
+import UploadMeetingsForm from './UploadMeetingsForm'
 
 export interface UploadFilesDialogHandler {
   open: () => void
@@ -41,7 +41,7 @@ export default function UploadFilesDialog({
         </button>
       </div>
       <div className="scroll-auto">
-        <UploadMeetingsList />
+        <UploadMeetingsForm />
       </div>
     </dialog>
   )
