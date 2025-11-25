@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useActionState, useState } from 'react'
 
 import Input from './Input'
 
@@ -10,8 +10,23 @@ interface Meeting {
   speakers?: number
 }
 
+interface FormState {
+  errors: null | string[]
+  meetingsData?: Meeting[]
+}
+
+function uploadMeetingsAction(_prevFormState: FormState, formData: FormData) {
+  console.log('Action called')
+}
+
 export default function UploadMeetingsForm() {
   const [meetings, setMeetings] = useState<Meeting[]>([{ title: '' }])
+  const [formState, formAction] = useActionState<FormState, FormData>(
+    (prevState, formData) => uploadMeetingsAction(prevState, formData),
+    {
+      errors: null,
+    },
+  )
 
   const addMeeting = () => {
     setMeetings(prev => [
@@ -30,69 +45,67 @@ export default function UploadMeetingsForm() {
   }
 
   return (
-    <>
-      <form>
-        {meetings.map((meeting, i) => (
-          <div
-            key={i}
-            className="mt-4 rounded-2xl border-2 border-dotted border-stone-400 bg-stone-100 p-3"
-          >
-            <div className="flex items-center justify-between gap-4">
-              <span className="font-ubuntu text-lg text-stone-700">
-                Meeting {i + 1}
-              </span>
+    <form action={formAction}>
+      {meetings.map((meeting, i) => (
+        <div
+          key={i}
+          className="mt-4 rounded-2xl border-2 border-dotted border-stone-400 bg-stone-100 p-3"
+        >
+          <div className="flex items-center justify-between gap-4">
+            <span className="font-ubuntu text-lg text-stone-700">
+              Meeting {i + 1}
+            </span>
 
-              <button
-                className="cursor-pointer rounded-xl p-2 text-stone-700 hover:bg-stone-300"
-                type="button"
-                onClick={() => removeMeeting(i)}
-              >
-                {removeMeetingImage}
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 gap-x-10 gap-y-0 sm:grid-cols-2 lg:grid-cols-3">
-              <Input
-                label="Title"
-                id="title"
-                name="title"
-                type="text"
-                defaultValue={meeting.title}
-              />
-
-              <Input
-                label="Date"
-                id="date"
-                name="date"
-                type="date"
-                defaultValue={meeting.meetingDate}
-              />
-
-              <Input
-                label="Language"
-                id="language"
-                name="language"
-                type="text"
-                defaultValue={meeting.language}
-              />
-
-              <Input
-                label="Number of speakers"
-                id="speakers"
-                name="speakers"
-                type="number"
-                min="2"
-                defaultValue={meeting.meetingDate}
-              />
-
-              <Input label="File" id="file" name="file" type="file" />
-            </div>
+            <button
+              className="cursor-pointer rounded-xl p-2 text-stone-700 hover:bg-stone-300"
+              type="button"
+              onClick={() => removeMeeting(i)}
+            >
+              {removeMeetingImage}
+            </button>
           </div>
-        ))}
-      </form>
 
+          <div className="grid grid-cols-1 gap-x-10 gap-y-0 sm:grid-cols-2 lg:grid-cols-3">
+            <Input
+              label="Title"
+              id={`meetings[${i}][file]`}
+              name={`meetings[${i}][file]`}
+              type="text"
+              defaultValue={meeting.title}
+            />
+
+            <Input
+              label="Date"
+              id={`meetings[${i}][date]`}
+              name={`meetings[${i}][date]`}
+              type="date"
+              defaultValue={meeting.meetingDate}
+            />
+
+            <Input
+              label="Language"
+              id={`meetings[${i}][language]`}
+              name={`meetings[${i}][language]`}
+              type="text"
+              defaultValue={meeting.language}
+            />
+
+            <Input
+              label="Number of speakers"
+              id={`meetings[${i}][speakers]`}
+              name={`meetings[${i}][speakers]`}
+              type="number"
+              min="2"
+              defaultValue={meeting.meetingDate}
+            />
+
+            <Input label="File" id="file" name="file" type="file" />
+          </div>
+        </div>
+      ))}
       <div className="mt-5 mb-4 flex items-center justify-center gap-4">
         <button
+          type="button"
           onClick={addMeeting}
           className="font-ubuntu cursor-pointer rounded-lg bg-stone-200 px-2 py-1.5 text-base text-stone-700"
         >
@@ -102,7 +115,7 @@ export default function UploadMeetingsForm() {
           Submit
         </button>
       </div>
-    </>
+    </form>
   )
 }
 
