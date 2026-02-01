@@ -1,5 +1,6 @@
-import { useActionState, useState } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 
+import Notification from '../../notifications/Notification'
 import Input from './Input'
 
 interface Meeting {
@@ -12,8 +13,9 @@ interface Meeting {
 
 interface FormState {
   errors: null | string[]
+  serverError?: boolean
   success?: boolean
-  meetingsData?: Meeting[]
+  meetingsCount?: number
 }
 
 interface MeetingMetadata {
@@ -22,6 +24,12 @@ interface MeetingMetadata {
   language?: string
   number_of_speakers?: number
 }
+
+type NotificationType = 'uploading' | 'success' | 'error'
+
+type ToastState =
+  | { id: string; type: NotificationType; message: string }
+  | null
 
 async function uploadMeetingsAction(
   _prevFormState: FormState,
@@ -39,36 +47,28 @@ async function uploadMeetingsAction(
       const speakers = formData.get(`meetings[${meetingIndex}][speakers]`) as string
       const audioFile = formData.get(`meetings[${meetingIndex}][file]`) as File
 
-      // Validaciones
       if (!title || title.trim() === '') {
-        return {
-          errors: [`Meeting ${meetingIndex + 1}: Title is required`],
-        }
+        return { errors: [`Meeting ${meetingIndex + 1}: Title is required`] }
       }
 
       if (!date) {
-        return {
-          errors: [`Meeting ${meetingIndex + 1}: Date is required`],
-        }
+        return { errors: [`Meeting ${meetingIndex + 1}: Date is required`] }
       }
 
       if (!audioFile || audioFile.size === 0) {
-        return {
-          errors: [`Meeting ${meetingIndex + 1}: Audio file is required`],
-        }
+        return { errors: [`Meeting ${meetingIndex + 1}: Audio file is required`] }
       }
 
-      // Construir metadata
       const metadata: MeetingMetadata = {
         title: title.trim(),
-        date: date,
+        date,
       }
 
-      if (language && language.trim() !== '') {
+      if (language?.trim()) {
         metadata.language = language.trim()
       }
 
-      if (speakers && speakers.trim() !== '') {
+      if (speakers?.trim()) {
         const speakersNum = parseInt(speakers)
         if (!isNaN(speakersNum) && speakersNum >= 2) {
           metadata.number_of_speakers = speakersNum
@@ -77,22 +77,17 @@ async function uploadMeetingsAction(
 
       meetingsMetadata.push(metadata)
       audioFiles.push(audioFile)
-
       meetingIndex++
     }
 
     if (meetingsMetadata.length === 0) {
-      return {
-        errors: ['You must add at least one meeting'],
-      }
+      return { errors: ['You must add at least one meeting'] }
     }
 
     return await processUploadMeetings(meetingsMetadata, audioFiles)
   } catch (error) {
     console.error('Error in uploadMeetingsAction:', error)
-    return {
-      errors: ['An unexpected error occurred'],
-    }
+    return { errors: ['An unexpected error occurred'] }
   }
 }
 
@@ -101,87 +96,107 @@ async function processUploadMeetings(
   audioFiles: File[],
 ): Promise<FormState> {
   try {
-    const meetingsData = {
-      meetings_metadata: meetingsMetadata,
-      // TODO añadir processing configuration, esto sale de los ajustes del usuario
-    }
-
-    console.log('Sending data:', meetingsData)
-    console.log('Audio files:', audioFiles)
-
     const backendFormData = new FormData()
-    backendFormData.append('meetings_data', JSON.stringify(meetingsData))
-    
-    audioFiles.forEach((file: File) => {
-      backendFormData.append('audios', file)
-    })
+    backendFormData.append(
+      'meetings_data',
+      JSON.stringify({ meetings_metadata: meetingsMetadata }),
+    )
+
+    audioFiles.forEach(file => backendFormData.append('audios', file))
 
     const token = localStorage.getItem('access_token')
-    if (!token) {
-      return {
-        errors: ['You must be logged in to upload meetings'],
-      }
-    }
 
     const response = await fetch('/api/meetings', {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
       body: backendFormData,
     })
 
     if (!response.ok) {
-      let errorMessage = `HTTP error! status: ${response.status}`
-      
-      try {
-        const errorData = await response.json()
-        console.error('Error response:', errorData)
-        errorMessage = errorData.detail || errorMessage
-      } catch {
-        const errorText = await response.text()
-        console.error('Error text:', errorText)
-        if (errorText) {
-          errorMessage = errorText
-        }
-      }
-
-      return {
-        errors: [errorMessage],
-      }
+      return { errors: null, serverError: true }
     }
 
     return {
       errors: null,
       success: true,
+      meetingsCount: meetingsMetadata.length,
     }
   } catch (error) {
     console.error('Error in processUploadMeetings:', error)
-    return {
-      errors: ['Network error or server unavailable'],
-    }
+    return { errors: null, serverError: true }
   }
 }
 
-export default function UploadMeetingsForm() {
+export default function UploadMeetingsForm({ onClose }: { onClose: () => void }) {
   const [meetings, setMeetings] = useState<Meeting[]>([{ title: '' }])
+  const [toast, setToast] = useState<ToastState>(null)
+
   const [formState, formAction, isPending] = useActionState<FormState, FormData>(
     uploadMeetingsAction,
-    {
-      errors: null,
-    },
+    { errors: null },
   )
 
+  // Reset meetings on success
+  useEffect(() => {
+    if (formState.success) {
+      setMeetings([{ title: '' }])
+    }
+  }, [formState.success])
+
+  // Handle notifications
+  useEffect(() => {
+    if (isPending) {
+      setToast({
+        id: crypto.randomUUID(),
+        type: 'uploading',
+        message: `Uploading ${meetings.length} ${
+          meetings.length === 1 ? 'meeting' : 'meetings'
+        }...`,
+      })
+      return
+    }
+
+    if (formState.serverError) {
+      setToast({
+        id: crypto.randomUUID(),
+        type: 'error',
+        message: 'Could not upload meetings\nNetwork error or server unavailable',
+      })
+      return
+    }
+
+    if (formState.success) {
+      setToast({
+        id: crypto.randomUUID(),
+        type: 'success',
+        message: `${formState.meetingsCount} ${
+          formState.meetingsCount === 1 ? 'meeting has' : 'meetings have'
+        } been uploaded`,
+      })
+    }
+  }, [
+    isPending,
+    formState.serverError,
+    formState.success,
+    formState.meetingsCount,
+    meetings.length,
+  ])
+
+  // Auto-dismiss success & error toasts
+  useEffect(() => {
+    if (!toast || toast.type === 'uploading') return
+
+    const timer = setTimeout(() => setToast(null), 5000)
+    return () => clearTimeout(timer)
+  }, [toast])
+
+  const handleSubmit = (formData: FormData) => {
+    onClose()
+    formAction(formData)
+  }
+
   const addMeeting = () => {
-    setMeetings(prev => [
-      ...prev,
-      {
-        title: '',
-        meetingDate: undefined,
-        language: undefined,
-        speakers: undefined,
-      },
-    ])
+    setMeetings(prev => [...prev, { title: '' }])
   }
 
   const removeMeeting = (index: number) => {
@@ -191,8 +206,8 @@ export default function UploadMeetingsForm() {
   }
 
   return (
-    <form action={formAction}>
-      {meetings.map((meeting, i) => (
+    <form action={handleSubmit}>
+      {meetings.map((_, i) => (
         <div
           key={i}
           className="mt-4 rounded-2xl border-2 border-dotted border-stone-400 bg-stone-100 p-3"
@@ -204,63 +219,53 @@ export default function UploadMeetingsForm() {
 
             {meetings.length > 1 && (
               <button
-                className="cursor-pointer rounded-xl p-2 text-stone-700 hover:bg-stone-300"
                 type="button"
                 onClick={() => removeMeeting(i)}
                 disabled={isPending}
+                className="cursor-pointer rounded-xl p-2 text-stone-700 hover:bg-stone-300"
               >
                 {removeMeetingImage}
               </button>
             )}
           </div>
 
-          <div className="grid grid-cols-1 gap-x-10 gap-y-0 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-x-10 sm:grid-cols-2 lg:grid-cols-3">
             <Input
               label="Title"
-              id={`meetings[${i}][title]`}
               name={`meetings[${i}][title]`}
               type="text"
-              defaultValue={meeting.title}
               required
               disabled={isPending}
             />
 
             <Input
               label="Date"
-              id={`meetings[${i}][date]`}
               name={`meetings[${i}][date]`}
               type="date"
-              defaultValue={meeting.meetingDate}
               required
               disabled={isPending}
             />
 
             <Input
               label="Language (optional)"
-              id={`meetings[${i}][language]`}
               name={`meetings[${i}][language]`}
               type="text"
-              placeholder="e.g., en, es"
-              defaultValue={meeting.language}
               disabled={isPending}
             />
 
             <Input
               label="Number of speakers (optional)"
-              id={`meetings[${i}][speakers]`}
               name={`meetings[${i}][speakers]`}
               type="number"
               min="2"
-              defaultValue={meeting.speakers}
               disabled={isPending}
             />
 
             <Input
               label="Audio File"
-              id={`meetings[${i}][file]`}
               name={`meetings[${i}][file]`}
               type="file"
-              accept="audio/*,.mp3,.mp4,.mpeg,.mpga,.m4a,.wav,.webm"
+              accept="audio/*"
               required
               disabled={isPending}
             />
@@ -271,34 +276,34 @@ export default function UploadMeetingsForm() {
       {formState.errors && (
         <div className="mt-4 rounded-lg bg-red-100 p-3">
           {formState.errors.map((error, i) => (
-            <p key={i} className="font-ubuntu text-sm text-red-700">
-              ❌ {error}
-            </p>
+            <p key={i} className="text-sm text-red-700">❌ {error}</p>
           ))}
         </div>
       )}
 
-      {formState.success && (
-        <div className="mt-4 rounded-lg bg-green-100 p-3">
-          <p className="font-ubuntu text-sm text-green-700">
-            ✓ Meetings uploaded successfully!
-          </p>
-        </div>
+      {toast && (
+        <Notification
+          key={toast.id}
+          type={toast.type}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
       )}
 
-      <div className="mt-5 mb-4 flex items-center justify-center gap-4">
+      <div className="mt-5 mb-4 flex justify-center gap-4">
         <button
           type="button"
           onClick={addMeeting}
           disabled={isPending}
-          className="font-ubuntu cursor-pointer rounded-lg bg-stone-200 px-2 py-1.5 text-base text-stone-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg bg-stone-200 px-2 py-1.5 text-stone-700 disabled:opacity-50"
         >
           + Add meeting
         </button>
+
         <button
           type="submit"
           disabled={isPending}
-          className="font-ubuntu cursor-pointer rounded-lg bg-blue-400 px-2 py-1.5 text-base text-stone-800 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg bg-blue-400 px-2 py-1.5 text-stone-800 disabled:opacity-50"
         >
           {isPending ? 'Uploading...' : 'Submit'}
         </button>
@@ -318,7 +323,6 @@ const removeMeetingImage = (
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className="icon icon-tabler icons-tabler-outline icon-tabler-trash-x"
   >
     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
     <path d="M4 7h16" />
@@ -327,3 +331,4 @@ const removeMeetingImage = (
     <path d="M10 12l4 4m0 -4l-4 4" />
   </svg>
 )
+
