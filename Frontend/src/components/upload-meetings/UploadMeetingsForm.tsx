@@ -1,8 +1,8 @@
 import { useActionState, useEffect, useState } from 'react'
 
-import { useUploadMeetingsToast } from '../../hooks/upload-files/useUploadMeetingsToast'
-import Notification from '../../notifications/Notification'
-import { parseMeetingsFromFormData } from '../../utils/upload-files/parseMeetingsFormData'
+import { useUploadMeetingsToast } from '../../hooks/upload-meetings/useUploadMeetingsToast'
+import Notification from './Notification'
+import { parseMeetingsFromFormData } from '../../utils/upload-meetings/parseMeetingsFormData'
 import AddMeetingButton from './AddMeetingButton'
 import MeetingForm from './MeetingForm'
 import UploadMeetingsButton from './UploadMeetingsButton'
