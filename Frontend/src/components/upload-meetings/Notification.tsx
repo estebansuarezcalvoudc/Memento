@@ -26,7 +26,7 @@ export default function Notification({
 
     const timer = setTimeout(() => onClose(), 6000)
     return () => clearTimeout(timer)
-  }, [type])
+  }, [type, onClose])
 
   return createPortal(
     <div
