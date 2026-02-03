@@ -28,7 +28,9 @@ router = APIRouter()
     description="Returns a dictionary of supported languages with their codes and names",
     tags=["Meeting"],
 )
-async def get_supported_languages() -> dict[str, str]:
+async def get_supported_languages(
+    current_user: Annotated[User, Depends(get_current_active_user)],
+) -> dict[str, str]:
     return SUPPORTED_LANGUAGES_DICT
 
 
