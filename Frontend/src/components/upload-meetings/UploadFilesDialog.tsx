@@ -26,12 +26,23 @@ export default function UploadFilesDialog({
   return createPortal(
     <dialog
       ref={innerRef}
+      aria-modal="true"
+      aria-labelledby="upload-files-dialog-title"
       className="fixed top-1/2 left-1/2 h-[80vh] max-h-[90vh] w-[90vw] max-w-4xl -translate-x-1/2 -translate-y-1/2 rounded-3xl bg-white px-4 pt-5 shadow-xl"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          innerRef.current?.close()
+        }
+      }}
     >
       <div className="mb-1 flex items-center justify-between">
         <div className="w-8" />
 
-        <h2 className="font-dongle flex-1 text-center text-5xl text-stone-700">
+        <h2
+          id="upload-files-dialog-title"
+          className="font-dongle flex-1 text-center text-5xl text-stone-700"
+        >
           Upload Files
         </h2>
 
