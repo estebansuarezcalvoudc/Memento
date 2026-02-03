@@ -99,7 +99,6 @@ export default function UploadMeetingsForm({
   onClose: () => void
 }) {
   const [meetings, setMeetings] = useState<Meeting[]>([createMeeting()])
-
   const [formState, formAction, isPending] = useActionState<
     FormState,
     FormData
