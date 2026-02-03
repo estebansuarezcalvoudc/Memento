@@ -1,11 +1,12 @@
-import type { InputHTMLAttributes } from "react"
+import { useId, type InputHTMLAttributes } from "react"
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string
-  id: string
 }
 
-export default function Input({ label, id, ...props }: InputProps) {
+export default function Input({ label, ...props }: InputProps) {
+  const id = useId()
+
   return (
     <div className="mt-3 flex flex-col align-middle">
       <label
