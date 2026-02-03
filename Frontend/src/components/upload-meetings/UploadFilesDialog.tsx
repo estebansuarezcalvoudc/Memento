@@ -1,4 +1,4 @@
-import { useImperativeHandle, useRef } from 'react'
+import { useCallback, useImperativeHandle, useRef } from 'react'
 import { createPortal } from 'react-dom'
 
 import { closeImage } from '../../assets/buttonsImages'
@@ -22,6 +22,10 @@ export default function UploadFilesDialog({
     open: () => innerRef.current?.showModal(),
     close: () => innerRef.current?.close(),
   }))
+
+  const handleClose = useCallback(() => {
+    innerRef.current?.close()
+  }, [])
 
   return createPortal(
     <dialog
@@ -54,7 +58,7 @@ export default function UploadFilesDialog({
         </button>
       </div>
       <div className="scroll-auto">
-        <UploadMeetingsForm onClose={() => innerRef.current?.close()} />
+        <UploadMeetingsForm onClose={handleClose} />
       </div>
     </dialog>,
     document.getElementById('upload-meetings-modal') as HTMLElement,
