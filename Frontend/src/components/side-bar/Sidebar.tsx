@@ -29,7 +29,7 @@ export default function Sidebar() {
         svg={settingsImage}
         text="Settings"
         onClick={() => console.log('Settings clicked')}
-        className="mb-2.5"
+        className="mt-auto mb-2.5"
       />
     </aside>
   )

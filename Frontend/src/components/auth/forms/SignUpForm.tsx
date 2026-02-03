@@ -28,17 +28,15 @@ export default function SignUpForm() {
     <form action={formAction}>
       <Input
         label="email"
-        id="email"
         name="email"
         type="email"
         defaultValue={formState.enteredValues?.email}
       />
 
-      <Input label="password" id="password" name="password" type="password" />
+      <Input label="password" name="password" type="password" />
 
       <Input
         label="confirm password"
-        id="confirmedPassword"
         name="confirmedPassword"
         type="password"
       />

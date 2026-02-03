@@ -68,6 +68,7 @@ export function parseMeetingsFromFormData(
     }
 
     meetingsMetadata.push(metadata)
+
     if (audioFile) {
       audioFiles.push(audioFile)
     }
