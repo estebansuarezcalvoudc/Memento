@@ -54,7 +54,11 @@ function getCachedLanguages(): LanguageOption[] | null {
     Date.now() < parseInt(expiry)
 
   if (cachedLanguagesAreValid) {
-    return JSON.parse(cached)
+    try {
+      return JSON.parse(cached)
+    } catch {
+      return null
+    }
   }
 
   return null

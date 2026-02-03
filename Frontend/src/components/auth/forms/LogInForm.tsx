@@ -28,13 +28,12 @@ export default function LogInForm() {
     <form action={formAction}>
       <Input
         label="email"
-        id="email"
         name="email"
         type="email"
         defaultValue={formState.enteredValues?.email}
       />
 
-      <Input label="password" id="password" name="password" type="password" />
+      <Input label="password" name="password" type="password" />
 
       <FormErrors errors={formState.errors} />
 

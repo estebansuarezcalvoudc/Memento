@@ -1,7 +1,10 @@
 import { useActionState, useEffect, useState } from 'react'
 
 import { useUploadMeetingsToast } from '../../hooks/upload-meetings/useUploadMeetingsToast'
-import { parseMeetingsFromFormData } from '../../utils/upload-meetings/parseMeetingsFormData'
+import {
+  parseMeetingsFromFormData,
+  type MeetingMetadata,
+} from '../../utils/upload-meetings/parseMeetingsFormData'
 import AddMeetingButton from './AddMeetingButton'
 import MeetingForm from './MeetingForm'
 import Notification from './Notification'
@@ -10,10 +13,6 @@ import UploadMeetingsButton from './UploadMeetingsButton'
 interface Meeting {
   id: string
   title: string
-  audioFile?: File
-  meetingDate?: string
-  language?: string
-  speakers?: number
 }
 
 interface FormState {
@@ -21,13 +20,6 @@ interface FormState {
   serverError?: boolean
   success?: boolean
   meetingsCount?: number
-}
-
-interface MeetingMetadata {
-  title: string
-  date: string
-  language?: string
-  number_of_speakers?: number
 }
 
 async function uploadMeetingsAction(
@@ -119,8 +111,11 @@ export default function UploadMeetingsForm({
   )
 
   const handleSubmit = (formData: FormData) => {
-    onClose()
     formAction(formData)
+
+    if (!formState.errors) {
+      onClose()
+    }
   }
 
   const addMeeting = () => {

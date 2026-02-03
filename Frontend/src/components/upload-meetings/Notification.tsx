@@ -26,7 +26,7 @@ export default function Notification({
 
     const timer = setTimeout(() => onClose(), 6000)
     return () => clearTimeout(timer)
-  }, [type, onClose])
+  }, [type])
 
   return createPortal(
     <div
@@ -35,7 +35,7 @@ export default function Notification({
       className={`fixed right-6 bottom-6 z-[9999] flex items-center gap-3 rounded-lg px-4 py-3 shadow-lg ${type === 'uploading' ? 'bg-blue-200 text-blue-700' : ''} ${type === 'success' ? 'bg-green-200 text-green-700' : ''} ${type === 'error' ? 'bg-red-200 text-red-700' : ''}`}
     >
       {type === 'uploading' && (
-        <BarLoader width={80} height={4} aria-hidden="true" color="blue" />
+        <BarLoader width={80} height={4} aria-hidden="true" color="#1D4ED8" />
       )}
 
       <span className="text-sm whitespace-pre-line">{message}</span>
