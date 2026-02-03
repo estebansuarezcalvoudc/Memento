@@ -17,5 +17,9 @@ export default tseslint.config([
       reactRefresh.configs.vite,
     ],
     languageOptions: { ecmaVersion: 2020, globals: globals.browser },
+    rules: {
+      'curly': ['error', 'all'],
+      'brace-style': ['error', '1tbs'],
+    },
   },
 ])

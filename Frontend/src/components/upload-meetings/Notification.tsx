@@ -20,7 +20,9 @@ export default function Notification({
   const isError = type === 'error'
 
   useEffect(() => {
-    if (type === 'uploading') return
+    if (type === 'uploading') {
+      return
+    }
 
     const timer = setTimeout(() => onClose(), 6000)
     return () => clearTimeout(timer)

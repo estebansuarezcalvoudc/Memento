@@ -3,5 +3,7 @@ interface AssistantMessageProps {
 }
 
 export default function AssistantMessage({ text }: AssistantMessageProps) {
-  return <li className="w-4/5 mt-4 text-sm font-ubuntu text-stone-800">{text}</li>
+  return (
+    <li className="font-ubuntu mt-4 w-4/5 text-sm text-stone-800">{text}</li>
+  )
 }

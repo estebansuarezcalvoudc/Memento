@@ -8,10 +8,7 @@ interface UserChatInputProps {
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>
 }
 
-export default function ChatInput({
-  chatId,
-  setMessages,
-}: UserChatInputProps) {
+export default function ChatInput({ chatId, setMessages }: UserChatInputProps) {
   const [userMessage, setUserMessage] = useState('')
 
   const handleSubmitMessage = async () => {
