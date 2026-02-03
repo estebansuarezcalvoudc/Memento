@@ -47,6 +47,13 @@ function getCachedLanguages(): LanguageOption[] | null {
   const expiry = localStorage.getItem(CACHE_EXPIRY_KEY)
   const version = localStorage.getItem(CACHE_VERSION_KEY)
 
+  if (version && version !== CACHE_VERSION) {
+    localStorage.removeItem(CACHE_KEY)
+    localStorage.removeItem(CACHE_EXPIRY_KEY)
+    localStorage.removeItem(CACHE_VERSION_KEY)
+    return null
+  }
+
   const cachedLanguagesAreValid =
     cached &&
     expiry &&
