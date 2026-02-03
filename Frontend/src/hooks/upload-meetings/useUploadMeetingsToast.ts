@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 type NotificationType = 'uploading' | 'success' | 'error'
 export type ToastState = {
@@ -46,7 +46,7 @@ export function useUploadMeetingsToast(
     }
   }, [isPending, meetingsLen, serverError, success, uploadedCount])
 
-  const closeToast = () => setToast(null)
+  const closeToast = useCallback(() => setToast(null), [])
 
   return { toast, closeToast, setToast }
 }
