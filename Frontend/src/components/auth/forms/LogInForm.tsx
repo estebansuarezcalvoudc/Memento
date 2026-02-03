@@ -2,9 +2,9 @@ import { useActionState } from 'react'
 import { useNavigate, type NavigateFunction } from 'react-router-dom'
 
 import { useSetIsUserAuth, type SetIsUserAuth } from '../../../stores/authStore'
+import Input from '../../common/Input'
 import FormButton from './utils/FormButton'
 import FormErrors from './utils/FormErrors'
-import Input from './utils/Input'
 
 interface FormState {
   errors: null | string[]

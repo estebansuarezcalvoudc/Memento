@@ -1,5 +1,5 @@
 import { removeImage } from '../../assets/removeImage'
-import Input from './Input'
+import Input from '../common/Input'
 
 interface Meeting {
   id: string

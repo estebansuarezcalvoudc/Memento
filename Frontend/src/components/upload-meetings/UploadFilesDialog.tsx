@@ -49,4 +49,3 @@ export default function UploadFilesDialog({
     document.getElementById('upload-meetings-modal') as HTMLElement,
   )
 }
-

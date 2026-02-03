@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { BarLoader } from 'react-spinners'
 
-import { closeImage } from '../assets/buttonsImages'
+import { closeImage } from '../../assets/buttonsImages'
 
 type NotificationType = 'uploading' | 'success' | 'error'
 

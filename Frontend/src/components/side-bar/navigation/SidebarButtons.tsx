@@ -7,7 +7,7 @@ import {
 } from '../../../assets/buttonsImages'
 import UploadFilesDialog, {
   type UploadFilesDialogHandler,
-} from '../../upload-files/UploadFilesDialog'
+} from '../../upload-meetings/UploadFilesDialog'
 import { SidebarButton } from './SidebarButton'
 
 export default function SidebarButtons() {
