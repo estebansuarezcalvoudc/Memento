@@ -1,5 +1,7 @@
 import { removeImage } from '../../assets/removeImage'
+import { useLanguages } from '../../hooks/upload-meetings/useLanguages'
 import Input from '../common/Input'
+import Select from '../common/Select'
 
 interface Meeting {
   id: string
@@ -25,6 +27,8 @@ export default function MeetingForm({
   isPending,
   onRemove,
 }: MeetingFormProps) {
+  const { languages, isLoading: isLoadingLanguages } = useLanguages()
+
   return (
     <div
       key={meeting.id}
@@ -64,11 +68,12 @@ export default function MeetingForm({
           disabled={isPending}
         />
 
-        <Input
+        <Select
           label="Language (optional)"
           name={`meetings[${index}][language]`}
-          type="text"
-          disabled={isPending}
+          options={languages}
+          placeholder="Select a language"
+          disabled={isPending || isLoadingLanguages}
         />
 
         <Input
