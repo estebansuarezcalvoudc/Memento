@@ -99,8 +99,9 @@ export default function UploadMeetingsForm({
   useEffect(() => {
     if (formState.success) {
       setMeetings([createMeeting()])
+      onClose()
     }
-  }, [formState.success])
+  }, [formState.success, onClose])
 
   const { toast, closeToast } = useUploadMeetingsToast(
     isPending,
@@ -112,10 +113,6 @@ export default function UploadMeetingsForm({
 
   const handleSubmit = (formData: FormData) => {
     formAction(formData)
-
-    if (!formState.errors) {
-      onClose()
-    }
   }
 
   const addMeeting = () => {
