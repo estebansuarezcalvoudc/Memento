@@ -56,15 +56,21 @@ export function parseMeetingsFromFormData(
 
     const metadata: MeetingMetadata = { title, date }
 
-    if (language) metadata.language = language
+    if (language) {
+      metadata.language = language
+    }
 
     if (speakersStr) {
       const n = parseInt(speakersStr, 10)
-      if (!Number.isNaN(n)) metadata.number_of_speakers = n
+      if (!Number.isNaN(n)) {
+        metadata.number_of_speakers = n
+      }
     }
 
     meetingsMetadata.push(metadata)
-    if (audioFile) audioFiles.push(audioFile)
+    if (audioFile) {
+      audioFiles.push(audioFile)
+    }
 
     meetingIndex++
   }

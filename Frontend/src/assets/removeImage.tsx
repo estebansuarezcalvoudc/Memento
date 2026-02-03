@@ -16,5 +16,4 @@ export const removeImage = (
     <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
     <path d="M10 12l4 4m0 -4l-4 4" />
   </svg>
-);
-
+)

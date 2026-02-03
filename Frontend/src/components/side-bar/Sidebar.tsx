@@ -2,8 +2,8 @@ import { settingsImage } from '../../assets/buttonsImages'
 import { useIsSidebarOpen } from '../../stores/sidebarStore'
 import ChatsList from './chats-list/ChatsList'
 import Header from './header/Header'
-import SidebarButtons from './navigation/SidebarButtons'
 import { SidebarButton } from './navigation/SidebarButton'
+import SidebarButtons from './navigation/SidebarButtons'
 
 export default function Sidebar() {
   const isSidebarOpen = useIsSidebarOpen()
@@ -25,7 +25,7 @@ export default function Sidebar() {
       />
 
       <SidebarButton
-        type='button'
+        type="button"
         svg={settingsImage}
         text="Settings"
         onClick={() => console.log('Settings clicked')}
