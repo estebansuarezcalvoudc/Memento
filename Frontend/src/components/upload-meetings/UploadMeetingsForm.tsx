@@ -1,13 +1,14 @@
 import { useActionState, useEffect, useState } from 'react'
 
-import { useUploadMeetingsToast } from '../../hooks/upload-meetings/useUploadMeetingsToast'
 import {
   parseMeetingsFromFormData,
   type MeetingMetadata,
 } from '../../utils/upload-meetings/parseMeetingsFormData'
 import AddMeetingButton from './AddMeetingButton'
 import MeetingForm from './MeetingForm'
-import Notification from './Notification'
+import ServerErrorNotification from './notifications/ServerErrorNotification'
+import SuccessNotification from './notifications/SuccessNotification'
+import UploadingNotification from './notifications/UploadingNotification'
 import UploadMeetingsButton from './UploadMeetingsButton'
 
 interface Meeting {
@@ -16,30 +17,28 @@ interface Meeting {
 }
 
 interface FormState {
-  errors: null | string[]
+  validationErrors: null | string[]
   serverError?: boolean
+  uploadedMeetingsCount?: number
   success?: boolean
-  meetingsCount?: number
 }
 
 async function uploadMeetingsAction(
   _prevFormState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  try {
-    const parsed = parseMeetingsFromFormData(formData)
-    if (!parsed.ok) {
-      return { errors: parsed.errors }
-    }
+  const parsed = parseMeetingsFromFormData(formData)
 
-    return await processUploadMeetings(
-      parsed.meetingsMetadata,
-      parsed.audioFiles,
-    )
-  } catch (error) {
-    console.error('Error in uploadMeetingsAction:', error)
-    return { errors: ['An unexpected error occurred'] }
+  if (!parsed.ok) {
+    return { validationErrors: parsed.errors }
   }
+
+  const uploadResult = await processUploadMeetings(
+    parsed.meetingsMetadata,
+    parsed.audioFiles,
+  )
+
+  return uploadResult
 }
 
 async function processUploadMeetings(
@@ -64,17 +63,16 @@ async function processUploadMeetings(
     })
 
     if (!response.ok) {
-      return { errors: null, serverError: true }
+      return { validationErrors: null, serverError: true, success: false }
     }
 
     return {
-      errors: null,
       success: true,
-      meetingsCount: meetingsMetadata.length,
+      validationErrors: null,
+      uploadedMeetingsCount: meetingsMetadata.length,
     }
-  } catch (error) {
-    console.error('Error in processUploadMeetings:', error)
-    return { errors: null, serverError: true }
+  } catch {
+    return { validationErrors: null, serverError: true, success: false }
   }
 }
 
@@ -85,44 +83,53 @@ function createMeeting(): Meeting {
   }
 }
 
+type Notification = 'none' | 'uploading' | 'success' | 'serverError'
+
 export default function UploadMeetingsForm({
-  onClose,
+  handleCloseDialog,
 }: {
-  onClose: () => void
+  handleCloseDialog: () => void
 }) {
   const [meetings, setMeetings] = useState<Meeting[]>([createMeeting()])
+
   const [formState, formAction, isPending] = useActionState<
     FormState,
     FormData
-  >(uploadMeetingsAction, { errors: null })
+  >(uploadMeetingsAction, { validationErrors: null })
+
+  const [notification, setNotification] = useState<Notification>('none')
 
   useEffect(() => {
-    if (formState.success) {
-      setMeetings([createMeeting()])
-      onClose()
+    if (isPending) {
+      setNotification('uploading')
+    } else if (formState.success) {
+      setNotification('success')
+      //handleCloseDialog()
+    } else if (formState.serverError) {
+      setNotification('serverError')
     }
-  }, [formState.success, onClose])
-
-  const { toast, closeToast } = useUploadMeetingsToast(
-    isPending,
-    meetings.length,
-    formState.serverError,
-    formState.success,
-    formState.meetingsCount,
-  )
+  }, [isPending, formState.success, formState.serverError])
 
   const handleSubmit = (formData: FormData) => {
     formAction(formData)
   }
 
-  const addMeeting = () => {
-    setMeetings(prev => [...prev, createMeeting()])
-  }
+  const addMeeting = () => setMeetings(prev => [...prev, createMeeting()])
 
   const removeMeeting = (id: string) => {
-    if (meetings.length > 1) {
-      setMeetings(prev => prev.filter(meeting => meeting.id !== id))
-    }
+    setMeetings(prev =>
+      prev.length > 1 ? prev.filter(m => m.id !== id) : prev,
+
+    )
+  }
+
+  console.debug(`isPending: ${isPending}`)
+  console.debug(`formState.success: ${formState.success}`)
+  console.debug(`formState.serverError: ${formState.serverError}`)
+
+  const closeNotification = () => {
+    console.log('close notification called')
+    setNotification('none')
   }
 
   return (
@@ -138,23 +145,22 @@ export default function UploadMeetingsForm({
         />
       ))}
 
-      {formState.errors && (
-        <div className="mt-4 rounded-lg bg-red-100 p-3">
-          {formState.errors.map((error, i) => (
-            <p key={i} className="text-sm text-red-700">
-              {error}
-            </p>
-          ))}
-        </div>
+      {notification === 'uploading' && (
+        <UploadingNotification
+          numberOfMeetings={meetings.length}
+          onClose={closeNotification}
+        />
       )}
 
-      {toast && (
-        <Notification
-          key={toast.id}
-          type={toast.type}
-          message={toast.message}
-          onClose={closeToast}
+      {notification === 'success' && (
+        <SuccessNotification
+          numberOfMeetings={formState.uploadedMeetingsCount as number}
+          onClose={closeNotification}
         />
+      )}
+
+      {notification === 'serverError' && (
+        <ServerErrorNotification onClose={closeNotification} />
       )}
 
       <div className="mt-5 mb-4 flex justify-center gap-4">
