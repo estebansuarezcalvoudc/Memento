@@ -32,7 +32,7 @@ export default function UploadFilesDialog({
       ref={innerRef}
       aria-modal="true"
       aria-labelledby="upload-files-dialog-title"
-      className="fixed top-1/2 left-1/2 h-[80vh] max-h-[90vh] w-[90vw] max-w-4xl -translate-x-1/2 -translate-y-1/2 rounded-3xl bg-white px-4 pt-5 shadow-xl"
+      className="fixed top-1/2 left-1/2 z-[9990] h-[80vh] max-h-[90vh] w-[90vw] max-w-4xl -translate-x-1/2 -translate-y-1/2 rounded-3xl bg-white px-4 pt-5 shadow-xl"
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
           e.preventDefault()
@@ -58,7 +58,7 @@ export default function UploadFilesDialog({
         </button>
       </div>
       <div className="scroll-auto">
-        <UploadMeetingsForm onClose={handleClose} />
+        <UploadMeetingsForm handleCloseDialog={handleClose} />
       </div>
     </dialog>,
     document.getElementById('upload-meetings-modal') as HTMLElement,
