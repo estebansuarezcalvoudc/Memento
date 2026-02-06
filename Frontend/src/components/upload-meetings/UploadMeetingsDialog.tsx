@@ -4,18 +4,18 @@ import { createPortal } from 'react-dom'
 import { closeImage } from '../../assets/buttonsImages'
 import UploadMeetingsForm from './UploadMeetingsForm'
 
-export interface UploadFilesDialogHandler {
+export interface UploadMeetingsDialogHandler {
   open: () => void
   close: () => void
 }
 
-interface UploadFilesDialogProps {
-  dialogRef: React.RefObject<UploadFilesDialogHandler>
+interface UploadMeetingsDialogProps {
+  dialogRef: React.Ref<UploadMeetingsDialogHandler>
 }
 
-export default function UploadFilesDialog({
+export default function UploadMeetingsDialog({
   dialogRef,
-}: UploadFilesDialogProps) {
+}: UploadMeetingsDialogProps) {
   const innerRef = useRef<HTMLDialogElement>(null)
 
   useImperativeHandle(dialogRef, () => ({

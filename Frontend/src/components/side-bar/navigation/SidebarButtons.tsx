@@ -5,13 +5,13 @@ import {
   newChatImage,
   uploadMeetingsImage,
 } from '../../../assets/buttonsImages'
-import UploadFilesDialog, {
-  type UploadFilesDialogHandler,
-} from '../../upload-meetings/UploadFilesDialog'
+import UploadMeetingsDialog, {
+  type UploadMeetingsDialogHandler,
+} from '../../upload-meetings/UploadMeetingsDialog'
 import { SidebarButton } from './SidebarButton'
 
 export default function SidebarButtons() {
-  const dialogRef = useRef<UploadFilesDialogHandler>(null)
+  const dialogRef = useRef<UploadMeetingsDialogHandler>(null)
 
   const buttons = [
     { image: newChatImage, text: 'New Chat', link: 'new-chat' },
@@ -38,7 +38,7 @@ export default function SidebarButtons() {
         onClick={() => dialogRef.current?.open()}
       />
 
-      <UploadFilesDialog dialogRef={dialogRef} />
+      <UploadMeetingsDialog dialogRef={dialogRef} />
     </ul>
   )
 }
