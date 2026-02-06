@@ -2,15 +2,7 @@ import { removeImage } from '../../assets/removeImage'
 import { useLanguages } from '../../hooks/upload-meetings/useLanguages'
 import Input from '../common/Input'
 import Select from '../common/Select'
-
-interface Meeting {
-  id: string
-  title: string
-  audioFile?: File
-  meetingDate?: string
-  language?: string
-  speakers?: number
-}
+import { type Meeting } from './UploadMeetingsForm'
 
 interface MeetingFormProps {
   meeting: Meeting
@@ -58,6 +50,7 @@ export default function MeetingForm({
           type="text"
           required
           disabled={isPending}
+          defaultValue={meeting.title}
         />
 
         <Input
@@ -65,7 +58,7 @@ export default function MeetingForm({
           name={`meetings[${index}][date]`}
           type="date"
           required
-          defaultValue={today}
+          defaultValue={meeting.date || today}
           max={today}
           disabled={isPending}
         />
@@ -76,6 +69,8 @@ export default function MeetingForm({
           options={languages}
           placeholder="Select a language"
           disabled={isPending || isLoadingLanguages}
+          defaultValue={meeting.language}
+          key={`${meeting.id}-language-${meeting.language || 'none'}`}
         />
 
         <Input
@@ -84,6 +79,7 @@ export default function MeetingForm({
           type="number"
           min="2"
           disabled={isPending}
+          defaultValue={meeting.speakers}
         />
 
         <Input
