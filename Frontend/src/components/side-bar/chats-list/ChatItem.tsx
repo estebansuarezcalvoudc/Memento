@@ -1,5 +1,5 @@
-import { NavLink } from 'react-router-dom'
 import { useRef, useState } from 'react'
+import { NavLink } from 'react-router-dom'
 
 import ChatOptionsDropdown from './chat-options/ChatOptionsDropdown'
 
@@ -8,10 +8,7 @@ interface ChatItemProps {
   chatTitle: string
 }
 
-export default function ChatItem({
-  chatId,
-  chatTitle,
-}: ChatItemProps) {
+export default function ChatItem({ chatId, chatTitle }: ChatItemProps) {
   const [isDivHovered, setDivIsHovered] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 

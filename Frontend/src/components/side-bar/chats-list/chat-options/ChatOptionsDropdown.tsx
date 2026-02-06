@@ -47,18 +47,24 @@ function ChatActionsDropdown({
   const deleteChat = useDeleteChat()
 
   const handleRename = () => {
-    if (!inputRef.current) return
+    if (!inputRef.current) {
+      return
+    }
 
     inputRef.current.disabled = false
 
     setTimeout(() => {
-      if (!inputRef.current) return
+      if (!inputRef.current) {
+        return
+      }
       inputRef.current.focus()
       inputRef.current.select()
     }, 0)
 
     const saveChanges = async () => {
-      if (!inputRef.current) return
+      if (!inputRef.current) {
+        return
+      }
 
       inputRef.current.disabled = true
 
