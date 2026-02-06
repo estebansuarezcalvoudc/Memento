@@ -9,7 +9,7 @@ export default function UploadMeetingsButton({
     <button
       type="submit"
       disabled={isPending}
-      className="rounded-lg bg-blue-400 px-2 py-1.5 text-stone-800 disabled:opacity-50"
+      className="cursor-pointer rounded-lg bg-blue-400 px-2 py-1.5 text-stone-800 disabled:opacity-50"
     >
       {isPending ? 'Uploading...' : 'Submit'}
     </button>
