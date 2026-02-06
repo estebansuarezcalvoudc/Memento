@@ -31,14 +31,16 @@ export default function SidebarButtons() {
         </li>
       ))}
 
-      <SidebarButton
-        type="button"
-        svg={uploadMeetingsImage}
-        text="Upload Meetings"
-        onClick={() => dialogRef.current?.open()}
-      />
+      <li>
+        <SidebarButton
+          type="button"
+          svg={uploadMeetingsImage}
+          text="Upload Meetings"
+          onClick={() => dialogRef.current?.open()}
+        />
 
-      <UploadMeetingsDialog dialogRef={dialogRef} />
+        <UploadMeetingsDialog dialogRef={dialogRef} />
+      </li>
     </ul>
   )
 }
