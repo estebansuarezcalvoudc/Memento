@@ -29,7 +29,7 @@ export default function MeetingForm({
 }: MeetingFormProps) {
   const { languages, isLoading: isLoadingLanguages } = useLanguages()
 
-  const today =  new Date().toISOString().split('T')[0]
+  const today = new Date().toISOString().split('T')[0]
 
   return (
     <div
@@ -41,16 +41,14 @@ export default function MeetingForm({
           Meeting {index + 1}
         </span>
 
-        {meetingsCount > 1 && (
-          <button
-            type="button"
-            onClick={() => onRemove(meeting.id)}
-            disabled={isPending}
-            className="cursor-pointer rounded-xl p-2 text-stone-700 hover:bg-stone-300"
-          >
-            {removeImage}
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => onRemove(meeting.id)}
+          disabled={isPending || meetingsCount == 1}
+          className="cursor-pointer rounded-xl p-1 text-stone-700 hover:bg-stone-300 disabled:opacity-50"
+        >
+          {removeImage}
+        </button>
       </div>
 
       <div className="grid grid-cols-1 gap-x-10 sm:grid-cols-2 lg:grid-cols-3">
@@ -67,13 +65,13 @@ export default function MeetingForm({
           name={`meetings[${index}][date]`}
           type="date"
           required
-          value={today}
+          defaultValue={today}
           max={today}
           disabled={isPending}
         />
 
         <Select
-          label="Language (optional)"
+          label="Language"
           name={`meetings[${index}][language]`}
           options={languages}
           placeholder="Select a language"
@@ -81,7 +79,7 @@ export default function MeetingForm({
         />
 
         <Input
-          label="Number of speakers (optional)"
+          label="Number of speakers"
           name={`meetings[${index}][speakers]`}
           type="number"
           min="2"
