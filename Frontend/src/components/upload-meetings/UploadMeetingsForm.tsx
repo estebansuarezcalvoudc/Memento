@@ -12,9 +12,12 @@ import ServerErrorNotification from './notifications/ServerErrorNotification'
 import SuccessNotification from './notifications/SuccessNotification'
 import UploadingNotification from './notifications/UploadingNotification'
 
-interface Meeting {
+export interface Meeting {
   id: string
   title: string
+  date?: string
+  language?: string
+  speakers?: string
 }
 
 interface FormState {
@@ -102,7 +105,7 @@ export default function UploadMeetingsForm({
 
   useEffect(() => {
     if (formState.validationErrors) {
-      console.log('validation error')
+      setNotification('none')
       return
     }
 
@@ -117,6 +120,23 @@ export default function UploadMeetingsForm({
   }, [isPending, formState, handleCloseDialog])
 
   const handleSubmit = (formData: FormData) => {
+    const updatedMeetings = meetings.map((meeting, index) => {
+      const language = formData.get(`meetings[${index}][language]`) as string
+      return {
+        ...meeting,
+        title:
+          (formData.get(`meetings[${index}][title]`) as string) ||
+          meeting.title,
+        date:
+          (formData.get(`meetings[${index}][date]`) as string) || meeting.date,
+        language: language || meeting.language,
+        speakers:
+          (formData.get(`meetings[${index}][speakers]`) as string) ||
+          meeting.speakers,
+      }
+    })
+
+    setMeetings(updatedMeetings)
     formAction(formData)
   }
 
