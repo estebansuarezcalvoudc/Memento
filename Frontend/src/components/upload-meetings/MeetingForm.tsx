@@ -29,6 +29,8 @@ export default function MeetingForm({
 }: MeetingFormProps) {
   const { languages, isLoading: isLoadingLanguages } = useLanguages()
 
+  const today =  new Date().toISOString().split('T')[0]
+
   return (
     <div
       key={meeting.id}
@@ -65,6 +67,8 @@ export default function MeetingForm({
           name={`meetings[${index}][date]`}
           type="date"
           required
+          value={today}
+          max={today}
           disabled={isPending}
         />
 
