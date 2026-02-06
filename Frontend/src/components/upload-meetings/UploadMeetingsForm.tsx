@@ -4,12 +4,13 @@ import {
   parseMeetingsFromFormData,
   type MeetingMetadata,
 } from '../../utils/upload-meetings/parseMeetingsFormData'
+import FormButton from '../common/FormButton'
+import FormErrors from '../common/FormErrors'
 import AddMeetingButton from './AddMeetingButton'
 import MeetingForm from './MeetingForm'
 import ServerErrorNotification from './notifications/ServerErrorNotification'
 import SuccessNotification from './notifications/SuccessNotification'
 import UploadingNotification from './notifications/UploadingNotification'
-import UploadMeetingsButton from './UploadMeetingsButton'
 
 interface Meeting {
   id: string
@@ -100,6 +101,11 @@ export default function UploadMeetingsForm({
   const [notification, setNotification] = useState<Notification>('none')
 
   useEffect(() => {
+    if (formState.validationErrors) {
+      console.log('validation error')
+      return
+    }
+
     if (isPending) {
       setNotification('uploading')
     } else if (formState.success) {
@@ -108,7 +114,7 @@ export default function UploadMeetingsForm({
     } else if (formState.serverError) {
       setNotification('serverError')
     }
-  }, [isPending, formState.success, formState.serverError, handleCloseDialog])
+  }, [isPending, formState, handleCloseDialog])
 
   const handleSubmit = (formData: FormData) => {
     formAction(formData)
@@ -139,6 +145,8 @@ export default function UploadMeetingsForm({
         />
       ))}
 
+      {!isPending && <FormErrors errors={formState.validationErrors} />}
+
       {notification === 'uploading' && (
         <UploadingNotification
           numberOfMeetings={meetings.length}
@@ -159,7 +167,7 @@ export default function UploadMeetingsForm({
 
       <div className="mt-5 mb-4 flex justify-center gap-4">
         <AddMeetingButton onClick={addMeeting} isPending={isPending} />
-        <UploadMeetingsButton isPending={isPending} />
+        <FormButton isPending={isPending} text="Submit" />
       </div>
     </form>
   )

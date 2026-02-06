@@ -2,9 +2,9 @@ import { useActionState } from 'react'
 import { useNavigate, type NavigateFunction } from 'react-router-dom'
 
 import { useSetIsUserAuth, type SetIsUserAuth } from '../../../stores/authStore'
+import FormButton from '../../common/FormButton'
+import FormErrors from '../../common/FormErrors'
 import Input from '../../common/Input'
-import FormButton from './utils/FormButton'
-import FormErrors from './utils/FormErrors'
 
 interface FormState {
   errors: null | string[]
@@ -16,7 +16,10 @@ interface FormState {
 export default function SignUpForm() {
   const navigate = useNavigate()
   const setIsUserAuth = useSetIsUserAuth()
-  const [formState, formAction] = useActionState<FormState, FormData>(
+  const [formState, formAction, isPending] = useActionState<
+    FormState,
+    FormData
+  >(
     (prevState, formData) =>
       signupAction(prevState, formData, navigate, setIsUserAuth),
     {
@@ -43,7 +46,7 @@ export default function SignUpForm() {
 
       <FormErrors errors={formState.errors} />
 
-      <FormButton text="Sign up" />
+      <FormButton isPending={isPending} classes="mt-7 w-full" text="Sign up" />
     </form>
   )
 }
