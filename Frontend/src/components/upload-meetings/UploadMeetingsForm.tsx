@@ -104,11 +104,11 @@ export default function UploadMeetingsForm({
       setNotification('uploading')
     } else if (formState.success) {
       setNotification('success')
-      //handleCloseDialog()
+      handleCloseDialog()
     } else if (formState.serverError) {
       setNotification('serverError')
     }
-  }, [isPending, formState.success, formState.serverError])
+  }, [isPending, formState.success, formState.serverError, handleCloseDialog])
 
   const handleSubmit = (formData: FormData) => {
     formAction(formData)
@@ -119,16 +119,10 @@ export default function UploadMeetingsForm({
   const removeMeeting = (id: string) => {
     setMeetings(prev =>
       prev.length > 1 ? prev.filter(m => m.id !== id) : prev,
-
     )
   }
 
-  console.debug(`isPending: ${isPending}`)
-  console.debug(`formState.success: ${formState.success}`)
-  console.debug(`formState.serverError: ${formState.serverError}`)
-
   const closeNotification = () => {
-    console.log('close notification called')
     setNotification('none')
   }
 
