@@ -17,7 +17,7 @@ export default function Input({ label, ...props }: InputProps) {
       </label>
       <input
         id={id}
-        className="font-ubuntu h-8 rounded-lg bg-stone-300 px-2 text-base text-stone-800"
+        className={`font-ubuntu flex h-8 cursor-pointer items-center rounded-lg bg-stone-300 px-2 text-base text-stone-800 file:m-0 file:mr-2 file:h-full file:border-0 file:bg-transparent file:text-sm file:font-bold file:text-stone-800`}
         {...props}
       />
     </div>
