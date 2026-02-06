@@ -24,7 +24,7 @@ export default function SuccessNotification({
     <div
       role="status"
       aria-live="polite"
-      className="fixed right-6 bottom-6 flex items-center gap-3 rounded-lg bg-green-200 px-4 py-3 text-green-700 shadow-lg"
+      className="fixed right-6 bottom-6 flex items-center gap-3 rounded-lg bg-green-200 px-4 py-3 text-green-800 shadow-lg"
     >
       <span>{spanText}</span>
       <CloseNotificationButton onClick={onClose} />
