@@ -67,16 +67,17 @@ async def create_meetings(
     audios: list[UploadFile] = File(
         ..., description=create_meetings_docs.audios_file_description
     ),
-) -> None:
+) -> list[MeetingMetadataResponse]:
     _validate_audio_files(audios)
 
     try:
         audio_bytes_list = [await audio.read() for audio in audios]
 
         meeting_service = MeetingService()
-        meeting_service.process_meetings(
+        created_meetings = meeting_service.process_meetings(
             batch_request, audio_bytes_list, current_user.username
         )
+        return created_meetings
     except HTTPException:
         raise
     except Exception as e:
