@@ -60,10 +60,10 @@ export default function Meetings() {
   }
 
   return (
-    <>
-      <h1 className="font-ubuntu text-5xl font-bold text-stone-800 my-8">Meetings</h1>
+    <div className="flex min-h-screen w-full flex-col items-start justify-start p-8">
+      <h1 className="font-ubuntu text-5xl font-bold text-stone-800 mb-8">Meetings</h1>
       {meetingsContent}
-    </>
+    </div>
   )
 }
 
