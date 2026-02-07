@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { PropagateLoader } from 'react-spinners'
 
 import MeetingsList from '../components/meetings/MeetingList'
+import { useMeetings, useSetMeetings } from '../stores/meetingsStore'
 
 export interface Meeting {
   id: string
@@ -10,7 +11,8 @@ export interface Meeting {
 }
 
 export default function Meetings() {
-  const [meetings, setMeetings] = useState<Meeting[]>([])
+  const meetings = useMeetings()
+  const setMeetings = useSetMeetings()
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -30,7 +32,7 @@ export default function Meetings() {
     }
 
     fetchMeetings()
-  }, [])
+  }, [setMeetings])
 
   let meetingsContent
 
