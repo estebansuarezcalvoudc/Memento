@@ -6,12 +6,17 @@ export interface Meeting {
   date: string
 }
 
+interface UpdateMeeting{
+  title: string
+  date: string
+} 
+
 interface MeetingsStore {
   meetings: Meeting[]
   setMeetings: (meetings: Meeting[]) => void
   addMeeting: (meeting: Meeting) => void
   removeMeeting: (id: string) => void
-  updateMeeting: (id: string, meeting: Partial<Meeting>) => void
+  updateMeeting: (id: string, meeting: Partial<UpdateMeeting>) => void
 }
 
 const useMeetingsStore = create<MeetingsStore>(set => ({

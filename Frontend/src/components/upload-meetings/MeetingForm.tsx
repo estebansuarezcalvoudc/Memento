@@ -1,4 +1,4 @@
-import { removeImage } from '../../assets/removeImage'
+import { removeImage } from '../../assets/buttonsImages'
 import { useLanguages } from '../../hooks/upload-meetings/useLanguages'
 import Input from '../common/Input'
 import Select from '../common/Select'
