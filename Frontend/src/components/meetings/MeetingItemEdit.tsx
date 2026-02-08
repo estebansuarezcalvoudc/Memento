@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { cancelEditImage, confirmEditImage } from '../../assets/buttonsImages'
 import { type Meeting } from '../../pages/Meetings'
 import { useUpdateMeeting } from '../../stores/meetingsStore'
@@ -24,13 +26,16 @@ export default function MeetingItemEdit({
   startTransition,
 }: MeetingItemEditProps) {
   const updateMeetingInStore = useUpdateMeeting()
+  const [error, setError] = useState<string | null>(null)
 
   const handleTitleChange = (title: string) => {
     setEditState(prev => ({ ...prev, title }))
+    setError(null)
   }
 
   const handleDateChange = (date: string) => {
     setEditState(prev => ({ ...prev, date }))
+    setError(null)
   }
 
   const handleCancel = () => {
@@ -39,6 +44,7 @@ export default function MeetingItemEdit({
       title: meeting.title,
       date: meeting.date,
     })
+    setError(null)
   }
 
   const handleConfirm = async () => {
@@ -58,11 +64,7 @@ export default function MeetingItemEdit({
       return
     }
 
-    startTransition(() => {
-      onUpdateMeeting(meeting.id, updates)
-    })
-
-    setEditState(prev => ({ ...prev, isEditing: false }))
+    setError(null)
 
     try {
       const token = localStorage.getItem('access_token')
@@ -82,25 +84,38 @@ export default function MeetingItemEdit({
       })
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(`Failed to update meeting: ${response.status}`)
       }
 
+      // Only update after successful response
+      startTransition(() => {
+        onUpdateMeeting(meeting.id, updates)
+      })
+
       updateMeetingInStore(meeting.id, updates)
+      setEditState(prev => ({ ...prev, isEditing: false }))
     } catch (error) {
-      console.error('Error updating meeting:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to update meeting'
+      setError(errorMessage)
     }
   }
 
   return (
     <>
       <span className="font-ubuntu text-sm text-stone-500">{index}</span>
-      <input
-        type="text"
-        value={editState.title}
-        onChange={e => handleTitleChange(e.target.value)}
-        className="font-ubuntu h-6 truncate rounded border border-stone-300 px-2 text-base text-stone-800 focus:border-blue-500 focus:outline-none"
-        disabled={isPending}
-      />
+      <div className="flex flex-col gap-1">
+        <input
+          type="text"
+          value={editState.title}
+          onChange={e => handleTitleChange(e.target.value)}
+          className="font-ubuntu h-6 truncate rounded border border-stone-300 px-2 text-base text-stone-800 focus:border-blue-500 focus:outline-none"
+          disabled={isPending}
+        />
+        {error && (
+          <span className="font-ubuntu text-xs text-red-600">{error}</span>
+        )}
+      </div>
       <input
         type="date"
         value={editState.date}
