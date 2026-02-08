@@ -34,36 +34,38 @@ export default function Meetings() {
     fetchMeetings()
   }, [setMeetings])
 
-  let meetingsContent
+  let content
 
   if (loading) {
-    meetingsContent = (
-      <div>
+    content = (
+      <>
         <span className="font-ubuntu tet-stone-800 text-lg">
           Loading meetings
         </span>
         <PropagateLoader size={30} color="#1D4ED8" />
-      </div>
+      </>
     )
   } else if (error) {
-    meetingsContent = (
+    content = (
       <span className="font-ubuntu text-lg text-red-700">Error: {error}</span>
     )
   } else if (meetings.length === 0) {
-    meetingsContent = (
+    content = (
       <span className="font-ubuntu text-lg text-stone-800">
         You have not uploaded any meetings yet
       </span>
     )
   } else {
-    meetingsContent = <MeetingsList meetings={meetings} />
+    content = <MeetingsList meetings={meetings} />
   }
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-start p-8">
       <div className="w-fit">
-        <h1 className="font-ubuntu text-5xl font-bold text-stone-800 mb-6">Meetings</h1>
-        {meetingsContent}
+        <h1 className="font-ubuntu mb-6 text-5xl font-bold text-stone-800">
+          Meetings
+        </h1>
+        {content}
       </div>
     </div>
   )

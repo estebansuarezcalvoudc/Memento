@@ -6,7 +6,7 @@ export interface Meeting {
   date: string
 }
 
-interface UpdateMeeting{
+export interface UpdateMeeting{
   title: string
   date: string
 } 

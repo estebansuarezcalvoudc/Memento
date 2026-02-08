@@ -7,6 +7,10 @@ interface MeetingsListProps {
   meetings: Meeting[]
 }
 
+type OptimisticAction =
+  | { type: 'delete'; id: string }
+  | { type: 'update'; id: string; data: Partial<Meeting> }
+
 export default function MeetingsList({ meetings }: MeetingsListProps) {
   const [optimisticMeetings, updateOptimisticMeetings] = useOptimistic(
     meetings,
@@ -22,24 +26,19 @@ export default function MeetingsList({ meetings }: MeetingsListProps) {
   }
 
   const gridCols = 'grid-cols-[20px_500px_150px_auto_auto]'
+  const titlesClasses =
+    'font-ubuntu text-sm tracking-wide text-stone-500 uppercase'
 
   return (
     <div className="mx-auto w-fit">
       <div
         className={`grid ${gridCols} gap-6 border-b border-stone-300 px-4 py-3`}
       >
-        <span className="font-ubuntu text-sm tracking-wide text-stone-500 uppercase">
-          #
-        </span>
-        <span className="font-ubuntu text-sm tracking-wide text-stone-500 uppercase">
-          Título
-        </span>
-        <span className="font-ubuntu text-sm tracking-wide text-stone-500 uppercase">
-          Fecha
-        </span>
-        <span></span>
-        <span></span>
+        <span className={titlesClasses}>#</span>
+        <span className={titlesClasses}>Título</span>
+        <span className={titlesClasses}>Fecha</span>
       </div>
+
       <div className="flex flex-col">
         {optimisticMeetings.map((meeting, index) => (
           <MeetingItem
@@ -55,10 +54,6 @@ export default function MeetingsList({ meetings }: MeetingsListProps) {
     </div>
   )
 }
-
-type OptimisticAction =
-  | { type: 'delete'; id: string }
-  | { type: 'update'; id: string; data: Partial<Meeting> }
 
 function optimisticMeetingsReducer(
   state: Meeting[],
