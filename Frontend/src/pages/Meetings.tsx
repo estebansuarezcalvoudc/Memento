@@ -4,11 +4,7 @@ import { PropagateLoader } from 'react-spinners'
 import MeetingsList from '../components/meetings/MeetingList'
 import { useMeetings, useSetMeetings } from '../stores/meetingsStore'
 
-export interface Meeting {
-  id: string
-  title: string
-  date: string
-}
+export type { Meeting } from '../stores/meetingsStore'
 
 export default function Meetings() {
   const meetings = useMeetings()

@@ -28,8 +28,7 @@ export default function ChatsList() {
     }
 
     fetchConversations()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [setChats])
 
   let chatContent
 

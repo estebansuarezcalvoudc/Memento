@@ -1,6 +1,6 @@
 import { useState, useTransition } from 'react'
 
-import { type Meeting } from '../../pages/Meetings'
+import { type Meeting } from '../../store/types'
 import MeetingItemEdit from './MeetingItemEdit'
 import MeetingItemView from './MeetingItemView'
 

@@ -32,30 +32,36 @@ export default function MeetingItemView({
   }
 
   const handleDelete = async () => {
-    startTransition(() => {
-      onDeleteMeeting(meeting.id)
-    })
+    try {
+      const token = localStorage.getItem('access_token')
 
-    const token = localStorage.getItem('access_token')
+      if (!token) {
+        window.alert('You are not authorized to delete this meeting.')
+        return
+      }
 
-    if (!token) {
-      throw new Error('No access token found')
+      const url = `/api/meetings/${meeting.id}`
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      deleteMeetingFromStore(meeting.id)
+
+      startTransition(() => {
+        onDeleteMeeting(meeting.id)
+      })
+    } catch (error) {
+      console.error('Failed to delete meeting:', error)
+      window.alert('Failed to delete the meeting. Please try again.')
     }
-
-    const url = `/api/meetings/${meeting.id}`
-    const response = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    deleteMeetingFromStore(meeting.id)
   }
 
   return (
