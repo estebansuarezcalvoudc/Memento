@@ -1,6 +1,6 @@
 import { useOptimistic } from 'react'
 
-import { type Meeting } from '../../pages/Meetings'
+import { type Meeting } from '../../stores/meetingsStore'
 import MeetingItem from './MeetingItem'
 
 interface MeetingsListProps {

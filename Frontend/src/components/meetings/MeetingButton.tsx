@@ -15,7 +15,7 @@ export default function MeetingButton({
 }: MeetingButtonProps) {
   return (
     <button
-      className={`inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg p-1 hover:${bgColor} hover:${textColor} disabled:opacity-50`}
+      className={`inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg p-1 ${bgColor} ${textColor} disabled:opacity-50`}
       onClick={onClick}
       disabled={disabled}
     >

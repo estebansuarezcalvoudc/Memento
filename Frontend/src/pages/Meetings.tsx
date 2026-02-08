@@ -4,11 +4,7 @@ import { PropagateLoader } from 'react-spinners'
 import MeetingsList from '../components/meetings/MeetingList'
 import { useMeetings, useSetMeetings } from '../stores/meetingsStore'
 
-export interface Meeting {
-  id: string
-  title: string
-  date: string
-}
+export type { Meeting } from '../stores/meetingsStore'
 
 export default function Meetings() {
   const meetings = useMeetings()
@@ -39,7 +35,7 @@ export default function Meetings() {
   if (loading) {
     content = (
       <>
-        <span className="font-ubuntu tet-stone-800 text-lg">
+        <span className="font-ubuntu text-stone-800 text-lg">
           Loading meetings
         </span>
         <PropagateLoader size={30} color="#1D4ED8" />

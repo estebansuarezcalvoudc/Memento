@@ -1,6 +1,5 @@
 import { cancelEditImage, confirmEditImage } from '../../assets/buttonsImages'
-import { type Meeting } from '../../pages/Meetings'
-import { useUpdateMeeting } from '../../stores/meetingsStore'
+import { useUpdateMeeting, type Meeting } from '../../stores/meetingsStore'
 import MeetingButton from './MeetingButton'
 import { type EditState } from './MeetingItem'
 
@@ -111,15 +110,15 @@ export default function MeetingItemEdit({
       <MeetingButton
         image={confirmEditImage}
         onClick={handleConfirm}
-        bgColor="bg-green-200"
-        textColor="text-green-700"
+        bgColor="hover:bg-green-200"
+        textColor="hover:text-green-700"
         disabled={isPending}
       />
       <MeetingButton
         image={cancelEditImage}
         onClick={handleCancel}
-        bgColor="bg-red-200"
-        textColor="text-red-700"
+        bgColor="hover:bg-red-200"
+        textColor="hover:text-red-700"
         disabled={isPending}
       />
     </>

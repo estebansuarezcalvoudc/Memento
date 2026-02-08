@@ -1,8 +1,7 @@
 import { editImage, removeImage } from '../../assets/buttonsImages'
-import { type Meeting } from '../../pages/Meetings'
+import { useRemoveMeeting, type Meeting } from '../../stores/meetingsStore'
 import MeetingButton from './MeetingButton'
 import type { EditState } from './MeetingItem'
-import { useRemoveMeeting } from '../../stores/meetingsStore'
 
 interface MeetingItemViewProps {
   meeting: Meeting
@@ -32,30 +31,36 @@ export default function MeetingItemView({
   }
 
   const handleDelete = async () => {
-    startTransition(() => {
-      onDeleteMeeting(meeting.id)
-    })
+    try {
+      const token = localStorage.getItem('access_token')
 
-    const token = localStorage.getItem('access_token')
+      if (!token) {
+        window.alert('You are not authorized to delete this meeting.')
+        return
+      }
 
-    if (!token) {
-      throw new Error('No access token found')
+      const url = `/api/meetings/${meeting.id}`
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      deleteMeetingFromStore(meeting.id)
+
+      startTransition(() => {
+        onDeleteMeeting(meeting.id)
+      })
+    } catch (error) {
+      console.error('Failed to delete meeting:', error)
+      window.alert('Failed to delete the meeting. Please try again.')
     }
-
-    const url = `/api/meetings/${meeting.id}`
-    const response = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    deleteMeetingFromStore(meeting.id)
   }
 
   return (
@@ -70,15 +75,15 @@ export default function MeetingItemView({
       <MeetingButton
         image={editImage}
         onClick={handleEdit}
-        bgColor="bg-blue-200"
-        textColor="text-blue-700"
+        bgColor="hover:bg-blue-200"
+        textColor="hover:text-blue-700"
         disabled={isPending}
       />
       <MeetingButton
         image={removeImage}
         onClick={handleDelete}
-        bgColor="bg-red-200"
-        textColor="text-red-700"
+        bgColor="hover:bg-red-200"
+        textColor="hover:text-red-700"
         disabled={isPending}
       />
     </>
