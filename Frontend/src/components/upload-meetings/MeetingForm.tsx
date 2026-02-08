@@ -1,11 +1,11 @@
-import { removeImage } from '../../assets/removeImage'
+import { removeImage } from '../../assets/buttonsImages'
 import { useLanguages } from '../../hooks/upload-meetings/useLanguages'
 import Input from '../common/Input'
 import Select from '../common/Select'
-import { type Meeting } from './UploadMeetingsForm'
+import { type MeetingFormData } from './UploadMeetingsForm'
 
 interface MeetingFormProps {
-  meeting: Meeting
+  meeting: MeetingFormData
   index: number
   meetingsCount: number
   isPending: boolean

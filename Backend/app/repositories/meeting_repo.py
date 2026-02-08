@@ -68,7 +68,7 @@ class MeetingRepository:
         summary: str,
         transcription: str,
         username: str,
-    ) -> None:
+    ) -> MeetingMetadataResponse:
         # Convert date to datetime for MongoDB compatibility
         meeting_date_mongo = datetime.combine(
             meeting_metadata.date, datetime.min.time()
@@ -103,6 +103,13 @@ class MeetingRepository:
                 f"Failed to index meeting in elastic search, rolled back MongoDB insert: {str(e)}"
             )
             raise e
+        
+        return MeetingMetadataResponse(
+            id=str(result.inserted_id),
+            title=meeting_metadata.title,
+            date=meeting_metadata.date,
+            language=meeting_metadata.language,
+        )
 
     def retrieve_all_meetings_metadata(
         self, username: str

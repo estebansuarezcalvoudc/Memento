@@ -1,6 +1,10 @@
 import { useActionState, useEffect, useState } from 'react'
 
 import {
+  useAddMeeting,
+  type Meeting as StoreMeeting,
+} from '../../stores/meetingsStore'
+import {
   parseMeetingsFromFormData,
   type MeetingMetadata,
 } from '../../utils/upload-meetings/parseMeetingsFormData'
@@ -12,7 +16,7 @@ import ServerErrorNotification from './notifications/ServerErrorNotification'
 import SuccessNotification from './notifications/SuccessNotification'
 import UploadingNotification from './notifications/UploadingNotification'
 
-export interface Meeting {
+export interface MeetingFormData {
   id: string
   title: string
   date?: string
@@ -25,6 +29,7 @@ interface FormState {
   serverError?: boolean
   uploadedMeetingsCount?: number
   success?: boolean
+  newMeetings?: StoreMeeting[]
 }
 
 async function uploadMeetingsAction(
@@ -70,17 +75,20 @@ async function processUploadMeetings(
       return { validationErrors: null, serverError: true, success: false }
     }
 
+    const data = await response.json()
+
     return {
       success: true,
       validationErrors: null,
       uploadedMeetingsCount: meetingsMetadata.length,
+      newMeetings: data,
     }
   } catch {
     return { validationErrors: null, serverError: true, success: false }
   }
 }
 
-function createMeeting(): Meeting {
+function createMeeting(): MeetingFormData {
   return {
     id: crypto.randomUUID(),
     title: '',
@@ -94,7 +102,8 @@ export default function UploadMeetingsForm({
 }: {
   handleCloseDialog: () => void
 }) {
-  const [meetings, setMeetings] = useState<Meeting[]>([createMeeting()])
+  const [meetings, setMeetings] = useState<MeetingFormData[]>([createMeeting()])
+  const addMeetingToStore = useAddMeeting()
 
   const [formState, formAction, isPending] = useActionState<
     FormState,
@@ -113,11 +122,16 @@ export default function UploadMeetingsForm({
       setNotification('uploading')
     } else if (formState.success) {
       setNotification('success')
+
+      formState.newMeetings?.forEach(meeting => {
+        addMeetingToStore(meeting)
+      })
+
       handleCloseDialog()
     } else if (formState.serverError) {
       setNotification('serverError')
     }
-  }, [isPending, formState, handleCloseDialog])
+  }, [isPending, formState, handleCloseDialog, addMeetingToStore])
 
   const handleSubmit = (formData: FormData) => {
     const updatedMeetings = meetings.map((meeting, index) => {

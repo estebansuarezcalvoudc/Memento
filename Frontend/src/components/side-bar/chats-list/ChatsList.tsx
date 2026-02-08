@@ -4,8 +4,6 @@ import { useChats, useSetChats } from '../../../stores/chatsStore'
 import { useIsSidebarOpen } from '../../../stores/sidebarStore'
 import ChatItem from './ChatItem'
 
-type ChatListState = 'loading' | 'error' | 'empty' | 'loaded'
-
 export default function ChatsList() {
   const chats = useChats()
   const setChats = useSetChats()
@@ -17,8 +15,6 @@ export default function ChatsList() {
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        setLoading(true)
-        setError(null)
         const data = await retrieveChats()
         setChats(data)
       } catch (err) {
@@ -34,46 +30,28 @@ export default function ChatsList() {
     fetchConversations()
   }, [setChats])
 
-  const getState = (): ChatListState => {
-    if (loading) {
-      return 'loading'
-    }
-    if (error) {
-      return 'error'
-    }
-    if (chats.length === 0) {
-      return 'empty'
-    }
-    return 'loaded'
-  }
+  let chatContent
 
-  const renderChatContent = () => {
-    switch (getState()) {
-      case 'loading':
-        return (
-          <li className="p-4 text-center text-stone-400">
-            Loading conversations...
-          </li>
-        )
-      case 'error':
-        return <li className="p-4 text-center text-red-400">Error: {error}</li>
-      case 'empty':
-        return (
-          <li className="p-4 text-center text-stone-400">
-            No conversations yet
-          </li>
-        )
-      case 'loaded':
-        return chats.map(conversation => (
-          <ChatItem
-            key={conversation.id}
-            chatId={conversation.id}
-            chatTitle={conversation.title}
-          />
-        ))
-      default:
-        return null
-    }
+  if (loading) {
+    chatContent = (
+      <li className="p-4 text-center text-stone-400">
+        Loading conversations...
+      </li>
+    )
+  } else if (error) {
+    chatContent = <li className="p-4 text-center text-red-400">Error: {error}</li>
+  } else if (chats.length === 0) {
+    chatContent = (
+      <li className="p-4 text-center text-stone-400">No conversations yet</li>
+    )
+  } else {
+    chatContent = chats.map(conversation => (
+      <ChatItem
+        key={conversation.id}
+        chatId={conversation.id}
+        chatTitle={conversation.title}
+      />
+    ))
   }
 
   return (
@@ -88,7 +66,7 @@ export default function ChatsList() {
         Chats
       </h2>
       <ul className="custom-scrollbar flex-1 overflow-y-auto">
-        {renderChatContent()}
+        {chatContent}
       </ul>
     </div>
   )

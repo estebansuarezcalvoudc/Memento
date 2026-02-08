@@ -36,19 +36,23 @@ class MeetingService(metaclass=SingletonMeta):
         batch_request: CreateMeetingsBatchRequest,
         audio_bytes_list: list[bytes],
         username: str,
-    ) -> None:
+    ) -> list[MeetingMetadataResponse]:
         if len(batch_request.meetings_metadata) != len(audio_bytes_list):
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="The number of metadata objects must match the number of audio files",
             )
 
+        created_meetings = []
         for metadata, audio_bytes in zip(
             batch_request.meetings_metadata, audio_bytes_list
         ):
-            self._process_single_meeting(
+            created_meeting = self._process_single_meeting(
                 metadata, audio_bytes, batch_request.processing_configuration, username
             )
+            created_meetings.append(created_meeting)
+        
+        return created_meetings
 
     def _process_single_meeting(
         self,
@@ -56,7 +60,7 @@ class MeetingService(metaclass=SingletonMeta):
         audio_bytes: bytes,
         processing_config: ProcessingConfiguration,
         username: str,
-    ) -> None:
+    ) -> MeetingMetadataResponse:
         audio = self._get_audio_from_bytes(audio_bytes)
 
         transcription, meeting_metadata.language = get_transcribed_conversation(
@@ -69,9 +73,11 @@ class MeetingService(metaclass=SingletonMeta):
 
         summary = get_meeting_summary(transcription, processing_config)
 
-        self._repository.store_meeting(
+        created_meeting = self._repository.store_meeting(
             meeting_metadata, summary, transcription, username
         )
+        
+        return created_meeting
 
     def _get_audio_from_bytes(self, audio_bytes: bytes):
         with tempfile.NamedTemporaryFile(suffix=".wav") as temp_file:

@@ -15,7 +15,7 @@ export default function SidebarButtons() {
 
   const buttons = [
     { image: newChatImage, text: 'New Chat', link: 'new-chat' },
-    { image: meetingsImage, text: 'My Meetings', link: '' },
+    { image: meetingsImage, text: 'My Meetings', link: 'meetings' },
   ]
 
   return (
