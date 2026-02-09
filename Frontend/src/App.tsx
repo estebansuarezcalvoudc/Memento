@@ -5,6 +5,7 @@ import Chat from './pages/Chat'
 import Home from './pages/Home'
 import LogIn from './pages/LogIn'
 import Meetings from './pages/Meetings'
+import MeetingTranscription from './pages/MeetingTranscription'
 import NewChat from './pages/NewChat'
 import NotFound from './pages/NotFound'
 import SignUp from './pages/SignUp'
@@ -29,6 +30,10 @@ export default function App() {
           <Route path="chats/:chatId" element={<Chat />} />
           <Route path="new-chat" element={<NewChat />} />
           <Route path="meetings" element={<Meetings />} />
+          <Route
+            path="meetings/:meetingId/transcription"
+            element={<MeetingTranscription />}
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
