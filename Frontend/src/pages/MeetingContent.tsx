@@ -44,6 +44,11 @@ export default function MeetingContent({ type }: MeetingContentProps) {
   }[type]
 
   useEffect(() => {
+    // Reset state when changing content type
+    setLoading(true)
+    setContent('')
+    setError('')
+    
     const fetchMeetingContent = async () => {
       try {
         const data = await retrieveMeetingContent(
@@ -74,12 +79,14 @@ export default function MeetingContent({ type }: MeetingContentProps) {
     displayContent = (
       <span className="font-ubuntu text-lg text-red-700">Error: {error}</span>
     )
-  } else {
+  } else if (content) {
     if (type === 'summary') {
       displayContent = <MeetingSummary content={content} />
     } else {
       displayContent = <MeetingTranscription content={content} />
     }
+  } else {
+    displayContent = null
   }
 
   return (
