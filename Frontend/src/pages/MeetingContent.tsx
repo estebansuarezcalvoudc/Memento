@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, useParams } from 'react-router-dom'
 
 import { arrowBack } from '../assets/buttonsImages'
+import PageContainer from '../components/layout/PageContainer'
 import Header from '../components/meetings/Header'
 import MeetingSummary from './MeetingSummary'
 import MeetingTranscription from './MeetingTranscription'
@@ -90,28 +91,26 @@ export default function MeetingContent({ type }: MeetingContentProps) {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center justify-start p-8">
-      <div className="w-fit">
-        <div className="mb-6 flex items-center justify-between gap-8">
-          <div className="flex items-center gap-3">
-            <NavLink
-              to="/meetings"
-              className="rounded-full p-2 text-stone-800 hover:bg-blue-200 hover:text-blue-700"
-            >
-              {arrowBack}
-            </NavLink>
-            <Header text={config.title} />
-          </div>
-          <NavLink 
-            to={config.otherLink.path} 
-            className="font-ubuntu text-xl bg-lime-400 px-4 py-2 rounded-xl text-stone-800 hover:bg-lime-500"
+    <PageContainer>
+      <div className="mb-6 flex items-center justify-between gap-8">
+        <div className="flex items-center gap-3">
+          <NavLink
+            to="/meetings"
+            className="rounded-full p-2 text-stone-800 hover:bg-blue-200 hover:text-blue-700"
           >
-            {config.otherLink.text}
+            {arrowBack}
           </NavLink>
+          <Header text={config.title} />
         </div>
-        {displayContent}
+        <NavLink 
+          to={config.otherLink.path} 
+          className="font-ubuntu text-xl bg-lime-400 px-4 py-2 rounded-xl text-stone-800 hover:bg-lime-500"
+        >
+          {config.otherLink.text}
+        </NavLink>
       </div>
-    </div>
+      {displayContent}
+    </PageContainer>
   )
 }
 

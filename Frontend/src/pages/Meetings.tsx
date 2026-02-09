@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import PageContainer from '../components/layout/PageContainer'
 import Header from '../components/meetings/Header'
 import MeetingsList from '../components/meetings/MeetingList'
 import { useMeetings, useSetMeetings } from '../stores/meetingsStore'
@@ -55,12 +56,10 @@ export default function Meetings() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center justify-start p-8">
-      <div className="w-fit">
-        <Header text="Meetings" />
-        <div className="mt-6">{content}</div>
-      </div>
-    </div>
+    <PageContainer>
+      <Header text="Meetings" />
+      <div className="mt-6">{content}</div>
+    </PageContainer>
   )
 }
 
