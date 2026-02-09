@@ -3,6 +3,8 @@ import { NavLink, useParams } from 'react-router-dom'
 
 import { arrowBack } from '../assets/buttonsImages'
 import Header from '../components/meetings/Header'
+import MeetingSummary from './MeetingSummary'
+import MeetingTranscription from './MeetingTranscription'
 
 type ContentType = 'transcription' | 'summary'
 
@@ -44,7 +46,10 @@ export default function MeetingContent({ type }: MeetingContentProps) {
   useEffect(() => {
     const fetchMeetingContent = async () => {
       try {
-        const data = await retrieveMeetingContent(config.endpoint, config.dataKey)
+        const data = await retrieveMeetingContent(
+          config.endpoint,
+          config.dataKey,
+        )
         setContent(data)
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error'
@@ -70,23 +75,29 @@ export default function MeetingContent({ type }: MeetingContentProps) {
       <span className="font-ubuntu text-lg text-red-700">Error: {error}</span>
     )
   } else {
-    displayContent = <span>{content}</span>
+    if (type === 'summary') {
+      displayContent = <MeetingSummary content={content} />
+    } else {
+      displayContent = <MeetingTranscription content={content} />
+    }
   }
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-start p-8">
       <div className="w-fit">
-        <div className="mb-6 flex items-center gap-3">
-          <NavLink
-            to="/meetings"
-            className="rounded-full p-2 text-stone-800 hover:bg-blue-200 hover:text-blue-700"
-          >
-            {arrowBack}
-          </NavLink>
-          <Header text={config.title} />
-          <NavLink
-            to={config.otherLink.path}
-            className="font-ubuntu text-2xl"
+        <div className="mb-6 flex items-center justify-between gap-8">
+          <div className="flex items-center gap-3">
+            <NavLink
+              to="/meetings"
+              className="rounded-full p-2 text-stone-800 hover:bg-blue-200 hover:text-blue-700"
+            >
+              {arrowBack}
+            </NavLink>
+            <Header text={config.title} />
+          </div>
+          <NavLink 
+            to={config.otherLink.path} 
+            className="font-ubuntu text-xl bg-lime-400 px-4 py-2 rounded-xl text-stone-800 hover:bg-lime-500"
           >
             {config.otherLink.text}
           </NavLink>

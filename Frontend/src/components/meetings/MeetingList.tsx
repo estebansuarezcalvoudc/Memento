@@ -35,8 +35,8 @@ export default function MeetingsList({ meetings }: MeetingsListProps) {
         className={`grid ${gridCols} gap-6 border-b border-stone-300 px-4 py-3`}
       >
         <span className={titlesClasses}>#</span>
-        <span className={titlesClasses}>Título</span>
-        <span className={titlesClasses}>Fecha</span>
+        <span className={titlesClasses}>Title</span>
+        <span className={titlesClasses}>Date</span>
       </div>
 
       <div className="flex flex-col">

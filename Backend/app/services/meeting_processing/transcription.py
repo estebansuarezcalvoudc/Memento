@@ -105,9 +105,12 @@ def _create_diarized_dialogue(diarized_conversation):
             continue
 
         if conversation:
-            conversation += "\n\n\n"
+            conversation += "</p>"
 
-        conversation += f"{speaker}:\n    {text.strip()}"
+        conversation += f"<p><strong>{speaker}:</strong> {text.strip()}"
         current_speaker = speaker
+
+    if conversation:
+        conversation += "</p>"
 
     return conversation
