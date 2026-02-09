@@ -4,8 +4,8 @@ import Sidebar from './components/side-bar/Sidebar'
 import Chat from './pages/Chat'
 import Home from './pages/Home'
 import LogIn from './pages/LogIn'
+import MeetingContent from './pages/MeetingContent'
 import Meetings from './pages/Meetings'
-import MeetingTranscription from './pages/MeetingTranscription'
 import NewChat from './pages/NewChat'
 import NotFound from './pages/NotFound'
 import SignUp from './pages/SignUp'
@@ -32,7 +32,11 @@ export default function App() {
           <Route path="meetings" element={<Meetings />} />
           <Route
             path="meetings/:meetingId/transcription"
-            element={<MeetingTranscription />}
+            element={<MeetingContent type="transcription" />}
+          />
+          <Route
+            path="meetings/:meetingId/summary"
+            element={<MeetingContent type="summary" />}
           />
           <Route path="*" element={<NotFound />} />
         </Routes>

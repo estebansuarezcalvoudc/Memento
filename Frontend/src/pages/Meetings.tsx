@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 
+import Header from '../components/meetings/Header'
 import MeetingsList from '../components/meetings/MeetingList'
 import { useMeetings, useSetMeetings } from '../stores/meetingsStore'
-import Header from '../components/meetings/Header'
 
 export type { Meeting } from '../stores/meetingsStore'
 
@@ -35,7 +35,7 @@ export default function Meetings() {
   if (loading) {
     content = (
       <>
-        <span className="font-ubuntu text-stone-800 text-lg">
+        <span className="font-ubuntu text-lg text-stone-800">
           Loading meetings
         </span>
       </>
@@ -57,8 +57,8 @@ export default function Meetings() {
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-start p-8">
       <div className="w-fit">
-        <Header text='Meetings' />
-        {content}
+        <Header text="Meetings" />
+        <div className="mt-6">{content}</div>
       </div>
     </div>
   )
