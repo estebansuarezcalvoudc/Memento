@@ -1,3 +1,5 @@
+import { NavLink } from 'react-router-dom'
+
 import { editImage, removeImage } from '../../assets/buttonsImages'
 import { useRemoveMeeting, type Meeting } from '../../stores/meetingsStore'
 import MeetingButton from './MeetingButton'
@@ -66,9 +68,12 @@ export default function MeetingItemView({
   return (
     <>
       <span className="font-ubuntu text-sm text-stone-500">{index}</span>
-      <span className="font-ubuntu truncate text-base text-stone-800">
+      <NavLink
+        to={`/meetings/${meeting.id}/transcription`}
+        className="font-ubuntu truncate text-base text-stone-800"
+      >
         {meeting.title}
-      </span>
+      </NavLink>
       <span className="font-ubuntu text-base text-stone-600">
         {meeting.date}
       </span>

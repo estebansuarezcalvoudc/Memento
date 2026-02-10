@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { PropagateLoader } from 'react-spinners'
 
+import PageContainer from '../components/layout/PageContainer'
+import Header from '../components/meetings/Header'
 import MeetingsList from '../components/meetings/MeetingList'
 import { useMeetings, useSetMeetings } from '../stores/meetingsStore'
 
@@ -35,10 +36,9 @@ export default function Meetings() {
   if (loading) {
     content = (
       <>
-        <span className="font-ubuntu text-stone-800 text-lg">
+        <span className="font-ubuntu text-lg text-stone-800">
           Loading meetings
         </span>
-        <PropagateLoader size={30} color="#1D4ED8" />
       </>
     )
   } else if (error) {
@@ -56,14 +56,10 @@ export default function Meetings() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center justify-start p-8">
-      <div className="w-fit">
-        <h1 className="font-ubuntu mb-6 text-5xl font-bold text-stone-800">
-          Meetings
-        </h1>
-        {content}
-      </div>
-    </div>
+    <PageContainer>
+      <Header text="Meetings" />
+      <div className="mt-6">{content}</div>
+    </PageContainer>
   )
 }
 
