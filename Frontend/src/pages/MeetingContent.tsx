@@ -13,9 +13,15 @@ interface MeetingContentProps {
   type: ContentType
 }
 
+interface MeetingData {
+  content: string
+  title: string
+  date: string
+}
+
 export default function MeetingContent({ type }: MeetingContentProps) {
   const { meetingId } = useParams<{ meetingId: string }>()
-  const [content, setContent] = useState('')
+  const [meetingData, setMeetingData] = useState<MeetingData | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -47,7 +53,7 @@ export default function MeetingContent({ type }: MeetingContentProps) {
   useEffect(() => {
     // Reset state when changing content type
     setLoading(true)
-    setContent('')
+    setMeetingData(null)
     setError('')
     
     const fetchMeetingContent = async () => {
@@ -56,7 +62,7 @@ export default function MeetingContent({ type }: MeetingContentProps) {
           config.endpoint,
           config.dataKey,
         )
-        setContent(data)
+        setMeetingData(data)
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error'
         setError(`${config.errorText}: ${message}`)
@@ -80,11 +86,11 @@ export default function MeetingContent({ type }: MeetingContentProps) {
     displayContent = (
       <span className="font-ubuntu text-lg text-red-700">Error: {error}</span>
     )
-  } else if (content) {
+  } else if (meetingData) {
     if (type === 'summary') {
-      displayContent = <MeetingSummary content={content} />
+      displayContent = <MeetingSummary content={meetingData.content} />
     } else {
-      displayContent = <MeetingTranscription content={content} />
+      displayContent = <MeetingTranscription content={meetingData.content} />
     }
   } else {
     displayContent = null
@@ -109,12 +115,20 @@ export default function MeetingContent({ type }: MeetingContentProps) {
           {config.otherLink.text}
         </NavLink>
       </div>
+      {meetingData && (
+        <div className="mb-8 font-ubuntu text-2xl text-stone-600">
+          {meetingData.title} - {meetingData.date}
+        </div>
+      )}
       {displayContent}
     </PageContainer>
   )
 }
 
-async function retrieveMeetingContent(endpoint: string, dataKey: string) {
+async function retrieveMeetingContent(
+  endpoint: string,
+  dataKey: string,
+): Promise<MeetingData> {
   const token = localStorage.getItem('access_token')
   if (!token) {
     throw new Error('No access token found')
@@ -133,5 +147,9 @@ async function retrieveMeetingContent(endpoint: string, dataKey: string) {
   }
 
   const data = await response.json()
-  return data[dataKey]
+  return {
+    content: data[dataKey],
+    title: data.title,
+    date: data.date,
+  }
 }

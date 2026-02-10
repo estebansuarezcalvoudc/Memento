@@ -103,7 +103,7 @@ class MeetingRepository:
                 f"Failed to index meeting in elastic search, rolled back MongoDB insert: {str(e)}"
             )
             raise e
-        
+
         return MeetingMetadataResponse(
             id=str(result.inserted_id),
             title=meeting_metadata.title,
@@ -133,7 +133,7 @@ class MeetingRepository:
         self, id: str, username: str
     ) -> MeetingSummaryResponse:
         result = self._collection.find_one(
-            {"username": username, "_id": ObjectId(id)}, {"_id": False, "summary": True}
+            {"username": username, "_id": ObjectId(id)}, {"_id": False, "summary": True, "title": True, "date": True}
         )
 
         if not result:
@@ -142,14 +142,14 @@ class MeetingRepository:
                 detail=f"Meeting with id={id} for user={username} not found",
             )
 
-        return MeetingSummaryResponse(summary=result["summary"])
+        return MeetingSummaryResponse(summary=result["summary"], title=result["title"], date=result["date"])
 
     def retrieve_meeting_transcription(
         self, id: str, username: str
     ) -> MeetingTranscriptionResponse:
         result = self._collection.find_one(
             {"username": username, "_id": ObjectId(id)},
-            {"_id": False, "transcription": True},
+            {"_id": False, "transcription": True, "title": True, "date": True},
         )
 
         if not result:
@@ -158,7 +158,9 @@ class MeetingRepository:
                 detail=f"Meeting with id={id} not found",
             )
 
-        return MeetingTranscriptionResponse(transcription=result["transcription"])
+        return MeetingTranscriptionResponse(
+            transcription=result["transcription"], title=result["title"], date=result["date"]
+        )
 
     @handle_invalid_id
     def update_meeting_metadata(
