@@ -129,6 +129,7 @@ class MeetingRepository:
             for meeting_metadata in result
         ]
 
+    @handle_invalid_id
     def retrieve_meeting_summary(
         self, id: str, username: str
     ) -> MeetingSummaryResponse:
@@ -144,6 +145,7 @@ class MeetingRepository:
 
         return MeetingSummaryResponse(summary=result["summary"], title=result["title"], date=result["date"])
 
+    @handle_invalid_id
     def retrieve_meeting_transcription(
         self, id: str, username: str
     ) -> MeetingTranscriptionResponse:
