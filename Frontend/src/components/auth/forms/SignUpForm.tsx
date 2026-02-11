@@ -1,6 +1,7 @@
 import { useActionState } from 'react'
 import { useNavigate, type NavigateFunction } from 'react-router-dom'
 
+import useAuthAPI from '../../../api/useAuthAPI'
 import { useSetIsUserAuth, type SetIsUserAuth } from '../../../stores/authStore'
 import FormButton from '../../common/FormButton'
 import FormErrors from '../../common/FormErrors'
@@ -16,12 +17,13 @@ interface FormState {
 export default function SignUpForm() {
   const navigate = useNavigate()
   const setIsUserAuth = useSetIsUserAuth()
+  const { register } = useAuthAPI()
   const [formState, formAction, isPending] = useActionState<
     FormState,
     FormData
   >(
     (prevState, formData) =>
-      signupAction(prevState, formData, navigate, setIsUserAuth),
+      signupAction(prevState, formData, navigate, setIsUserAuth, register),
     {
       errors: null,
     },
@@ -56,6 +58,7 @@ async function signupAction(
   formData: FormData,
   navigate: NavigateFunction,
   setIsUserAuth: SetIsUserAuth,
+  register: (email: string, password: string) => Promise<{ access_token: string; token_type: string }>,
 ): Promise<FormState> {
   const email = (formData.get('email') ?? '') as string
   const password = (formData.get('password') ?? '') as string
@@ -86,12 +89,7 @@ async function signupAction(
     }
   }
 
-  return await processSignup(email, password, navigate, setIsUserAuth)
-}
-
-interface SignupResponse {
-  access_token: string
-  token_type: string
+  return await processSignup(email, password, navigate, setIsUserAuth, register)
 }
 
 async function processSignup(
@@ -99,15 +97,10 @@ async function processSignup(
   password: string,
   navigate: NavigateFunction,
   setIsUserAuth: SetIsUserAuth,
+  register: (email: string, password: string) => Promise<{ access_token: string; token_type: string }>,
 ): Promise<FormState> {
   try {
-    const response = await sendSignupData(email, password)
-
-    if (!response.ok) {
-      return await handleSignupError(response, email)
-    }
-
-    const data: SignupResponse = await response.json()
+    const data = await register(email, password)
     const { access_token } = data
     localStorage.setItem('access_token', access_token)
     setIsUserAuth(true)
@@ -118,51 +111,10 @@ async function processSignup(
       errors: null,
       enteredValues: { email },
     }
-  } catch {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Could not sign up'
     return {
-      errors: ['Network error or server unavailable'],
-      enteredValues: { email },
-    }
-  }
-}
-
-async function sendSignupData(
-  email: string,
-  password: string,
-): Promise<Response> {
-  return await fetch('/api/auth/register', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      username: email,
-      password,
-    }),
-  })
-}
-
-async function handleSignupError(
-  response: Response,
-  email: string,
-): Promise<FormState> {
-  if (response.status !== 400) {
-    const errorData = await response.text()
-    return {
-      errors: [`Signup failed: ${errorData || response.statusText}`],
-      enteredValues: { email },
-    }
-  }
-
-  try {
-    const errorData = await response.json()
-    return {
-      errors: [errorData.detail || 'Could not sign up'],
-      enteredValues: { email },
-    }
-  } catch {
-    return {
-      errors: ['Could not sign up'],
+      errors: [errorMessage],
       enteredValues: { email },
     }
   }

@@ -1,6 +1,7 @@
 import { useActionState } from 'react'
 import { useNavigate, type NavigateFunction } from 'react-router-dom'
 
+import useAuthAPI from '../../../api/useAuthAPI'
 import { useSetIsUserAuth, type SetIsUserAuth } from '../../../stores/authStore'
 import FormButton from '../../common/FormButton'
 import FormErrors from '../../common/FormErrors'
@@ -16,12 +17,13 @@ interface FormState {
 export default function LogInForm() {
   const navigate = useNavigate()
   const setIsUserAuth = useSetIsUserAuth()
+  const { login } = useAuthAPI()
   const [formState, formAction, isPending] = useActionState<
     FormState,
     FormData
   >(
     (prevState, formData) =>
-      loginAction(prevState, formData, navigate, setIsUserAuth),
+      loginAction(prevState, formData, navigate, setIsUserAuth, login),
     {
       errors: null,
     },
@@ -50,6 +52,7 @@ async function loginAction(
   formData: FormData,
   navigate: NavigateFunction,
   setIsUserAuth: SetIsUserAuth,
+  login: (email: string, password: string) => Promise<{ access_token: string; token_type: string }>,
 ): Promise<FormState> {
   const email = (formData.get('email') ?? '') as string
   const password = (formData.get('password') ?? '') as string
@@ -71,12 +74,7 @@ async function loginAction(
     }
   }
 
-  return await processLogin(email, password, navigate, setIsUserAuth)
-}
-
-interface LoginResponse {
-  access_token: string
-  token_type: string
+  return await processLogin(email, password, navigate, setIsUserAuth, login)
 }
 
 async function processLogin(
@@ -84,15 +82,10 @@ async function processLogin(
   password: string,
   navigate: NavigateFunction,
   setIsUserAuth: SetIsUserAuth,
+  login: (email: string, password: string) => Promise<{ access_token: string; token_type: string }>,
 ): Promise<FormState> {
   try {
-    const response = await sendLoginData(email, password)
-
-    if (!response.ok) {
-      return await handleLoginError(response, email)
-    }
-
-    const data: LoginResponse = await response.json()
+    const data = await login(email, password)
     const { access_token } = data
     localStorage.setItem('access_token', access_token)
     setIsUserAuth(true)
@@ -103,49 +96,10 @@ async function processLogin(
       errors: null,
       enteredValues: { email },
     }
-  } catch {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Invalid credentials'
     return {
-      errors: ['Network error or server unavailable'],
-      enteredValues: { email },
-    }
-  }
-}
-
-async function sendLoginData(
-  email: string,
-  password: string,
-): Promise<Response> {
-  const formData = new FormData()
-  formData.append('username', email)
-  formData.append('password', password)
-
-  return await fetch('/api/auth/token', {
-    method: 'POST',
-    body: formData,
-  })
-}
-
-async function handleLoginError(
-  response: Response,
-  email: string,
-): Promise<FormState> {
-  if (response.status !== 401) {
-    const errorData = await response.text()
-    return {
-      errors: [`Login failed: ${errorData || response.statusText}`],
-      enteredValues: { email },
-    }
-  }
-
-  try {
-    const errorData = await response.json()
-    return {
-      errors: [errorData.detail || 'Invalid credentials'],
-      enteredValues: { email },
-    }
-  } catch {
-    return {
-      errors: ['Invalid credentials'],
+      errors: [errorMessage],
       enteredValues: { email },
     }
   }
