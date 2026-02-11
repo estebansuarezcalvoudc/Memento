@@ -1,6 +1,12 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { useEffect, type RefObject } from 'react'
 
+import useChatsAPI from '../../../../api/useChatsAPI'
+import {
+  editImage,
+  optionsImage,
+  removeImage,
+} from '../../../../assets/buttonsImages'
 import { useDeleteChat } from '../../../../stores/chatsStore'
 import ChatOptionsButton from './ChatOptionButton'
 
@@ -44,83 +50,41 @@ function ChatActionsDropdown({
 }: ChatActionsDropdownProps) {
   useEffect(() => onMenuStateChange(open), [open, onMenuStateChange])
 
-  const deleteChat = useDeleteChat()
+  const deleteChatFromStore = useDeleteChat()
+  const { updateChatTitle, deleteChat } = useChatsAPI()
 
   const handleRename = () => {
-    if (!inputRef.current) {
+    const input = inputRef.current
+    if (!input) {
       return
     }
 
-    inputRef.current.disabled = false
+    input.disabled = false
 
-    setTimeout(() => {
-      if (!inputRef.current) {
-        return
-      }
-      inputRef.current.focus()
-      inputRef.current.select()
-    }, 0)
+    requestAnimationFrame(() => {
+      input?.focus()
+      input?.select()
+    })
 
     const saveChanges = async () => {
-      if (!inputRef.current) {
+      if (!input) {
         return
       }
-
-      inputRef.current.disabled = true
-
-      const token = localStorage.getItem('access_token')
-
-      if (!token) {
-        throw new Error('No access token found')
-      }
-
-      const url = `/api/conversations/${chatId}`
-      const response = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: inputRef.current.value,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
+      input.disabled = true
+      await updateChatTitle(chatId, input.value)
     }
 
-    inputRef.current.onblur = saveChanges
-
-    inputRef.current.onkeydown = event => {
-      if (event.key === 'Enter' && inputRef.current) {
-        inputRef.current.blur()
+    input.onblur = saveChanges
+    input.onkeydown = e => {
+      if (e.key === 'Enter') {
+        input?.blur()
       }
     }
   }
 
   const handleDelete = async () => {
-    const token = localStorage.getItem('access_token')
-
-    if (!token) {
-      throw new Error('No access token found')
-    }
-
-    const url = `/api/conversations/${chatId}`
-    const response = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    deleteChat(chatId)
+    await deleteChat(chatId)
+    deleteChatFromStore(chatId)
   }
 
   return (
@@ -144,77 +108,14 @@ function ChatActionsDropdown({
         </MenuItem>
         <MenuItem>
           <ChatOptionsButton
-            svg={deleteImage}
+            svg={removeImage}
             text="Delete"
             textColor="text-red-500"
             hoverColor="hover:bg-red-50"
-            onClick={() => {
-              handleDelete()
-            }}
+            onClick={handleDelete}
           />
         </MenuItem>
       </MenuItems>
     </div>
   )
 }
-
-const optionsImage = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="#000000"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="icon icon-tabler icons-tabler-outline icon-tabler-dots mr-1.5"
-  >
-    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-    <path d="M5 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
-    <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
-    <path d="M19 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
-  </svg>
-)
-
-const editImage = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="icon icon-tabler icons-tabler-outline icon-tabler-pencil"
-  >
-    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-    <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
-    <path d="M13.5 6.5l4 4" />
-  </svg>
-)
-
-const deleteImage = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="icon icon-tabler icons-tabler-outline icon-tabler-trash"
-  >
-    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-    <path d="M4 7l16 0" />
-    <path d="M10 11l0 6" />
-    <path d="M14 11l0 6" />
-    <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-    <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-  </svg>
-)

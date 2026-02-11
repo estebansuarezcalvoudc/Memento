@@ -11,6 +11,7 @@ from ..schemas.conversation_schema import (
     ConversationDialogueRetrieve,
     ConversationMetadataRetrieve,
     ConversationUpdateRequest,
+    Messages,
     SendMessageRequest,
 )
 from ..services.conversation_service import ConversationService
@@ -104,10 +105,11 @@ async def retrieve_all_conversations_metadata(
 )
 async def retrieve_dialogue(
     id: str, current_user: Annotated[User, Depends(get_current_active_user)]
-) -> ConversationDialogueRetrieve:
+) -> Messages:
     try:
         conversation_service = ConversationService()
-        return conversation_service.retrieve_dialogue(id, current_user.username)
+        dialogue = conversation_service.retrieve_dialogue(id, current_user.username)
+        return dialogue.messages
     except HTTPException:
         raise
     except Exception as e:

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import useChatsAPI from '../../../api/useChatsAPI'
 import { useChats, useSetChats } from '../../../stores/chatsStore'
 import { useIsSidebarOpen } from '../../../stores/sidebarStore'
 import ChatItem from './ChatItem'
@@ -12,10 +13,12 @@ export default function ChatsList() {
   const [error, setError] = useState<string | null>(null)
   const isSidebarOpen = useIsSidebarOpen()
 
+  const { retrieveAllChats } = useChatsAPI()
+
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        const data = await retrieveChats()
+        const data = await retrieveAllChats()
         setChats(data)
       } catch (err) {
         setError(
@@ -28,7 +31,7 @@ export default function ChatsList() {
     }
 
     fetchConversations()
-  }, [setChats])
+  }, [setChats, retrieveAllChats])
 
   let chatContent
 
@@ -39,7 +42,9 @@ export default function ChatsList() {
       </li>
     )
   } else if (error) {
-    chatContent = <li className="p-4 text-center text-red-400">Error: {error}</li>
+    chatContent = (
+      <li className="p-4 text-center text-red-400">Error: {error}</li>
+    )
   } else if (chats.length === 0) {
     chatContent = (
       <li className="p-4 text-center text-stone-400">No conversations yet</li>
@@ -56,40 +61,15 @@ export default function ChatsList() {
 
   return (
     <div
-      className={`min-h-0 flex-1 transition-opacity duration-300 ${
-        isSidebarOpen
+      className={`min-h-0 flex-1 transition-opacity duration-300 ${isSidebarOpen
           ? 'block opacity-100 delay-150'
           : 'hidden opacity-0 delay-[0ms]'
-      } flex h-full flex-col overflow-hidden`}
+        } flex h-full flex-col overflow-hidden`}
     >
       <h2 className="font-ubuntu mt-8 mb-2 ml-1.5 flex-shrink-0 truncate text-sm text-stone-400">
         Chats
       </h2>
-      <ul className="custom-scrollbar flex-1 overflow-y-auto">
-        {chatContent}
-      </ul>
+      <ul className="custom-scrollbar flex-1 overflow-y-auto">{chatContent}</ul>
     </div>
   )
-}
-
-async function retrieveChats() {
-  const token = localStorage.getItem('access_token')
-
-  if (!token) {
-    throw new Error('No access token found')
-  }
-
-  const response = await fetch('/api/conversations', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`)
-  }
-
-  return await response.json()
 }
