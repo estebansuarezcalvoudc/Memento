@@ -1,4 +1,4 @@
-import { useDelayedDisplay } from '../../../hooks/side-bar/useDelayedDisplay'
+import { useDelayedDisplay } from '../../../hooks/useDelayedDisplay'
 import {
   useIsSidebarOpen,
   useToggleSidebar,
