@@ -1,3 +1,4 @@
+import useMeetingsAPI from '../../api/useMeetingsAPI'
 import { cancelEditImage, confirmEditImage } from '../../assets/buttonsImages'
 import { useUpdateMeeting, type Meeting } from '../../stores/meetingsStore'
 import MeetingButton from './MeetingButton'
@@ -23,6 +24,7 @@ export default function MeetingItemEdit({
   startTransition,
 }: MeetingItemEditProps) {
   const updateMeetingInStore = useUpdateMeeting()
+  const { updateMeeting } = useMeetingsAPI()
 
   const handleTitleChange = (title: string) => {
     setEditState(prev => ({ ...prev, title }))
@@ -64,26 +66,7 @@ export default function MeetingItemEdit({
     setEditState(prev => ({ ...prev, isEditing: false }))
 
     try {
-      const token = localStorage.getItem('access_token')
-
-      if (!token) {
-        throw new Error('No access token found')
-      }
-
-      const url = `/api/meetings/${meeting.id}`
-      const response = await fetch(url, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(updates),
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
+      updateMeeting(meeting.id, updates)
       updateMeetingInStore(meeting.id, updates)
     } catch (error) {
       console.error('Error updating meeting:', error)

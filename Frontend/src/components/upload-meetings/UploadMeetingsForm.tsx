@@ -1,5 +1,6 @@
 import { useActionState, useEffect, useState } from 'react'
 
+import useMeetingsAPI from '../../api/useMeetingsAPI'
 import {
   useAddMeeting,
   type Meeting as StoreMeeting,
@@ -32,27 +33,33 @@ interface FormState {
   newMeetings?: StoreMeeting[]
 }
 
-async function uploadMeetingsAction(
-  _prevFormState: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  const parsed = parseMeetingsFromFormData(formData)
+function createUploadMeetingsAction(
+  uploadMeetings: (formData: FormData) => Promise<any>,
+) {
+  return async function uploadMeetingsAction(
+    _prevFormState: FormState,
+    formData: FormData,
+  ): Promise<FormState> {
+    const parsed = parseMeetingsFromFormData(formData)
 
-  if (!parsed.ok) {
-    return { validationErrors: parsed.errors }
+    if (!parsed.ok) {
+      return { validationErrors: parsed.errors }
+    }
+
+    const uploadResult = await processUploadMeetings(
+      parsed.meetingsMetadata,
+      parsed.audioFiles,
+      uploadMeetings,
+    )
+
+    return uploadResult
   }
-
-  const uploadResult = await processUploadMeetings(
-    parsed.meetingsMetadata,
-    parsed.audioFiles,
-  )
-
-  return uploadResult
 }
 
 async function processUploadMeetings(
   meetingsMetadata: MeetingMetadata[],
   audioFiles: File[],
+  uploadMeetings: (formData: FormData) => Promise<any>,
 ): Promise<FormState> {
   try {
     const backendFormData = new FormData()
@@ -63,19 +70,7 @@ async function processUploadMeetings(
 
     audioFiles.forEach(file => backendFormData.append('audios', file))
 
-    const token = localStorage.getItem('access_token')
-
-    const response = await fetch('/api/meetings', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: backendFormData,
-    })
-
-    if (!response.ok) {
-      return { validationErrors: null, serverError: true, success: false }
-    }
-
-    const data = await response.json()
+    const data = await uploadMeetings(backendFormData)
 
     return {
       success: true,
@@ -102,13 +97,16 @@ export default function UploadMeetingsForm({
 }: {
   handleCloseDialog: () => void
 }) {
+  const { uploadMeetings } = useMeetingsAPI()
   const [meetings, setMeetings] = useState<MeetingFormData[]>([createMeeting()])
   const addMeetingToStore = useAddMeeting()
+
+  const uploadAction = createUploadMeetingsAction(uploadMeetings)
 
   const [formState, formAction, isPending] = useActionState<
     FormState,
     FormData
-  >(uploadMeetingsAction, { validationErrors: null })
+  >(uploadAction, { validationErrors: null })
 
   const [notification, setNotification] = useState<Notification>('none')
 
