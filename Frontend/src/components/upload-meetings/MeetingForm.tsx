@@ -1,5 +1,5 @@
 import { removeImage } from '../../assets/buttonsImages'
-import { useLanguages } from '../../hooks/upload-meetings/useLanguages'
+import { SUPPORTED_LANGUAGES } from '../../utils/supportedLanguages'
 import Input from '../common/Input'
 import Select from '../common/Select'
 import { type MeetingFormData } from './UploadMeetingsForm'
@@ -19,8 +19,6 @@ export default function MeetingForm({
   isPending,
   onRemove,
 }: MeetingFormProps) {
-  const { languages, isLoading: isLoadingLanguages } = useLanguages()
-
   const today = new Date().toISOString().split('T')[0]
 
   return (
@@ -67,9 +65,9 @@ export default function MeetingForm({
         <Select
           label="Language"
           name={`meetings[${index}][language]`}
-          options={languages}
+          options={SUPPORTED_LANGUAGES}
           placeholder="Select a language"
-          disabled={isPending || isLoadingLanguages}
+          disabled={isPending}
           defaultValue={meeting.language}
           key={`${meeting.id}-language-${meeting.language || 'none'}`}
         />

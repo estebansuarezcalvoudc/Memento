@@ -14,24 +14,10 @@ from ..schemas.meeting_schema import (
     UpdateMeetingMetadata,
 )
 from ..services.meeting_service import MeetingService
-from ..utils.supported_languages import SUPPORTED_LANGUAGES_DICT
 from .docs.meeting_docs_loader import create_meetings_docs
 
 _logger = setup_logger(__name__)
 router = APIRouter()
-
-
-@router.get(
-    "/languages",
-    status_code=status.HTTP_200_OK,
-    summary="Get supported languages",
-    description="Returns a dictionary of supported languages with their codes and names",
-    tags=["Meeting"],
-)
-async def get_supported_languages(
-    current_user: Annotated[User, Depends(get_current_active_user)],
-) -> dict[str, str]:
-    return SUPPORTED_LANGUAGES_DICT
 
 
 def _parse_meetings_batch_request(
