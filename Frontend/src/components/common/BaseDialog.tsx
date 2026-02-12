@@ -1,5 +1,6 @@
 import { useImperativeHandle, useRef } from 'react'
 import { createPortal } from 'react-dom'
+
 import { closeImage } from '../../assets/buttonsImages'
 
 export interface DialogHandler {
@@ -9,7 +10,7 @@ export interface DialogHandler {
 
 interface BaseDialogProps {
   dialogRef: React.Ref<DialogHandler>
-  title: string
+  title?: string
   ariaLabelledBy: string
   ariaLabel?: string
   children: React.ReactNode
@@ -34,7 +35,7 @@ export default function BaseDialog({
       ref={innerRef}
       aria-modal="true"
       aria-labelledby={ariaLabelledBy}
-      className="fixed top-1/2 left-1/2 z-[9990] h-[80vh] max-h-[90vh] w-[90vw] max-w-4xl -translate-x-1/2 -translate-y-1/2 rounded-3xl bg-white px-4 pt-5 shadow-xl"
+      className="fixed top-1/2 left-1/2 z-[9990] h-[80vh] max-h-[90vh] w-[90vw] max-w-4xl -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white shadow-xl"
       onKeyDown={e => {
         if (e.key === 'Escape') {
           e.preventDefault()
@@ -42,25 +43,26 @@ export default function BaseDialog({
         }
       }}
     >
-      <div className="mb-1 flex items-center justify-between">
-        <div className="w-8" />
+      <button
+        className="absolute top-6 right-6 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-2xl p-1 text-stone-400 hover:bg-stone-200"
+        onClick={() => innerRef.current?.close()}
+        aria-label={ariaLabel}
+      >
+        {closeImage}
+      </button>
 
-        <h2
-          id={ariaLabelledBy}
-          className="font-dongle flex-1 text-center text-5xl text-stone-700"
-        >
-          {title}
-        </h2>
+      {title && (
+        <div className="px-4 pt-5 pb-1">
+          <h2
+            id={ariaLabelledBy}
+            className="font-dongle text-center text-5xl text-stone-700"
+          >
+            {title}
+          </h2>
+        </div>
+      )}
 
-        <button
-          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-2xl p-1 text-stone-400 hover:bg-stone-200"
-          onClick={() => innerRef.current?.close()}
-          aria-label={ariaLabel}
-        >
-          {closeImage}
-        </button>
-      </div>
-      <div className="scroll-auto">{children}</div>
+      <div className="h-full">{children}</div>
     </dialog>,
     document.getElementById('modal-portal') as HTMLElement,
   )

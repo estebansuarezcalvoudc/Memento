@@ -53,3 +53,11 @@
     transform: translateX(0);
   }
 }
+
+/* Dialog backdrop blur effect */
+@layer utilities {
+  dialog::backdrop {
+    backdrop-filter: blur(1px);
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+}
