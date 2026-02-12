@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 
+import useMeetingsAPI from '../../api/useMeetingsAPI'
 import { editImage, removeImage } from '../../assets/buttonsImages'
 import { useRemoveMeeting, type Meeting } from '../../stores/meetingsStore'
 import MeetingButton from './MeetingButton'
@@ -23,6 +24,7 @@ export default function MeetingItemView({
   startTransition,
 }: MeetingItemViewProps) {
   const deleteMeetingFromStore = useRemoveMeeting()
+  const { deleteMeeting } = useMeetingsAPI()
 
   const handleEdit = () => {
     setEditState({
@@ -33,36 +35,12 @@ export default function MeetingItemView({
   }
 
   const handleDelete = async () => {
-    try {
-      const token = localStorage.getItem('access_token')
+    deleteMeeting(meeting.id)
+    deleteMeetingFromStore(meeting.id)
 
-      if (!token) {
-        window.alert('You are not authorized to delete this meeting.')
-        return
-      }
-
-      const url = `/api/meetings/${meeting.id}`
-      const response = await fetch(url, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      deleteMeetingFromStore(meeting.id)
-
-      startTransition(() => {
-        onDeleteMeeting(meeting.id)
-      })
-    } catch (error) {
-      console.error('Failed to delete meeting:', error)
-      window.alert('Failed to delete the meeting. Please try again.')
-    }
+    startTransition(() => {
+      onDeleteMeeting(meeting.id)
+    })
   }
 
   return (

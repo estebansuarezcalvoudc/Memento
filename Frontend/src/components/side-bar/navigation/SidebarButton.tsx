@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { NavLink, type NavLinkProps } from 'react-router-dom'
 
-import { useDelayedDisplay } from '../../../hooks/side-bar/useDelayedDisplay'
+import { useDelayedDisplay } from '../../../hooks/useDelayedDisplay'
 import { useIsSidebarOpen } from '../../../stores/sidebarStore'
 
 interface BaseProps {

@@ -29,5 +29,8 @@ ConversationCreateRequest = SendMessageRequest
 ConversationCreateResponse = ConversationMetadataRetrieve
 
 
+Messages = list[dict]
+
+
 class ConversationUpdateRequest(BaseModel):
     title: str

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { NavLink, useParams } from 'react-router-dom'
 
+import useMeetingsAPI from '../api/useMeetingsAPI'
 import { arrowBack } from '../assets/buttonsImages'
 import PageContainer from '../components/layout/PageContainer'
 import Header from '../components/meetings/Header'
@@ -25,13 +26,14 @@ export default function MeetingContent({ type }: MeetingContentProps) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
 
+  const { getMeetingSummary, getMeetingTranscription } = useMeetingsAPI()
+
   const config = {
     transcription: {
       title: 'Transcription',
       loadingText: 'Loading transcription',
       errorText: 'Failed to fetch transcription',
-      endpoint: `/api/meetings/transcription/${meetingId}`,
-      dataKey: 'transcription',
+      apiCall: getMeetingTranscription,
       otherLink: {
         text: 'Summary',
         path: `/meetings/${meetingId}/summary`,
@@ -41,8 +43,7 @@ export default function MeetingContent({ type }: MeetingContentProps) {
       title: 'Summary',
       loadingText: 'Loading Summary',
       errorText: 'Failed to fetch summary',
-      endpoint: `/api/meetings/summary/${meetingId}`,
-      dataKey: 'summary',
+      apiCall: getMeetingSummary,
       otherLink: {
         text: 'Transcription',
         path: `/meetings/${meetingId}/transcription`,
@@ -55,13 +56,10 @@ export default function MeetingContent({ type }: MeetingContentProps) {
     setLoading(true)
     setMeetingData(null)
     setError('')
-    
+
     const fetchMeetingContent = async () => {
       try {
-        const data = await retrieveMeetingContent(
-          config.endpoint,
-          config.dataKey,
-        )
+        const data = await config.apiCall(meetingId)
         setMeetingData(data)
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error'
@@ -72,7 +70,8 @@ export default function MeetingContent({ type }: MeetingContentProps) {
     }
 
     fetchMeetingContent()
-  }, [meetingId, config.endpoint, config.dataKey, config.errorText])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [meetingId, type])
 
   let displayContent
 
@@ -108,48 +107,19 @@ export default function MeetingContent({ type }: MeetingContentProps) {
           </NavLink>
           <Header text={config.title} />
         </div>
-        <NavLink 
-          to={config.otherLink.path} 
-          className="font-ubuntu text-xl bg-lime-400 px-4 py-2 rounded-xl text-stone-800 hover:bg-lime-500"
+        <NavLink
+          to={config.otherLink.path}
+          className="font-ubuntu rounded-xl bg-lime-400 px-4 py-2 text-xl text-stone-800 hover:bg-lime-500"
         >
           {config.otherLink.text}
         </NavLink>
       </div>
       {meetingData && (
-        <div className="mb-8 font-ubuntu text-2xl text-stone-600">
+        <div className="font-ubuntu mb-8 text-2xl text-stone-600">
           {meetingData.title} - {meetingData.date}
         </div>
       )}
       {displayContent}
     </PageContainer>
   )
-}
-
-async function retrieveMeetingContent(
-  endpoint: string,
-  dataKey: string,
-): Promise<MeetingData> {
-  const token = localStorage.getItem('access_token')
-  if (!token) {
-    throw new Error('No access token found')
-  }
-
-  const response = await fetch(endpoint, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`)
-  }
-
-  const data = await response.json()
-  return {
-    content: data[dataKey],
-    title: data.title,
-    date: data.date,
-  }
 }

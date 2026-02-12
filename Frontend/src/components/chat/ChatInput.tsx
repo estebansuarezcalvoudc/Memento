@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import useChatsAPI from '../../api/useChatsAPI'
 import { type Message } from '../../pages/Chat'
 import SendMessageButton from './SendMessageButton'
 
@@ -10,6 +11,7 @@ interface UserChatInputProps {
 
 export default function ChatInput({ chatId, setMessages }: UserChatInputProps) {
   const [userMessage, setUserMessage] = useState('')
+  const { uploadMessage } = useChatsAPI()
 
   const handleSubmitMessage = async () => {
     if (!userMessage) {
@@ -22,23 +24,7 @@ export default function ChatInput({ chatId, setMessages }: UserChatInputProps) {
     ])
     setUserMessage('')
 
-    const token = localStorage.getItem('access_token')
-
-    const response = await fetch(`/api/conversations/${chatId}/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ message: userMessage }),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const assistantResponse = await response.text()
+    const assistantResponse = await uploadMessage(chatId, userMessage)
     setMessages(prevMessages => [
       ...prevMessages,
       { role: 'assistant', content: assistantResponse },

@@ -1,13 +1,16 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import useChatsAPI from '../api/useChatsAPI'
 import SendMessageButton from '../components/chat/SendMessageButton'
-import { useUnshiftChat, type Chat } from '../stores/chatsStore'
+import { useUnshiftChat } from '../stores/chatsStore'
 
 export default function NewChat() {
   const [userMessage, setUserMessage] = useState('')
   const navigate = useNavigate()
   const unshiftChat = useUnshiftChat()
+
+  const { createChat } = useChatsAPI()
 
   const handleSubmitMessage = async () => {
     if (!userMessage) {
@@ -16,23 +19,7 @@ export default function NewChat() {
 
     setUserMessage('')
 
-    const token = localStorage.getItem('access_token')
-
-    const response = await fetch('/api/conversations', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ message: userMessage }),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const newChat: Chat = await response.json()
+    const newChat = await createChat(userMessage)
     navigate(`/chats/${newChat.id}`)
     unshiftChat(newChat)
   }

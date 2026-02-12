@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import useMeetingsAPI from '../api/useMeetingsAPI'
 import PageContainer from '../components/layout/PageContainer'
 import Header from '../components/meetings/Header'
 import MeetingsList from '../components/meetings/MeetingList'
@@ -11,13 +12,15 @@ export default function Meetings() {
   const meetings = useMeetings()
   const setMeetings = useSetMeetings()
 
+  const { getAllMeetings } = useMeetingsAPI()
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const data = await retrieveMeetings()
+        const data = await getAllMeetings()
         setMeetings(data)
       } catch (err) {
         setError(
@@ -29,7 +32,7 @@ export default function Meetings() {
     }
 
     fetchMeetings()
-  }, [setMeetings])
+  }, [getAllMeetings, setMeetings])
 
   let content
 
@@ -61,26 +64,4 @@ export default function Meetings() {
       <div className="mt-6">{content}</div>
     </PageContainer>
   )
-}
-
-async function retrieveMeetings() {
-  const token = localStorage.getItem('access_token')
-
-  if (!token) {
-    throw new Error('No access token found')
-  }
-
-  const response = await fetch('/api/meetings', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`)
-  }
-
-  return await response.json()
 }
