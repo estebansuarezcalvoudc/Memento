@@ -1,5 +1,5 @@
 import { removeImage } from '../../assets/buttonsImages'
-import { SUPPORTED_LANGUAGES } from '../../utils/supportedLanguages'
+import { SUPPORTED_LANGUAGES, type LanguageOption } from '../../utils/supportedLanguages'
 import Input from '../common/Input'
 import Select from '../common/Select'
 import { type MeetingFormData } from './UploadMeetingsForm'
@@ -62,13 +62,15 @@ export default function MeetingForm({
           disabled={isPending}
         />
 
-        <Select
+        <Select<LanguageOption>
           label="Language"
           name={`meetings[${index}][language]`}
           options={SUPPORTED_LANGUAGES}
           placeholder="Select a language"
           disabled={isPending}
           defaultValue={meeting.language}
+          getOptionValue={option => option.code}
+          getOptionLabel={option => option.name}
           key={`${meeting.id}-language-${meeting.language || 'none'}`}
         />
 
