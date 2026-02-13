@@ -160,3 +160,9 @@ urllib3==2.6.3
 uvicorn==0.40.0
 whisperx==3.4.3
 yarl==1.22.0
+
+# Testing dependencies
+pytest
+pytest-asyncio
+pytest-mock
+pytest-cov

@@ -1,7 +1,15 @@
+from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    model_config = ConfigDict(
+        env_file=["/.env.docker", "/Backend/.env"],
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
     hf_token: str
 
     openai_key: str
@@ -38,12 +46,6 @@ class Settings(BaseSettings):
     @property
     def elastic_search_auth(self) -> tuple[str, str]:
         return (self.elastic_search_username, self.elastic_search_password)
-
-    class Config:
-        env_file = ["/.env.docker", "/Backend/.env"]
-        env_file_encoding = "utf-8"
-        case_sensitive = False
-        extra = "ignore"  # Ignore extra environment variables
 
 
 settings = Settings()  # type: ignore
