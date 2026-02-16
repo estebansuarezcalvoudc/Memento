@@ -2,17 +2,17 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
+from app.core.openai_factory import ProviderName
+
 
 class Provider(BaseModel):
     """Provider information with status"""
 
-    name: str = Field(..., description="Provider name (OpenAI, Ollama)")
+    name: ProviderName = Field(..., description="Provider name (OpenAI, Ollama)")
     requires_api_key: bool = Field(
         ..., description="Whether this provider requires an API key"
     )
-    active: bool = Field(
-        ..., description="Whether user has activated this provider"
-    )
+    active: bool = Field(..., description="Whether user has activated this provider")
     has_api_key: Optional[bool] = Field(
         None, description="Whether an API key is stored (null if not required)"
     )

@@ -10,6 +10,7 @@ _tags_metadata = [
     {"name": "Meeting", "description": "Manage meetings"},
     {"name": "Conversations", "description": "Manage conversations"},
     {"name": "Settings - Providers", "description": "Manage LLM providers and API keys"},
+    {"name": "Settings - Models", "description": "Manage model configurations"},
 ]
 
 

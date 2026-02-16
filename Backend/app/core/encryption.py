@@ -1,6 +1,4 @@
 """Encryption utilities for sensitive data like API keys"""
-import os
-
 from cryptography.fernet import Fernet
 
 
@@ -11,12 +9,14 @@ class EncryptionError(Exception):
 
 
 def _get_cipher() -> Fernet:
-    """Get Fernet cipher instance from environment key"""
-    encryption_key = os.getenv("ENCRYPTION_KEY")
+    """Get Fernet cipher instance from settings"""
+    from .settings import settings
+    
+    encryption_key = settings.encryption_key
 
     if not encryption_key:
         raise EncryptionError(
-            "ENCRYPTION_KEY not found in environment variables. "
+            "ENCRYPTION_KEY not found in settings. "
             "Generate one with: python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'"
         )
 

@@ -1,18 +1,15 @@
-from typing import Optional
+from typing import Optional, cast
 
 import pymongo
 
-from ...core.logging import setup_logger
+from ...core.openai_factory import ProviderName
 from ...core.settings import settings
-from ...schemas.settings_schema import Provider, ProviderSettings
-
-_logger = setup_logger(__name__)
+from ...schemas.provider_schema import Provider, ProviderSettings
 
 
 class SettingsRepository:
     """Repository for user settings data access"""
 
-    # Available providers configuration
     AVAILABLE_PROVIDERS = {
         "OpenAI": {"requires_api_key": True},
         "Ollama": {"requires_api_key": False},
@@ -38,9 +35,7 @@ class SettingsRepository:
         )
 
         user_providers = (
-            user_data.get("settings", {}).get("providers", {})
-            if user_data
-            else {}
+            user_data.get("settings", {}).get("providers", {}) if user_data else {}
         )
 
         providers = []
@@ -53,7 +48,9 @@ class SettingsRepository:
 
             providers.append(
                 Provider(
-                    name=provider_name,
+                    name=cast(
+                        ProviderName, provider_name
+                    ),  # Safe cast: comes from AVAILABLE_PROVIDERS
                     requires_api_key=config["requires_api_key"],
                     active=user_provider_data.get("active", True),
                     has_api_key=has_api_key,
@@ -61,6 +58,36 @@ class SettingsRepository:
             )
 
         return providers
+
+    def get_provider_settings(
+        self, username: str, provider_name: str
+    ) -> ProviderSettings | None:
+        """
+        Get specific provider settings for a user
+
+        Args:
+            username: User's username
+            provider_name: Provider name
+
+        Returns:
+            ProviderSettings object or None if not found
+        """
+        user_data = self._collection.find_one(
+            {"username": username},
+            {f"settings.providers.{provider_name}": 1, "_id": 0},
+        )
+
+        if not user_data or "settings" not in user_data:
+            return None
+
+        provider_data = (
+            user_data.get("settings", {}).get("providers", {}).get(provider_name)
+        )
+
+        if not provider_data:
+            return None
+
+        return ProviderSettings(**provider_data)
 
     def save_provider_api_key_encrypted(
         self, username: str, provider_name: str, encrypted_api_key: str
@@ -133,9 +160,7 @@ class SettingsRepository:
         self._collection.update_one(
             {"username": username},
             {
-                "$unset": {
-                    f"settings.providers.{provider_name}.api_key_encrypted": ""
-                },
+                "$unset": {f"settings.providers.{provider_name}.api_key_encrypted": ""},
                 "$set": {f"settings.providers.{provider_name}.active": False},
             },
         )
@@ -154,4 +179,40 @@ class SettingsRepository:
         self._collection.update_one(
             {"username": username},
             {"$set": {f"settings.providers.{provider_name}.active": active}},
+        )
+
+    def get_model_settings(self, username: str) -> dict | None:
+        """
+        Get user's model settings
+
+        Args:
+            username: User's username
+
+        Returns:
+            Dictionary with chat_model and summary_model or None
+        """
+        user_data = self._collection.find_one(
+            {"username": username}, {"settings.models": 1, "_id": 0}
+        )
+
+        if not user_data or "settings" not in user_data:
+            return None
+
+        return user_data.get("settings", {}).get("models")
+
+    def update_model_settings(self, username: str, model_data: dict) -> None:
+        """
+        Update user's model settings (partial update)
+
+        Args:
+            username: User's username
+            model_data: Dictionary with chat_model and/or summary_model
+        """
+        update_fields = {}
+        for key, value in model_data.items():
+            update_fields[f"settings.models.{key}"] = value
+
+        self._collection.update_one(
+            {"username": username},
+            {"$set": update_fields},
         )

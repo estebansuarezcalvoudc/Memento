@@ -5,8 +5,8 @@ from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 
 class ProviderType(str, Enum):
-    OPENAI = "openai"
-    OLLAMA = "ollama"
+    OPENAI = "OpenAI"
+    OLLAMA = "Ollama"
 
 
 class LanguageModelConfiguration(BaseModel):
