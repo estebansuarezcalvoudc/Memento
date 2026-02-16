@@ -8,7 +8,6 @@ from ..schemas.auth_schema import User
 from ..schemas.conversation_schema import (
     ConversationCreateRequest,
     ConversationCreateResponse,
-    ConversationDialogueRetrieve,
     ConversationMetadataRetrieve,
     ConversationUpdateRequest,
     Messages,
@@ -17,11 +16,14 @@ from ..schemas.conversation_schema import (
 from ..services.conversation_service import ConversationService
 
 _logger = setup_logger(__name__)
-router = APIRouter()
+router = APIRouter(
+    prefix="/conversations",
+    tags=["Conversations"]
+)
 
 
 @router.post(
-    "/conversations",
+    "",
     status_code=status.HTTP_200_OK,
     summary="Create a new conversation",
     tags=["Conversations"],
@@ -73,7 +75,7 @@ async def send_message(
 
 
 @router.get(
-    "/conversations",
+    "",
     status_code=status.HTTP_200_OK,
     summary="Retrieve all conversations metadata",
     tags=["Conversations"],
@@ -98,7 +100,7 @@ async def retrieve_all_conversations_metadata(
 
 
 @router.get(
-    "/conversations/{id}",
+    "/{id}",
     status_code=status.HTTP_200_OK,
     summary="Retrieve a dialogue between the user and the assistant",
     tags=["Conversations"],
@@ -124,7 +126,7 @@ async def retrieve_dialogue(
 
 
 @router.put(
-    "/conversations/{id}",
+    "/{id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Update the metadata of a conversation",
     tags=["Conversations"],
@@ -151,7 +153,7 @@ async def update_conversation_metadata(
 
 
 @router.delete(
-    "/conversations/{id}",
+    "/{id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a conversation",
     tags=["Conversations"],

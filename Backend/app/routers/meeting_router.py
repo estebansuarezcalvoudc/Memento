@@ -17,7 +17,10 @@ from ..services.meeting_service import MeetingService
 from .docs.meeting_docs_loader import create_meetings_docs
 
 _logger = setup_logger(__name__)
-router = APIRouter()
+router = APIRouter(
+    prefix="/meetings",
+    tags=["Meeting"]
+)
 
 
 def _parse_meetings_batch_request(
@@ -25,7 +28,7 @@ def _parse_meetings_batch_request(
         str,
         Form(
             description=create_meetings_docs.meetings_batch_description,
-            example=create_meetings_docs.meetings_batch_example,
+            examples=[create_meetings_docs.meetings_batch_example],
         ),
     ],
 ) -> CreateMeetingsBatchRequest:
@@ -40,12 +43,11 @@ def _parse_meetings_batch_request(
 
 
 @router.post(
-    "/meetings",
+    "",
     status_code=status.HTTP_201_CREATED,
     summary="Create meetings and process them",
     description=create_meetings_docs.description,
     openapi_extra=create_meetings_docs.openapi_extra,
-    tags=["Meeting"],
 )
 async def create_meetings(
     current_user: Annotated[User, Depends(get_current_active_user)],
@@ -110,10 +112,9 @@ def _validate_audio_files(audio_files: list[UploadFile]) -> None:
 
 
 @router.get(
-    "/meetings",
+    "",
     status_code=status.HTTP_200_OK,
     summary="Retrieve all meetings",
-    tags=["Meeting"],
 )
 async def retrieve_all_meetings_metadata(
     current_user: Annotated[User, Depends(get_current_active_user)],
@@ -134,7 +135,6 @@ async def retrieve_all_meetings_metadata(
     "/meetings/summary/{id}",
     status_code=status.HTTP_200_OK,
     summary="Retrieve the summary of a meeting",
-    tags=["Meeting"],
 )
 async def retrieve_meeting_summary(
     id: str, current_user: Annotated[User, Depends(get_current_active_user)]
@@ -157,7 +157,6 @@ async def retrieve_meeting_summary(
     "/meetings/transcription/{id}",
     status_code=status.HTTP_200_OK,
     summary="Retrieve the transcription of a meeting",
-    tags=["Meeting"],
 )
 async def retrieve_meeting_transcription(
     id: str, current_user: Annotated[User, Depends(get_current_active_user)]
@@ -177,10 +176,9 @@ async def retrieve_meeting_transcription(
 
 
 @router.patch(
-    "/meetings/{id}",
+    "/{id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Update a meeting",
-    tags=["Meeting"],
 )
 async def update_meeting(
     id: str,
@@ -202,10 +200,9 @@ async def update_meeting(
 
 
 @router.delete(
-    "/meetings/{id}",
+    "/{id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a meeting",
-    tags=["Meeting"],
 )
 async def delete_meeting(
     id: str, current_user: Annotated[User, Depends(get_current_active_user)]

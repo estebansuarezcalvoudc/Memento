@@ -2,8 +2,11 @@ from typing import Optional
 
 import pymongo
 
-from ..core.settings import settings
-from ..schemas.settings_schema import Provider
+from ...core.logging import setup_logger
+from ...core.settings import settings
+from ...schemas.settings_schema import Provider, ProviderSettings
+
+_logger = setup_logger(__name__)
 
 
 class SettingsRepository:

@@ -72,7 +72,7 @@ def mock_openai():
     """
     Mock OpenAI API client to avoid real API calls during tests
     """
-    with patch("app.services.settings_service.OpenAI") as mock_openai_class:
+    with patch("app.services.settings.providers_service.OpenAI") as mock_openai_class:
         mock_client = MagicMock()
         mock_openai_class.return_value = mock_client
         

@@ -2,21 +2,24 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from ..core.logging import setup_logger
-from ..dependencies.auth_dependencies import get_current_active_user
-from ..schemas.auth_schema import User
-from ..schemas.settings_schema import (
+from ...core.logging import setup_logger
+from ...dependencies.auth_dependencies import get_current_active_user
+from ...schemas.auth_schema import User
+from ...schemas.settings_schema import (
     ProviderAPIKeyRequest,
     ProvidersListResponse,
     ProviderStatusRequest,
 )
-from ..services.settings_service import SettingsService
+from ...services.settings.providers_service import ProvidersService
 
 _logger = setup_logger(__name__)
-router = APIRouter()
+router = APIRouter(
+    prefix="/providers",
+    tags=["Settings - Providers"]
+)
 
 
-@router.get("/providers", response_model=ProvidersListResponse)
+@router.get("", response_model=ProvidersListResponse)
 async def get_providers(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> ProvidersListResponse:
@@ -27,7 +30,7 @@ async def get_providers(
         ProvidersListResponse: List of providers with their configuration status
     """
     try:
-        service = SettingsService()
+        service = ProvidersService()
         providers = service.get_providers(current_user.username)
         return ProvidersListResponse(providers=providers)
     except HTTPException:
@@ -41,7 +44,7 @@ async def get_providers(
 
 
 @router.post(
-    "/providers/{provider_name}/api-key",
+    "/{provider_name}/api-key",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def add_provider_api_key(
@@ -61,7 +64,7 @@ async def add_provider_api_key(
         401: If API key is invalid (validation failed)
     """
     try:
-        service = SettingsService()
+        service = ProvidersService()
         service.add_provider_api_key(
             current_user.username, provider_name, request.api_key
         )
@@ -76,7 +79,7 @@ async def add_provider_api_key(
 
 
 @router.delete(
-    "/providers/{provider_name}/api-key",
+    "/{provider_name}/api-key",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_provider_api_key(
@@ -93,7 +96,7 @@ async def delete_provider_api_key(
         400: If provider is invalid
     """
     try:
-        service = SettingsService()
+        service = ProvidersService()
         service.delete_provider_api_key(current_user.username, provider_name)
     except HTTPException:
         raise
@@ -106,7 +109,7 @@ async def delete_provider_api_key(
 
 
 @router.patch(
-    "/providers/{provider_name}/status",
+    "/{provider_name}/status",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def update_provider_status(
@@ -125,7 +128,7 @@ async def update_provider_status(
         400: If provider is invalid
     """
     try:
-        service = SettingsService()
+        service = ProvidersService()
         service.set_provider_status(
             current_user.username, provider_name, request.active
         )
