@@ -46,7 +46,6 @@ def _parse_meetings_batch_request(
     "",
     status_code=status.HTTP_201_CREATED,
     summary="Create meetings and process them",
-    description=create_meetings_docs.description,
     openapi_extra=create_meetings_docs.openapi_extra,
 )
 async def create_meetings(

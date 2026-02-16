@@ -9,8 +9,9 @@ from mcp.client.stdio import stdio_client
 from openai.types.chat import ChatCompletion
 
 from ...core.logging import setup_logger
+from ...core.openai_factory import create_openai_client
+from ...core.settings import settings
 from ...schemas.conversation_schema import LanguageModelConfiguration
-from ..language_models_utils import create_openai_client
 
 _logger = setup_logger(__name__, log_file="mcp_client.log", show_file_name=False)
 
@@ -103,7 +104,28 @@ class MCPClient:
             )
 
         _logger.info("Making initial OpenAI API call")
-        openai = create_openai_client(model_config, _logger)
+        
+        # Get API key from user settings if using OpenAI
+        api_key = None
+        if model_config.provider.value == "OpenAI":
+            from ...repositories.settings.settings_repo import SettingsRepository
+            from ...core.encryption import decrypt_api_key
+            
+            settings_repo = SettingsRepository()
+            provider_settings = settings_repo.get_provider_settings(username, "OpenAI")
+            if not provider_settings or not provider_settings.api_key_encrypted:
+                raise ValueError("OpenAI API key not configured for user")
+            api_key = decrypt_api_key(provider_settings.api_key_encrypted)
+        
+        # For Ollama, ensure model is available
+        ensure_model = model_config.model if model_config.provider.value == "Ollama" else None
+        
+        openai = create_openai_client(
+            provider=model_config.provider.value, 
+            api_key=api_key,
+            ensure_model_available=ensure_model
+        )
+        
         response = openai.chat.completions.create(
             model=model_config.model,
             messages=conversation_history,  # type:ignore
@@ -160,7 +182,27 @@ class MCPClient:
         for tool_call in message.tool_calls:
             await self._execute_tool_call(conversation_history, tool_call, username)
 
-        openai = create_openai_client(model_config, _logger)
+        # Get API key from user settings if using OpenAI
+        api_key = None
+        if model_config.provider.value == "OpenAI":
+            from ...repositories.settings.settings_repo import SettingsRepository
+            from ...core.encryption import decrypt_api_key
+            
+            settings_repo = SettingsRepository()
+            provider_settings = settings_repo.get_provider_settings(username, "OpenAI")
+            if not provider_settings or not provider_settings.api_key_encrypted:
+                raise ValueError("OpenAI API key not configured for user")
+            api_key = decrypt_api_key(provider_settings.api_key_encrypted)
+        
+        # For Ollama, ensure model is available
+        ensure_model = model_config.model if model_config.provider.value == "Ollama" else None
+        
+        openai = create_openai_client(
+            provider=model_config.provider.value, 
+            api_key=api_key,
+            ensure_model_available=ensure_model
+        )
+        
         response = openai.chat.completions.create(
             model=model_config.model,
             messages=conversation_history,  # type:ignore

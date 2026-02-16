@@ -71,7 +71,7 @@ class MeetingService(metaclass=SingletonMeta):
             self._model_size,
         )
 
-        summary = get_meeting_summary(transcription, processing_config)
+        summary = get_meeting_summary(transcription, processing_config, username)
 
         created_meeting = self._repository.store_meeting(
             meeting_metadata, summary, transcription, username
