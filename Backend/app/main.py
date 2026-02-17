@@ -20,6 +20,10 @@ _tags_metadata = [
         "name": "Settings - Transcription - WhisperX",
         "description": "Manage WhisperX transcription configuration",
     },
+    {
+        "name": "Settings - Templates",
+        "description": "Manage templates settings",
+    },
 ]
 
 
