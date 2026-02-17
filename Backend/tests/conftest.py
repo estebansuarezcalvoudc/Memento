@@ -3,6 +3,7 @@ Pytest configuration and shared fixtures
 
 This file contains fixtures that are automatically available to all tests.
 """
+
 import os
 from typing import Generator
 from unittest.mock import MagicMock, patch
@@ -11,7 +12,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 # Set test environment variables before importing app
-os.environ["ENCRYPTION_KEY"] = "obiWVK9qLu_vz-2Kr540yaKuxxa2exJprn2THT2u6U0="  # Valid base64 Fernet key
+os.environ["ENCRYPTION_KEY"] = (
+    "obiWVK9qLu_vz-2Kr540yaKuxxa2exJprn2THT2u6U0="  # Valid base64 Fernet key
+)
 os.environ["MONGO_USER"] = "test_user"
 os.environ["MONGO_PASSWORD"] = "test_password"
 os.environ["MONGO_HOST"] = "localhost"
@@ -35,7 +38,7 @@ from app.main import app
 def client() -> Generator[TestClient, None, None]:
     """
     Provides a TestClient for making requests to the FastAPI app
-    
+
     Scope: function - New client for each test
     """
     with TestClient(app) as test_client:
@@ -46,24 +49,24 @@ def client() -> Generator[TestClient, None, None]:
 def mock_mongo():
     """
     Mock MongoDB connection to avoid real database operations
-    
+
     Returns a mock that simulates MongoDB collection behavior
     """
     with patch("pymongo.MongoClient") as mock_client:
         mock_db = MagicMock()
         mock_collection = MagicMock()
-        
+
         # Setup the mock chain: client -> db -> collection
         mock_client.return_value.__getitem__.return_value = mock_db
         mock_db.__getitem__.return_value = mock_collection
-        
+
         # Default responses
         mock_collection.find_one.return_value = {
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
         }
         mock_collection.update_one.return_value = MagicMock(modified_count=1)
-        
+
         yield mock_collection
 
 
@@ -75,10 +78,10 @@ def mock_openai():
     with patch("app.services.settings.providers_service.OpenAI") as mock_openai_class:
         mock_client = MagicMock()
         mock_openai_class.return_value = mock_client
-        
+
         # Mock successful models.list() call
         mock_client.models.list.return_value = ["gpt-4", "gpt-3.5-turbo"]
-        
+
         yield mock_client
 
 
@@ -86,21 +89,22 @@ def mock_openai():
 def test_user_token() -> str:
     """
     Creates a valid JWT token for testing without calling auth endpoint
-    
+
     Returns a token that passes authentication
     """
     from datetime import datetime, timedelta, timezone
+
     import jwt
-    
+
     # Use same settings as app
     secret_key = os.environ["SECRET_KEY"]
     algorithm = os.environ["ALGORITHM"]
-    
+
     # Create token with test user
     expire = datetime.now(timezone.utc) + timedelta(minutes=30)
     to_encode = {"sub": "test@example.com", "exp": expire}
     access_token = jwt.encode(to_encode, secret_key, algorithm=algorithm)
-    
+
     return access_token
 
 

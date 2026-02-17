@@ -52,7 +52,9 @@ def create_openai_client(
             if ensure_model_available:
                 _ensure_ollama_model_available(ensure_model_available)
 
-            final_url = base_url if base_url is not None else settings.ollama_url + "/v1"
+            final_url = (
+                base_url if base_url is not None else settings.ollama_url + "/v1"
+            )
             return OpenAI(base_url=final_url, api_key="not-needed")
 
 
@@ -75,12 +77,12 @@ def _get_api_key_from_settings(username: str, provider: ProviderName) -> str:
     try:
         settings_repo = SettingsRepository()
         provider_settings = settings_repo.get_provider_settings(username, provider)
-        
+
         if not provider_settings or not provider_settings.api_key_encrypted:
             raise RuntimeError(f"{provider} API key not configured for user {username}")
-        
+
         return decrypt_api_key(provider_settings.api_key_encrypted)
-    
+
     except Exception as e:
         error_message = f"Failed to retrieve API key for {provider}: {str(e)}"
         _logger.error(error_message)

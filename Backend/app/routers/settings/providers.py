@@ -13,10 +13,7 @@ from ...schemas.provider_schema import (
 from ...services.settings.providers_service import ProvidersService
 
 _logger = setup_logger(__name__)
-router = APIRouter(
-    prefix="/providers",
-    tags=["Settings - Providers"]
-)
+router = APIRouter(prefix="/providers", tags=["Settings - Providers"])
 
 
 @router.get("", response_model=ProvidersListResponse)

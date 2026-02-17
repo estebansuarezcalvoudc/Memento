@@ -7,10 +7,7 @@ from ..core.logging import setup_logger
 from ..schemas.auth_schema import Token, UserCreate
 from ..services.auth_service import AuthService
 
-router = APIRouter(
-    prefix="/auth",
-    tags=["Authentication"]
-)
+router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 _logger = setup_logger(__name__)
 

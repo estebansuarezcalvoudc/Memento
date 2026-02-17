@@ -274,11 +274,7 @@ class SettingsRepository:
         if not user_data or "settings" not in user_data:
             return None
 
-        return (
-            user_data.get("settings", {})
-            .get("templates", {})
-            .get("system_prompt")
-        )
+        return user_data.get("settings", {}).get("templates", {}).get("system_prompt")
 
     def update_system_prompt(self, username: str, system_prompt: str) -> None:
         """

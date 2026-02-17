@@ -45,9 +45,7 @@ class TestModelsEndpoints:
         ) as mock_create_client:
             mock_create_client.return_value = mock_openai
 
-            response = client.get(
-                "/settings/models/available", headers=auth_headers
-            )
+            response = client.get("/settings/models/available", headers=auth_headers)
 
             assert response.status_code == 200
             models = response.json()

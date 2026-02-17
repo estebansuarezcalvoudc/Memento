@@ -15,7 +15,7 @@ from ..schemas.meeting_schema import (
     MeetingTranscriptionResponse,
     UpdateMeetingMetadata,
 )
-from ..utils.supported_languages import SUPPORTED_LANGUAGES
+from ..schemas.whisperx_schema import SUPPORTED_LANGUAGES
 from .utils.handle_invalid_id import handle_invalid_id
 
 _logger = setup_logger(__name__)
@@ -134,7 +134,8 @@ class MeetingRepository:
         self, id: str, username: str
     ) -> MeetingSummaryResponse:
         result = self._collection.find_one(
-            {"username": username, "_id": ObjectId(id)}, {"_id": False, "summary": True, "title": True, "date": True}
+            {"username": username, "_id": ObjectId(id)},
+            {"_id": False, "summary": True, "title": True, "date": True},
         )
 
         if not result:
@@ -143,7 +144,9 @@ class MeetingRepository:
                 detail=f"Meeting with id={id} for user={username} not found",
             )
 
-        return MeetingSummaryResponse(summary=result["summary"], title=result["title"], date=result["date"])
+        return MeetingSummaryResponse(
+            summary=result["summary"], title=result["title"], date=result["date"]
+        )
 
     @handle_invalid_id
     def retrieve_meeting_transcription(
@@ -161,7 +164,9 @@ class MeetingRepository:
             )
 
         return MeetingTranscriptionResponse(
-            transcription=result["transcription"], title=result["title"], date=result["date"]
+            transcription=result["transcription"],
+            title=result["title"],
+            date=result["date"],
         )
 
     @handle_invalid_id

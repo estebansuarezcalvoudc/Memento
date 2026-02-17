@@ -20,6 +20,7 @@ class UserCreate(BaseModel):
 
 class User(BaseModel):
     """User schema for authenticated users (without password)"""
+
     username: str
 
 

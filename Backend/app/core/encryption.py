@@ -1,4 +1,5 @@
 """Encryption utilities for sensitive data like API keys"""
+
 from cryptography.fernet import Fernet
 
 
@@ -11,7 +12,7 @@ class EncryptionError(Exception):
 def _get_cipher() -> Fernet:
     """Get Fernet cipher instance from settings"""
     from .settings import settings
-    
+
     encryption_key = settings.encryption_key
 
     if not encryption_key:

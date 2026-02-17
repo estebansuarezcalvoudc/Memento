@@ -28,9 +28,7 @@ class CreateMeetingsEndpointDocs:
         return cls(
             description=data["endpoint_descriptions"]["create_meetings"],
             openapi_extra=data["openapi_schemas"]["create_meetings"],
-            meetings_batch_description=data["form_descriptions"][
-                "meetings_metadata"
-            ],
+            meetings_batch_description=data["form_descriptions"]["meetings_metadata"],
             meetings_batch_example=data["form_examples"]["meetings_metadata"],
             audios_file_description=data["form_descriptions"]["audios"],
         )

@@ -39,7 +39,7 @@ class TestWhisperXEndpoints:
         languages = response.json()
         assert isinstance(languages, list)
         assert len(languages) == 40
-        
+
         # Verify structure of language objects
         assert all("code" in lang and "name" in lang for lang in languages)
 
@@ -50,11 +50,11 @@ class TestWhisperXEndpoints:
         assert "fr" in codes
         assert "de" in codes
         assert "zh" in codes
-        
+
         # Check that names are present
         english = next(lang for lang in languages if lang["code"] == "en")
         assert english["name"] == "English"
-        
+
         spanish = next(lang for lang in languages if lang["code"] == "es")
         assert spanish["name"] == "Spanish"
 

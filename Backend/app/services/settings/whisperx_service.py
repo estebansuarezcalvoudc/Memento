@@ -2,13 +2,12 @@ from typing import get_args
 
 from ...repositories.settings.settings_repo import SettingsRepository
 from ...schemas.whisperx_schema import (
-    ComputeType,
     LANGUAGE_NAMES,
+    ComputeType,
     LanguageOption,
     WhisperXAvailableOptions,
     WhisperXConfiguration,
     WhisperXConfigurationUpdate,
-    WhisperXLanguage,
     WhisperXModel,
 )
 
@@ -38,14 +37,11 @@ class WhisperXService:
         Returns:
             List of LanguageOption objects with code and name
         """
-        language_codes = list(get_args(WhisperXLanguage))
-        
-        # Convert codes to LanguageOption objects with names
         languages = [
-            LanguageOption(code=code, name=LANGUAGE_NAMES[code])
-            for code in language_codes
+            LanguageOption(code=code, name=name)
+            for code, name in LANGUAGE_NAMES.items()
         ]
-        
+
         # Sort by name for better UX
         return sorted(languages, key=lambda x: x.name)
 

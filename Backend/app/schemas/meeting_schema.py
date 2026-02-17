@@ -3,9 +3,9 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from ..utils.supported_languages import SUPPORTED_LANGUAGES
 from .language_models_schema import LanguageModelConfiguration
 from .templates_schema import DEFAULT_PROMPT
+from .whisperx_schema import SUPPORTED_LANGUAGES
 
 
 class MeetingMetadata(BaseModel):
@@ -19,11 +19,10 @@ class MeetingMetadata(BaseModel):
     @field_validator("language")
     @classmethod
     def validate_language(cls, language):
-        supported_languages = SUPPORTED_LANGUAGES
-        if language is not None and language not in supported_languages:
+        if language is not None and language not in SUPPORTED_LANGUAGES:
             raise ValueError(
                 f"Language '{language}' not supported. "
-                f"Supported languages: {supported_languages}"
+                f"Supported languages: {SUPPORTED_LANGUAGES}"
             )
         return language
 

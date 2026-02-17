@@ -1,52 +1,10 @@
-from typing import Literal, Optional
+from typing import Literal, Optional, get_args
 
 from pydantic import BaseModel, Field
 
-# WhisperX supported languages (from whisperx alignment models)
-WhisperXLanguage = Literal[
-    "ar",  # Arabic
-    "ca",  # Catalan
-    "cs",  # Czech
-    "da",  # Danish
-    "de",  # German
-    "el",  # Greek
-    "en",  # English
-    "es",  # Spanish
-    "eu",  # Basque
-    "fa",  # Persian
-    "fi",  # Finnish
-    "fr",  # French
-    "gl",  # Galician
-    "he",  # Hebrew
-    "hi",  # Hindi
-    "hr",  # Croatian
-    "hu",  # Hungarian
-    "it",  # Italian
-    "ja",  # Japanese
-    "ka",  # Georgian
-    "ko",  # Korean
-    "lv",  # Latvian
-    "ml",  # Malayalam
-    "nl",  # Dutch
-    "nn",  # Norwegian Nynorsk
-    "no",  # Norwegian
-    "pl",  # Polish
-    "pt",  # Portuguese
-    "ro",  # Romanian
-    "ru",  # Russian
-    "sk",  # Slovak
-    "sl",  # Slovenian
-    "sv",  # Swedish
-    "te",  # Telugu
-    "tl",  # Filipino
-    "tr",  # Turkish
-    "uk",  # Ukrainian
-    "ur",  # Urdu
-    "vi",  # Vietnamese
-    "zh",  # Chinese
-]
-
 # Language code to human-readable name mapping
+# Languages supported by WhisperX alignment models
+# Source: https://github.com/m-bain/whisperX/blob/main/whisperx/alignment.py
 LANGUAGE_NAMES = {
     "ar": "Arabic",
     "ca": "Catalan",
@@ -90,6 +48,9 @@ LANGUAGE_NAMES = {
     "zh": "Chinese",
 }
 
+# Helper to get just the language codes
+SUPPORTED_LANGUAGES = list(LANGUAGE_NAMES.keys())
+
 
 class LanguageOption(BaseModel):
     """Language option with code and human-readable name"""
@@ -97,8 +58,11 @@ class LanguageOption(BaseModel):
     code: str = Field(..., description="ISO 639-1 language code")
     name: str = Field(..., description="Human-readable language name")
 
+
 # WhisperX available models
-WhisperXModel = Literal["tiny", "base", "small", "medium", "large", "large-v2", "large-v3"]
+WhisperXModel = Literal[
+    "tiny", "base", "small", "medium", "large", "large-v2", "large-v3"
+]
 
 # WhisperX compute types
 ComputeType = Literal["int8", "float16", "float32"]
@@ -130,9 +94,5 @@ class WhisperXConfigurationUpdate(BaseModel):
 class WhisperXAvailableOptions(BaseModel):
     """Available WhisperX models and compute types"""
 
-    models: list[str] = Field(
-        ..., description="List of available WhisperX model sizes"
-    )
-    compute_types: list[str] = Field(
-        ..., description="List of available compute types"
-    )
+    models: list[str] = Field(..., description="List of available WhisperX model sizes")
+    compute_types: list[str] = Field(..., description="List of available compute types")

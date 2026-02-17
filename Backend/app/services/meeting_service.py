@@ -51,7 +51,7 @@ class MeetingService(metaclass=SingletonMeta):
                 metadata, audio_bytes, batch_request.processing_configuration, username
             )
             created_meetings.append(created_meeting)
-        
+
         return created_meetings
 
     def _process_single_meeting(
@@ -76,7 +76,7 @@ class MeetingService(metaclass=SingletonMeta):
         created_meeting = self._repository.store_meeting(
             meeting_metadata, summary, transcription, username
         )
-        
+
         return created_meeting
 
     def _get_audio_from_bytes(self, audio_bytes: bytes):

@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field, field_validator
 
-
 DEFAULT_PROMPT = """
     Analyze this meeting transcript and provide a structured summary with the following:
 

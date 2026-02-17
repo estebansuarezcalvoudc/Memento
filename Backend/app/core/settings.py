@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     hf_token: str
 
     openai_key: str
-    
+
     encryption_key: str
 
     secret_key: str

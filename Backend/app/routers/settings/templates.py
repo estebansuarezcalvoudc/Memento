@@ -18,7 +18,7 @@ def get_templates_service() -> TemplatesService:
 
 @router.get("/default-prompt", response_model=SystemPromptResponse)
 def get_default_prompt(
-    service: Annotated[TemplatesService, Depends(get_templates_service)]
+    service: Annotated[TemplatesService, Depends(get_templates_service)],
 ) -> SystemPromptResponse:
     """
     Get the default system prompt from the application

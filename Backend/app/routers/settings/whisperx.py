@@ -25,7 +25,7 @@ def get_whisperx_service() -> WhisperXService:
 
 @router.get("/available-options", response_model=WhisperXAvailableOptions)
 def get_available_options(
-    service: Annotated[WhisperXService, Depends(get_whisperx_service)]
+    service: Annotated[WhisperXService, Depends(get_whisperx_service)],
 ) -> WhisperXAvailableOptions:
     """
     Get available WhisperX models and compute types
@@ -37,7 +37,7 @@ def get_available_options(
 
 @router.get("/languages", response_model=list[LanguageOption])
 def get_supported_languages(
-    service: Annotated[WhisperXService, Depends(get_whisperx_service)]
+    service: Annotated[WhisperXService, Depends(get_whisperx_service)],
 ) -> list[LanguageOption]:
     """
     Get list of supported languages for WhisperX transcription

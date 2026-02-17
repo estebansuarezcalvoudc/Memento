@@ -24,7 +24,7 @@ class MCPClient:
         self.exit_stack = AsyncExitStack()
 
     async def _get_available_tools(self) -> list[dict]:
-        response = await self._session.list_tools()  # type:ignore
+        response = await self._session.list_tools()  # type: ignore
 
         return [
             {
@@ -115,8 +115,8 @@ class MCPClient:
 
         response = openai.chat.completions.create(
             model=model_config.model,
-            messages=conversation_history,  # type:ignore
-            tools=self._available_tools,  # type:ignore
+            messages=conversation_history,  # type: ignore
+            tools=self._available_tools,  # type: ignore
             **model_config.options,
         )
 
@@ -179,8 +179,8 @@ class MCPClient:
 
         response = openai.chat.completions.create(
             model=model_config.model,
-            messages=conversation_history,  # type:ignore
-            tools=self._available_tools,  # type:ignore
+            messages=conversation_history,  # type: ignore
+            tools=self._available_tools,  # type: ignore
             **model_config.options,
         )
 
@@ -270,7 +270,7 @@ class MCPClient:
 
     async def _get_tool_call_result(self, tool_name: str, tool_args):
         try:
-            result = await self._session.call_tool(  # type:ignore
+            result = await self._session.call_tool(  # type: ignore
                 tool_name, tool_args  # type: ignore
             )
             _logger.debug(f"Tool {tool_name} result: {str(result.content)[:250]}...")

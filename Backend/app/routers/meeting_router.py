@@ -17,10 +17,7 @@ from ..services.meeting_service import MeetingService
 from .docs.meeting_docs_loader import create_meetings_docs
 
 _logger = setup_logger(__name__)
-router = APIRouter(
-    prefix="/meetings",
-    tags=["Meeting"]
-)
+router = APIRouter(prefix="/meetings", tags=["Meeting"])
 
 
 def _parse_meetings_batch_request(

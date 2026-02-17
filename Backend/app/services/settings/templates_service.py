@@ -1,8 +1,8 @@
 from ...repositories.settings.settings_repo import SettingsRepository
 from ...schemas.templates_schema import (
+    DEFAULT_PROMPT,
     SystemPromptResponse,
     SystemPromptUpdate,
-    DEFAULT_PROMPT,
 )
 
 

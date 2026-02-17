@@ -16,10 +16,7 @@ from ..schemas.conversation_schema import (
 from ..services.conversation_service import ConversationService
 
 _logger = setup_logger(__name__)
-router = APIRouter(
-    prefix="/conversations",
-    tags=["Conversations"]
-)
+router = APIRouter(prefix="/conversations", tags=["Conversations"])
 
 
 @router.post(
