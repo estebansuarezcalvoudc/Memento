@@ -1,4 +1,3 @@
-from ...core.encryption import decrypt_api_key
 from ...core.logging import setup_logger
 from ...core.openai_factory import create_openai_client
 from ...repositories.settings.settings_repo import SettingsRepository
@@ -34,17 +33,7 @@ class ModelsService:
 
         for provider in active_providers:
             try:
-                client_kwargs = {}
-
-                if provider.requires_api_key and provider.has_api_key:
-                    provider_settings = self._repository.get_provider_settings(
-                        username, provider.name
-                    )
-                    if provider_settings and provider_settings.api_key_encrypted:
-                        api_key = decrypt_api_key(provider_settings.api_key_encrypted)
-                        client_kwargs["api_key"] = api_key
-
-                client = create_openai_client(provider.name, **client_kwargs)
+                client = create_openai_client(provider.name, username=username)
                 models_response = client.models.list()
 
                 for model in models_response.data:

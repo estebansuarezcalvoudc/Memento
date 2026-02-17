@@ -41,25 +41,21 @@ class TestModelsEndpoints:
         )
 
         with patch(
-            "app.services.settings.models_service.decrypt_api_key"
-        ) as mock_decrypt:
-            with patch(
-                "app.services.settings.models_service.create_openai_client"
-            ) as mock_create_client:
-                mock_decrypt.return_value = "sk-fake-api-key"
-                mock_create_client.return_value = mock_openai
+            "app.services.settings.models_service.create_openai_client"
+        ) as mock_create_client:
+            mock_create_client.return_value = mock_openai
 
-                response = client.get(
-                    "/settings/models/available", headers=auth_headers
-                )
+            response = client.get(
+                "/settings/models/available", headers=auth_headers
+            )
 
-                assert response.status_code == 200
-                models = response.json()
-                assert isinstance(models, list)
-                assert len(models) >= 2  # At least 2 models (OpenAI)
-                assert any(
-                    m["id"] == "gpt-4o" and m["provider"] == "OpenAI" for m in models
-                )
+            assert response.status_code == 200
+            models = response.json()
+            assert isinstance(models, list)
+            assert len(models) >= 2  # At least 2 models (OpenAI)
+            assert any(
+                m["id"] == "gpt-4o" and m["provider"] == "OpenAI" for m in models
+            )
 
     def test_get_available_models_should_return_empty_when_no_active_providers(
         self, client: TestClient, auth_headers: dict, mock_mongo
