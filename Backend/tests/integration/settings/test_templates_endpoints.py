@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from app.schemas.templates_schema import DEFAULT_PROMPT
+from app.schemas.settings.templates_schema import DEFAULT_PROMPT
 
 
 class TestTemplatesEndpoints:
@@ -50,7 +50,7 @@ class TestTemplatesEndpoints:
     def test_update_user_prompt_should_save_custom_prompt(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        """Test that PATCH /settings/templates/prompt saves custom prompt"""
+        """Test that PUT /settings/templates/prompt saves custom prompt"""
         custom_prompt = (
             "My custom meeting analysis prompt. " * 10
         )  # Long enough (50+ chars)
@@ -60,7 +60,7 @@ class TestTemplatesEndpoints:
             "password": "$2b$12$test_hashed_password",
         }
 
-        response = client.patch(
+        response = client.put(
             "/settings/templates/prompt",
             headers=auth_headers,
             json={"system_prompt": custom_prompt},
@@ -79,7 +79,7 @@ class TestTemplatesEndpoints:
     def test_update_user_prompt_should_reject_short_prompt(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        """Test that PATCH /settings/templates/prompt rejects prompts shorter than 50 chars"""
+        """Test that PUT /settings/templates/prompt rejects prompts shorter than 50 chars"""
         short_prompt = "Too short"  # Less than 50 chars
 
         mock_mongo.find_one.return_value = {
@@ -87,7 +87,7 @@ class TestTemplatesEndpoints:
             "password": "$2b$12$test_hashed_password",
         }
 
-        response = client.patch(
+        response = client.put(
             "/settings/templates/prompt",
             headers=auth_headers,
             json={"system_prompt": short_prompt},
@@ -99,7 +99,7 @@ class TestTemplatesEndpoints:
     def test_update_user_prompt_should_reject_long_prompt(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        """Test that PATCH /settings/templates/prompt rejects prompts longer than 5000 chars"""
+        """Test that PUT /settings/templates/prompt rejects prompts longer than 5000 chars"""
         long_prompt = "A" * 5001  # More than 5000 chars
 
         mock_mongo.find_one.return_value = {
@@ -107,7 +107,7 @@ class TestTemplatesEndpoints:
             "password": "$2b$12$test_hashed_password",
         }
 
-        response = client.patch(
+        response = client.put(
             "/settings/templates/prompt",
             headers=auth_headers,
             json={"system_prompt": long_prompt},
@@ -119,7 +119,7 @@ class TestTemplatesEndpoints:
     def test_update_user_prompt_should_reject_empty_prompt(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        """Test that PATCH /settings/templates/prompt rejects empty or whitespace-only prompts"""
+        """Test that PUT /settings/templates/prompt rejects empty or whitespace-only prompts"""
         empty_prompt = "   \n\t   "  # Only whitespace
 
         mock_mongo.find_one.return_value = {
@@ -127,7 +127,7 @@ class TestTemplatesEndpoints:
             "password": "$2b$12$test_hashed_password",
         }
 
-        response = client.patch(
+        response = client.put(
             "/settings/templates/prompt",
             headers=auth_headers,
             json={"system_prompt": empty_prompt},
@@ -139,8 +139,7 @@ class TestTemplatesEndpoints:
     def test_update_user_prompt_should_trim_whitespace(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        """Test that PATCH /settings/templates/prompt trims leading/trailing whitespace"""
-        # Arrange
+        """Test that PUT /settings/templates/prompt trims leading/trailing whitespace"""
         prompt_with_whitespace = "  " + ("Valid prompt text. " * 10) + "  "
 
         mock_mongo.find_one.return_value = {
@@ -148,7 +147,7 @@ class TestTemplatesEndpoints:
             "password": "$2b$12$test_hashed_password",
         }
 
-        response = client.patch(
+        response = client.put(
             "/settings/templates/prompt",
             headers=auth_headers,
             json={"system_prompt": prompt_with_whitespace},

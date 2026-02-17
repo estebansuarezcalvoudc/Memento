@@ -4,7 +4,7 @@ import pymongo
 
 from ...core.openai_factory import ProviderName
 from ...core.settings import settings
-from ...schemas.provider_schema import Provider, ProviderSettings
+from ...schemas.settings.provider_schema import Provider, ProviderSettings
 
 
 class SettingsRepository:

@@ -1,9 +1,9 @@
 from fastapi import APIRouter
 
-from .models import router as models_router
-from .providers import router as providers_router
-from .templates import router as templates_router
-from .whisperx import router as whisperx_router
+from .models_router import router as models_router
+from .providers_router import router as providers_router
+from .templates_router import router as templates_router
+from .whisperx_router import router as whisperx_router
 
 # Main settings router
 settings_router = APIRouter(prefix="/settings")

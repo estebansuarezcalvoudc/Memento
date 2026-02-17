@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from ...core.logging import setup_logger
 from ...dependencies.auth_dependencies import get_current_active_user
-from ...schemas.auth_schema import User
-from ...schemas.provider_schema import (
+from ...schemas.auth.auth_schema import User
+from ...schemas.settings.provider_schema import (
     ProviderAPIKeyRequest,
     ProvidersListResponse,
     ProviderStatusRequest,

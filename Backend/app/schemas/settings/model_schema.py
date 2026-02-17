@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from ..core.openai_factory import ProviderName
+from ...core.openai_factory import ProviderName
 
 
 class ModelConfig(BaseModel):

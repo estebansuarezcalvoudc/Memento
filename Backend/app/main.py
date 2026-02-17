@@ -2,7 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .core.logging import setup_logger
-from .routers import auth_router, conversation_router, meeting_router
+from .routers.auth import auth_router
+from .routers.conversation import conversation_router
+from .routers.meeting import meeting_router
 from .routers.settings import settings_router
 
 _tags_metadata = [
@@ -32,9 +34,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth_router.router)
-app.include_router(meeting_router.router)
-app.include_router(conversation_router.router)
+app.include_router(auth_router)
+app.include_router(meeting_router)
+app.include_router(conversation_router)
 app.include_router(settings_router)
 
 _logger = setup_logger(__name__)

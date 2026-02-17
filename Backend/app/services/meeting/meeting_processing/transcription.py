@@ -1,8 +1,8 @@
 import whisperx
 import whisperx.diarize
 
-from ...core.logging import log_execution_time, setup_logger
-from ...core.settings import settings
+from ....core.logging import log_execution_time, setup_logger
+from ....core.settings import settings
 from .gpu_utils import try_on_gpu
 
 _logger = setup_logger(__name__)

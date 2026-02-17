@@ -3,9 +3,9 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from .language_models_schema import LanguageModelConfiguration
-from .templates_schema import DEFAULT_PROMPT
-from .whisperx_schema import SUPPORTED_LANGUAGES
+from ..conversation.language_models_schema import LanguageModelConfiguration
+from ..settings.templates_schema import DEFAULT_PROMPT
+from ..settings.whisperx_schema import SUPPORTED_LANGUAGES
 
 
 class MeetingMetadata(BaseModel):

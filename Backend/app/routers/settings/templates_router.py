@@ -4,8 +4,11 @@ from fastapi import APIRouter, Depends
 
 from ...dependencies.auth_dependencies import get_current_active_user
 from ...repositories.settings.settings_repo import SettingsRepository
-from ...schemas.auth_schema import User
-from ...schemas.templates_schema import SystemPromptResponse, SystemPromptUpdate
+from ...schemas.auth.auth_schema import User
+from ...schemas.settings.templates_schema import (
+    SystemPromptResponse,
+    SystemPromptUpdate,
+)
 from ...services.settings.templates_service import TemplatesService
 
 router = APIRouter(prefix="/templates", tags=["Settings - Templates"])
@@ -43,7 +46,7 @@ def get_user_prompt(
     return service.get_user_prompt(user.username)
 
 
-@router.patch("/prompt", response_model=SystemPromptResponse)
+@router.put("/prompt", response_model=SystemPromptResponse)
 def update_user_prompt(
     update: SystemPromptUpdate,
     user: Annotated[User, Depends(get_current_active_user)],

@@ -1,8 +1,8 @@
 import asyncio
 
-from ..core.logging import setup_logger
-from ..repositories.conversation_repo import ConversationRepository
-from ..schemas.conversation_schema import (
+from ...core.logging import setup_logger
+from ...repositories.conversation_repo import ConversationRepository
+from ...schemas.conversation.conversation_schema import (
     ConversationCreateRequest,
     ConversationCreateResponse,
     ConversationDialogueRetrieve,
@@ -10,9 +10,9 @@ from ..schemas.conversation_schema import (
     ConversationUpdateRequest,
     SendMessageRequest,
 )
-from ..utils.singleton_meta import SingletonMeta
-from .mcp.mcp_client import MCPClient
-from .mcp.prompts import SYSTEM_PROMPT
+from ...utils.singleton_meta import SingletonMeta
+from ..meeting.mcp.mcp_client import MCPClient
+from ..meeting.mcp.prompts import SYSTEM_PROMPT
 
 _logger = setup_logger(__name__)
 

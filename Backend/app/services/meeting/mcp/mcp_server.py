@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
 from app.core.logging import setup_logger
 from app.core.settings import settings
-from app.schemas.whisperx_schema import SUPPORTED_LANGUAGES
+from app.schemas.settings.whisperx_schema import SUPPORTED_LANGUAGES
 
 mcp = FastMCP("weather")
 _logger = setup_logger(__name__)

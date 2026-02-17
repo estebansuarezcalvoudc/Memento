@@ -1,7 +1,7 @@
 from typing import get_args
 
 from ...repositories.settings.settings_repo import SettingsRepository
-from ...schemas.whisperx_schema import (
+from ...schemas.settings.whisperx_schema import (
     LANGUAGE_NAMES,
     ComputeType,
     LanguageOption,

@@ -2,10 +2,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from ..core.logging import setup_logger
-from ..dependencies.auth_dependencies import get_current_active_user
-from ..schemas.auth_schema import User
-from ..schemas.conversation_schema import (
+from ...core.logging import setup_logger
+from ...dependencies.auth_dependencies import get_current_active_user
+from ...schemas.auth.auth_schema import User
+from ...schemas.conversation.conversation_schema import (
     ConversationCreateRequest,
     ConversationCreateResponse,
     ConversationMetadataRetrieve,
@@ -13,7 +13,7 @@ from ..schemas.conversation_schema import (
     Messages,
     SendMessageRequest,
 )
-from ..services.conversation_service import ConversationService
+from ...services.conversation.conversation_service import ConversationService
 
 _logger = setup_logger(__name__)
 router = APIRouter(prefix="/conversations", tags=["Conversations"])

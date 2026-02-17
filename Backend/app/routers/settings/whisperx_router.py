@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends
 
 from ...dependencies.auth_dependencies import get_current_active_user
 from ...repositories.settings.settings_repo import SettingsRepository
-from ...schemas.auth_schema import User
-from ...schemas.whisperx_schema import (
+from ...schemas.auth.auth_schema import User
+from ...schemas.settings.whisperx_schema import (
     LanguageOption,
     WhisperXAvailableOptions,
     WhisperXConfiguration,

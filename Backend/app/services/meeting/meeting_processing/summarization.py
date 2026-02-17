@@ -1,6 +1,6 @@
-from ...core.logging import log_execution_time, setup_logger
-from ...core.openai_factory import create_openai_client
-from ...schemas.meeting_schema import ProcessingConfiguration
+from ....core.logging import log_execution_time, setup_logger
+from ....core.openai_factory import create_openai_client
+from ....schemas.meeting.meeting_schema import ProcessingConfiguration
 
 _logger = setup_logger(__name__)
 

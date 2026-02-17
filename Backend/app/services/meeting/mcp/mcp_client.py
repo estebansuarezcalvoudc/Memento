@@ -8,10 +8,10 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from openai.types.chat import ChatCompletion
 
-from ...core.logging import setup_logger
-from ...core.openai_factory import create_openai_client
-from ...core.settings import settings
-from ...schemas.conversation_schema import LanguageModelConfiguration
+from ....core.logging import setup_logger
+from ....core.openai_factory import create_openai_client
+from ....core.settings import settings
+from ....schemas.conversation.language_models_schema import LanguageModelConfiguration
 
 _logger = setup_logger(__name__, log_file="mcp_client.log", show_file_name=False)
 

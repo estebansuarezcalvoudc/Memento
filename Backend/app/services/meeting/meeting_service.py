@@ -3,8 +3,8 @@ import tempfile
 import whisperx
 from fastapi import HTTPException, status
 
-from ..repositories.meeting_repo import MeetingRepository
-from ..schemas.meeting_schema import (
+from ...repositories.meeting_repo import MeetingRepository
+from ...schemas.meeting.meeting_schema import (
     CreateMeetingsBatchRequest,
     MeetingMetadata,
     MeetingMetadataResponse,
@@ -13,7 +13,7 @@ from ..schemas.meeting_schema import (
     ProcessingConfiguration,
     UpdateMeetingMetadata,
 )
-from ..utils.singleton_meta import SingletonMeta
+from ...utils.singleton_meta import SingletonMeta
 from .meeting_processing.gpu_utils import get_device
 from .meeting_processing.summarization import get_meeting_summary
 from .meeting_processing.transcription import get_transcribed_conversation

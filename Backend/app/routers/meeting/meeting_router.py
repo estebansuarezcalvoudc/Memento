@@ -3,18 +3,18 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 
-from ..core.logging import setup_logger
-from ..dependencies.auth_dependencies import get_current_active_user
-from ..schemas.auth_schema import User
-from ..schemas.meeting_schema import (
+from ...core.logging import setup_logger
+from ...dependencies.auth_dependencies import get_current_active_user
+from ...schemas.auth.auth_schema import User
+from ...schemas.meeting.meeting_schema import (
     CreateMeetingsBatchRequest,
     MeetingMetadataResponse,
     MeetingSummaryResponse,
     MeetingTranscriptionResponse,
     UpdateMeetingMetadata,
 )
-from ..services.meeting_service import MeetingService
-from .docs.meeting_docs_loader import create_meetings_docs
+from ...services.meeting.meeting_service import MeetingService
+from ..docs.meeting_docs_loader import create_meetings_docs
 
 _logger = setup_logger(__name__)
 router = APIRouter(prefix="/meetings", tags=["Meeting"])
