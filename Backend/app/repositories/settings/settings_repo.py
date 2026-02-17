@@ -256,3 +256,39 @@ class SettingsRepository:
             {"username": username},
             {"$set": update_fields},
         )
+
+    def get_system_prompt(self, username: str) -> Optional[str]:
+        """
+        Get user's custom system prompt
+
+        Args:
+            username: User's username
+
+        Returns:
+            Custom system prompt or None if not set
+        """
+        user_data = self._collection.find_one(
+            {"username": username}, {"settings.templates.system_prompt": 1, "_id": 0}
+        )
+
+        if not user_data or "settings" not in user_data:
+            return None
+
+        return (
+            user_data.get("settings", {})
+            .get("templates", {})
+            .get("system_prompt")
+        )
+
+    def update_system_prompt(self, username: str, system_prompt: str) -> None:
+        """
+        Update user's custom system prompt
+
+        Args:
+            username: User's username
+            system_prompt: New system prompt
+        """
+        self._collection.update_one(
+            {"username": username},
+            {"$set": {"settings.templates.system_prompt": system_prompt}},
+        )
