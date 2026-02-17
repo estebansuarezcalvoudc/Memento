@@ -2,12 +2,28 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .core.logging import setup_logger
-from .routers import auth_router, conversation_router, meeting_router
+from .routers.auth import auth_router
+from .routers.conversation import conversation_router
+from .routers.meeting import meeting_router
+from .routers.settings import settings_router
 
 _tags_metadata = [
     {"name": "Authentication", "description": "User authentication and registration"},
     {"name": "Meeting", "description": "Manage meetings"},
     {"name": "Conversations", "description": "Manage conversations"},
+    {
+        "name": "Settings - Providers",
+        "description": "Manage LLM providers and API keys",
+    },
+    {"name": "Settings - Models", "description": "Manage model configurations"},
+    {
+        "name": "Settings - Transcription - WhisperX",
+        "description": "Manage WhisperX transcription configuration",
+    },
+    {
+        "name": "Settings - Templates",
+        "description": "Manage templates settings",
+    },
 ]
 
 
@@ -22,9 +38,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth_router.router, prefix="/auth", tags=["Authentication"])
-app.include_router(meeting_router.router)
-app.include_router(conversation_router.router)
+app.include_router(auth_router)
+app.include_router(meeting_router)
+app.include_router(conversation_router)
+app.include_router(settings_router)
 
 _logger = setup_logger(__name__)
 _logger.info("Backend is up")

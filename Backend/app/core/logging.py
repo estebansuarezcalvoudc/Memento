@@ -23,9 +23,9 @@ def setup_logger(
 
         formatter = logging.Formatter(
             (
-            "[%(asctime)s] [%(levelname)s] - %(name)s:%(lineno)d - %(message)s"
-            if show_file_name
-            else "[%(asctime)s] [%(levelname)s] - %(lineno)d - %(message)s"
+                "[%(asctime)s] [%(levelname)s] - %(name)s:%(lineno)d - %(message)s"
+                if show_file_name
+                else "[%(asctime)s] [%(levelname)s] - %(lineno)d - %(message)s"
             ),
             "%H:%M:%S",
         )

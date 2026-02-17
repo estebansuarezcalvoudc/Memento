@@ -6,7 +6,7 @@ from bson import ObjectId
 from fastapi import HTTPException, status
 
 from ..core.settings import settings
-from ..schemas.conversation_schema import (
+from ..schemas.conversation.conversation_schema import (
     ConversationCreateResponse,
     ConversationDialogueRetrieve,
     ConversationMetadataRetrieve,

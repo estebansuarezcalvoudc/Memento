@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordBearer
 
 from ..core.settings import settings
 from ..repositories.auth_repo import AuthRepository
-from ..schemas.auth_schema import User
+from ..schemas.auth.auth_schema import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 

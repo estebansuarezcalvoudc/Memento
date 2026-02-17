@@ -1,6 +1,7 @@
 import { useActionState, useEffect, useState } from 'react'
 
 import useMeetingsAPI from '../../api/useMeetingsAPI'
+import useWhisperXAPI, { type LanguageOption } from '../../api/useWhisperXAPI'
 import {
   useAddMeeting,
   type Meeting as StoreMeeting,
@@ -98,8 +99,23 @@ export default function UploadMeetingsForm({
   handleCloseDialog: () => void
 }) {
   const { uploadMeetings } = useMeetingsAPI()
+  const { getSupportedLanguages } = useWhisperXAPI()
   const [meetings, setMeetings] = useState<MeetingFormData[]>([createMeeting()])
+  const [languages, setLanguages] = useState<LanguageOption[]>([])
   const addMeetingToStore = useAddMeeting()
+
+  useEffect(() => {
+    const fetchSupportedLanguages = async () => {
+      try {
+        const data = await getSupportedLanguages()
+        setLanguages(data)
+      } catch (err) {
+        console.error('Failed to load languages:', err)
+      }
+    }
+
+    fetchSupportedLanguages()
+  }, [getSupportedLanguages])
 
   const uploadAction = createUploadMeetingsAction(uploadMeetings)
 
@@ -166,14 +182,15 @@ export default function UploadMeetingsForm({
 
   return (
     <form action={handleSubmit}>
-      {meetings.map((meeting, i) => (
+      {meetings.map((meeting, index) => (
         <MeetingForm
           key={meeting.id}
           meeting={meeting}
-          index={i}
+          index={index}
           meetingsCount={meetings.length}
           isPending={isPending}
           onRemove={removeMeeting}
+          languages={languages}
         />
       ))}
 

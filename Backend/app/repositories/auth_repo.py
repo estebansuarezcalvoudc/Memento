@@ -4,7 +4,7 @@ import pymongo
 from fastapi import HTTPException, status
 
 from ..core.settings import settings
-from ..schemas.auth_schema import UserCreate
+from ..schemas.auth.auth_schema import UserCreate
 
 
 class AuthRepository:
