@@ -6,6 +6,7 @@ from ...dependencies.auth_dependencies import get_current_active_user
 from ...repositories.settings.settings_repo import SettingsRepository
 from ...schemas.auth_schema import User
 from ...schemas.whisperx_schema import (
+    LanguageOption,
     WhisperXAvailableOptions,
     WhisperXConfiguration,
     WhisperXConfigurationUpdate,
@@ -34,14 +35,15 @@ def get_available_options(
     return service.get_available_options()
 
 
-@router.get("/languages", response_model=list[str])
+@router.get("/languages", response_model=list[LanguageOption])
 def get_supported_languages(
     service: Annotated[WhisperXService, Depends(get_whisperx_service)]
-) -> list[str]:
+) -> list[LanguageOption]:
     """
     Get list of supported languages for WhisperX transcription
 
-    Returns ISO 639-1 language codes supported by WhisperX alignment models
+    Returns list of language options with code and human-readable name,
+    sorted alphabetically by name
     """
     return service.get_supported_languages()
 

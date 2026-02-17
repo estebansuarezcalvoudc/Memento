@@ -46,6 +46,57 @@ WhisperXLanguage = Literal[
     "zh",  # Chinese
 ]
 
+# Language code to human-readable name mapping
+LANGUAGE_NAMES = {
+    "ar": "Arabic",
+    "ca": "Catalan",
+    "cs": "Czech",
+    "da": "Danish",
+    "de": "German",
+    "el": "Greek",
+    "en": "English",
+    "es": "Spanish",
+    "eu": "Basque",
+    "fa": "Persian",
+    "fi": "Finnish",
+    "fr": "French",
+    "gl": "Galician",
+    "he": "Hebrew",
+    "hi": "Hindi",
+    "hr": "Croatian",
+    "hu": "Hungarian",
+    "it": "Italian",
+    "ja": "Japanese",
+    "ka": "Georgian",
+    "ko": "Korean",
+    "lv": "Latvian",
+    "ml": "Malayalam",
+    "nl": "Dutch",
+    "nn": "Norwegian Nynorsk",
+    "no": "Norwegian",
+    "pl": "Polish",
+    "pt": "Portuguese",
+    "ro": "Romanian",
+    "ru": "Russian",
+    "sk": "Slovak",
+    "sl": "Slovenian",
+    "sv": "Swedish",
+    "te": "Telugu",
+    "tl": "Filipino",
+    "tr": "Turkish",
+    "uk": "Ukrainian",
+    "ur": "Urdu",
+    "vi": "Vietnamese",
+    "zh": "Chinese",
+}
+
+
+class LanguageOption(BaseModel):
+    """Language option with code and human-readable name"""
+
+    code: str = Field(..., description="ISO 639-1 language code")
+    name: str = Field(..., description="Human-readable language name")
+
 # WhisperX available models
 WhisperXModel = Literal["tiny", "base", "small", "medium", "large", "large-v2", "large-v3"]
 

@@ -1,5 +1,5 @@
 import { removeImage } from '../../assets/buttonsImages'
-import { SUPPORTED_LANGUAGES } from '../../utils/supportedLanguages'
+import { type LanguageOption } from '../../api/useWhisperXAPI'
 import Input from '../common/Input'
 import Select from '../common/Select'
 import { type MeetingFormData } from './UploadMeetingsForm'
@@ -10,6 +10,7 @@ interface MeetingFormProps {
   meetingsCount: number
   isPending: boolean
   onRemove: (id: string) => void
+  languages: LanguageOption[]
 }
 
 export default function MeetingForm({
@@ -18,6 +19,7 @@ export default function MeetingForm({
   meetingsCount,
   isPending,
   onRemove,
+  languages,
 }: MeetingFormProps) {
   const today = new Date().toISOString().split('T')[0]
 
@@ -65,7 +67,7 @@ export default function MeetingForm({
         <Select
           label="Language"
           name={`meetings[${index}][language]`}
-          options={SUPPORTED_LANGUAGES}
+          options={languages}
           placeholder="Select a language"
           disabled={isPending}
           defaultValue={meeting.language}

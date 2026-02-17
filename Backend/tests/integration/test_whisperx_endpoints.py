@@ -32,19 +32,31 @@ class TestWhisperXEndpoints:
     def test_get_supported_languages_should_return_language_codes(
         self, client: TestClient
     ):
-        """Test that GET /settings/transcription/whisperx/languages returns supported language codes"""
+        """Test that GET /settings/transcription/whisperx/languages returns supported language objects"""
         response = client.get("/settings/transcription/whisperx/languages")
 
         assert response.status_code == 200
         languages = response.json()
         assert isinstance(languages, list)
         assert len(languages) == 40
+        
+        # Verify structure of language objects
+        assert all("code" in lang and "name" in lang for lang in languages)
 
-        assert "en" in languages
-        assert "es" in languages
-        assert "fr" in languages
-        assert "de" in languages
-        assert "zh" in languages
+        # Check some known languages by extracting codes
+        codes = [lang["code"] for lang in languages]
+        assert "en" in codes
+        assert "es" in codes
+        assert "fr" in codes
+        assert "de" in codes
+        assert "zh" in codes
+        
+        # Check that names are present
+        english = next(lang for lang in languages if lang["code"] == "en")
+        assert english["name"] == "English"
+        
+        spanish = next(lang for lang in languages if lang["code"] == "es")
+        assert spanish["name"] == "Spanish"
 
     def test_get_whisperx_configuration_should_return_defaults_when_not_configured(
         self, client: TestClient, auth_headers: dict, mock_mongo

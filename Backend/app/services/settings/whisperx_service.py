@@ -3,6 +3,8 @@ from typing import get_args
 from ...repositories.settings.settings_repo import SettingsRepository
 from ...schemas.whisperx_schema import (
     ComputeType,
+    LANGUAGE_NAMES,
+    LanguageOption,
     WhisperXAvailableOptions,
     WhisperXConfiguration,
     WhisperXConfigurationUpdate,
@@ -29,14 +31,23 @@ class WhisperXService:
 
         return WhisperXAvailableOptions(models=models, compute_types=compute_types)
 
-    def get_supported_languages(self) -> list[str]:
+    def get_supported_languages(self) -> list[LanguageOption]:
         """
         Get list of supported languages for WhisperX transcription
 
         Returns:
-            List of language codes
+            List of LanguageOption objects with code and name
         """
-        return list(get_args(WhisperXLanguage))
+        language_codes = list(get_args(WhisperXLanguage))
+        
+        # Convert codes to LanguageOption objects with names
+        languages = [
+            LanguageOption(code=code, name=LANGUAGE_NAMES[code])
+            for code in language_codes
+        ]
+        
+        # Sort by name for better UX
+        return sorted(languages, key=lambda x: x.name)
 
     def get_user_configuration(self, username: str) -> WhisperXConfiguration:
         """
