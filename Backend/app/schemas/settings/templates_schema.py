@@ -55,15 +55,18 @@ class SystemPromptUpdate(BaseModel):
 
     system_prompt: str = Field(
         ...,
-        min_length=50,
-        max_length=5000,
         description="Custom system prompt (50-5000 characters)",
     )
 
     @field_validator("system_prompt")
     @classmethod
     def validate_system_prompt(cls, v: str) -> str:
-        """Validate that prompt is not just whitespace"""
-        if not v.strip():
+        """Validate that prompt is not just whitespace and meets length requirements"""
+        stripped = v.strip()
+        if not stripped:
             raise ValueError("System prompt cannot be empty or just whitespace")
-        return v.strip()
+        if len(stripped) < 50:
+            raise ValueError("System prompt must be at least 50 characters long")
+        if len(stripped) > 5000:
+            raise ValueError("System prompt must be at most 5000 characters long")
+        return stripped
