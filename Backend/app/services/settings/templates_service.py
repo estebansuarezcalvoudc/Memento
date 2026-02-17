@@ -1,6 +1,9 @@
 from ...repositories.settings.settings_repo import SettingsRepository
-from ...schemas.meeting_schema import _DEFAULT_PROMPT
-from ...schemas.templates_schema import SystemPromptResponse, SystemPromptUpdate
+from ...schemas.templates_schema import (
+    SystemPromptResponse,
+    SystemPromptUpdate,
+    DEFAULT_PROMPT,
+)
 
 
 class TemplatesService:
@@ -22,7 +25,7 @@ class TemplatesService:
         custom_prompt = self.settings_repo.get_system_prompt(username)
 
         # If user has custom prompt, return it; otherwise return default
-        prompt = custom_prompt if custom_prompt else _DEFAULT_PROMPT
+        prompt = custom_prompt if custom_prompt else DEFAULT_PROMPT
 
         return SystemPromptResponse(system_prompt=prompt)
 
@@ -50,4 +53,4 @@ class TemplatesService:
         Returns:
             SystemPromptResponse with default system prompt
         """
-        return SystemPromptResponse(system_prompt=_DEFAULT_PROMPT)
+        return SystemPromptResponse(system_prompt=DEFAULT_PROMPT)

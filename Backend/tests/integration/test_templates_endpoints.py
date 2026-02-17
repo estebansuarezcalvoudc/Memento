@@ -1,8 +1,6 @@
-"""Integration tests for templates settings endpoints."""
-
 from fastapi.testclient import TestClient
 
-from app.schemas.meeting_schema import _DEFAULT_PROMPT
+from app.schemas.templates_schema import DEFAULT_PROMPT
 
 
 class TestTemplatesEndpoints:
@@ -15,7 +13,7 @@ class TestTemplatesEndpoints:
         assert response.status_code == 200
         data = response.json()
         assert "system_prompt" in data
-        assert data["system_prompt"] == _DEFAULT_PROMPT
+        assert data["system_prompt"] == DEFAULT_PROMPT
 
     def test_get_user_prompt_should_return_default_when_not_configured(
         self, client: TestClient, auth_headers: dict, mock_mongo
@@ -30,7 +28,7 @@ class TestTemplatesEndpoints:
 
         assert response.status_code == 200
         data = response.json()
-        assert data["system_prompt"] == _DEFAULT_PROMPT
+        assert data["system_prompt"] == DEFAULT_PROMPT
 
     def test_get_user_prompt_should_return_custom_prompt(
         self, client: TestClient, auth_headers: dict, mock_mongo
