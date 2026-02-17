@@ -31,7 +31,7 @@ class SettingsRepository:
             List of Provider objects with current status
         """
         user_data = self._collection.find_one(
-            {"username": username}, {"settings.providers": 1, "_id": 0}
+            {"username": username}, {"settings.providers": True, "_id": False}
         )
 
         user_providers = (
@@ -74,7 +74,7 @@ class SettingsRepository:
         """
         user_data = self._collection.find_one(
             {"username": username},
-            {f"settings.providers.{provider_name}": 1, "_id": 0},
+            {f"settings.providers.{provider_name}": True, "_id": False},
         )
 
         if not user_data or "settings" not in user_data:
@@ -134,7 +134,10 @@ class SettingsRepository:
         """
         user_data = self._collection.find_one(
             {"username": username},
-            {f"settings.providers.{provider_name}.api_key_encrypted": 1, "_id": 0},
+            {
+                f"settings.providers.{provider_name}.api_key_encrypted": True,
+                "_id": False,
+            },
         )
 
         if not user_data:
@@ -211,6 +214,43 @@ class SettingsRepository:
         update_fields = {}
         for key, value in model_data.items():
             update_fields[f"settings.models.{key}"] = value
+
+        self._collection.update_one(
+            {"username": username},
+            {"$set": update_fields},
+        )
+
+    def get_whisperx_settings(self, username: str) -> dict | None:
+        """
+        Get user's WhisperX transcription settings
+
+        Args:
+            username: User's username
+
+        Returns:
+            Dictionary with model_size and compute_type or None
+        """
+        user_data = self._collection.find_one(
+            {"username": username},
+            {"settings.transcription.whisperx": True, "_id": False},
+        )
+
+        if not user_data or "settings" not in user_data:
+            return None
+
+        return user_data.get("settings", {}).get("transcription", {}).get("whisperx")
+
+    def update_whisperx_settings(self, username: str, whisperx_data: dict) -> None:
+        """
+        Update user's WhisperX settings (partial update)
+
+        Args:
+            username: User's username
+            whisperx_data: Dictionary with model_size and/or compute_type
+        """
+        update_fields = {}
+        for key, value in whisperx_data.items():
+            update_fields[f"settings.transcription.whisperx.{key}"] = value
 
         self._collection.update_one(
             {"username": username},

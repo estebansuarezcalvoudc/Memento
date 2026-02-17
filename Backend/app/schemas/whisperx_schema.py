@@ -1,0 +1,87 @@
+from typing import Literal, Optional
+
+from pydantic import BaseModel, Field
+
+# WhisperX supported languages (from whisperx alignment models)
+WhisperXLanguage = Literal[
+    "ar",  # Arabic
+    "ca",  # Catalan
+    "cs",  # Czech
+    "da",  # Danish
+    "de",  # German
+    "el",  # Greek
+    "en",  # English
+    "es",  # Spanish
+    "eu",  # Basque
+    "fa",  # Persian
+    "fi",  # Finnish
+    "fr",  # French
+    "gl",  # Galician
+    "he",  # Hebrew
+    "hi",  # Hindi
+    "hr",  # Croatian
+    "hu",  # Hungarian
+    "it",  # Italian
+    "ja",  # Japanese
+    "ka",  # Georgian
+    "ko",  # Korean
+    "lv",  # Latvian
+    "ml",  # Malayalam
+    "nl",  # Dutch
+    "nn",  # Norwegian Nynorsk
+    "no",  # Norwegian
+    "pl",  # Polish
+    "pt",  # Portuguese
+    "ro",  # Romanian
+    "ru",  # Russian
+    "sk",  # Slovak
+    "sl",  # Slovenian
+    "sv",  # Swedish
+    "te",  # Telugu
+    "tl",  # Filipino
+    "tr",  # Turkish
+    "uk",  # Ukrainian
+    "ur",  # Urdu
+    "vi",  # Vietnamese
+    "zh",  # Chinese
+]
+
+# WhisperX available models
+WhisperXModel = Literal["tiny", "base", "small", "medium", "large", "large-v2", "large-v3"]
+
+# WhisperX compute types
+ComputeType = Literal["int8", "float16", "float32"]
+
+
+class WhisperXConfiguration(BaseModel):
+    """User's WhisperX configuration for transcription"""
+
+    model_size: WhisperXModel = Field(
+        default="tiny", description="WhisperX model size to use for transcription"
+    )
+    compute_type: ComputeType = Field(
+        default="int8",
+        description="Compute precision type (int8 for CPU, float16 for GPU)",
+    )
+
+
+class WhisperXConfigurationUpdate(BaseModel):
+    """Request to update WhisperX configuration"""
+
+    model_size: Optional[WhisperXModel] = Field(
+        None, description="WhisperX model size to use"
+    )
+    compute_type: Optional[ComputeType] = Field(
+        None, description="Compute precision type"
+    )
+
+
+class WhisperXAvailableOptions(BaseModel):
+    """Available WhisperX models and compute types"""
+
+    models: list[str] = Field(
+        ..., description="List of available WhisperX model sizes"
+    )
+    compute_types: list[str] = Field(
+        ..., description="List of available compute types"
+    )

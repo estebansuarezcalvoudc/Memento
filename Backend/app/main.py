@@ -11,6 +11,7 @@ _tags_metadata = [
     {"name": "Conversations", "description": "Manage conversations"},
     {"name": "Settings - Providers", "description": "Manage LLM providers and API keys"},
     {"name": "Settings - Models", "description": "Manage model configurations"},
+    {"name": "Settings - Transcription - WhisperX", "description": "Manage WhisperX transcription configuration"},
 ]
 
 
