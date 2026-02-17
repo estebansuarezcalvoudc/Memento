@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import fetchBackend from './fetchBackend'
 
 export interface LanguageOption {
@@ -6,10 +8,11 @@ export interface LanguageOption {
 }
 
 export default function useWhisperXAPI() {
-  const getSupportedLanguages = async (): Promise<LanguageOption[]> => {
+  const getSupportedLanguages = useCallback(async (): Promise<
+    LanguageOption[]
+  > => {
     return fetchBackend('GET', 'settings/transcription/whisperx/languages')
-  }
-
+  }, [])
   return {
     getSupportedLanguages,
   }
