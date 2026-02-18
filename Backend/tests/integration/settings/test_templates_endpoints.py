@@ -134,7 +134,7 @@ class TestTemplatesEndpoints:
         )
 
         assert response.status_code == 422
-        assert "at least 50 characters" in str(response.json())
+        assert "empty or just whitespace" in str(response.json()).lower()
 
     def test_update_user_prompt_should_trim_whitespace(
         self, client: TestClient, auth_headers: dict, mock_mongo
