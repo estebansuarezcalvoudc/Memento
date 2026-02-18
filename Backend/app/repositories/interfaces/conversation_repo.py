@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from ..schemas.conversation.conversation_schema import (
+from ...schemas.conversation.conversation_schema import (
     ConversationCreateResponse,
     ConversationDialogueRetrieve,
     ConversationMetadataRetrieve,

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from ..schemas.meeting.meeting_schema import MeetingMetadata as MeetingMetadataSchema
-from ..schemas.meeting.meeting_schema import (
+from ...schemas.meeting.meeting_schema import MeetingMetadata as MeetingMetadataSchema
+from ...schemas.meeting.meeting_schema import (
     MeetingMetadataResponse,
     MeetingSummaryResponse,
     MeetingTranscriptionResponse,

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from ..schemas.auth.auth_schema import UserCreate
+from ...schemas.auth.auth_schema import UserCreate
 
 
 class AuthRepository(ABC):

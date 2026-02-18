@@ -23,7 +23,7 @@ def mock_elasticsearch():
     Mock Elasticsearch to avoid real connections during tests.
     Covers index initialization, document indexing, updates and deletes.
     """
-    with patch("app.repositories.meeting_repo.Elasticsearch") as mock_es_class:
+    with patch("app.repositories.implementations.mongo.meeting_mongo_repo.Elasticsearch") as mock_es_class:
         mock_es = MagicMock()
         mock_es_class.return_value = mock_es
         mock_es.indices.exists.return_value = False
