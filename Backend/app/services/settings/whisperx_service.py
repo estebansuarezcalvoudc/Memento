@@ -1,6 +1,6 @@
 from typing import get_args
 
-from ...repositories.settings import SettingsMongoRepository
+from ...repositories.settings import SettingsRepository
 from ...schemas.settings.whisperx_schema import (
     LANGUAGE_NAMES,
     ComputeType,
@@ -15,7 +15,7 @@ from ...schemas.settings.whisperx_schema import (
 class WhisperXService:
     """Service for WhisperX transcription configuration"""
 
-    def __init__(self, settings_repo: SettingsMongoRepository):
+    def __init__(self, settings_repo: SettingsRepository):
         self.settings_repo = settings_repo
 
     def get_available_options(self) -> WhisperXAvailableOptions:
