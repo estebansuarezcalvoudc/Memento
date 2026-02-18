@@ -17,8 +17,8 @@ class SettingsRepository:
 
     def __init__(self) -> None:
         myclient = pymongo.MongoClient(settings.mongo_url)
-        mydb = myclient["users_db"]
-        self._collection = mydb["users"]
+        mydb = myclient["tfg_db"]
+        self._collection = mydb["user_settings"]
 
     def get_providers(self, username: str) -> list[Provider]:
         """

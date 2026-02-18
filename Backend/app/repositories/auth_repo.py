@@ -10,8 +10,8 @@ from ..schemas.auth.auth_schema import UserCreate
 class AuthRepository:
     def __init__(self) -> None:
         myclient = pymongo.MongoClient(settings.mongo_url)
-        mydb = myclient["users_db"]
-        self._collection = mydb["users"]
+        mydb = myclient["tfg_db"]
+        self._collection = mydb["auth"]
 
     def store_user(self, user: UserCreate) -> None:
         existing_user = self._collection.find_one({"username": user.username})
