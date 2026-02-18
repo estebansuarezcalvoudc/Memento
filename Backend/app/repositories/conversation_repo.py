@@ -18,7 +18,7 @@ from .utils.handle_invalid_id import handle_invalid_id
 class ConversationRepository:
     def __init__(self):
         myclient = pymongo.MongoClient(settings.mongo_url)
-        mydb = myclient["chat_db"]
+        mydb = myclient["tfg_db"]
         self._collection = mydb["conversations"]
         self._collection.create_index("username", background=True)
 

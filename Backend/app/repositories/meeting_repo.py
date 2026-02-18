@@ -24,7 +24,7 @@ _logger = setup_logger(__name__)
 class MeetingRepository:
     def __init__(self) -> None:
         myclient = pymongo.MongoClient(settings.mongo_url)
-        mydb = myclient["meetings_db"]
+        mydb = myclient["tfg_db"]
         self._collection = mydb["meetings"]
         self._collection.create_index("username", background=True)
 
