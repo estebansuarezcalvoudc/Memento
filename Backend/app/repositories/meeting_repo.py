@@ -16,12 +16,13 @@ from ..schemas.meeting.meeting_schema import (
     UpdateMeetingMetadata,
 )
 from ..schemas.settings.whisperx_schema import SUPPORTED_LANGUAGES
+from .abstract_meeting_repo import MeetingRepository as AbstractMeetingRepository
 from .utils.handle_invalid_id import handle_invalid_id
 
 _logger = setup_logger(__name__)
 
 
-class MeetingRepository:
+class MeetingMongoRepository(AbstractMeetingRepository):
     def __init__(self) -> None:
         myclient = pymongo.MongoClient(settings.mongo_url)
         mydb = myclient["tfg_db"]

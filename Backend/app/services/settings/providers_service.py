@@ -3,7 +3,7 @@ from openai import OpenAI
 
 from ...core.encryption import decrypt_api_key, encrypt_api_key
 from ...core.logging import setup_logger
-from ...repositories.settings.settings_repo import SettingsRepository
+from ...repositories.settings import SettingsMongoRepository
 from ...schemas.settings.provider_schema import Provider
 
 _logger = setup_logger(__name__)
@@ -11,7 +11,7 @@ _logger = setup_logger(__name__)
 
 class ProvidersService:
     def __init__(self) -> None:
-        self._repository = SettingsRepository()
+        self._repository = SettingsMongoRepository()
 
     def get_providers(self, username: str) -> list[Provider]:
         """

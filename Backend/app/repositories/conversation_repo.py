@@ -12,10 +12,13 @@ from ..schemas.conversation.conversation_schema import (
     ConversationMetadataRetrieve,
     ConversationUpdateRequest,
 )
+from .abstract_conversation_repo import (
+    ConversationRepository as AbstractConversationRepository,
+)
 from .utils.handle_invalid_id import handle_invalid_id
 
 
-class ConversationRepository:
+class ConversationMongoRepository(AbstractConversationRepository):
     def __init__(self):
         myclient = pymongo.MongoClient(settings.mongo_url)
         mydb = myclient["tfg_db"]

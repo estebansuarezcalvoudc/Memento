@@ -1,3 +1,4 @@
-from .settings_repo import SettingsRepository
+from .abstract_settings_repo import SettingsRepository
+from .settings_repo import SettingsMongoRepository
 
-__all__ = ["SettingsRepository"]
+__all__ = ["SettingsRepository", "SettingsMongoRepository"]

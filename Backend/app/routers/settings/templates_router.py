@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from ...dependencies.auth_dependencies import get_current_active_user
-from ...repositories.settings.settings_repo import SettingsRepository
+from ...repositories.settings import SettingsMongoRepository
 from ...schemas.auth.auth_schema import User
 from ...schemas.settings.templates_schema import (
     SystemPromptResponse,
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/templates", tags=["Settings - Templates"])
 
 def get_templates_service() -> TemplatesService:
     """Dependency to get TemplatesService instance"""
-    return TemplatesService(SettingsRepository())
+    return TemplatesService(SettingsMongoRepository())
 
 
 @router.get("/default-prompt", response_model=SystemPromptResponse)

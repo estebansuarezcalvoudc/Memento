@@ -5,7 +5,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
 from ..core.settings import settings
-from ..repositories.auth_repo import AuthRepository
+from ..repositories.auth_repo import AuthMongoRepository
 from ..schemas.auth.auth_schema import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
@@ -28,7 +28,7 @@ async def _get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Us
     except jwt.InvalidTokenError:
         raise credentials_exception
 
-    users_repo = AuthRepository()
+    users_repo = AuthMongoRepository()
     user = users_repo.retrieve_user(username=username)
     if user is None:
         raise credentials_exception

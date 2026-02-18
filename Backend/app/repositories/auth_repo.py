@@ -5,9 +5,10 @@ from fastapi import HTTPException, status
 
 from ..core.settings import settings
 from ..schemas.auth.auth_schema import UserCreate
+from .abstract_auth_repo import AuthRepository as AbstractAuthRepository
 
 
-class AuthRepository:
+class AuthMongoRepository(AbstractAuthRepository):
     def __init__(self) -> None:
         myclient = pymongo.MongoClient(settings.mongo_url)
         mydb = myclient["tfg_db"]

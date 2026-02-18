@@ -1,7 +1,7 @@
 import asyncio
 
 from ...core.logging import setup_logger
-from ...repositories.conversation_repo import ConversationRepository
+from ...repositories.conversation_repo import ConversationMongoRepository
 from ...schemas.conversation.conversation_schema import (
     ConversationCreateRequest,
     ConversationCreateResponse,
@@ -19,7 +19,7 @@ _logger = setup_logger(__name__)
 
 class ConversationService(metaclass=SingletonMeta):
     def __init__(self) -> None:
-        self._repository = ConversationRepository()
+        self._repository = ConversationMongoRepository()
         self._mcp_client = MCPClient()
 
     async def create_conversation(

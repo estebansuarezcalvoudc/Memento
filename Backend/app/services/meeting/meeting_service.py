@@ -3,7 +3,7 @@ import tempfile
 import whisperx
 from fastapi import HTTPException, status
 
-from ...repositories.meeting_repo import MeetingRepository
+from ...repositories.meeting_repo import MeetingMongoRepository
 from ...schemas.meeting.meeting_schema import (
     CreateMeetingsBatchRequest,
     MeetingMetadata,
@@ -26,7 +26,7 @@ class MeetingService(metaclass=SingletonMeta):
     """
 
     def __init__(self) -> None:
-        self._repository = MeetingRepository()
+        self._repository = MeetingMongoRepository()
         self._device = get_device()
         self._compute_type = "int8"
         self._model_size = "tiny"
