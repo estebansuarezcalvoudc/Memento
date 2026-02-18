@@ -24,7 +24,6 @@ class TemplatesService:
         """
         custom_prompt = self.settings_repo.get_system_prompt(username)
 
-        # If user has custom prompt, return it; otherwise return default
         prompt = custom_prompt if custom_prompt else DEFAULT_PROMPT
 
         return SystemPromptResponse(system_prompt=prompt)
