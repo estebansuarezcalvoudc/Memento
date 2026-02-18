@@ -25,7 +25,9 @@ class TestSendMessageEndpoint:
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_mcp_client
     ):
         mock_mongo.find_one.side_effect = _mongo_side_effect(
-            conversation_data={"messages": [{"role": "system", "content": "You are an assistant."}]}
+            conversation_data={
+                "messages": [{"role": "system", "content": "You are an assistant."}]
+            }
         )
 
         response = client.post(

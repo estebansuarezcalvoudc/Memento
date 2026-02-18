@@ -23,7 +23,9 @@ def mock_mcp_client():
     Mock MCPClient to avoid real MCP server connections and AI model calls.
     Provides a pre-configured async send_message that returns a canned reply.
     """
-    with patch("app.services.conversation.conversation_service.MCPClient") as mock_class:
+    with patch(
+        "app.services.conversation.conversation_service.MCPClient"
+    ) as mock_class:
         mock_instance = MagicMock()
         mock_instance.send_message = AsyncMock(return_value="AI response")
         mock_class.return_value = mock_instance

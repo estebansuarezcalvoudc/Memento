@@ -12,6 +12,7 @@ def _mongo_side_effect(meeting_data):
     Differentiates auth lookups (no _id in query) from meeting lookups (_id
     present in query), since both hit the same mock collection.
     """
+
     def side_effect(query, projection=None):
         if "_id" in query:
             return meeting_data
@@ -25,7 +26,11 @@ class TestUpdateMeetingEndpoint:
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
     ):
         mock_mongo.find_one.side_effect = _mongo_side_effect(
-            meeting_data={"title": "Old Title", "date": datetime(2024, 1, 15), "language": "en"}
+            meeting_data={
+                "title": "Old Title",
+                "date": datetime(2024, 1, 15),
+                "language": "en",
+            }
         )
 
         response = client.patch(
@@ -42,7 +47,11 @@ class TestUpdateMeetingEndpoint:
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
     ):
         mock_mongo.find_one.side_effect = _mongo_side_effect(
-            meeting_data={"title": "Q1 Planning", "date": datetime(2024, 1, 15), "language": "en"}
+            meeting_data={
+                "title": "Q1 Planning",
+                "date": datetime(2024, 1, 15),
+                "language": "en",
+            }
         )
 
         response = client.patch(

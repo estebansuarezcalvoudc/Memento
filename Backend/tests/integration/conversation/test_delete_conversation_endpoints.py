@@ -9,7 +9,9 @@ class TestDeleteConversationEndpoint:
     ):
         mock_mongo.delete_one.return_value.deleted_count = 1
 
-        response = client.delete(f"/conversations/{VALID_CONV_ID}", headers=auth_headers)
+        response = client.delete(
+            f"/conversations/{VALID_CONV_ID}", headers=auth_headers
+        )
 
         assert response.status_code == 204
         mock_mongo.delete_one.assert_called_once()
@@ -19,7 +21,9 @@ class TestDeleteConversationEndpoint:
     ):
         mock_mongo.delete_one.return_value.deleted_count = 0
 
-        response = client.delete(f"/conversations/{VALID_CONV_ID}", headers=auth_headers)
+        response = client.delete(
+            f"/conversations/{VALID_CONV_ID}", headers=auth_headers
+        )
 
         assert response.status_code == 404
         assert "not found" in response.json()["detail"].lower()
@@ -31,7 +35,9 @@ class TestDeleteConversationEndpoint:
 
         assert response.status_code == 422
 
-    def test_delete_conversation_should_require_authentication(self, client: TestClient):
+    def test_delete_conversation_should_require_authentication(
+        self, client: TestClient
+    ):
         response = client.delete(f"/conversations/{VALID_CONV_ID}")
 
         assert response.status_code == 401

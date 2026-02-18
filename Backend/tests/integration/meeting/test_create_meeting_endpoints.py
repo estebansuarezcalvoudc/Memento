@@ -16,9 +16,15 @@ def _audio_file(filename: str = "meeting.wav", content_type: str = "audio/wav"):
     return (filename, BytesIO(b"fake audio content"), content_type)
 
 
-def _meetings_data(title: str = "Q1 Planning", date_str: str = "2024-01-15", language: str = "en") -> str:
+def _meetings_data(
+    title: str = "Q1 Planning", date_str: str = "2024-01-15", language: str = "en"
+) -> str:
     return json.dumps(
-        {"meetings_metadata": [{"title": title, "date": date_str, "language": language}]}
+        {
+            "meetings_metadata": [
+                {"title": title, "date": date_str, "language": language}
+            ]
+        }
     )
 
 

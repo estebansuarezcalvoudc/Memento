@@ -5,7 +5,9 @@ from fastapi.testclient import TestClient
 
 VALID_CONV_ID = "507f1f77bcf86cd799439011"
 
-_PATCH_CREATE_TASK = "app.services.conversation.conversation_service.asyncio.create_task"
+_PATCH_CREATE_TASK = (
+    "app.services.conversation.conversation_service.asyncio.create_task"
+)
 
 _REQUEST = {
     "message": "Hello, summarize my last meeting",
@@ -25,7 +27,9 @@ class TestCreateConversationEndpoint:
         mock_mongo.insert_one.return_value.inserted_id = ObjectId(VALID_CONV_ID)
 
         with patch(_PATCH_CREATE_TASK, side_effect=_closing_create_task):
-            response = client.post("/conversations", headers=auth_headers, json=_REQUEST)
+            response = client.post(
+                "/conversations", headers=auth_headers, json=_REQUEST
+            )
 
         assert response.status_code == 200
         data = response.json()
@@ -39,7 +43,9 @@ class TestCreateConversationEndpoint:
     ):
         mock_mongo.insert_one.return_value.inserted_id = ObjectId(VALID_CONV_ID)
 
-        with patch(_PATCH_CREATE_TASK, side_effect=_closing_create_task) as mock_create_task:
+        with patch(
+            _PATCH_CREATE_TASK, side_effect=_closing_create_task
+        ) as mock_create_task:
             client.post("/conversations", headers=auth_headers, json=_REQUEST)
 
         mock_create_task.assert_called_once()

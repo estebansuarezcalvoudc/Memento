@@ -67,7 +67,11 @@ class TestRetrieveDialogueEndpoint:
                     {"role": "system", "content": "You are an assistant."},
                     {"role": "user", "content": "Hello"},
                     {"role": "assistant", "content": "Hi! How can I help?"},
-                    {"role": "assistant", "content": None, "tool_calls": [{"id": "call_1"}]},
+                    {
+                        "role": "assistant",
+                        "content": None,
+                        "tool_calls": [{"id": "call_1"}],
+                    },
                 ]
             }
         )

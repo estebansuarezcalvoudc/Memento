@@ -10,6 +10,7 @@ def _mongo_side_effect(meeting_data):
     Differentiates auth lookups (no _id in query) from meeting lookups (_id
     present in query), since both hit the same mock collection.
     """
+
     def side_effect(query, projection=None):
         if "_id" in query:
             return meeting_data
