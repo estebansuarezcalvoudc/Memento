@@ -96,12 +96,20 @@ for user in users_db.users.find({"settings": {"$exists": True}}):
 # Migrate meetings
 meetings_db = client["meetings_db"]
 for meeting in meetings_db.meetings.find():
-    tfg_db.meetings.insert_one(meeting)
+    tfg_db.meetings.replace_one(
+        {"_id": meeting["_id"]},
+        meeting,
+        upsert=True
+    )
 
 # Migrate conversations
 chat_db = client["chat_db"]
 for conversation in chat_db.conversations.find():
-    tfg_db.conversations.insert_one(conversation)
+    tfg_db.conversations.replace_one(
+        {"_id": conversation["_id"]},
+        conversation,
+        upsert=True
+    )
 
 print("Migration complete!")
 ```
