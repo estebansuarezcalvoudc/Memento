@@ -25,7 +25,6 @@ class TestRetrieveAllMeetingsEndpoint:
     def test_retrieve_all_meetings_should_return_list_of_user_meetings(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
     ):
-        """Test that GET /meetings returns all meetings belonging to the authenticated user"""
         mock_mongo.find.return_value = [
             {
                 "_id": ObjectId(VALID_MEETING_ID),
@@ -35,10 +34,8 @@ class TestRetrieveAllMeetingsEndpoint:
             }
         ]
 
-        # Act
         response = client.get("/meetings", headers=auth_headers)
 
-        # Assert
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
@@ -50,24 +47,18 @@ class TestRetrieveAllMeetingsEndpoint:
     def test_retrieve_all_meetings_should_return_empty_list_when_user_has_no_meetings(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
     ):
-        """Test that GET /meetings returns an empty list when the user has no meetings"""
         mock_mongo.find.return_value = []
 
-        # Act
         response = client.get("/meetings", headers=auth_headers)
 
-        # Assert
         assert response.status_code == 200
         assert response.json() == []
 
     def test_retrieve_all_meetings_should_require_authentication(
         self, client: TestClient
     ):
-        """Test that GET /meetings returns 401 without authentication"""
-        # Act
         response = client.get("/meetings")
 
-        # Assert
         assert response.status_code == 401
 
 
@@ -75,7 +66,6 @@ class TestRetrieveMeetingSummaryEndpoint:
     def test_retrieve_summary_should_return_summary_of_existing_meeting(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
     ):
-        """Test that GET /meetings/meetings/summary/{id} returns the meeting summary"""
         mock_mongo.find_one.side_effect = _mongo_side_effect(
             meeting_data={
                 "summary": "The team agreed on Q1 targets.",
@@ -84,12 +74,10 @@ class TestRetrieveMeetingSummaryEndpoint:
             }
         )
 
-        # Act
         response = client.get(
             f"/meetings/meetings/summary/{VALID_MEETING_ID}", headers=auth_headers
         )
 
-        # Assert
         assert response.status_code == 200
         data = response.json()
         assert data["summary"] == "The team agreed on Q1 targets."
@@ -98,36 +86,27 @@ class TestRetrieveMeetingSummaryEndpoint:
     def test_retrieve_summary_should_return_404_when_meeting_does_not_exist(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
     ):
-        """Test that GET /meetings/meetings/summary/{id} returns 404 for unknown meeting"""
         mock_mongo.find_one.side_effect = _mongo_side_effect(meeting_data=None)
 
-        # Act
         response = client.get(
             f"/meetings/meetings/summary/{VALID_MEETING_ID}", headers=auth_headers
         )
 
-        # Assert
         assert response.status_code == 404
         assert "not found" in response.json()["detail"].lower()
 
     def test_retrieve_summary_should_return_422_for_invalid_meeting_id_format(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
     ):
-        """Test that GET /meetings/meetings/summary/{id} returns 422 for a malformed ObjectId"""
-        # Act
         response = client.get(
             "/meetings/meetings/summary/not-a-valid-id", headers=auth_headers
         )
 
-        # Assert
         assert response.status_code == 422
 
     def test_retrieve_summary_should_require_authentication(self, client: TestClient):
-        """Test that GET /meetings/meetings/summary/{id} returns 401 without authentication"""
-        # Act
         response = client.get(f"/meetings/meetings/summary/{VALID_MEETING_ID}")
 
-        # Assert
         assert response.status_code == 401
 
 
@@ -135,7 +114,6 @@ class TestRetrieveMeetingTranscriptionEndpoint:
     def test_retrieve_transcription_should_return_transcription_of_existing_meeting(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
     ):
-        """Test that GET /meetings/meetings/transcription/{id} returns the meeting transcription"""
         mock_mongo.find_one.side_effect = _mongo_side_effect(
             meeting_data={
                 "transcription": "Speaker 1: Hello.\nSpeaker 2: Hi!",
@@ -144,12 +122,10 @@ class TestRetrieveMeetingTranscriptionEndpoint:
             }
         )
 
-        # Act
         response = client.get(
             f"/meetings/meetings/transcription/{VALID_MEETING_ID}", headers=auth_headers
         )
 
-        # Assert
         assert response.status_code == 200
         data = response.json()
         assert data["transcription"] == "Speaker 1: Hello.\nSpeaker 2: Hi!"
@@ -158,36 +134,27 @@ class TestRetrieveMeetingTranscriptionEndpoint:
     def test_retrieve_transcription_should_return_404_when_meeting_does_not_exist(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
     ):
-        """Test that GET /meetings/meetings/transcription/{id} returns 404 for unknown meeting"""
         mock_mongo.find_one.side_effect = _mongo_side_effect(meeting_data=None)
 
-        # Act
         response = client.get(
             f"/meetings/meetings/transcription/{VALID_MEETING_ID}", headers=auth_headers
         )
 
-        # Assert
         assert response.status_code == 404
         assert "not found" in response.json()["detail"].lower()
 
     def test_retrieve_transcription_should_return_422_for_invalid_meeting_id_format(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
     ):
-        """Test that GET /meetings/meetings/transcription/{id} returns 422 for a malformed ObjectId"""
-        # Act
         response = client.get(
             "/meetings/meetings/transcription/not-a-valid-id", headers=auth_headers
         )
 
-        # Assert
         assert response.status_code == 422
 
     def test_retrieve_transcription_should_require_authentication(
         self, client: TestClient
     ):
-        """Test that GET /meetings/meetings/transcription/{id} returns 401 without authentication"""
-        # Act
         response = client.get(f"/meetings/meetings/transcription/{VALID_MEETING_ID}")
 
-        # Assert
         assert response.status_code == 401

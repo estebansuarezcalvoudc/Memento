@@ -10,7 +10,6 @@ class TestAuthEndpoints:
     def test_register_should_create_user_and_return_token(
         self, client: TestClient, mock_mongo
     ):
-        """Test that POST /auth/register creates a new user and returns access token"""
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = None  # User doesn't exist
         mock_mongo.insert_one.return_value = MagicMock(inserted_id="test_id")
@@ -28,7 +27,6 @@ class TestAuthEndpoints:
     def test_register_should_fail_when_user_already_exists(
         self, client: TestClient, mock_mongo
     ):
-        """Test that POST /auth/register returns 400 when user already exists"""
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
             "username": "existing@example.com",
@@ -47,7 +45,6 @@ class TestAuthEndpoints:
         mock_mongo.insert_one.assert_not_called()
 
     def test_register_should_validate_required_fields(self, client: TestClient):
-        """Test that POST /auth/register validates required fields"""
         response = client.post("/auth/register", json={})
 
         assert response.status_code == 422  # Unprocessable Entity
@@ -61,7 +58,6 @@ class TestAuthEndpoints:
     def test_login_should_return_token_with_valid_credentials(
         self, client: TestClient, mock_mongo
     ):
-        """Test that POST /auth/token returns token with valid credentials"""
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
             "username": "test@example.com",
@@ -81,7 +77,6 @@ class TestAuthEndpoints:
     def test_login_should_fail_with_invalid_password(
         self, client: TestClient, mock_mongo
     ):
-        """Test that POST /auth/token returns 401 with invalid password"""
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
             "username": "test@example.com",
@@ -99,7 +94,6 @@ class TestAuthEndpoints:
     def test_login_should_fail_with_nonexistent_user(
         self, client: TestClient, mock_mongo
     ):
-        """Test that POST /auth/token returns 401 for nonexistent user"""
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = None
 
@@ -112,7 +106,6 @@ class TestAuthEndpoints:
         assert "incorrect username or password" in response.json()["detail"].lower()
 
     def test_login_should_use_form_data_format(self, client: TestClient, mock_mongo):
-        """Test that POST /auth/token uses OAuth2 form data format"""
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
             "username": "test@example.com",
@@ -134,7 +127,6 @@ class TestAuthEndpoints:
         assert response.status_code == 422
 
     def test_login_should_validate_required_fields(self, client: TestClient):
-        """Test that POST /auth/token validates required fields"""
         response = client.post("/auth/token", data={})
         assert response.status_code == 422
 

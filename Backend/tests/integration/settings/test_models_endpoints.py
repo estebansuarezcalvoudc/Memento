@@ -7,7 +7,6 @@ class TestModelsEndpoints:
     def test_get_available_models_should_return_models_from_active_providers(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_openai
     ):
-        """Test that GET /settings/models/available returns models from active providers"""
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
 
         def mongo_side_effect(query, projection=None):
@@ -58,7 +57,6 @@ class TestModelsEndpoints:
     def test_get_available_models_should_return_empty_when_no_active_providers(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        """Test that GET /settings/models/available returns empty list when no active providers"""
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
             "username": "test@example.com",
@@ -80,7 +78,6 @@ class TestModelsEndpoints:
     def test_get_configured_models_should_return_user_configuration(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        """Test that GET /settings/models/configured returns user's model configuration"""
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
             "username": "test@example.com",
@@ -115,7 +112,6 @@ class TestModelsEndpoints:
     def test_get_configured_models_should_return_null_when_no_configuration(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        """Test that GET /settings/models/configured returns null when no configuration exists"""
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
             "username": "test@example.com",
@@ -132,7 +128,6 @@ class TestModelsEndpoints:
     def test_update_configured_models_should_save_configuration(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        """Test that PUT /settings/models/configured saves model configuration"""
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
             "username": "test@example.com",
@@ -162,7 +157,6 @@ class TestModelsEndpoints:
     def test_update_configured_models_should_allow_partial_update(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        """Test that PUT /settings/models/configured allows updating only one model"""
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
 
         def mongo_side_effect(query, projection=None):
@@ -209,7 +203,6 @@ class TestModelsEndpoints:
     def test_models_endpoints_should_require_authentication(
         self, client: TestClient, mock_mongo
     ):
-        """Test that all models endpoints return 401 without authentication"""
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
 
         response = client.get("/settings/models/available")

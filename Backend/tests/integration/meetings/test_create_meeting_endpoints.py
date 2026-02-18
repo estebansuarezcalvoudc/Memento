@@ -26,7 +26,6 @@ class TestCreateMeetingsEndpoint:
     def test_create_meetings_should_process_audio_and_return_201(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
     ):
-        """Test that POST /meetings processes audio, stores meeting and returns 201"""
         mock_mongo.insert_one.return_value.inserted_id = ObjectId(VALID_MEETING_ID)
 
         with (
@@ -38,7 +37,6 @@ class TestCreateMeetingsEndpoint:
             mock_transcribe.return_value = ("Speaker 1: Hello.", "en")
             mock_summarize.return_value = "The team discussed Q1 goals."
 
-            # Act
             response = client.post(
                 "/meetings",
                 headers=auth_headers,
@@ -46,28 +44,22 @@ class TestCreateMeetingsEndpoint:
                 files=[("audios", _audio_file())],
             )
 
-        # Assert
         assert response.status_code == 201
         mock_mongo.insert_one.assert_called_once()
         mock_elasticsearch.index.assert_called_once()
 
     def test_create_meetings_should_require_authentication(self, client: TestClient):
-        """Test that POST /meetings returns 401 without authentication"""
-        # Act
         response = client.post(
             "/meetings",
             data={"meetings_data": _meetings_data()},
             files=[("audios", _audio_file())],
         )
 
-        # Assert
         assert response.status_code == 401
 
     def test_create_meetings_should_reject_unsupported_audio_format(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
     ):
-        """Test that POST /meetings returns 415 for unsupported file extension"""
-        # Act
         response = client.post(
             "/meetings",
             headers=auth_headers,
@@ -75,15 +67,12 @@ class TestCreateMeetingsEndpoint:
             files=[("audios", _audio_file("meeting.txt", "audio/wav"))],
         )
 
-        # Assert
         assert response.status_code == 415
         assert "unsupported audio format" in response.json()["detail"].lower()
 
     def test_create_meetings_should_reject_non_audio_content_type(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
     ):
-        """Test that POST /meetings returns 415 when file content type is not audio"""
-        # Act
         response = client.post(
             "/meetings",
             headers=auth_headers,
@@ -91,15 +80,12 @@ class TestCreateMeetingsEndpoint:
             files=[("audios", _audio_file("meeting.wav", "application/octet-stream"))],
         )
 
-        # Assert
         assert response.status_code == 415
         assert "not an audio file" in response.json()["detail"].lower()
 
     def test_create_meetings_should_reject_invalid_meetings_data_json(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
     ):
-        """Test that POST /meetings returns 400 when meetings_data is not valid JSON"""
-        # Act
         response = client.post(
             "/meetings",
             headers=auth_headers,
@@ -107,14 +93,12 @@ class TestCreateMeetingsEndpoint:
             files=[("audios", _audio_file())],
         )
 
-        # Assert
         assert response.status_code == 400
         assert "invalid json format" in response.json()["detail"].lower()
 
     def test_create_meetings_should_fail_when_metadata_count_mismatches_audio_files(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
     ):
-        """Test that POST /meetings returns 422 when metadata count does not match audio files"""
         # Arrange: two metadata entries but only one audio file
         meetings_data = json.dumps(
             {
@@ -130,7 +114,6 @@ class TestCreateMeetingsEndpoint:
             patch(_PATCH_TRANSCRIBE),
             patch(_PATCH_SUMMARIZE),
         ):
-            # Act
             response = client.post(
                 "/meetings",
                 headers=auth_headers,
@@ -138,6 +121,5 @@ class TestCreateMeetingsEndpoint:
                 files=[("audios", _audio_file())],
             )
 
-        # Assert
         assert response.status_code == 422
         assert "must match" in response.json()["detail"].lower()

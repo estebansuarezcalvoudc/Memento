@@ -24,19 +24,16 @@ class TestUpdateMeetingEndpoint:
     def test_update_meeting_should_persist_changes_and_return_204(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
     ):
-        """Test that PATCH /meetings/{id} updates title and date in MongoDB and Elasticsearch"""
         mock_mongo.find_one.side_effect = _mongo_side_effect(
             meeting_data={"title": "Old Title", "date": datetime(2024, 1, 15), "language": "en"}
         )
 
-        # Act
         response = client.patch(
             f"/meetings/{VALID_MEETING_ID}",
             headers=auth_headers,
             json={"title": "Updated Title"},
         )
 
-        # Assert
         assert response.status_code == 204
         mock_mongo.update_one.assert_called_once()
         mock_elasticsearch.update.assert_called_once()
@@ -44,59 +41,47 @@ class TestUpdateMeetingEndpoint:
     def test_update_meeting_should_allow_updating_only_date(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
     ):
-        """Test that PATCH /meetings/{id} allows a partial update with only the date field"""
         mock_mongo.find_one.side_effect = _mongo_side_effect(
             meeting_data={"title": "Q1 Planning", "date": datetime(2024, 1, 15), "language": "en"}
         )
 
-        # Act
         response = client.patch(
             f"/meetings/{VALID_MEETING_ID}",
             headers=auth_headers,
             json={"date": "2024-06-01"},
         )
 
-        # Assert
         assert response.status_code == 204
         mock_mongo.update_one.assert_called_once()
 
     def test_update_meeting_should_return_404_when_meeting_does_not_exist(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
     ):
-        """Test that PATCH /meetings/{id} returns 404 when the meeting does not exist"""
         mock_mongo.find_one.side_effect = _mongo_side_effect(meeting_data=None)
 
-        # Act
         response = client.patch(
             f"/meetings/{VALID_MEETING_ID}",
             headers=auth_headers,
             json={"title": "New Title"},
         )
 
-        # Assert
         assert response.status_code == 404
         assert "not found" in response.json()["detail"].lower()
 
     def test_update_meeting_should_return_422_for_invalid_meeting_id_format(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
     ):
-        """Test that PATCH /meetings/{id} returns 422 for a malformed ObjectId"""
-        # Act
         response = client.patch(
             "/meetings/not-a-valid-id",
             headers=auth_headers,
             json={"title": "New Title"},
         )
 
-        # Assert
         assert response.status_code == 422
 
     def test_update_meeting_should_require_authentication(self, client: TestClient):
-        """Test that PATCH /meetings/{id} returns 401 without authentication"""
-        # Act
         response = client.patch(
             f"/meetings/{VALID_MEETING_ID}", json={"title": "New Title"}
         )
 
-        # Assert
         assert response.status_code == 401
