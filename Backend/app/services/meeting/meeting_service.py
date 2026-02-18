@@ -39,7 +39,7 @@ class MeetingService(metaclass=SingletonMeta):
     ) -> list[MeetingMetadataResponse]:
         if len(batch_request.meetings_metadata) != len(audio_bytes_list):
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail="The number of metadata objects must match the number of audio files",
             )
 
