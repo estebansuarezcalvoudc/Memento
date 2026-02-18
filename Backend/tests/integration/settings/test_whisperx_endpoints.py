@@ -5,7 +5,6 @@ class TestWhisperXEndpoints:
     def test_get_available_options_should_return_models_and_compute_types(
         self, client: TestClient
     ):
-        """Test that GET /settings/transcription/whisperx/available-options returns models and compute types"""
         response = client.get("/settings/transcription/whisperx/available-options")
 
         assert response.status_code == 200
@@ -32,7 +31,6 @@ class TestWhisperXEndpoints:
     def test_get_supported_languages_should_return_language_codes(
         self, client: TestClient
     ):
-        """Test that GET /settings/transcription/whisperx/languages returns supported language objects"""
         response = client.get("/settings/transcription/whisperx/languages")
 
         assert response.status_code == 200
@@ -61,7 +59,6 @@ class TestWhisperXEndpoints:
     def test_get_whisperx_configuration_should_return_defaults_when_not_configured(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        """Test that GET /settings/transcription/whisperx returns default configuration"""
         mock_mongo.find_one.return_value = {
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
@@ -77,7 +74,6 @@ class TestWhisperXEndpoints:
     def test_get_whisperx_configuration_should_return_user_settings(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        """Test that GET returns user's configured WhisperX settings"""
         mock_mongo.find_one.return_value = {
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
@@ -101,7 +97,6 @@ class TestWhisperXEndpoints:
     def test_update_whisperx_configuration_should_save_settings(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        """Test that PATCH /settings/transcription/whisperx saves configuration"""
 
         def mongo_side_effect(query, projection=None):
             if "password" in str(projection):
@@ -148,7 +143,6 @@ class TestWhisperXEndpoints:
     def test_update_whisperx_configuration_should_allow_partial_update(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        """Test that PATCH allows updating only model_size or compute_type"""
 
         def mongo_side_effect(query, projection=None):
             if "password" in str(projection):
@@ -194,7 +188,6 @@ class TestWhisperXEndpoints:
     def test_update_whisperx_configuration_should_reject_invalid_model_size(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        """Test that PATCH rejects invalid model_size values"""
         _ = mock_mongo
 
         request_data = {
@@ -213,7 +206,6 @@ class TestWhisperXEndpoints:
     def test_update_whisperx_configuration_should_reject_invalid_compute_type(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        """Test that PATCH rejects invalid compute_type values"""
         _ = mock_mongo
 
         request_data = {
@@ -232,7 +224,6 @@ class TestWhisperXEndpoints:
     def test_update_whisperx_configuration_should_require_authentication(
         self, client: TestClient, mock_mongo
     ):
-        """Test that PATCH /settings/transcription/whisperx requires authentication"""
         _ = mock_mongo
 
         response = client.patch(
@@ -246,7 +237,6 @@ class TestWhisperXEndpoints:
     def test_update_whisperx_configuration_should_accept_empty_body(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        """Test that PATCH with empty body returns current settings without error"""
         mock_mongo.find_one.return_value = {
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",

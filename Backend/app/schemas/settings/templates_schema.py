@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field, field_validator
 from typing import ClassVar
+
+from pydantic import BaseModel, Field, field_validator
 
 DEFAULT_PROMPT = """
     Analyze this meeting transcript and provide a structured summary with the following:
@@ -70,7 +71,11 @@ class SystemPromptUpdate(BaseModel):
         if not stripped:
             raise ValueError("System prompt cannot be empty or just whitespace")
         if len(stripped) < cls.MIN_PROMPT_LENGTH:
-            raise ValueError(f"System prompt must be at least {cls.MIN_PROMPT_LENGTH} characters long")
+            raise ValueError(
+                f"System prompt must be at least {cls.MIN_PROMPT_LENGTH} characters long"
+            )
         if len(stripped) > cls.MAX_PROMPT_LENGTH:
-            raise ValueError(f"System prompt must be at most {cls.MAX_PROMPT_LENGTH} characters long")
+            raise ValueError(
+                f"System prompt must be at most {cls.MAX_PROMPT_LENGTH} characters long"
+            )
         return stripped
