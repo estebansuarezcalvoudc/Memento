@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from ...core.logging import setup_logger
+from ...dependencies.service_dependencies import get_auth_service
 from ...schemas.auth.auth_schema import Token, UserCreate
 from ...services.auth.auth_service import AuthService
 
@@ -13,10 +14,12 @@ _logger = setup_logger(__name__)
 
 
 @router.post("/register")
-async def register(user: UserCreate) -> Token:
+async def register(
+    user: UserCreate,
+    service: Annotated[AuthService, Depends(get_auth_service)],
+) -> Token:
     try:
-        auth_service = AuthService()
-        return auth_service.register(user)
+        return service.register(user)
     except HTTPException:
         raise
     except Exception as e:
@@ -31,6 +34,6 @@ async def register(user: UserCreate) -> Token:
 @router.post("/token")
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> Token:
-    auth_service = AuthService()
-    return auth_service.authenticate_user(form_data.username, form_data.password)
+    return service.authenticate_user(form_data.username, form_data.password)

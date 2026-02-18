@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from ...core.logging import setup_logger
 from ...dependencies.auth_dependencies import get_current_active_user
+from ...dependencies.service_dependencies import get_models_service
 from ...schemas.auth.auth_schema import User
 from ...schemas.settings.model_schema import (
     AvailableModel,
@@ -19,6 +20,7 @@ router = APIRouter(prefix="/models", tags=["Settings - Models"])
 @router.get("/available", response_model=list[AvailableModel])
 async def get_available_models(
     current_user: Annotated[User, Depends(get_current_active_user)],
+    service: Annotated[ModelsService, Depends(get_models_service)],
 ) -> list[AvailableModel]:
     """
     Get all available models from active providers
@@ -27,7 +29,6 @@ async def get_available_models(
         List of available models with their provider
     """
     try:
-        service = ModelsService()
         return service.get_available_models(current_user.username)
     except HTTPException:
         raise
@@ -42,6 +43,7 @@ async def get_available_models(
 @router.get("/configured", response_model=ConfiguredModelsResponse)
 async def get_configured_models(
     current_user: Annotated[User, Depends(get_current_active_user)],
+    service: Annotated[ModelsService, Depends(get_models_service)],
 ) -> ConfiguredModelsResponse:
     """
     Get user's configured models for chat and summary
@@ -50,7 +52,6 @@ async def get_configured_models(
         ConfiguredModelsResponse: Current model configuration
     """
     try:
-        service = ModelsService()
         return service.get_configured_models(current_user.username)
     except HTTPException:
         raise
@@ -66,6 +67,7 @@ async def get_configured_models(
 async def update_configured_models(
     request: ConfiguredModelsRequest,
     current_user: Annotated[User, Depends(get_current_active_user)],
+    service: Annotated[ModelsService, Depends(get_models_service)],
 ) -> ConfiguredModelsResponse:
     """
     Update user's configured models (partial update)
@@ -77,7 +79,6 @@ async def update_configured_models(
         ConfiguredModelsResponse: Updated model configuration
     """
     try:
-        service = ModelsService()
         return service.update_configured_models(current_user.username, request)
     except HTTPException:
         raise

@@ -4,6 +4,7 @@ import whisperx
 from fastapi import HTTPException, status
 
 from ...repositories.meeting_repo import MeetingMongoRepository
+from ...repositories.interfaces.meeting_repo import MeetingRepository
 from ...schemas.meeting.meeting_schema import (
     CreateMeetingsBatchRequest,
     MeetingMetadata,
@@ -20,13 +21,8 @@ from .meeting_processing.transcription import get_transcribed_conversation
 
 
 class MeetingService(metaclass=SingletonMeta):
-    """
-    Service layer for meeting operations.
-    Handles all business logic and communicates with the repository layer.
-    """
-
-    def __init__(self) -> None:
-        self._repository = MeetingMongoRepository()
+    def __init__(self, repository: MeetingRepository) -> None:
+        self._repository: MeetingRepository = repository
         self._device = get_device()
         self._compute_type = "int8"
         self._model_size = "tiny"

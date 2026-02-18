@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, s
 
 from ...core.logging import setup_logger
 from ...dependencies.auth_dependencies import get_current_active_user
+from ...dependencies.service_dependencies import get_meeting_service
 from ...schemas.auth.auth_schema import User
 from ...schemas.meeting.meeting_schema import (
     CreateMeetingsBatchRequest,
@@ -47,6 +48,7 @@ def _parse_meetings_batch_request(
 )
 async def create_meetings(
     current_user: Annotated[User, Depends(get_current_active_user)],
+    meeting_service: Annotated[MeetingService, Depends(get_meeting_service)],
     batch_request: CreateMeetingsBatchRequest = Depends(_parse_meetings_batch_request),
     audios: list[UploadFile] = File(
         ..., description=create_meetings_docs.audios_file_description
@@ -57,7 +59,6 @@ async def create_meetings(
     try:
         audio_bytes_list = [await audio.read() for audio in audios]
 
-        meeting_service = MeetingService()
         created_meetings = meeting_service.process_meetings(
             batch_request, audio_bytes_list, current_user.username
         )
@@ -114,9 +115,9 @@ def _validate_audio_files(audio_files: list[UploadFile]) -> None:
 )
 async def retrieve_all_meetings_metadata(
     current_user: Annotated[User, Depends(get_current_active_user)],
+    meeting_service: Annotated[MeetingService, Depends(get_meeting_service)],
 ) -> list[MeetingMetadataResponse]:
     try:
-        meeting_service = MeetingService()
         return meeting_service.retrieve_all_meetings_metadata(current_user.username)
     except Exception as e:
         _logger.error(f"Error retrieving meetings: {str(e)}")
@@ -133,10 +134,11 @@ async def retrieve_all_meetings_metadata(
     summary="Retrieve the summary of a meeting",
 )
 async def retrieve_meeting_summary(
-    id: str, current_user: Annotated[User, Depends(get_current_active_user)]
+    id: str,
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    meeting_service: Annotated[MeetingService, Depends(get_meeting_service)],
 ) -> MeetingSummaryResponse:
     try:
-        meeting_service = MeetingService()
         return meeting_service.retrieve_meeting_summary(id, current_user.username)
     except HTTPException:
         raise
@@ -155,10 +157,11 @@ async def retrieve_meeting_summary(
     summary="Retrieve the transcription of a meeting",
 )
 async def retrieve_meeting_transcription(
-    id: str, current_user: Annotated[User, Depends(get_current_active_user)]
+    id: str,
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    meeting_service: Annotated[MeetingService, Depends(get_meeting_service)],
 ) -> MeetingTranscriptionResponse:
     try:
-        meeting_service = MeetingService()
         return meeting_service.retrieve_meeting_transcription(id, current_user.username)
     except HTTPException:
         raise
@@ -180,9 +183,9 @@ async def update_meeting(
     id: str,
     meeting_data: UpdateMeetingMetadata,
     current_user: Annotated[User, Depends(get_current_active_user)],
+    meeting_service: Annotated[MeetingService, Depends(get_meeting_service)],
 ) -> None:
     try:
-        meeting_service = MeetingService()
         meeting_service.update_meeting(id, meeting_data, current_user.username)
     except HTTPException:
         raise
@@ -201,10 +204,11 @@ async def update_meeting(
     summary="Delete a meeting",
 )
 async def delete_meeting(
-    id: str, current_user: Annotated[User, Depends(get_current_active_user)]
+    id: str,
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    meeting_service: Annotated[MeetingService, Depends(get_meeting_service)],
 ) -> None:
     try:
-        meeting_service = MeetingService()
         meeting_service.delete_meeting(id, current_user.username)
     except HTTPException:
         raise

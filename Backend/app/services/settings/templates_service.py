@@ -9,7 +9,7 @@ from ...schemas.settings.templates_schema import (
 class TemplatesService:
     """Service for managing user's system prompt templates"""
 
-    def __init__(self, settings_repo: SettingsRepository):
+    def __init__(self, settings_repo):
         self.settings_repo = settings_repo
 
     def get_user_prompt(self, username: str) -> SystemPromptResponse:
