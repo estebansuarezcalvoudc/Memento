@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from ...dependencies.auth_dependencies import get_current_active_user
-from ...repositories.settings.settings_repo import SettingsRepository
+from ...dependencies.service_dependencies import get_whisperx_service
 from ...schemas.auth.auth_schema import User
 from ...schemas.settings.whisperx_schema import (
     LanguageOption,
@@ -16,11 +16,6 @@ from ...services.settings.whisperx_service import WhisperXService
 router = APIRouter(
     prefix="/transcription/whisperx", tags=["Settings - Transcription - WhisperX"]
 )
-
-
-def get_whisperx_service() -> WhisperXService:
-    """Dependency to get WhisperX service instance"""
-    return WhisperXService(SettingsRepository())
 
 
 @router.get("/available-options", response_model=WhisperXAvailableOptions)

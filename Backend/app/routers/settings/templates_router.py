@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from ...dependencies.auth_dependencies import get_current_active_user
-from ...repositories.settings.settings_repo import SettingsRepository
+from ...dependencies.service_dependencies import get_templates_service
 from ...schemas.auth.auth_schema import User
 from ...schemas.settings.templates_schema import (
     SystemPromptResponse,
@@ -12,11 +12,6 @@ from ...schemas.settings.templates_schema import (
 from ...services.settings.templates_service import TemplatesService
 
 router = APIRouter(prefix="/templates", tags=["Settings - Templates"])
-
-
-def get_templates_service() -> TemplatesService:
-    """Dependency to get TemplatesService instance"""
-    return TemplatesService(SettingsRepository())
 
 
 @router.get("/default-prompt", response_model=SystemPromptResponse)

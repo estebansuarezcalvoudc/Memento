@@ -2,12 +2,13 @@ from typing import Optional, cast
 
 import pymongo
 
-from ...core.openai_factory import ProviderName
-from ...core.settings import settings
-from ...schemas.settings.provider_schema import Provider, ProviderSettings
+from ....core.openai_factory import ProviderName
+from ....core.settings import settings
+from ....schemas.settings.provider_schema import Provider, ProviderSettings
+from ...interfaces.settings_repo import SettingsRepository as AbstractSettingsRepository
 
 
-class SettingsRepository:
+class SettingsMongoRepository(AbstractSettingsRepository):
     """Repository for user settings data access"""
 
     AVAILABLE_PROVIDERS = {

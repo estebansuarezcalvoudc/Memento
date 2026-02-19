@@ -6,22 +6,23 @@ from bson import ObjectId
 from elasticsearch import Elasticsearch
 from fastapi import HTTPException, status
 
-from ..core.logging import setup_logger
-from ..core.settings import settings
-from ..schemas.meeting.meeting_schema import MeetingMetadata as MeetingMetadataSchema
-from ..schemas.meeting.meeting_schema import (
+from ....core.logging import setup_logger
+from ....core.settings import settings
+from ....schemas.meeting.meeting_schema import MeetingMetadata as MeetingMetadataSchema
+from ....schemas.meeting.meeting_schema import (
     MeetingMetadataResponse,
     MeetingSummaryResponse,
     MeetingTranscriptionResponse,
     UpdateMeetingMetadata,
 )
-from ..schemas.settings.whisperx_schema import SUPPORTED_LANGUAGES
+from ....schemas.settings.whisperx_schema import SUPPORTED_LANGUAGES
+from ...interfaces.meeting_repo import MeetingRepository as AbstractMeetingRepository
 from .utils.handle_invalid_id import handle_invalid_id
 
 _logger = setup_logger(__name__)
 
 
-class MeetingRepository:
+class MeetingMongoRepository(AbstractMeetingRepository):
     def __init__(self) -> None:
         myclient = pymongo.MongoClient(settings.mongo_url)
         mydb = myclient["tfg_db"]

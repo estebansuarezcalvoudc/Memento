@@ -5,17 +5,20 @@ import pymongo
 from bson import ObjectId
 from fastapi import HTTPException, status
 
-from ..core.settings import settings
-from ..schemas.conversation.conversation_schema import (
+from ....core.settings import settings
+from ....schemas.conversation.conversation_schema import (
     ConversationCreateResponse,
     ConversationDialogueRetrieve,
     ConversationMetadataRetrieve,
     ConversationUpdateRequest,
 )
+from ...interfaces.conversation_repo import (
+    ConversationRepository as AbstractConversationRepository,
+)
 from .utils.handle_invalid_id import handle_invalid_id
 
 
-class ConversationRepository:
+class ConversationMongoRepository(AbstractConversationRepository):
     def __init__(self):
         myclient = pymongo.MongoClient(settings.mongo_url)
         mydb = myclient["tfg_db"]

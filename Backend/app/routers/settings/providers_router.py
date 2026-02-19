@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from ...core.logging import setup_logger
 from ...dependencies.auth_dependencies import get_current_active_user
+from ...dependencies.service_dependencies import get_providers_service
 from ...schemas.auth.auth_schema import User
 from ...schemas.settings.provider_schema import (
     ProviderAPIKeyRequest,
@@ -19,6 +20,7 @@ router = APIRouter(prefix="/providers", tags=["Settings - Providers"])
 @router.get("", response_model=ProvidersListResponse)
 async def get_providers(
     current_user: Annotated[User, Depends(get_current_active_user)],
+    service: Annotated[ProvidersService, Depends(get_providers_service)],
 ) -> ProvidersListResponse:
     """
     Get all available providers with their status for the current user
@@ -27,7 +29,6 @@ async def get_providers(
         ProvidersListResponse: List of providers with their configuration status
     """
     try:
-        service = ProvidersService()
         providers = service.get_providers(current_user.username)
         return ProvidersListResponse(providers=providers)
     except HTTPException:
@@ -48,6 +49,7 @@ async def add_provider_api_key(
     provider_name: str,
     request: ProviderAPIKeyRequest,
     current_user: Annotated[User, Depends(get_current_active_user)],
+    service: Annotated[ProvidersService, Depends(get_providers_service)],
 ) -> None:
     """
     Add or update API key for a provider
@@ -61,7 +63,6 @@ async def add_provider_api_key(
         401: If API key is invalid (validation failed)
     """
     try:
-        service = ProvidersService()
         service.add_provider_api_key(
             current_user.username, provider_name, request.api_key
         )
@@ -82,6 +83,7 @@ async def add_provider_api_key(
 async def delete_provider_api_key(
     provider_name: str,
     current_user: Annotated[User, Depends(get_current_active_user)],
+    service: Annotated[ProvidersService, Depends(get_providers_service)],
 ) -> None:
     """
     Delete API key for a provider
@@ -93,7 +95,6 @@ async def delete_provider_api_key(
         400: If provider is invalid
     """
     try:
-        service = ProvidersService()
         service.delete_provider_api_key(current_user.username, provider_name)
     except HTTPException:
         raise
@@ -113,6 +114,7 @@ async def update_provider_status(
     provider_name: str,
     request: ProviderStatusRequest,
     current_user: Annotated[User, Depends(get_current_active_user)],
+    service: Annotated[ProvidersService, Depends(get_providers_service)],
 ) -> None:
     """
     Update provider active status
@@ -125,7 +127,6 @@ async def update_provider_status(
         400: If provider is invalid
     """
     try:
-        service = ProvidersService()
         service.set_provider_status(
             current_user.username, provider_name, request.active
         )

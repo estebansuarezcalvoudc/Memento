@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from ...core.logging import setup_logger
 from ...dependencies.auth_dependencies import get_current_active_user
+from ...dependencies.service_dependencies import get_conversation_service
 from ...schemas.auth.auth_schema import User
 from ...schemas.conversation.conversation_schema import (
     ConversationCreateRequest,
@@ -28,9 +29,11 @@ router = APIRouter(prefix="/conversations", tags=["Conversations"])
 async def create_conversation(
     conversation_create_request: ConversationCreateRequest,
     current_user: Annotated[User, Depends(get_current_active_user)],
+    conversation_service: Annotated[
+        ConversationService, Depends(get_conversation_service)
+    ],
 ) -> ConversationCreateResponse:
     try:
-        conversation_service = ConversationService()
         response = await conversation_service.create_conversation(
             conversation_create_request, current_user.username
         )
@@ -54,9 +57,11 @@ async def send_message(
     id: str,
     send_message_request: SendMessageRequest,
     current_user: Annotated[User, Depends(get_current_active_user)],
+    conversation_service: Annotated[
+        ConversationService, Depends(get_conversation_service)
+    ],
 ) -> str:
     try:
-        conversation_service = ConversationService()
         return await conversation_service.send_message(
             id, send_message_request, current_user.username
         )
@@ -79,9 +84,11 @@ async def send_message(
 )
 async def retrieve_all_conversations_metadata(
     current_user: Annotated[User, Depends(get_current_active_user)],
+    conversation_service: Annotated[
+        ConversationService, Depends(get_conversation_service)
+    ],
 ) -> list[ConversationMetadataRetrieve]:
     try:
-        conversation_service = ConversationService()
         return conversation_service.retrieve_all_conversations_metadata(
             current_user.username
         )
@@ -103,10 +110,13 @@ async def retrieve_all_conversations_metadata(
     tags=["Conversations"],
 )
 async def retrieve_dialogue(
-    id: str, current_user: Annotated[User, Depends(get_current_active_user)]
+    id: str,
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    conversation_service: Annotated[
+        ConversationService, Depends(get_conversation_service)
+    ],
 ) -> Messages:
     try:
-        conversation_service = ConversationService()
         dialogue = conversation_service.retrieve_dialogue(id, current_user.username)
         return dialogue.messages
     except HTTPException:
@@ -132,9 +142,11 @@ async def update_conversation_metadata(
     id: str,
     metadata: ConversationUpdateRequest,
     current_user: Annotated[User, Depends(get_current_active_user)],
+    conversation_service: Annotated[
+        ConversationService, Depends(get_conversation_service)
+    ],
 ) -> None:
     try:
-        conversation_service = ConversationService()
         conversation_service.update_conversation_metadata(
             id, metadata, current_user.username
         )
@@ -156,10 +168,13 @@ async def update_conversation_metadata(
     tags=["Conversations"],
 )
 async def delete_conversation(
-    id: str, current_user: Annotated[User, Depends(get_current_active_user)]
+    id: str,
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    conversation_service: Annotated[
+        ConversationService, Depends(get_conversation_service)
+    ],
 ) -> None:
     try:
-        conversation_service = ConversationService()
         conversation_service.delete_conversation(id, current_user.username)
     except HTTPException:
         raise

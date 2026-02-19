@@ -1,6 +1,6 @@
 from ...core.logging import setup_logger
 from ...core.openai_factory import create_openai_client
-from ...repositories.settings.settings_repo import SettingsRepository
+from ...repositories.interfaces.settings_repo import SettingsRepository
 from ...schemas.settings.model_schema import (
     AvailableModel,
     ConfiguredModelsRequest,
@@ -13,8 +13,8 @@ _logger = setup_logger(__name__)
 class ModelsService:
     """Service for managing user model configurations and listing available models"""
 
-    def __init__(self) -> None:
-        self._repository = SettingsRepository()
+    def __init__(self, repository: SettingsRepository) -> None:
+        self._repository: SettingsRepository = repository
 
     def get_available_models(self, username: str) -> list[AvailableModel]:
         """

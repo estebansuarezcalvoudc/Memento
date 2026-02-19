@@ -3,15 +3,15 @@ from openai import OpenAI
 
 from ...core.encryption import decrypt_api_key, encrypt_api_key
 from ...core.logging import setup_logger
-from ...repositories.settings.settings_repo import SettingsRepository
+from ...repositories.interfaces.settings_repo import SettingsRepository
 from ...schemas.settings.provider_schema import Provider
 
 _logger = setup_logger(__name__)
 
 
 class ProvidersService:
-    def __init__(self) -> None:
-        self._repository = SettingsRepository()
+    def __init__(self, repository: SettingsRepository) -> None:
+        self._repository: SettingsRepository = repository
 
     def get_providers(self, username: str) -> list[Provider]:
         """

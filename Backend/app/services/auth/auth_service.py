@@ -5,15 +5,15 @@ from fastapi import HTTPException, status
 from passlib.context import CryptContext
 
 from ...core.settings import settings
-from ...repositories.auth_repo import AuthRepository
+from ...repositories.interfaces.auth_repo import AuthRepository
 from ...schemas.auth.auth_schema import Token, UserCreate
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class AuthService:
-    def __init__(self) -> None:
-        self._repository = AuthRepository()
+    def __init__(self, repository: AuthRepository) -> None:
+        self._repository: AuthRepository = repository
 
     def register(self, user_create: UserCreate) -> Token:
         user = UserCreate(
