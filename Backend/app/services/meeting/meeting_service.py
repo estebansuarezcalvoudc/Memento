@@ -3,7 +3,6 @@ import tempfile
 import whisperx
 from fastapi import HTTPException, status
 
-from ...repositories.meeting_repo import MeetingMongoRepository
 from ...repositories.interfaces.meeting_repo import MeetingRepository
 from ...schemas.meeting.meeting_schema import (
     CreateMeetingsBatchRequest,

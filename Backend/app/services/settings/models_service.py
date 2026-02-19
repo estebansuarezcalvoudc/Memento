@@ -1,7 +1,6 @@
 from ...core.logging import setup_logger
 from ...core.openai_factory import create_openai_client
-from ...repositories.settings import SettingsMongoRepository
-from ...repositories.interfaces.abstract_settings_repo import SettingsRepository
+from ...repositories.interfaces.settings_repo import SettingsRepository
 from ...schemas.settings.model_schema import (
     AvailableModel,
     ConfiguredModelsRequest,

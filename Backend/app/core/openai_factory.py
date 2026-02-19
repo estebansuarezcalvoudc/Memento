@@ -72,7 +72,7 @@ def _get_api_key_from_settings(username: str, provider: ProviderName) -> str:
     Raises:
         RuntimeError: If API key is not configured or cannot be retrieved
     """
-    from ..repositories.settings import SettingsMongoRepository
+    from ..repositories.implementations.mongo.settings_repo import SettingsMongoRepository
 
     try:
         settings_repo = SettingsMongoRepository()

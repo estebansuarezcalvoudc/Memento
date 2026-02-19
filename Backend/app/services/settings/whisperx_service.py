@@ -1,6 +1,6 @@
 from typing import get_args
 
-from ...repositories.settings import SettingsRepository
+from ...repositories.interfaces.settings_repo import SettingsRepository
 from ...schemas.settings.whisperx_schema import (
     LANGUAGE_NAMES,
     ComputeType,

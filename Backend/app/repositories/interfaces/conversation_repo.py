@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from ...schemas.conversation.conversation_schema import (
     ConversationCreateResponse,
@@ -16,7 +17,7 @@ class ConversationRepository(ABC):
         self,
         conversation_title: str,
         username: str,
-        initial_messages: list[dict] | None = None,
+        initial_messages: Optional[list[dict]] = None,
     ) -> ConversationCreateResponse:
         """
         Store a new conversation

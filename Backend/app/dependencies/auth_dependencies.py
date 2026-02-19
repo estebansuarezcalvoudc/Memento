@@ -4,15 +4,23 @@ import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
+from app.repositories.implementations.mongo.auth_mongo_repo import AuthMongoRepository
+
 from ..core.settings import settings
-from ..repositories.auth_repo import AuthMongoRepository
 from ..repositories.interfaces.auth_repo import AuthRepository
 from ..schemas.auth.auth_schema import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 
-async def _get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> User:
+def _get_auth_repository() -> AuthRepository:
+    return AuthMongoRepository()
+
+
+async def _get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)],
+    users_repo: Annotated[AuthRepository, Depends(_get_auth_repository)],
+) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -29,7 +37,6 @@ async def _get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Us
     except jwt.InvalidTokenError:
         raise credentials_exception
 
-    users_repo: AuthRepository = AuthMongoRepository()
     user = users_repo.retrieve_user(username=username)
     if user is None:
         raise credentials_exception

@@ -1,7 +1,6 @@
 import asyncio
 
 from ...core.logging import setup_logger
-from ...repositories.conversation_repo import ConversationMongoRepository
 from ...repositories.interfaces.conversation_repo import ConversationRepository
 from ...schemas.conversation.conversation_schema import (
     ConversationCreateRequest,

@@ -3,8 +3,7 @@ from openai import OpenAI
 
 from ...core.encryption import decrypt_api_key, encrypt_api_key
 from ...core.logging import setup_logger
-from ...repositories.settings import SettingsMongoRepository
-from ...repositories.interfaces.abstract_settings_repo import SettingsRepository
+from ...repositories.interfaces.settings_repo import SettingsRepository
 from ...schemas.settings.provider_schema import Provider
 
 _logger = setup_logger(__name__)
