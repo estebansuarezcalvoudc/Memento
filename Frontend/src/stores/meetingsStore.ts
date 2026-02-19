@@ -43,3 +43,5 @@ export const useRemoveMeeting = () =>
   useMeetingsStore(state => state.removeMeeting)
 export const useUpdateMeeting = () =>
   useMeetingsStore(state => state.updateMeeting)
+
+export const _resetMeetingsStore = () => useMeetingsStore.setState({ meetings: [] })

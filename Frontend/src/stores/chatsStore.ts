@@ -30,3 +30,5 @@ export const useChats = () => useChatsStore(state => state.chats)
 export const useSetChats = () => useChatsStore(state => state.setChats)
 export const useUnshiftChat = () => useChatsStore(state => state.unshiftChat)
 export const useDeleteChat = () => useChatsStore(state => state.deleteChat)
+
+export const _resetChatsStore = () => useChatsStore.setState({ chats: [] })

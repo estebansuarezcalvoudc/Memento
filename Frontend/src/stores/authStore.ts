@@ -14,3 +14,5 @@ const useAuthStore = create<AuthStore>()(set => ({
 
 export const useIsUserAuth = () => useAuthStore(state => state.isUserAuth)
 export const useSetIsUserAuth = () => useAuthStore(state => state.setIsUserAuth)
+
+export const _resetAuthStore = () => useAuthStore.setState({ isUserAuth: false })
