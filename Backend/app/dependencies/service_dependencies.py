@@ -1,6 +1,10 @@
 from ..repositories.implementations.mongo.auth_mongo_repo import AuthMongoRepository
-from ..repositories.implementations.mongo.conversation_mongo_repo import ConversationMongoRepository
-from ..repositories.implementations.mongo.meeting_mongo_repo import MeetingMongoRepository
+from ..repositories.implementations.mongo.conversation_mongo_repo import (
+    ConversationMongoRepository,
+)
+from ..repositories.implementations.mongo.meeting_mongo_repo import (
+    MeetingMongoRepository,
+)
 from ..repositories.implementations.mongo.settings_repo import SettingsMongoRepository
 from ..services.auth.auth_service import AuthService
 from ..services.conversation.conversation_service import ConversationService
