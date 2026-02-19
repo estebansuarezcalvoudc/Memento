@@ -141,6 +141,7 @@ export default function UploadMeetingsForm({
         addMeetingToStore(meeting)
       })
 
+      setMeetings([createMeeting()])
       handleCloseDialog()
     } else if (formState.serverError) {
       setNotification('serverError')
