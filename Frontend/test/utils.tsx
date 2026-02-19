@@ -1,12 +1,11 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { cleanup, render } from '@testing-library/react'
 import { afterEach, beforeEach, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 
 import { _resetAuthStore } from '../src/stores/authStore'
-import { _resetChatsStore } from '../src/stores/chatsStore'
-import { _resetMeetingsStore } from '../src/stores/meetingsStore'
 
-export { _resetAuthStore, _resetChatsStore, _resetMeetingsStore }
+export { _resetAuthStore }
 
 function ensurePortal(id: string) {
   if (!document.getElementById(id)) {
@@ -23,7 +22,17 @@ export function renderWithRouter(
   ensurePortal('upload-meetings-modal')
   ensurePortal('notification')
 
-  return render(<MemoryRouter initialEntries={[route]}>{ui}</MemoryRouter>)
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+    },
+  })
+
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[route]}>{ui}</MemoryRouter>
+    </QueryClientProvider>,
+  )
 }
 
 export function setAuthToken(token = 'fake-token') {
@@ -33,8 +42,6 @@ export function setAuthToken(token = 'fake-token') {
 export function setupStoreReset() {
   beforeEach(() => {
     vi.restoreAllMocks()
-    _resetChatsStore()
-    _resetMeetingsStore()
     _resetAuthStore()
   })
   afterEach(() => {

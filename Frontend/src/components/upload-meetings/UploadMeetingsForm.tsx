@@ -1,11 +1,9 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useActionState, useEffect, useState } from 'react'
 
 import useMeetingsAPI from '../../api/useMeetingsAPI'
+import { MEETINGS_QUERY_KEY, type Meeting as StoreMeeting } from '../../api/useMeetingsQuery'
 import useWhisperXAPI, { type LanguageOption } from '../../api/useWhisperXAPI'
-import {
-  useAddMeeting,
-  type Meeting as StoreMeeting,
-} from '../../stores/meetingsStore'
 import {
   parseMeetingsFromFormData,
   type MeetingMetadata,
@@ -102,7 +100,7 @@ export default function UploadMeetingsForm({
   const { getSupportedLanguages } = useWhisperXAPI()
   const [meetings, setMeetings] = useState<MeetingFormData[]>([createMeeting()])
   const [languages, setLanguages] = useState<LanguageOption[]>([])
-  const addMeetingToStore = useAddMeeting()
+  const queryClient = useQueryClient()
 
   useEffect(() => {
     const fetchSupportedLanguages = async () => {
@@ -137,16 +135,18 @@ export default function UploadMeetingsForm({
     } else if (formState.success) {
       setNotification('success')
 
-      formState.newMeetings?.forEach(meeting => {
-        addMeetingToStore(meeting)
-      })
+      queryClient.setQueryData<StoreMeeting[]>(MEETINGS_QUERY_KEY, old =>
+        old
+          ? [...old, ...(formState.newMeetings || [])]
+          : formState.newMeetings || [],
+      )
 
       setMeetings([createMeeting()])
       handleCloseDialog()
     } else if (formState.serverError) {
       setNotification('serverError')
     }
-  }, [isPending, formState, handleCloseDialog, addMeetingToStore])
+  }, [isPending, formState, handleCloseDialog, queryClient])
 
   const handleSubmit = (formData: FormData) => {
     const updatedMeetings = meetings.map((meeting, index) => {

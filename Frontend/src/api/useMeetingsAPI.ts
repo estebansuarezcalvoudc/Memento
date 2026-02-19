@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { Meeting } from '../stores/meetingsStore'
+import type { Meeting } from './useMeetingsQuery'
 import fetchBackend from './fetchBackend'
 
 export interface MeetingMetadataResponse {

@@ -1,42 +1,16 @@
-import { useEffect, useState } from 'react'
-
-import useMeetingsAPI from '../api/useMeetingsAPI'
+import { useMeetingsQuery } from '../api/useMeetingsQuery'
 import PageContainer from '../components/layout/PageContainer'
 import Header from '../components/meetings/Header'
 import MeetingsList from '../components/meetings/MeetingList'
-import { useMeetings, useSetMeetings } from '../stores/meetingsStore'
 
-export type { Meeting } from '../stores/meetingsStore'
+export type { Meeting } from '../api/useMeetingsQuery'
 
 export default function Meetings() {
-  const meetings = useMeetings()
-  const setMeetings = useSetMeetings()
-
-  const { getAllMeetings } = useMeetingsAPI()
-
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const fetchMeetings = async () => {
-      try {
-        const data = await getAllMeetings()
-        setMeetings(data)
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to fetch meetings',
-        )
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchMeetings()
-  }, [getAllMeetings, setMeetings])
+  const { data: meetings, isLoading, isError } = useMeetingsQuery()
 
   let content
 
-  if (loading) {
+  if (isLoading) {
     content = (
       <>
         <span className="font-ubuntu text-lg text-stone-800">
@@ -44,11 +18,11 @@ export default function Meetings() {
         </span>
       </>
     )
-  } else if (error) {
+  } else if (isError) {
     content = (
-      <span className="font-ubuntu text-lg text-red-700">Error: {error}</span>
+      <span className="font-ubuntu text-lg text-red-700">Error: Failed to fetch meetings</span>
     )
-  } else if (meetings.length === 0) {
+  } else if (!meetings || meetings.length === 0) {
     content = (
       <span className="font-ubuntu text-lg text-stone-800">
         You have not uploaded any meetings yet

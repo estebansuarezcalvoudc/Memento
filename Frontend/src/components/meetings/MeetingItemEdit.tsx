@@ -1,6 +1,6 @@
-import useMeetingsAPI from '../../api/useMeetingsAPI'
+import { useUpdateMeetingMutation } from '../../api/useMeetingsQuery'
 import { cancelEditImage, confirmEditImage } from '../../assets/buttonsImages'
-import { useUpdateMeeting, type Meeting } from '../../stores/meetingsStore'
+import type { Meeting } from '../../api/useMeetingsQuery'
 import MeetingButton from './MeetingButton'
 import { type EditState } from './MeetingItem'
 
@@ -23,8 +23,7 @@ export default function MeetingItemEdit({
   onUpdateMeeting,
   startTransition,
 }: MeetingItemEditProps) {
-  const updateMeetingInStore = useUpdateMeeting()
-  const { updateMeeting } = useMeetingsAPI()
+  const { mutate: updateMeeting } = useUpdateMeetingMutation()
 
   const handleTitleChange = (title: string) => {
     setEditState(prev => ({ ...prev, title }))
@@ -65,12 +64,7 @@ export default function MeetingItemEdit({
 
     setEditState(prev => ({ ...prev, isEditing: false }))
 
-    try {
-      updateMeeting(meeting.id, updates)
-      updateMeetingInStore(meeting.id, updates)
-    } catch (error) {
-      console.error('Error updating meeting:', error)
-    }
+    updateMeeting({ id: meeting.id, updates })
   }
 
   return (

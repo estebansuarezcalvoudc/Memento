@@ -1,13 +1,15 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { useEffect, type RefObject } from 'react'
 
-import useChatsAPI from '../../../../api/useChatsAPI'
+import {
+  useDeleteChatMutation,
+  useUpdateChatTitleMutation,
+} from '../../../../api/useChatsQuery'
 import {
   editImage,
   optionsImage,
   removeImage,
 } from '../../../../assets/buttonsImages'
-import { useDeleteChat } from '../../../../stores/chatsStore'
 import ChatOptionsButton from './ChatOptionButton'
 
 interface ChatOptionsDropdownProps {
@@ -50,8 +52,8 @@ function ChatActionsDropdown({
 }: ChatActionsDropdownProps) {
   useEffect(() => onMenuStateChange(open), [open, onMenuStateChange])
 
-  const deleteChatFromStore = useDeleteChat()
-  const { updateChatTitle, deleteChat } = useChatsAPI()
+  const { mutate: deleteChat } = useDeleteChatMutation()
+  const { mutate: updateChatTitle } = useUpdateChatTitleMutation()
 
   const handleRename = () => {
     const input = inputRef.current
@@ -71,7 +73,7 @@ function ChatActionsDropdown({
         return
       }
       input.disabled = true
-      await updateChatTitle(chatId, input.value)
+      updateChatTitle({ id: chatId, title: input.value })
     }
 
     input.onblur = saveChanges
@@ -83,8 +85,7 @@ function ChatActionsDropdown({
   }
 
   const handleDelete = async () => {
-    await deleteChat(chatId)
-    deleteChatFromStore(chatId)
+    deleteChat(chatId)
   }
 
   return (

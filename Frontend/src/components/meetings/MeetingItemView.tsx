@@ -1,8 +1,8 @@
 import { NavLink } from 'react-router-dom'
 
-import useMeetingsAPI from '../../api/useMeetingsAPI'
+import { useDeleteMeetingMutation } from '../../api/useMeetingsQuery'
+import type { Meeting } from '../../api/useMeetingsQuery'
 import { editImage, removeImage } from '../../assets/buttonsImages'
-import { useRemoveMeeting, type Meeting } from '../../stores/meetingsStore'
 import MeetingButton from './MeetingButton'
 import type { EditState } from './MeetingItem'
 
@@ -23,8 +23,7 @@ export default function MeetingItemView({
   onDeleteMeeting,
   startTransition,
 }: MeetingItemViewProps) {
-  const deleteMeetingFromStore = useRemoveMeeting()
-  const { deleteMeeting } = useMeetingsAPI()
+  const { mutate: deleteMeeting } = useDeleteMeetingMutation()
 
   const handleEdit = () => {
     setEditState({
@@ -35,12 +34,10 @@ export default function MeetingItemView({
   }
 
   const handleDelete = async () => {
-    deleteMeeting(meeting.id)
-    deleteMeetingFromStore(meeting.id)
-
     startTransition(() => {
       onDeleteMeeting(meeting.id)
     })
+    deleteMeeting(meeting.id)
   }
 
   return (
