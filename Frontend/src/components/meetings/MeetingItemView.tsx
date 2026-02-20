@@ -9,21 +9,15 @@ import type { EditState } from './MeetingItem'
 interface MeetingItemViewProps {
   meeting: Meeting
   index: number
-  isPending: boolean
   setEditState: (state: EditState) => void
-  onDeleteMeeting: (id: string) => void
-  startTransition: (callback: () => void) => void
 }
 
 export default function MeetingItemView({
   meeting,
   index,
-  isPending,
   setEditState,
-  onDeleteMeeting,
-  startTransition,
 }: MeetingItemViewProps) {
-  const { mutate: deleteMeeting } = useDeleteMeeting()
+  const { mutate: deleteMeeting, isPending } = useDeleteMeeting()
 
   const handleEdit = () => {
     setEditState({
@@ -35,10 +29,6 @@ export default function MeetingItemView({
 
   const handleDelete = () => {
     deleteMeeting(meeting.id)
-
-    startTransition(() => {
-      onDeleteMeeting(meeting.id)
-    })
   }
 
   return (

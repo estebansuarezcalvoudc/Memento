@@ -1,5 +1,3 @@
-import { useOptimistic } from 'react'
-
 import { type Meeting } from '../../types/meetings'
 import MeetingItem from './MeetingItem'
 
@@ -7,24 +5,7 @@ interface MeetingsListProps {
   meetings: Meeting[]
 }
 
-type OptimisticAction =
-  | { type: 'delete'; id: string }
-  | { type: 'update'; id: string; data: Partial<Meeting> }
-
 export default function MeetingsList({ meetings }: MeetingsListProps) {
-  const [optimisticMeetings, updateOptimisticMeetings] = useOptimistic(
-    meetings,
-    optimisticMeetingsReducer,
-  )
-
-  const handleDelete = (id: string) => {
-    updateOptimisticMeetings({ type: 'delete', id })
-  }
-
-  const handleUpdate = (id: string, data: Partial<Meeting>) => {
-    updateOptimisticMeetings({ type: 'update', id, data })
-  }
-
   const gridCols = 'grid-cols-[20px_1fr_150px_32px_32px]'
   const titlesClasses =
     'font-ubuntu text-sm tracking-wide text-stone-500 uppercase'
@@ -42,31 +23,15 @@ export default function MeetingsList({ meetings }: MeetingsListProps) {
       </div>
 
       <div className="flex flex-col">
-        {optimisticMeetings.map((meeting, index) => (
+        {meetings.map((meeting, index) => (
           <MeetingItem
             key={meeting.id}
             meeting={meeting}
             index={index + 1}
             gridCols={gridCols}
-            onDeleteMeeting={handleDelete}
-            onUpdateMeeting={handleUpdate}
           />
         ))}
       </div>
     </div>
   )
-}
-
-function optimisticMeetingsReducer(
-  state: Meeting[],
-  action: OptimisticAction,
-): Meeting[] {
-  switch (action.type) {
-    case 'delete':
-      return state.filter(m => m.id !== action.id)
-    case 'update':
-      return state.map(m => (m.id === action.id ? { ...m, ...action.data } : m))
-    default:
-      return state
-  }
 }

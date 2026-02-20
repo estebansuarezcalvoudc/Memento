@@ -1,4 +1,4 @@
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 
 import { type Meeting } from '../../types/meetings'
 import MeetingItemEdit from './MeetingItemEdit'
@@ -8,8 +8,6 @@ interface MeetingItemProps {
   meeting: Meeting
   index: number
   gridCols: string
-  onDeleteMeeting: (id: string) => void
-  onUpdateMeeting: (id: string, data: Partial<Meeting>) => void
 }
 
 export interface EditState {
@@ -22,11 +20,7 @@ export default function MeetingItem({
   meeting,
   index,
   gridCols,
-  onDeleteMeeting,
-  onUpdateMeeting,
 }: MeetingItemProps) {
-  const [isPending, startTransition] = useTransition()
-
   const [editState, setEditState] = useState<EditState>({
     isEditing: false,
     title: meeting.title,
@@ -42,19 +36,13 @@ export default function MeetingItem({
           meeting={meeting}
           index={index}
           editState={editState}
-          isPending={isPending}
           setEditState={setEditState}
-          onUpdateMeeting={onUpdateMeeting}
-          startTransition={startTransition}
         />
       ) : (
         <MeetingItemView
           meeting={meeting}
           index={index}
-          isPending={isPending}
           setEditState={setEditState}
-          onDeleteMeeting={onDeleteMeeting}
-          startTransition={startTransition}
         />
       )}
     </div>
