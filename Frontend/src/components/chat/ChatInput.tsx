@@ -9,15 +9,20 @@ interface UserChatInputProps {
 
 export default function ChatInput({ chatId }: UserChatInputProps) {
   const [userMessage, setUserMessage] = useState('')
-  const { mutate: sendMessage } = useSendMessage(chatId)
+  const { mutateAsync: sendMessage } = useSendMessage(chatId)
 
-  const handleSubmitMessage = () => {
+  const handleSubmitMessage = async () => {
     if (!userMessage) {
       return
     }
 
-    sendMessage(userMessage)
+    const message = userMessage
     setUserMessage('')
+    try {
+      await sendMessage(message)
+    } catch {
+      setUserMessage(message)
+    }
   }
 
   return (

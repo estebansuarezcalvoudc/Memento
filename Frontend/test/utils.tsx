@@ -1,7 +1,7 @@
-import { cleanup, render } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { afterEach, beforeEach, vi } from 'vitest'
+import { cleanup, render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
+import { afterEach, beforeEach, vi } from 'vitest'
 
 import { _resetAuthStore } from '../src/stores/authStore'
 

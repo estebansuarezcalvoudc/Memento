@@ -33,7 +33,7 @@ export default function UploadMeetingsDialog({
       aria-modal="true"
       aria-labelledby="upload-files-dialog-title"
       className="fixed top-1/2 left-1/2 z-[9990] h-[80vh] max-h-[90vh] w-[90vw] max-w-4xl -translate-x-1/2 -translate-y-1/2 rounded-3xl bg-white px-4 pt-5 shadow-xl"
-      onKeyDown={(e) => {
+      onKeyDown={e => {
         if (e.key === 'Escape') {
           e.preventDefault()
           innerRef.current?.close()
@@ -53,7 +53,7 @@ export default function UploadMeetingsDialog({
         <button
           className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-2xl p-1 text-stone-400 hover:bg-stone-200"
           onClick={() => innerRef.current?.close()}
-          aria-label='close-upload-meetings-dialog'
+          aria-label="close-upload-meetings-dialog"
         >
           {closeImage}
         </button>

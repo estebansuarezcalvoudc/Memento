@@ -26,9 +26,7 @@ describe('ChatsList Component', () => {
   })
 
   it('shows empty state when there are no conversations', async () => {
-    server.use(
-      http.get('/api/conversations', () => HttpResponse.json([])),
-    )
+    server.use(http.get('/api/conversations', () => HttpResponse.json([])))
     setAuthToken()
     renderWithRouter(<ChatsList />)
 
@@ -37,8 +35,9 @@ describe('ChatsList Component', () => {
 
   it('shows error when the API fails', async () => {
     server.use(
-      http.get('/api/conversations', () =>
-        new HttpResponse(null, { status: 500 }),
+      http.get(
+        '/api/conversations',
+        () => new HttpResponse(null, { status: 500 }),
       ),
     )
     setAuthToken()

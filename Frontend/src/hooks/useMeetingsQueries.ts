@@ -1,7 +1,5 @@
-import { useCallback } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { type Meeting } from '../types/meetings'
 import {
   deleteMeeting,
   getAllMeetings,
@@ -10,6 +8,7 @@ import {
   updateMeeting,
   uploadMeetings,
 } from '../api/meetingsAPI'
+import { type Meeting } from '../types/meetings'
 
 const MEETINGS_KEY = ['meetings'] as const
 
@@ -40,11 +39,12 @@ export function useDeleteMeeting() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: deleteMeeting,
-    onMutate: async (id) => {
+    onMutate: async id => {
       await queryClient.cancelQueries({ queryKey: MEETINGS_KEY })
       const previous = queryClient.getQueryData<Meeting[]>(MEETINGS_KEY)
-      queryClient.setQueryData<Meeting[]>(MEETINGS_KEY, old =>
-        old?.filter(m => m.id !== id) ?? [],
+      queryClient.setQueryData<Meeting[]>(
+        MEETINGS_KEY,
+        old => old?.filter(m => m.id !== id) ?? [],
       )
       return { previous }
     },
@@ -63,8 +63,9 @@ export function useUpdateMeeting() {
     onMutate: async ({ id, updates }) => {
       await queryClient.cancelQueries({ queryKey: MEETINGS_KEY })
       const previous = queryClient.getQueryData<Meeting[]>(MEETINGS_KEY)
-      queryClient.setQueryData<Meeting[]>(MEETINGS_KEY, old =>
-        old?.map(m => (m.id === id ? { ...m, ...updates } : m)) ?? [],
+      queryClient.setQueryData<Meeting[]>(
+        MEETINGS_KEY,
+        old => old?.map(m => (m.id === id ? { ...m, ...updates } : m)) ?? [],
       )
       return { previous }
     },
@@ -77,12 +78,10 @@ export function useUpdateMeeting() {
 
 export function useUploadMeetings() {
   const queryClient = useQueryClient()
-  return useCallback(
-    async (formData: FormData): Promise<Meeting[]> => {
-      const result = await uploadMeetings(formData)
+  return useMutation({
+    mutationFn: uploadMeetings,
+    onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: MEETINGS_KEY })
-      return result
     },
-    [queryClient],
-  )
+  })
 }

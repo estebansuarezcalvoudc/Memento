@@ -52,7 +52,10 @@ async function loginAction(
   formData: FormData,
   navigate: NavigateFunction,
   setIsUserAuth: SetIsUserAuth,
-  login: (email: string, password: string) => Promise<{ access_token: string; token_type: string }>,
+  login: (
+    email: string,
+    password: string,
+  ) => Promise<{ access_token: string; token_type: string }>,
 ): Promise<FormState> {
   const email = (formData.get('email') ?? '') as string
   const password = (formData.get('password') ?? '') as string
@@ -82,7 +85,10 @@ async function processLogin(
   password: string,
   navigate: NavigateFunction,
   setIsUserAuth: SetIsUserAuth,
-  login: (email: string, password: string) => Promise<{ access_token: string; token_type: string }>,
+  login: (
+    email: string,
+    password: string,
+  ) => Promise<{ access_token: string; token_type: string }>,
 ): Promise<FormState> {
   try {
     const data = await login(email, password)
@@ -97,7 +103,8 @@ async function processLogin(
       enteredValues: { email },
     }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Invalid credentials'
+    const errorMessage =
+      error instanceof Error ? error.message : 'Invalid credentials'
     return {
       errors: [errorMessage],
       enteredValues: { email },

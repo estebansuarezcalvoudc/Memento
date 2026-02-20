@@ -34,10 +34,11 @@ export default function ChatsList() {
 
   return (
     <div
-      className={`min-h-0 flex-1 transition-opacity duration-300 ${isSidebarOpen
+      className={`min-h-0 flex-1 transition-opacity duration-300 ${
+        isSidebarOpen
           ? 'block opacity-100 delay-150'
           : 'hidden opacity-0 delay-[0ms]'
-        } flex h-full flex-col overflow-hidden`}
+      } flex h-full flex-col overflow-hidden`}
     >
       <h2 className="font-ubuntu mt-8 mb-2 ml-1.5 flex-shrink-0 truncate text-sm text-stone-400">
         Chats

@@ -12,11 +12,11 @@ export default async function fetchBackend<T>(
   }
 
   const isFormData = body instanceof FormData
-  
+
   const headers: HeadersInit = {
     Authorization: `Bearer ${token}`,
   }
-  
+
   // Only add Content-Type for JSON
   if (!isFormData && body !== undefined) {
     headers['Content-Type'] = 'application/json'

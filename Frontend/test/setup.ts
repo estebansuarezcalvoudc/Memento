@@ -1,14 +1,17 @@
 import '@testing-library/jest-dom'
+
 import { afterAll, afterEach, beforeAll } from 'vitest'
 
 import { server } from './mocks/server'
 
 // jsdom does not implement ResizeObserver (used by @headlessui/react)
+/* eslint-disable @typescript-eslint/no-empty-function */
 global.ResizeObserver = class ResizeObserver {
   observe() {}
   unobserve() {}
   disconnect() {}
 }
+/* eslint-enable @typescript-eslint/no-empty-function */
 
 // jsdom does not implement HTMLDialogElement.showModal / close
 HTMLDialogElement.prototype.showModal = function () {

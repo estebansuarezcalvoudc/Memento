@@ -14,10 +14,14 @@ export default function NewChat() {
       return
     }
 
+    const message = userMessage
     setUserMessage('')
-
-    const newChat = await createChat(userMessage)
-    navigate(`/chats/${newChat.id}`)
+    try {
+      const newChat = await createChat(message)
+      navigate(`/chats/${newChat.id}`)
+    } catch {
+      setUserMessage(message)
+    }
   }
 
   return (

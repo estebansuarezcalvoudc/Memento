@@ -41,7 +41,10 @@ describe('NewChat Page', () => {
     renderWithRouter(
       <Routes>
         <Route path="/new-chat" element={<NewChat />} />
-        <Route path="/chats/:chatId" element={<div>Chat Page new-chat-1</div>} />
+        <Route
+          path="/chats/:chatId"
+          element={<div>Chat Page new-chat-1</div>}
+        />
       </Routes>,
       { route: '/new-chat' },
     )

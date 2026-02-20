@@ -58,7 +58,10 @@ async function signupAction(
   formData: FormData,
   navigate: NavigateFunction,
   setIsUserAuth: SetIsUserAuth,
-  register: (email: string, password: string) => Promise<{ access_token: string; token_type: string }>,
+  register: (
+    email: string,
+    password: string,
+  ) => Promise<{ access_token: string; token_type: string }>,
 ): Promise<FormState> {
   const email = (formData.get('email') ?? '') as string
   const password = (formData.get('password') ?? '') as string
@@ -97,7 +100,10 @@ async function processSignup(
   password: string,
   navigate: NavigateFunction,
   setIsUserAuth: SetIsUserAuth,
-  register: (email: string, password: string) => Promise<{ access_token: string; token_type: string }>,
+  register: (
+    email: string,
+    password: string,
+  ) => Promise<{ access_token: string; token_type: string }>,
 ): Promise<FormState> {
   try {
     const data = await register(email, password)
@@ -112,7 +118,8 @@ async function processSignup(
       enteredValues: { email },
     }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Could not sign up'
+    const errorMessage =
+      error instanceof Error ? error.message : 'Could not sign up'
     return {
       errors: [errorMessage],
       enteredValues: { email },
