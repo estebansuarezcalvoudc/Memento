@@ -1,7 +1,7 @@
 import { useActionState, useEffect, useState } from 'react'
 
 import { useUploadMeetings } from '../../hooks/useMeetingsQueries'
-import useWhisperXAPI, { type LanguageOption } from '../../api/useWhisperXAPI'
+import { useGetSupportedLanguages } from '../../hooks/useWhisperXQueries'
 import {
   parseMeetingsFromFormData,
   type MeetingMetadata,
@@ -93,22 +93,8 @@ export default function UploadMeetingsForm({
   handleCloseDialog: () => void
 }) {
   const uploadMeetings = useUploadMeetings()
-  const { getSupportedLanguages } = useWhisperXAPI()
+  const { data: languages = [] } = useGetSupportedLanguages()
   const [meetings, setMeetings] = useState<MeetingFormData[]>([createMeeting()])
-  const [languages, setLanguages] = useState<LanguageOption[]>([])
-
-  useEffect(() => {
-    const fetchSupportedLanguages = async () => {
-      try {
-        const data = await getSupportedLanguages()
-        setLanguages(data)
-      } catch (err) {
-        console.error('Failed to load languages:', err)
-      }
-    }
-
-    fetchSupportedLanguages()
-  }, [getSupportedLanguages])
 
   const uploadAction = createUploadMeetingsAction(uploadMeetings)
 
