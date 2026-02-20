@@ -1,4 +1,3 @@
-import { useCallback } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { type Meeting } from '../types/meetings'
@@ -77,12 +76,10 @@ export function useUpdateMeeting() {
 
 export function useUploadMeetings() {
   const queryClient = useQueryClient()
-  return useCallback(
-    async (formData: FormData): Promise<Meeting[]> => {
-      const result = await uploadMeetings(formData)
+  return useMutation({
+    mutationFn: uploadMeetings,
+    onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: MEETINGS_KEY })
-      return result
     },
-    [queryClient],
-  )
+  })
 }

@@ -92,7 +92,7 @@ export default function UploadMeetingsForm({
 }: {
   handleCloseDialog: () => void
 }) {
-  const uploadMeetings = useUploadMeetings()
+  const { mutateAsync: uploadMeetings } = useUploadMeetings()
   const { data: languages = [] } = useGetSupportedLanguages()
   const [meetings, setMeetings] = useState<MeetingFormData[]>([createMeeting()])
 
