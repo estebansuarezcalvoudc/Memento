@@ -1,7 +1,7 @@
-import { useGetMeetings } from '../hooks/useMeetingsQueries'
 import PageContainer from '../components/layout/PageContainer'
 import Header from '../components/meetings/Header'
 import MeetingsList from '../components/meetings/MeetingList'
+import { useGetMeetings } from '../hooks/useMeetingsQueries'
 
 export type { Meeting } from '../types/meetings'
 

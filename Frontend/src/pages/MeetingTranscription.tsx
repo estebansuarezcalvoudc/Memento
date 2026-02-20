@@ -1,7 +1,9 @@
-import DOMPurify from 'dompurify';
+import DOMPurify from 'dompurify'
 
 export default function MeetingTranscription({ content }: { content: string }) {
-  const sanitizedContent = DOMPurify.sanitize(content, { USE_PROFILES: { html: true } });
+  const sanitizedContent = DOMPurify.sanitize(content, {
+    USE_PROFILES: { html: true },
+  })
 
   return (
     <div

@@ -2,6 +2,7 @@ import { useActionState, useEffect, useState } from 'react'
 
 import { useUploadMeetings } from '../../hooks/useMeetingsQueries'
 import { useGetSupportedLanguages } from '../../hooks/useWhisperXQueries'
+import { type Meeting } from '../../types/meetings'
 import {
   parseMeetingsFromFormData,
   type MeetingMetadata,
@@ -29,54 +30,7 @@ interface FormState {
   success?: boolean
 }
 
-function createUploadMeetingsAction(
-  uploadMeetings: (formData: FormData) => Promise<any>,
-) {
-  return async function uploadMeetingsAction(
-    _prevFormState: FormState,
-    formData: FormData,
-  ): Promise<FormState> {
-    const parsed = parseMeetingsFromFormData(formData)
-
-    if (!parsed.ok) {
-      return { validationErrors: parsed.errors }
-    }
-
-    const uploadResult = await processUploadMeetings(
-      parsed.meetingsMetadata,
-      parsed.audioFiles,
-      uploadMeetings,
-    )
-
-    return uploadResult
-  }
-}
-
-async function processUploadMeetings(
-  meetingsMetadata: MeetingMetadata[],
-  audioFiles: File[],
-  uploadMeetings: (formData: FormData) => Promise<any>,
-): Promise<FormState> {
-  try {
-    const backendFormData = new FormData()
-    backendFormData.append(
-      'meetings_data',
-      JSON.stringify({ meetings_metadata: meetingsMetadata }),
-    )
-
-    audioFiles.forEach(file => backendFormData.append('audios', file))
-
-    const data = await uploadMeetings(backendFormData)
-
-    return {
-      success: true,
-      validationErrors: null,
-      uploadedMeetingsCount: meetingsMetadata.length,
-    }
-  } catch {
-    return { validationErrors: null, serverError: true, success: false }
-  }
-}
+type Notification = 'none' | 'uploading' | 'success' | 'serverError'
 
 function createMeeting(): MeetingFormData {
   return {
@@ -84,8 +38,6 @@ function createMeeting(): MeetingFormData {
     title: '',
   }
 }
-
-type Notification = 'none' | 'uploading' | 'success' | 'serverError'
 
 export default function UploadMeetingsForm({
   handleCloseDialog,
@@ -196,4 +148,51 @@ export default function UploadMeetingsForm({
       </div>
     </form>
   )
+}
+
+function createUploadMeetingsAction(
+  uploadMeetings: (formData: FormData) => Promise<Meeting[]>,
+) {
+  return async function uploadMeetingsAction(
+    _prevFormState: FormState,
+    formData: FormData,
+  ): Promise<FormState> {
+    const parsed = parseMeetingsFromFormData(formData)
+
+    if (!parsed.ok) {
+      return { validationErrors: parsed.errors }
+    }
+
+    return processUploadMeetings(
+      parsed.meetingsMetadata,
+      parsed.audioFiles,
+      uploadMeetings,
+    )
+  }
+}
+
+async function processUploadMeetings(
+  meetingsMetadata: MeetingMetadata[],
+  audioFiles: File[],
+  uploadMeetings: (formData: FormData) => Promise<Meeting[]>,
+): Promise<FormState> {
+  try {
+    const backendFormData = new FormData()
+    backendFormData.append(
+      'meetings_data',
+      JSON.stringify({ meetings_metadata: meetingsMetadata }),
+    )
+
+    audioFiles.forEach(file => backendFormData.append('audios', file))
+
+    await uploadMeetings(backendFormData)
+
+    return {
+      success: true,
+      validationErrors: null,
+      uploadedMeetingsCount: meetingsMetadata.length,
+    }
+  } catch {
+    return { validationErrors: null, serverError: true, success: false }
+  }
 }

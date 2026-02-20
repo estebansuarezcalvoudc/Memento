@@ -13,7 +13,9 @@ export function createAudioFile(name = 'recording.mp3') {
 export function submitForm() {
   act(() => {
     const form = document.querySelector('form')
-    form?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+    form?.dispatchEvent(
+      new Event('submit', { bubbles: true, cancelable: true }),
+    )
   })
 }
 
@@ -36,7 +38,9 @@ export function spyValidParsing(count = 1) {
 // MSW handler that responds with `count` new meetings after an optional delay.
 export function meetingsPostHandler(count = 1, delayMs = 0) {
   return http.post('/api/meetings', async () => {
-    if (delayMs > 0) await new Promise(resolve => setTimeout(resolve, delayMs))
+    if (delayMs > 0) {
+      await new Promise(resolve => setTimeout(resolve, delayMs))
+    }
     const meetings = Array.from({ length: count }, (_, i) => ({
       id: `new-meeting-${i + 1}`,
       title: `New Meeting ${i + 1}`,

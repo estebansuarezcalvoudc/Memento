@@ -15,11 +15,17 @@ export async function createChat(message: string): Promise<Chat> {
   return fetchBackend('POST', 'conversations', { message })
 }
 
-export async function sendMessage(id: string, message: string): Promise<string> {
+export async function sendMessage(
+  id: string,
+  message: string,
+): Promise<string> {
   return fetchBackend('POST', `conversations/${id}/chat`, { message })
 }
 
-export async function updateChatTitle(id: string, title: string): Promise<null> {
+export async function updateChatTitle(
+  id: string,
+  title: string,
+): Promise<null> {
   return fetchBackend('PUT', `conversations/${id}`, { title })
 }
 

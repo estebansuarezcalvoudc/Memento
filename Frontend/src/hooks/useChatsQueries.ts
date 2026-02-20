@@ -33,7 +33,7 @@ export function useCreateChat() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: createChat,
-    onSuccess: (newChat) => {
+    onSuccess: newChat => {
       queryClient.setQueryData<Chat[]>(CHATS_KEY, old =>
         old ? [newChat, ...old] : [newChat],
       )
@@ -45,7 +45,7 @@ export function useSendMessage(chatId: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (message: string) => sendMessage(chatId, message),
-    onMutate: async (message) => {
+    onMutate: async message => {
       await queryClient.cancelQueries({ queryKey: chatKey(chatId) })
       const previous = queryClient.getQueryData<Message[]>(chatKey(chatId))
       queryClient.setQueryData<Message[]>(chatKey(chatId), old => [
@@ -54,7 +54,7 @@ export function useSendMessage(chatId: string) {
       ])
       return { previous }
     },
-    onSuccess: (assistantResponse) => {
+    onSuccess: assistantResponse => {
       queryClient.setQueryData<Message[]>(chatKey(chatId), old => [
         ...(old ?? []),
         { role: 'assistant', content: assistantResponse },
@@ -73,8 +73,10 @@ export function useUpdateChatTitle() {
       updateChatTitle(id, title),
     onMutate: ({ id, title }) => {
       const previous = queryClient.getQueryData<Chat[]>(CHATS_KEY)
-      queryClient.setQueryData<Chat[]>(CHATS_KEY, old =>
-        old?.map(c => (c.id === id ? { ...c, title } : c)) ?? previous ?? [],
+      queryClient.setQueryData<Chat[]>(
+        CHATS_KEY,
+        old =>
+          old?.map(c => (c.id === id ? { ...c, title } : c)) ?? previous ?? [],
       )
       return { previous }
     },
@@ -94,11 +96,12 @@ export function useDeleteChat() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: deleteChat,
-    onMutate: async (id) => {
+    onMutate: async id => {
       await queryClient.cancelQueries({ queryKey: CHATS_KEY })
       const previous = queryClient.getQueryData<Chat[]>(CHATS_KEY)
-      queryClient.setQueryData<Chat[]>(CHATS_KEY, old =>
-        old?.filter(c => c.id !== id) ?? [],
+      queryClient.setQueryData<Chat[]>(
+        CHATS_KEY,
+        old => old?.filter(c => c.id !== id) ?? [],
       )
       return { previous }
     },

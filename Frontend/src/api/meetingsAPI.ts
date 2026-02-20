@@ -7,12 +7,16 @@ export async function getAllMeetings(): Promise<Meeting[]> {
   return fetchBackend('GET', 'meetings')
 }
 
-export async function getMeetingSummary(id: string): Promise<MeetingContentResponse> {
+export async function getMeetingSummary(
+  id: string,
+): Promise<MeetingContentResponse> {
   const data = await fetchBackend('GET', `meetings/summary/${id}`)
   return { content: data['summary'], title: data.title, date: data.date }
 }
 
-export async function getMeetingTranscription(id: string): Promise<MeetingContentResponse> {
+export async function getMeetingTranscription(
+  id: string,
+): Promise<MeetingContentResponse> {
   const data = await fetchBackend('GET', `meetings/transcription/${id}`)
   return { content: data['transcription'], title: data.title, date: data.date }
 }

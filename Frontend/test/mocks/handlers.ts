@@ -34,8 +34,14 @@ export const handlers = [
       { role: 'assistant', content: 'Hi there' },
     ]),
   ),
-  http.put('/api/conversations/:id', () => new HttpResponse(null, { status: 204 })),
-  http.delete('/api/conversations/:id', () => new HttpResponse(null, { status: 204 })),
+  http.put(
+    '/api/conversations/:id',
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.delete(
+    '/api/conversations/:id',
+    () => new HttpResponse(null, { status: 204 }),
+  ),
   http.post('/api/conversations/:id/chat', () =>
     HttpResponse.json('Assistant response here'),
   ),
@@ -61,8 +67,14 @@ export const handlers = [
       date: '2024-01-15',
     }),
   ),
-  http.patch('/api/meetings/:id', () => new HttpResponse(null, { status: 204 })),
-  http.delete('/api/meetings/:id', () => new HttpResponse(null, { status: 204 })),
+  http.patch(
+    '/api/meetings/:id',
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.delete(
+    '/api/meetings/:id',
+    () => new HttpResponse(null, { status: 204 }),
+  ),
 
   // WhisperX
   http.get('/api/settings/transcription/whisperx/languages', () =>

@@ -32,7 +32,11 @@ describe('Upload Meeting Dialog (Sidebar)', () => {
     spyValidParsing()
     setAuthToken()
 
-    const newMeeting = { id: 'new-meeting-1', title: 'Meeting 1', date: '2024-03-01' }
+    const newMeeting = {
+      id: 'new-meeting-1',
+      title: 'Meeting 1',
+      date: '2024-03-01',
+    }
     let uploaded = false
     server.use(
       http.post('/api/meetings', () => {
@@ -40,7 +44,9 @@ describe('Upload Meeting Dialog (Sidebar)', () => {
         return HttpResponse.json([newMeeting])
       }),
       http.get('/api/meetings', () =>
-        HttpResponse.json(uploaded ? [...mockMeetings, newMeeting] : mockMeetings),
+        HttpResponse.json(
+          uploaded ? [...mockMeetings, newMeeting] : mockMeetings,
+        ),
       ),
     )
 
@@ -69,8 +75,11 @@ describe('Upload Meeting Dialog (Sidebar)', () => {
     submitForm()
 
     // After upload and cache invalidation, the new meeting appears in the list
-    await waitFor(() => {
-      expect(screen.getByText('Meeting 1')).toBeInTheDocument()
-    }, { timeout: 3000 })
+    await waitFor(
+      () => {
+        expect(screen.getByText('Meeting 1')).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
   })
 })

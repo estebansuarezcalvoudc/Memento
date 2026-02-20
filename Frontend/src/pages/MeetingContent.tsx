@@ -32,7 +32,10 @@ export default function MeetingContent({ type }: MeetingContentProps) {
       loadingText: 'Loading Summary',
       errorLabel: 'Failed to fetch summary',
       query: summaryQuery,
-      otherLink: { text: 'Transcription', path: `/meetings/${meetingId}/transcription` },
+      otherLink: {
+        text: 'Transcription',
+        path: `/meetings/${meetingId}/transcription`,
+      },
       renderContent: (content: string) => <MeetingSummary content={content} />,
     },
     transcription: {
@@ -41,11 +44,14 @@ export default function MeetingContent({ type }: MeetingContentProps) {
       errorLabel: 'Failed to fetch transcription',
       query: transcriptionQuery,
       otherLink: { text: 'Summary', path: `/meetings/${meetingId}/summary` },
-      renderContent: (content: string) => <MeetingTranscription content={content} />,
+      renderContent: (content: string) => (
+        <MeetingTranscription content={content} />
+      ),
     },
   }[type]
 
-  const { title, loadingText, errorLabel, query, otherLink, renderContent } = config
+  const { title, loadingText, errorLabel, query, otherLink, renderContent } =
+    config
 
   let displayContent
 
