@@ -1,41 +1,14 @@
-import { useEffect, useState } from 'react'
-
-import useChatsAPI from '../../../api/useChatsAPI'
-import { useChats, useSetChats } from '../../../stores/chatsStore'
+import { useGetChats } from '../../../hooks/useChatsQueries'
 import { useIsSidebarOpen } from '../../../stores/sidebarStore'
 import ChatItem from './ChatItem'
 
 export default function ChatsList() {
-  const chats = useChats()
-  const setChats = useSetChats()
-
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data: chats, isLoading, error } = useGetChats()
   const isSidebarOpen = useIsSidebarOpen()
-
-  const { retrieveAllChats } = useChatsAPI()
-
-  useEffect(() => {
-    const fetchConversations = async () => {
-      try {
-        const data = await retrieveAllChats()
-        setChats(data)
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to fetch conversations',
-        )
-        console.error('Error fetching conversations:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchConversations()
-  }, [setChats, retrieveAllChats])
 
   let chatContent
 
-  if (loading) {
+  if (isLoading) {
     chatContent = (
       <li className="p-4 text-center text-stone-400">
         Loading conversations...
@@ -43,9 +16,9 @@ export default function ChatsList() {
     )
   } else if (error) {
     chatContent = (
-      <li className="p-4 text-center text-red-400">Error: {error}</li>
+      <li className="p-4 text-center text-red-400">Error: {error.message}</li>
     )
-  } else if (chats.length === 0) {
+  } else if (!chats || chats.length === 0) {
     chatContent = (
       <li className="p-4 text-center text-stone-400">No conversations yet</li>
     )

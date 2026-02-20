@@ -4,9 +4,8 @@ import { afterEach, beforeEach, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 
 import { _resetAuthStore } from '../src/stores/authStore'
-import { _resetChatsStore } from '../src/stores/chatsStore'
 
-export { _resetAuthStore, _resetChatsStore }
+export { _resetAuthStore }
 
 function ensurePortal(id: string) {
   if (!document.getElementById(id)) {
@@ -41,7 +40,6 @@ export function setAuthToken(token = 'fake-token') {
 export function setupStoreReset() {
   beforeEach(() => {
     vi.restoreAllMocks()
-    _resetChatsStore()
     _resetAuthStore()
   })
   afterEach(() => {

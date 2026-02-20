@@ -1,16 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import useChatsAPI from '../api/useChatsAPI'
 import SendMessageButton from '../components/chat/SendMessageButton'
-import { useUnshiftChat } from '../stores/chatsStore'
+import { useCreateChat } from '../hooks/useChatsQueries'
 
 export default function NewChat() {
   const [userMessage, setUserMessage] = useState('')
   const navigate = useNavigate()
-  const unshiftChat = useUnshiftChat()
-
-  const { createChat } = useChatsAPI()
+  const { mutateAsync: createChat } = useCreateChat()
 
   const handleSubmitMessage = async () => {
     if (!userMessage) {
@@ -21,7 +18,6 @@ export default function NewChat() {
 
     const newChat = await createChat(userMessage)
     navigate(`/chats/${newChat.id}`)
-    unshiftChat(newChat)
   }
 
   return (
