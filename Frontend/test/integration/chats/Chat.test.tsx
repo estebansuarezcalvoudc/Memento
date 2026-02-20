@@ -60,6 +60,8 @@ describe('Chat Page', () => {
     await user.click(screen.getByRole('button'))
 
     // Mock handler returns 'Assistant response here'
-    expect(await screen.findByText('Assistant response here')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Assistant response here'),
+    ).toBeInTheDocument()
   })
 })

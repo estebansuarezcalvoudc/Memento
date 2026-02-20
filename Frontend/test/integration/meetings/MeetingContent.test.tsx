@@ -85,8 +85,9 @@ describe('MeetingContent Page', () => {
 
   it('shows error message when transcription API fails', async () => {
     server.use(
-      http.get('/api/meetings/transcription/:id', () =>
-        new HttpResponse(null, { status: 500 }),
+      http.get(
+        '/api/meetings/transcription/:id',
+        () => new HttpResponse(null, { status: 500 }),
       ),
     )
     setAuthToken()
@@ -104,10 +105,7 @@ describe('MeetingContent Page', () => {
     await screen.findByText('Speaker 1: Hello everyone')
 
     const summaryLink = screen.getByRole('link', { name: 'Summary' })
-    expect(summaryLink).toHaveAttribute(
-      'href',
-      '/meetings/meeting-1/summary',
-    )
+    expect(summaryLink).toHaveAttribute('href', '/meetings/meeting-1/summary')
   })
 
   it('navigating from transcription to summary loads the summary', async () => {

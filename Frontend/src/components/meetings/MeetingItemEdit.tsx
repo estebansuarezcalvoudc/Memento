@@ -1,6 +1,6 @@
-import useMeetingsAPI from '../../api/useMeetingsAPI'
 import { cancelEditImage, confirmEditImage } from '../../assets/buttonsImages'
-import { useUpdateMeeting, type Meeting } from '../../stores/meetingsStore'
+import { useUpdateMeeting } from '../../hooks/useMeetingsQueries'
+import { type Meeting } from '../../types/meetings'
 import MeetingButton from './MeetingButton'
 import { type EditState } from './MeetingItem'
 
@@ -8,23 +8,16 @@ interface MeetingItemEditProps {
   meeting: Meeting
   index: number
   editState: EditState
-  isPending: boolean
   setEditState: React.Dispatch<React.SetStateAction<EditState>>
-  onUpdateMeeting: (id: string, data: Partial<Meeting>) => void
-  startTransition: (callback: () => void) => void
 }
 
 export default function MeetingItemEdit({
   meeting,
   index,
   editState,
-  isPending,
   setEditState,
-  onUpdateMeeting,
-  startTransition,
 }: MeetingItemEditProps) {
-  const updateMeetingInStore = useUpdateMeeting()
-  const { updateMeeting } = useMeetingsAPI()
+  const { mutate: updateMeeting, isPending } = useUpdateMeeting()
 
   const handleTitleChange = (title: string) => {
     setEditState(prev => ({ ...prev, title }))
@@ -42,7 +35,7 @@ export default function MeetingItemEdit({
     })
   }
 
-  const handleConfirm = async () => {
+  const handleConfirm = () => {
     const updates: Partial<Meeting> = {}
 
     if (editState.title !== meeting.title) {
@@ -59,18 +52,8 @@ export default function MeetingItemEdit({
       return
     }
 
-    startTransition(() => {
-      onUpdateMeeting(meeting.id, updates)
-    })
-
+    updateMeeting({ id: meeting.id, updates })
     setEditState(prev => ({ ...prev, isEditing: false }))
-
-    try {
-      updateMeeting(meeting.id, updates)
-      updateMeetingInStore(meeting.id, updates)
-    } catch (error) {
-      console.error('Error updating meeting:', error)
-    }
   }
 
   return (

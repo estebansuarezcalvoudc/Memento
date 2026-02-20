@@ -1,41 +1,14 @@
-import { useEffect, useState } from 'react'
-
-import useChatsAPI from '../../../api/useChatsAPI'
-import { useChats, useSetChats } from '../../../stores/chatsStore'
+import { useGetChats } from '../../../hooks/useChatsQueries'
 import { useIsSidebarOpen } from '../../../stores/sidebarStore'
 import ChatItem from './ChatItem'
 
 export default function ChatsList() {
-  const chats = useChats()
-  const setChats = useSetChats()
-
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data: chats, isLoading, error } = useGetChats()
   const isSidebarOpen = useIsSidebarOpen()
-
-  const { retrieveAllChats } = useChatsAPI()
-
-  useEffect(() => {
-    const fetchConversations = async () => {
-      try {
-        const data = await retrieveAllChats()
-        setChats(data)
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to fetch conversations',
-        )
-        console.error('Error fetching conversations:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchConversations()
-  }, [setChats, retrieveAllChats])
 
   let chatContent
 
-  if (loading) {
+  if (isLoading) {
     chatContent = (
       <li className="p-4 text-center text-stone-400">
         Loading conversations...
@@ -43,9 +16,9 @@ export default function ChatsList() {
     )
   } else if (error) {
     chatContent = (
-      <li className="p-4 text-center text-red-400">Error: {error}</li>
+      <li className="p-4 text-center text-red-400">Error: {error.message}</li>
     )
-  } else if (chats.length === 0) {
+  } else if (!chats || chats.length === 0) {
     chatContent = (
       <li className="p-4 text-center text-stone-400">No conversations yet</li>
     )
@@ -61,10 +34,11 @@ export default function ChatsList() {
 
   return (
     <div
-      className={`min-h-0 flex-1 transition-opacity duration-300 ${isSidebarOpen
+      className={`min-h-0 flex-1 transition-opacity duration-300 ${
+        isSidebarOpen
           ? 'block opacity-100 delay-150'
           : 'hidden opacity-0 delay-[0ms]'
-        } flex h-full flex-col overflow-hidden`}
+      } flex h-full flex-col overflow-hidden`}
     >
       <h2 className="font-ubuntu mt-8 mb-2 ml-1.5 flex-shrink-0 truncate text-sm text-stone-400">
         Chats

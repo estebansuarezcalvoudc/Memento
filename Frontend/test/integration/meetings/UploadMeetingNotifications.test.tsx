@@ -100,9 +100,13 @@ describe('Upload Meeting Notifications', () => {
 
     await screen.findByText('1 meeting has been uploaded')
 
-    await user.click(screen.getByRole('button', { name: /close notification/i }))
+    await user.click(
+      screen.getByRole('button', { name: /close notification/i }),
+    )
 
-    expect(screen.queryByText('1 meeting has been uploaded')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('1 meeting has been uploaded'),
+    ).not.toBeInTheDocument()
   })
 
   it('success notification auto-dismisses after 6 seconds', () => {
@@ -111,9 +115,13 @@ describe('Upload Meeting Notifications', () => {
 
     // Render the notification component directly; renderWithRouter ensures the
     // #notification portal div exists
-    renderWithRouter(<SuccessNotification numberOfMeetings={2} onClose={onClose} />)
+    renderWithRouter(
+      <SuccessNotification numberOfMeetings={2} onClose={onClose} />,
+    )
 
-    expect(screen.getByText('2 meetings have been uploaded')).toBeInTheDocument()
+    expect(
+      screen.getByText('2 meetings have been uploaded'),
+    ).toBeInTheDocument()
     expect(onClose).not.toHaveBeenCalled()
 
     vi.advanceTimersByTime(6001)
@@ -132,7 +140,9 @@ describe('Upload Meeting Notifications', () => {
 
     expect(screen.getByText('Uploading 1 meeting')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: /close notification/i }))
+    await user.click(
+      screen.getByRole('button', { name: /close notification/i }),
+    )
 
     expect(screen.queryByText('Uploading 1 meeting')).not.toBeInTheDocument()
 
@@ -149,7 +159,9 @@ describe('Upload Meeting Notifications', () => {
 
     submitForm()
 
-    await user.click(screen.getByRole('button', { name: /close notification/i }))
+    await user.click(
+      screen.getByRole('button', { name: /close notification/i }),
+    )
 
     expect(screen.queryByText('Uploading 1 meeting')).not.toBeInTheDocument()
 
@@ -159,7 +171,9 @@ describe('Upload Meeting Notifications', () => {
 
   it('transitions from "Uploading" to error notification on API failure', async () => {
     spyValidParsing()
-    server.use(http.post('/api/meetings', () => new HttpResponse(null, { status: 500 })))
+    server.use(
+      http.post('/api/meetings', () => new HttpResponse(null, { status: 500 })),
+    )
     setAuthToken()
     renderWithRouter(<UploadMeetingsForm handleCloseDialog={vi.fn()} />)
 
@@ -175,7 +189,9 @@ describe('Upload Meeting Notifications', () => {
 
   it('server error notification can be closed', async () => {
     spyValidParsing()
-    server.use(http.post('/api/meetings', () => new HttpResponse(null, { status: 500 })))
+    server.use(
+      http.post('/api/meetings', () => new HttpResponse(null, { status: 500 })),
+    )
     setAuthToken()
     const user = userEvent.setup()
     renderWithRouter(<UploadMeetingsForm handleCloseDialog={vi.fn()} />)
@@ -184,9 +200,13 @@ describe('Upload Meeting Notifications', () => {
 
     await screen.findByText(/Could not upload meetings/i)
 
-    await user.click(screen.getByRole('button', { name: /close notification/i }))
+    await user.click(
+      screen.getByRole('button', { name: /close notification/i }),
+    )
 
-    expect(screen.queryByText(/Could not upload meetings/i)).not.toBeInTheDocument()
+    expect(
+      screen.queryByText(/Could not upload meetings/i),
+    ).not.toBeInTheDocument()
   })
 
   it('does not show any notification when form has validation errors', async () => {

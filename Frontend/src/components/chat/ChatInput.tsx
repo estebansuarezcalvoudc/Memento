@@ -1,34 +1,28 @@
 import { useState } from 'react'
 
-import useChatsAPI from '../../api/useChatsAPI'
-import { type Message } from '../../pages/Chat'
+import { useSendMessage } from '../../hooks/useChatsQueries'
 import SendMessageButton from './SendMessageButton'
 
 interface UserChatInputProps {
   chatId: string
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>
 }
 
-export default function ChatInput({ chatId, setMessages }: UserChatInputProps) {
+export default function ChatInput({ chatId }: UserChatInputProps) {
   const [userMessage, setUserMessage] = useState('')
-  const { uploadMessage } = useChatsAPI()
+  const { mutateAsync: sendMessage } = useSendMessage(chatId)
 
   const handleSubmitMessage = async () => {
     if (!userMessage) {
       return
     }
 
-    setMessages(prevMessages => [
-      ...prevMessages,
-      { role: 'user', content: userMessage },
-    ])
+    const message = userMessage
     setUserMessage('')
-
-    const assistantResponse = await uploadMessage(chatId, userMessage)
-    setMessages(prevMessages => [
-      ...prevMessages,
-      { role: 'assistant', content: assistantResponse },
-    ])
+    try {
+      await sendMessage(message)
+    } catch {
+      setUserMessage(message)
+    }
   }
 
   return (

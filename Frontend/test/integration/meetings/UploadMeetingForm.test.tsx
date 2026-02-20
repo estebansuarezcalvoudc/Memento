@@ -45,7 +45,9 @@ describe('Upload Meeting Form', () => {
 
     submitForm()
 
-    await waitFor(() => expect(handleClose).toHaveBeenCalled(), { timeout: 3000 })
+    await waitFor(() => expect(handleClose).toHaveBeenCalled(), {
+      timeout: 3000,
+    })
   })
 
   it('clears the form fields after a successful upload', async () => {

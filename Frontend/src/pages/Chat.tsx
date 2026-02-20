@@ -1,33 +1,15 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 
-import useChatsAPI from '../api/useChatsAPI'
 import AssistantMessage from '../components/chat/AssistantMessage'
 import ChatInput from '../components/chat/ChatInput'
 import UserMessage from '../components/chat/UserMessage'
-
-export interface Message {
-  role: 'user' | 'assistant'
-  content: string
-}
+import { useGetChatMessages } from '../hooks/useChatsQueries'
 
 export default function Chat() {
   const { chatId } = useParams<{ chatId: string }>()
-  const [messages, setMessages] = useState<Message[]>([])
+  const { data: messages = [] } = useGetChatMessages(chatId)
   const chatDivRef = useRef<HTMLUListElement | null>(null)
-  const { retrieveChat } = useChatsAPI()
-
-  useEffect(() => {
-    if (!chatId) {
-      return
-    }
-
-    const fetchConversation = async () => {
-      const chatMessages = await retrieveChat(chatId)
-      setMessages(chatMessages)
-    }
-    fetchConversation()
-  }, [chatId, retrieveChat])
 
   useEffect(() => {
     if (chatDivRef.current) {
@@ -49,7 +31,7 @@ export default function Chat() {
           }
         })}
       </ul>
-      <ChatInput chatId={chatId} setMessages={setMessages} />
+      <ChatInput chatId={chatId!} />
     </div>
   )
 }
