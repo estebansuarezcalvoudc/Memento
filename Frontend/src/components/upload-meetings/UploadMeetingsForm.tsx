@@ -1,11 +1,7 @@
 import { useActionState, useEffect, useState } from 'react'
 
-import useMeetingsAPI from '../../api/useMeetingsAPI'
+import { useUploadMeetings } from '../../hooks/useMeetingsQueries'
 import useWhisperXAPI, { type LanguageOption } from '../../api/useWhisperXAPI'
-import {
-  useAddMeeting,
-  type Meeting as StoreMeeting,
-} from '../../stores/meetingsStore'
 import {
   parseMeetingsFromFormData,
   type MeetingMetadata,
@@ -31,7 +27,6 @@ interface FormState {
   serverError?: boolean
   uploadedMeetingsCount?: number
   success?: boolean
-  newMeetings?: StoreMeeting[]
 }
 
 function createUploadMeetingsAction(
@@ -77,7 +72,6 @@ async function processUploadMeetings(
       success: true,
       validationErrors: null,
       uploadedMeetingsCount: meetingsMetadata.length,
-      newMeetings: data,
     }
   } catch {
     return { validationErrors: null, serverError: true, success: false }
@@ -98,11 +92,10 @@ export default function UploadMeetingsForm({
 }: {
   handleCloseDialog: () => void
 }) {
-  const { uploadMeetings } = useMeetingsAPI()
+  const uploadMeetings = useUploadMeetings()
   const { getSupportedLanguages } = useWhisperXAPI()
   const [meetings, setMeetings] = useState<MeetingFormData[]>([createMeeting()])
   const [languages, setLanguages] = useState<LanguageOption[]>([])
-  const addMeetingToStore = useAddMeeting()
 
   useEffect(() => {
     const fetchSupportedLanguages = async () => {
@@ -137,16 +130,12 @@ export default function UploadMeetingsForm({
     } else if (formState.success) {
       setNotification('success')
 
-      formState.newMeetings?.forEach(meeting => {
-        addMeetingToStore(meeting)
-      })
-
       setMeetings([createMeeting()])
       handleCloseDialog()
     } else if (formState.serverError) {
       setNotification('serverError')
     }
-  }, [isPending, formState, handleCloseDialog, addMeetingToStore])
+  }, [isPending, formState, handleCloseDialog])
 
   const handleSubmit = (formData: FormData) => {
     const updatedMeetings = meetings.map((meeting, index) => {
