@@ -8,7 +8,7 @@ export interface LanguageOption {
 }
 
 async function getSupportedLanguages(): Promise<LanguageOption[]> {
-  return fetchBackend('GET', 'settings/transcription/whisperx/languages')
+  return fetchBackend('GET', 'settings/transcription/languages')
 }
 
 export function useGetSupportedLanguages() {
