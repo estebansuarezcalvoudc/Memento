@@ -1,5 +1,5 @@
-import { settingsImage } from '../../assets/buttonsImages'
-import { useIsSidebarOpen } from '../../stores/sidebarStore'
+import { settingsImage } from '../../../assets/buttonsImages'
+import { useIsSidebarOpen } from '../../../stores/sidebarStore'
 import ChatsList from './chats-list/ChatsList'
 import Header from './header/Header'
 import { SidebarButton } from './navigation/SidebarButton'
