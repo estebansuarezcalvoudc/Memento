@@ -7,11 +7,11 @@ export interface LanguageOption {
   name: string
 }
 
-export default function useWhisperXAPI() {
+export default function useTranscriptionAPI() {
   const getSupportedLanguages = useCallback(async (): Promise<
     LanguageOption[]
   > => {
-    return fetchBackend('GET', 'settings/transcription/whisperx/languages')
+    return fetchBackend('GET', 'settings/transcription/languages')
   }, [])
   return {
     getSupportedLanguages,

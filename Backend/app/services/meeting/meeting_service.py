@@ -1,6 +1,3 @@
-import tempfile
-
-import whisperx
 from fastapi import HTTPException, status
 
 from ...repositories.interfaces.meeting_repo import MeetingRepository
@@ -13,18 +10,15 @@ from ...schemas.meeting.meeting_schema import (
     ProcessingConfiguration,
     UpdateMeetingMetadata,
 )
+from ...services.transcription.interfaces.transcription_service import TranscriptionService
 from ...utils.singleton_meta import SingletonMeta
-from .meeting_processing.gpu_utils import get_device
 from .meeting_processing.summarization import get_meeting_summary
-from .meeting_processing.transcription import get_transcribed_conversation
 
 
 class MeetingService(metaclass=SingletonMeta):
-    def __init__(self, repository: MeetingRepository) -> None:
+    def __init__(self, repository: MeetingRepository, transcription_service: TranscriptionService) -> None:
         self._repository: MeetingRepository = repository
-        self._device = get_device()
-        self._compute_type = "int8"
-        self._model_size = "tiny"
+        self._transcription_service = transcription_service
 
     def process_meetings(
         self,
@@ -56,29 +50,18 @@ class MeetingService(metaclass=SingletonMeta):
         processing_config: ProcessingConfiguration,
         username: str,
     ) -> MeetingMetadataResponse:
-        audio = self._get_audio_from_bytes(audio_bytes)
-
-        transcription, meeting_metadata.language = get_transcribed_conversation(
-            meeting_metadata,
-            audio,
-            self._device,
-            self._compute_type,
-            self._model_size,
+        result = self._transcription_service.transcribe(
+            audio_bytes, meeting_metadata.language, username
         )
+        meeting_metadata.language = result.language
 
-        summary = get_meeting_summary(transcription, processing_config, username)
+        summary = get_meeting_summary(result.text, processing_config, username)
 
         created_meeting = self._repository.store_meeting(
-            meeting_metadata, summary, transcription, username
+            meeting_metadata, summary, result.text, username
         )
 
         return created_meeting
-
-    def _get_audio_from_bytes(self, audio_bytes: bytes):
-        with tempfile.NamedTemporaryFile(suffix=".wav") as temp_file:
-            temp_file.write(audio_bytes)
-            temp_file.flush()
-            return whisperx.load_audio(temp_file.name)
 
     def retrieve_all_meetings_metadata(
         self, username: str

@@ -1,5 +1,5 @@
 import { removeImage } from '../../assets/buttonsImages'
-import { type LanguageOption } from '../../hooks/useWhisperXQueries'
+import { type LanguageOption } from '../../hooks/useTranscriptionQueries'
 import Input from '../common/Input'
 import Select from '../common/Select'
 import { type MeetingFormData } from './UploadMeetingsForm'

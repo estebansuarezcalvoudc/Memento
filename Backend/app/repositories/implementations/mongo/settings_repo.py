@@ -221,37 +221,37 @@ class SettingsMongoRepository(AbstractSettingsRepository):
             {"$set": update_fields},
         )
 
-    def get_whisperx_settings(self, username: str) -> dict | None:
+    def get_transcription_settings(self, username: str) -> dict | None:
         """
-        Get user's WhisperX transcription settings
+        Get user's transcription settings
 
         Args:
             username: User's username
 
         Returns:
-            Dictionary with model_size and compute_type or None
+            Dictionary with the active transcription provider's settings or None
         """
         user_data = self._collection.find_one(
             {"username": username},
-            {"settings.transcription.whisperx": True, "_id": False},
+            {"settings.transcription": True, "_id": False},
         )
 
         if not user_data or "settings" not in user_data:
             return None
 
-        return user_data.get("settings", {}).get("transcription", {}).get("whisperx")
+        return user_data.get("settings", {}).get("transcription")
 
-    def update_whisperx_settings(self, username: str, whisperx_data: dict) -> None:
+    def update_transcription_settings(self, username: str, data: dict) -> None:
         """
-        Update user's WhisperX settings (partial update)
+        Update user's transcription settings (partial update)
 
         Args:
             username: User's username
-            whisperx_data: Dictionary with model_size and/or compute_type
+            data: Dictionary with the fields to update
         """
         update_fields = {}
-        for key, value in whisperx_data.items():
-            update_fields[f"settings.transcription.whisperx.{key}"] = value
+        for key, value in data.items():
+            update_fields[f"settings.transcription.{key}"] = value
 
         self._collection.update_one(
             {"username": username},

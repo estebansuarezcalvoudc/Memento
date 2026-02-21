@@ -5,7 +5,7 @@ class TestWhisperXEndpoints:
     def test_get_available_options_should_return_models_and_compute_types(
         self, client: TestClient
     ):
-        response = client.get("/settings/transcription/whisperx/available-options")
+        response = client.get("/settings/transcription/available-options")
 
         assert response.status_code == 200
         data = response.json()
@@ -31,7 +31,7 @@ class TestWhisperXEndpoints:
     def test_get_supported_languages_should_return_language_codes(
         self, client: TestClient
     ):
-        response = client.get("/settings/transcription/whisperx/languages")
+        response = client.get("/settings/transcription/languages")
 
         assert response.status_code == 200
         languages = response.json()
@@ -64,7 +64,7 @@ class TestWhisperXEndpoints:
             "password": "$2b$12$test_hashed_password",
         }
 
-        response = client.get("/settings/transcription/whisperx", headers=auth_headers)
+        response = client.get("/settings/transcription/configuration", headers=auth_headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -79,15 +79,13 @@ class TestWhisperXEndpoints:
             "password": "$2b$12$test_hashed_password",
             "settings": {
                 "transcription": {
-                    "whisperx": {
-                        "model_size": "medium",
-                        "compute_type": "float16",
-                    }
+                    "model_size": "medium",
+                    "compute_type": "float16",
                 }
             },
         }
 
-        response = client.get("/settings/transcription/whisperx", headers=auth_headers)
+        response = client.get("/settings/transcription/configuration", headers=auth_headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -109,10 +107,8 @@ class TestWhisperXEndpoints:
                 "password": "$2b$12$test_hashed_password",
                 "settings": {
                     "transcription": {
-                        "whisperx": {
-                            "model_size": "large",
-                            "compute_type": "float32",
-                        }
+                        "model_size": "large",
+                        "compute_type": "float32",
                     }
                 },
             }
@@ -125,7 +121,7 @@ class TestWhisperXEndpoints:
         }
 
         response = client.patch(
-            "/settings/transcription/whisperx",
+            "/settings/transcription/configuration",
             headers=auth_headers,
             json=request_data,
         )
@@ -137,8 +133,8 @@ class TestWhisperXEndpoints:
 
         mock_mongo.update_one.assert_called_once()
         call_args = mock_mongo.update_one.call_args
-        assert "settings.transcription.whisperx.model_size" in str(call_args)
-        assert "settings.transcription.whisperx.compute_type" in str(call_args)
+        assert "settings.transcription.model_size" in str(call_args)
+        assert "settings.transcription.compute_type" in str(call_args)
 
     def test_update_whisperx_configuration_should_allow_partial_update(
         self, client: TestClient, auth_headers: dict, mock_mongo
@@ -156,10 +152,8 @@ class TestWhisperXEndpoints:
                 "password": "$2b$12$test_hashed_password",
                 "settings": {
                     "transcription": {
-                        "whisperx": {
-                            "model_size": "large",  # Updated value
-                            "compute_type": "int8",  # Original value (not updated)
-                        }
+                        "model_size": "large",  # Updated value
+                        "compute_type": "int8",  # Original value (not updated)
                     }
                 },
             }
@@ -167,7 +161,7 @@ class TestWhisperXEndpoints:
         mock_mongo.find_one.side_effect = mongo_side_effect
 
         response = client.patch(
-            "/settings/transcription/whisperx",
+            "/settings/transcription/configuration",
             headers=auth_headers,
             json={"model_size": "large"},
         )
@@ -180,24 +174,18 @@ class TestWhisperXEndpoints:
         mock_mongo.update_one.assert_called_once()
         call_args = mock_mongo.update_one.call_args
         update_dict = call_args[0][1]["$set"]
-        assert "settings.transcription.whisperx.model_size" in update_dict
-        assert (
-            "settings.transcription.whisperx.compute_type" not in update_dict
-        )  # Not updated
+        assert "settings.transcription.model_size" in update_dict
+        assert "settings.transcription.compute_type" not in update_dict  # Not updated
 
     def test_update_whisperx_configuration_should_reject_invalid_model_size(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
         _ = mock_mongo
 
-        request_data = {
-            "model_size": "invalid_model",
-        }
-
         response = client.patch(
-            "/settings/transcription/whisperx",
+            "/settings/transcription/configuration",
             headers=auth_headers,
-            json=request_data,
+            json={"model_size": "invalid_model"},
         )
 
         assert response.status_code == 422
@@ -208,14 +196,10 @@ class TestWhisperXEndpoints:
     ):
         _ = mock_mongo
 
-        request_data = {
-            "compute_type": "invalid_type",
-        }
-
         response = client.patch(
-            "/settings/transcription/whisperx",
+            "/settings/transcription/configuration",
             headers=auth_headers,
-            json=request_data,
+            json={"compute_type": "invalid_type"},
         )
 
         assert response.status_code == 422
@@ -227,7 +211,7 @@ class TestWhisperXEndpoints:
         _ = mock_mongo
 
         response = client.patch(
-            "/settings/transcription/whisperx",
+            "/settings/transcription/configuration",
             json={"model_size": "medium"},
         )
 
@@ -242,16 +226,14 @@ class TestWhisperXEndpoints:
             "password": "$2b$12$test_hashed_password",
             "settings": {
                 "transcription": {
-                    "whisperx": {
-                        "model_size": "base",
-                        "compute_type": "float16",
-                    }
+                    "model_size": "base",
+                    "compute_type": "float16",
                 }
             },
         }
 
         response = client.patch(
-            "/settings/transcription/whisperx",
+            "/settings/transcription/configuration",
             headers=auth_headers,
             json={},
         )
@@ -262,3 +244,4 @@ class TestWhisperXEndpoints:
         assert data["compute_type"] == "float16"
 
         mock_mongo.update_one.assert_not_called()
+

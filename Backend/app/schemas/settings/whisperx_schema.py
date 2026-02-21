@@ -2,6 +2,8 @@ from typing import Literal, Optional, get_args
 
 from pydantic import BaseModel, Field
 
+from ..transcription.transcription_schema import LanguageOption  # noqa: F401
+
 # Language code to human-readable name mapping
 # Languages supported by WhisperX alignment models
 # Source: https://github.com/m-bain/whisperX/blob/main/whisperx/alignment.py
@@ -50,13 +52,6 @@ LANGUAGE_NAMES = {
 
 # Helper to get just the language codes
 SUPPORTED_LANGUAGES = list(LANGUAGE_NAMES.keys())
-
-
-class LanguageOption(BaseModel):
-    """Language option with code and human-readable name"""
-
-    code: str = Field(..., description="ISO 639-1 language code")
-    name: str = Field(..., description="Human-readable language name")
 
 
 # WhisperX available models

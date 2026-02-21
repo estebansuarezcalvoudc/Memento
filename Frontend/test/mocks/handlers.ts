@@ -76,8 +76,8 @@ export const handlers = [
     () => new HttpResponse(null, { status: 204 }),
   ),
 
-  // WhisperX
-  http.get('/api/settings/transcription/whisperx/languages', () =>
+  // Transcription
+  http.get('/api/settings/transcription/languages', () =>
     HttpResponse.json([
       { code: 'en', name: 'English' },
       { code: 'es', name: 'Spanish' },
