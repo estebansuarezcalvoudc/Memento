@@ -82,7 +82,7 @@ class WhisperXTranscriptionService(TranscriptionService):
         try:
             update = WhisperXConfigurationUpdate(**data)
         except ValidationError as e:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors())
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=e.errors())
         update_data = update.model_dump(exclude_none=True)
         if update_data:
             self._settings_repo.update_transcription_settings(username, update_data)
