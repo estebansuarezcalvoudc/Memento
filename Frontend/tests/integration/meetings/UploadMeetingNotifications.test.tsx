@@ -3,8 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import SuccessNotification from '../../../src/components/upload-meetings/notifications/SuccessNotification'
-import UploadMeetingsForm from '../../../src/components/upload-meetings/UploadMeetingsForm'
+import SuccessNotification from '../../../src/components/meetings/upload/notifications/SuccessNotification'
+import UploadMeetingsForm from '../../../src/components/meetings/upload/UploadMeetingsForm'
 import { server } from '../../mocks/server'
 import { renderWithRouter, setAuthToken, setupStoreReset } from '../../utils'
 import {

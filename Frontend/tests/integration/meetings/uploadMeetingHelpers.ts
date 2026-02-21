@@ -2,7 +2,7 @@ import { act } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { vi } from 'vitest'
 
-import * as parseFormDataModule from '../../../src/utils/upload-meetings/parseMeetingsFormData'
+import * as parseFormDataModule from '../../../src/utils/meetings/parseMeetingsFormData'
 
 export function createAudioFile(name = 'recording.mp3') {
   return new File(['audio content'], name, { type: 'audio/mpeg' })

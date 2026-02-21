@@ -4,8 +4,8 @@ import { http, HttpResponse } from 'msw'
 import { Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import LogIn from '../../../src/pages/LogIn'
-import SignUp from '../../../src/pages/SignUp'
+import LogIn from '../../../src/pages/auth/LogIn'
+import SignUp from '../../../src/pages/auth/SignUp'
 import { server } from '../../mocks/server'
 import { renderWithRouter, setAuthToken, setupStoreReset } from '../../utils'
 

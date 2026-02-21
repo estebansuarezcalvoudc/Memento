@@ -3,8 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { Route, Routes } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 
-import ChatItem from '../../../src/components/side-bar/chats-list/ChatItem'
-import ChatsList from '../../../src/components/side-bar/chats-list/ChatsList'
+import ChatItem from '../../../src/components/layout/sidebar/chats-list/ChatItem'
+import ChatsList from '../../../src/components/layout/sidebar/chats-list/ChatsList'
 import { renderWithRouter, setAuthToken, setupStoreReset } from '../../utils'
 
 setupStoreReset()

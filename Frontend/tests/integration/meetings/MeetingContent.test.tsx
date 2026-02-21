@@ -4,7 +4,7 @@ import { http, HttpResponse } from 'msw'
 import { Route, Routes } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 
-import MeetingContent from '../../../src/pages/MeetingContent'
+import MeetingContent from '../../../src/pages/meetings/MeetingContent'
 import { server } from '../../mocks/server'
 import { renderWithRouter, setAuthToken, setupStoreReset } from '../../utils'
 

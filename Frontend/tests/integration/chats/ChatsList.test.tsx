@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 
-import ChatsList from '../../../src/components/side-bar/chats-list/ChatsList'
+import ChatsList from '../../../src/components/layout/sidebar/chats-list/ChatsList'
 import { server } from '../../mocks/server'
 import { renderWithRouter, setAuthToken, setupStoreReset } from '../../utils'
 

@@ -2,7 +2,7 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import UploadMeetingsForm from '../../../src/components/upload-meetings/UploadMeetingsForm'
+import UploadMeetingsForm from '../../../src/components/meetings/upload/UploadMeetingsForm'
 import { server } from '../../mocks/server'
 import { renderWithRouter, setAuthToken, setupStoreReset } from '../../utils'
 import {

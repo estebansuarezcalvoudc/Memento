@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { Route, Routes } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 
-import NewChat from '../../../src/pages/NewChat'
+import NewChat from '../../../src/pages/chat/NewChat'
 import { renderWithRouter, setAuthToken, setupStoreReset } from '../../utils'
 
 setupStoreReset()

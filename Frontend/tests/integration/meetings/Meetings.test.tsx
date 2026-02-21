@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 
-import Meetings from '../../../src/pages/Meetings'
+import Meetings from '../../../src/pages/meetings/Meetings'
 import { server } from '../../mocks/server'
 import { renderWithRouter, setAuthToken, setupStoreReset } from '../../utils'
 
