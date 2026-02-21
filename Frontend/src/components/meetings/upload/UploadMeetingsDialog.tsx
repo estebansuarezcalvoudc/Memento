@@ -1,67 +1,36 @@
-import { useCallback, useImperativeHandle, useRef } from 'react'
-import { createPortal } from 'react-dom'
+import { useCallback } from 'react'
 
-import { closeImage } from '../../../assets/buttonsImages'
+import Dialog, { type DialogHandler } from '../../common/Dialog'
 import UploadMeetingsForm from './UploadMeetingsForm'
 
-export interface UploadMeetingsDialogHandler {
-  open: () => void
-  close: () => void
-}
-
 interface UploadMeetingsDialogProps {
-  dialogRef: React.Ref<UploadMeetingsDialogHandler>
+  dialogRef: React.Ref<DialogHandler>
 }
 
 export default function UploadMeetingsDialog({
   dialogRef,
 }: UploadMeetingsDialogProps) {
-  const innerRef = useRef<HTMLDialogElement>(null)
-
-  useImperativeHandle(dialogRef, () => ({
-    open: () => innerRef.current?.showModal(),
-    close: () => innerRef.current?.close(),
-  }))
-
   const handleClose = useCallback(() => {
-    innerRef.current?.close()
-  }, [])
+    ; (dialogRef as React.RefObject<DialogHandler>).current?.close()
+  }, [dialogRef])
 
-  return createPortal(
-    <dialog
-      ref={innerRef}
-      aria-modal="true"
-      aria-labelledby="upload-files-dialog-title"
-      className="fixed top-1/2 left-1/2 z-[9990] h-[80vh] max-h-[90vh] w-[90vw] max-w-4xl -translate-x-1/2 -translate-y-1/2 rounded-3xl bg-white px-4 pt-5 shadow-xl"
-      onKeyDown={e => {
-        if (e.key === 'Escape') {
-          e.preventDefault()
-          innerRef.current?.close()
-        }
-      }}
-    >
-      <div className="mb-1 flex items-center justify-between">
-        <div className="w-8" />
-
-        <h2
-          id="upload-files-dialog-title"
-          className="font-dongle flex-1 text-center text-5xl text-stone-700"
-        >
-          Upload Files
-        </h2>
-
-        <button
-          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-2xl p-1 text-stone-400 hover:bg-stone-200"
-          onClick={() => innerRef.current?.close()}
-          aria-label="close-upload-meetings-dialog"
-        >
-          {closeImage}
-        </button>
+  return (
+    <Dialog dialogRef={dialogRef}>
+      <div className="absolute inset-0 flex flex-col px-4 pt-5">
+        <div className="mb-1 flex shrink-0 items-center justify-between">
+          <div className="w-8" />
+          <h2
+            id="upload-files-dialog-title"
+            className="font-dongle flex-1 text-center text-5xl text-stone-700"
+          >
+            Upload Files
+          </h2>
+          <div className="w-8" />
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <UploadMeetingsForm handleCloseDialog={handleClose} />
+        </div>
       </div>
-      <div className="scroll-auto">
-        <UploadMeetingsForm handleCloseDialog={handleClose} />
-      </div>
-    </dialog>,
-    document.getElementById('upload-meetings-modal') as HTMLElement,
+    </Dialog>
   )
 }
