@@ -9,9 +9,10 @@ import UploadMeetingsDialog, {
   type UploadMeetingsDialogHandler,
 } from '../../../meetings/upload/UploadMeetingsDialog'
 import { SidebarButton } from './SidebarButton'
+import type { DialogHandler } from '../../../common/Dialog'
 
 export default function SidebarButtons() {
-  const dialogRef = useRef<UploadMeetingsDialogHandler>(null)
+  const dialogRef = useRef<DialogHandler>(null)
 
   const buttons = [
     { image: newChatImage, text: 'New Chat', link: 'new-chat' },
