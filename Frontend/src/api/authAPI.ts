@@ -1,4 +1,4 @@
-import fetchBackend from './fetchBackend'
+import fetchBackend from './utils/fetchBackend'
 
 export interface Token {
   access_token: string

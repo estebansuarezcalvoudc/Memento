@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 
 import { editImage, removeImage } from '../../../assets/buttonsImages'
-import { useDeleteMeeting } from '../../../hooks/queries/useMeetingsQueries'
+import { useDeleteMeeting } from '../../../api/queries/useMeetingsQueries'
 import { type Meeting } from '../../../types/meetings'
 import MeetingButton from './MeetingButton'
 import type { EditState } from './MeetingItem'

@@ -1,15 +1,31 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import {
-  createChat,
-  deleteChat,
-  getAllChats,
-  getChat,
-  sendMessage,
-  updateChatTitle,
-  type Chat,
-  type Message,
-} from '../../api/chatsAPI'
+import { type Chat, type Message } from '../../types/chats'
+import fetchBackend from '../utils/fetchBackend'
+
+async function getAllChats(): Promise<Chat[]> {
+  return fetchBackend('GET', 'conversations')
+}
+
+async function getChat(id: string): Promise<Message[]> {
+  return fetchBackend('GET', `conversations/${id}`)
+}
+
+async function createChat(message: string): Promise<Chat> {
+  return fetchBackend('POST', 'conversations', { message })
+}
+
+async function sendMessage(id: string, message: string): Promise<string> {
+  return fetchBackend('POST', `conversations/${id}/chat`, { message })
+}
+
+async function updateChatTitle(id: string, title: string): Promise<null> {
+  return fetchBackend('PUT', `conversations/${id}`, { title })
+}
+
+async function deleteChat(id: string): Promise<null> {
+  return fetchBackend('DELETE', `conversations/${id}`)
+}
 
 const CHATS_KEY = ['chats'] as const
 const chatKey = (id: string) => ['chat', id] as const

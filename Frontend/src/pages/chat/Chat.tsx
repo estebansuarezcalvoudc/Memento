@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom'
 import AssistantMessage from '../../components/chat/AssistantMessage'
 import ChatInput from '../../components/chat/ChatInput'
 import UserMessage from '../../components/chat/UserMessage'
-import { useGetChatMessages } from '../../hooks/queries/useChatsQueries'
+import { useGetChatMessages } from '../../api/queries/useChatsQueries'
 
 export default function Chat() {
   const { chatId } = useParams<{ chatId: string }>()

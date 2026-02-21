@@ -1,7 +1,7 @@
 import { useActionState, useEffect, useState } from 'react'
 
-import { useUploadMeetings } from '../../../hooks/queries/useMeetingsQueries'
-import { useGetSupportedLanguages } from '../../../hooks/queries/useSettingsQueries'
+import { useUploadMeetings } from '../../../api/queries/useMeetingsQueries'
+import { useGetSupportedLanguages } from '../../../api/queries/useSettingsQueries'
 import { type Meeting } from '../../../types/meetings'
 import {
   parseMeetingsFromFormData,

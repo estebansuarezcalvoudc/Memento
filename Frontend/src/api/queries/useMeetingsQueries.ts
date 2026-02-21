@@ -1,14 +1,38 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import {
-  deleteMeeting,
-  getAllMeetings,
-  getMeetingSummary,
-  getMeetingTranscription,
-  updateMeeting,
-  uploadMeetings,
-} from '../../api/meetingsAPI'
-import { type Meeting } from '../../types/meetings'
+import { type Meeting, type MeetingContentResponse } from '../../types/meetings'
+import fetchBackend from '../utils/fetchBackend'
+
+async function getAllMeetings(): Promise<Meeting[]> {
+  return fetchBackend('GET', 'meetings')
+}
+
+async function getMeetingSummary(id: string): Promise<MeetingContentResponse> {
+  const data = await fetchBackend('GET', `meetings/summary/${id}`)
+  return { content: data['summary'], title: data.title, date: data.date }
+}
+
+async function getMeetingTranscription(
+  id: string,
+): Promise<MeetingContentResponse> {
+  const data = await fetchBackend('GET', `meetings/transcription/${id}`)
+  return { content: data['transcription'], title: data.title, date: data.date }
+}
+
+async function updateMeeting(
+  id: string,
+  updates: Partial<Omit<Meeting, 'id'>>,
+): Promise<null> {
+  return fetchBackend('PATCH', `meetings/${id}`, updates)
+}
+
+async function deleteMeeting(id: string): Promise<null> {
+  return fetchBackend('DELETE', `meetings/${id}`)
+}
+
+async function uploadMeetings(formData: FormData): Promise<Meeting[]> {
+  return fetchBackend('POST', 'meetings', formData)
+}
 
 const MEETINGS_KEY = ['meetings'] as const
 

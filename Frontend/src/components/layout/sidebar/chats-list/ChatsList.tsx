@@ -1,4 +1,4 @@
-import { useGetChats } from '../../../../hooks/queries/useChatsQueries'
+import { useGetChats } from '../../../../api/queries/useChatsQueries'
 import { useIsSidebarOpen } from '../../../../stores/sidebarStore'
 import ChatItem from './ChatItem'
 

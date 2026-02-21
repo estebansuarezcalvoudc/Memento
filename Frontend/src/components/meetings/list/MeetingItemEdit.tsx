@@ -1,5 +1,5 @@
 import { cancelEditImage, confirmEditImage } from '../../../assets/buttonsImages'
-import { useUpdateMeeting } from '../../../hooks/queries/useMeetingsQueries'
+import { useUpdateMeeting } from '../../../api/queries/useMeetingsQueries'
 import { type Meeting } from '../../../types/meetings'
 import MeetingButton from './MeetingButton'
 import { type EditState } from './MeetingItem'

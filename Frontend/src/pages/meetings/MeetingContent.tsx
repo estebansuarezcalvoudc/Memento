@@ -6,7 +6,7 @@ import Header from '../../components/meetings/Header'
 import {
   useGetMeetingSummary,
   useGetMeetingTranscription,
-} from '../../hooks/queries/useMeetingsQueries'
+} from '../../api/queries/useMeetingsQueries'
 import MeetingSummary from '../../components/meetings/content/MeetingSummary'
 import MeetingTranscription from '../../components/meetings/content/MeetingTranscription'
 

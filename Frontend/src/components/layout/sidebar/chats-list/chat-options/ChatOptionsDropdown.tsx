@@ -9,7 +9,7 @@ import {
 import {
   useDeleteChat,
   useUpdateChatTitle,
-} from '../../../../../hooks/queries/useChatsQueries'
+} from '../../../../../api/queries/useChatsQueries'
 import ChatOptionsButton from './ChatOptionButton'
 
 interface ChatOptionsDropdownProps {
