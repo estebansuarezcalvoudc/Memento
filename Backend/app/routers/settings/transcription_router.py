@@ -6,7 +6,9 @@ from ...dependencies.auth_dependencies import get_current_active_user
 from ...dependencies.service_dependencies import get_transcription_service
 from ...schemas.auth.auth_schema import User
 from ...schemas.transcription.transcription_schema import LanguageOption
-from ...services.transcription.interfaces.transcription_service import TranscriptionService
+from ...services.transcription.interfaces.transcription_service import (
+    TranscriptionService,
+)
 
 router = APIRouter(prefix="/transcription", tags=["Settings - Transcription"])
 

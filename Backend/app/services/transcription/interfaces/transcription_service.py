@@ -1,13 +1,11 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 
 from pydantic import BaseModel
 
 from ....schemas.transcription.transcription_schema import LanguageOption
 
 
-@dataclass
-class TranscriptionResult:
+class TranscriptionResult(BaseModel):
     text: str
     language: str
 
@@ -35,7 +33,6 @@ class TranscriptionService(ABC):
         Returns:
             TranscriptionResult with diarized text and detected/provided language
         """
-        pass
 
     @abstractmethod
     def get_supported_languages(self) -> list[LanguageOption]:
@@ -45,7 +42,6 @@ class TranscriptionService(ABC):
         Returns:
             List of LanguageOption objects sorted alphabetically by name
         """
-        pass
 
     @abstractmethod
     def get_available_options(self) -> BaseModel:
@@ -56,7 +52,6 @@ class TranscriptionService(ABC):
         Returns:
             Provider-specific Pydantic model with available options
         """
-        pass
 
     @abstractmethod
     def get_user_configuration(self, username: str) -> BaseModel:
@@ -69,7 +64,6 @@ class TranscriptionService(ABC):
         Returns:
             Provider-specific Pydantic model with the user's configuration
         """
-        pass
 
     @abstractmethod
     def update_user_configuration(self, username: str, data: dict) -> BaseModel:
@@ -84,4 +78,3 @@ class TranscriptionService(ABC):
         Returns:
             Provider-specific Pydantic model with the updated configuration
         """
-        pass

@@ -135,11 +135,15 @@ class WhisperXTranscriptionService(TranscriptionService):
 
     @log_execution_time(_logger)
     @try_on_gpu
-    def _diarize_audio(self, audio, device="cpu"):
+    def _diarize_audio(self, audio, device="cpu", min_speakers=None, max_speakers=None):
         diarize_model = whisperx.diarize.DiarizationPipeline(
             use_auth_token=settings.hf_token, device=device
         )
-        return diarize_model(audio)
+        return diarize_model(
+            audio,
+            min_speakers=min_speakers,
+            max_speakers=max_speakers,
+        )
 
     @log_execution_time(_logger)
     def _build_dialogue(self, diarized_conversation) -> str:
