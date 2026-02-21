@@ -119,26 +119,26 @@ class SettingsRepository(ABC):
         pass
 
     @abstractmethod
-    def get_whisperx_settings(self, username: str) -> dict | None:
+    def get_transcription_settings(self, username: str) -> dict | None:
         """
-        Get user's WhisperX transcription settings
+        Get user's transcription settings
 
         Args:
             username: User's username
 
         Returns:
-            Dictionary with model_size and compute_type or None
+            Dictionary with the active transcription provider's settings or None
         """
         pass
 
     @abstractmethod
-    def update_whisperx_settings(self, username: str, whisperx_data: dict) -> None:
+    def update_transcription_settings(self, username: str, data: dict) -> None:
         """
-        Update user's WhisperX settings (partial update)
+        Update user's transcription settings (partial update)
 
         Args:
             username: User's username
-            whisperx_data: Dictionary with model_size and/or compute_type
+            data: Dictionary with the fields to update
         """
         pass
 

@@ -7,8 +7,9 @@ from fastapi.testclient import TestClient
 
 VALID_MEETING_ID = "507f1f77bcf86cd799439011"
 
-_PATCH_WHISPERX = "app.services.meeting.meeting_service.whisperx"
-_PATCH_TRANSCRIBE = "app.services.meeting.meeting_service.get_transcribed_conversation"
+from app.services.transcription.interfaces.transcription_service import TranscriptionResult
+
+_PATCH_TRANSCRIBE = "app.services.transcription.implementations.whisperx.whisperx_transcription_service.WhisperXTranscriptionService.transcribe"
 _PATCH_SUMMARIZE = "app.services.meeting.meeting_service.get_meeting_summary"
 
 
@@ -35,12 +36,10 @@ class TestCreateMeetingsEndpoint:
         mock_mongo.insert_one.return_value.inserted_id = ObjectId(VALID_MEETING_ID)
 
         with (
-            patch(_PATCH_WHISPERX) as mock_wx,
             patch(_PATCH_TRANSCRIBE) as mock_transcribe,
             patch(_PATCH_SUMMARIZE) as mock_summarize,
         ):
-            mock_wx.load_audio.return_value = b"audio_array"
-            mock_transcribe.return_value = ("Speaker 1: Hello.", "en")
+            mock_transcribe.return_value = TranscriptionResult(text="Speaker 1: Hello.", language="en")
             mock_summarize.return_value = "The team discussed Q1 goals."
 
             response = client.post(
@@ -116,7 +115,6 @@ class TestCreateMeetingsEndpoint:
         )
 
         with (
-            patch(_PATCH_WHISPERX),
             patch(_PATCH_TRANSCRIBE),
             patch(_PATCH_SUMMARIZE),
         ):
