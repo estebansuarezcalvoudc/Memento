@@ -6,7 +6,7 @@ import { type Meeting } from '../../../types/meetings'
 import {
   parseMeetingsFromFormData,
   type MeetingMetadata,
-} from '../../../utils/meetings/parseMeetingsFormData'
+} from './parseMeetingsFormData'
 import FormButton from '../../common/FormButton'
 import FormErrors from '../../common/FormErrors'
 import AddMeetingButton from './AddMeetingButton'

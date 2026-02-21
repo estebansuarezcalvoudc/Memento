@@ -28,30 +28,6 @@ const SUPPORTED_AUDIO_FORMATS = new Set([
   'webm',
 ])
 
-function validateAudioFile(
-  file: File | null,
-  meetingIndex: number,
-): string | null {
-  if (!file || file.size === 0) {
-    return `Meeting ${meetingIndex + 1}: Audio file is required`
-  }
-
-  if (!file.name) {
-    return `Meeting ${meetingIndex + 1}: Audio file must have a filename`
-  }
-
-  const fileExtension = file.name.split('.').pop()?.toLowerCase()
-  if (!fileExtension || !SUPPORTED_AUDIO_FORMATS.has(fileExtension)) {
-    return `Meeting ${meetingIndex + 1}: Unsupported audio format "${fileExtension}". Supported formats: ${Array.from(SUPPORTED_AUDIO_FORMATS).sort().join(', ')}`
-  }
-
-  if (!file.type || !file.type.startsWith('audio/')) {
-    return `Meeting ${meetingIndex + 1}: File must be an audio file`
-  }
-
-  return null
-}
-
 export function parseMeetingsFromFormData(
   formData: FormData,
 ): ParseMeetingsResult {
@@ -120,4 +96,28 @@ export function parseMeetingsFromFormData(
   }
 
   return { ok: true, meetingsMetadata, audioFiles }
+}
+
+function validateAudioFile(
+  file: File | null,
+  meetingIndex: number,
+): string | null {
+  if (!file || file.size === 0) {
+    return `Meeting ${meetingIndex + 1}: Audio file is required`
+  }
+
+  if (!file.name) {
+    return `Meeting ${meetingIndex + 1}: Audio file must have a filename`
+  }
+
+  const fileExtension = file.name.split('.').pop()?.toLowerCase()
+  if (!fileExtension || !SUPPORTED_AUDIO_FORMATS.has(fileExtension)) {
+    return `Meeting ${meetingIndex + 1}: Unsupported audio format "${fileExtension}". Supported formats: ${Array.from(SUPPORTED_AUDIO_FORMATS).sort().join(', ')}`
+  }
+
+  if (!file.type || !file.type.startsWith('audio/')) {
+    return `Meeting ${meetingIndex + 1}: File must be an audio file`
+  }
+
+  return null
 }
