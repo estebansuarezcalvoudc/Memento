@@ -239,7 +239,16 @@ class SettingsMongoRepository(AbstractSettingsRepository):
         if not user_data or "settings" not in user_data:
             return None
 
-        return user_data.get("settings", {}).get("transcription")
+        transcription = user_data.get("settings", {}).get("transcription")
+        if not transcription:
+            return None
+
+        # Backward compatibility: old schema stored settings under
+        # settings.transcription.whisperx.{field}
+        if "whisperx" in transcription and isinstance(transcription["whisperx"], dict):
+            return transcription["whisperx"]
+
+        return transcription
 
     def update_transcription_settings(self, username: str, data: dict) -> None:
         """

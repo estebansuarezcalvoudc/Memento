@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 from ...dependencies.auth_dependencies import get_current_active_user
 from ...dependencies.service_dependencies import get_transcription_service
 from ...schemas.auth.auth_schema import User
+from ...schemas.settings.whisperx_schema import WhisperXConfigurationUpdate
 from ...schemas.transcription.transcription_schema import LanguageOption
 from ...services.transcription.interfaces.transcription_service import TranscriptionService
 
@@ -46,7 +47,7 @@ def get_configuration(
 
 @router.patch("/configuration")
 def update_configuration(
-    update: dict,
+    update: WhisperXConfigurationUpdate,
     user: Annotated[User, Depends(get_current_active_user)],
     service: Annotated[TranscriptionService, Depends(get_transcription_service)],
 ):
@@ -54,4 +55,4 @@ def update_configuration(
     Partially update the current user's transcription configuration.
     Accepted fields depend on the active transcription provider.
     """
-    return service.update_user_configuration(user.username, update)
+    return service.update_user_configuration(user.username, update.model_dump())
