@@ -1,4 +1,14 @@
-import { http, HttpResponse } from 'msw'
+import { http, HttpResponse, HttpResponseResolver } from 'msw'
+
+function withAuth(resolver: HttpResponseResolver): HttpResponseResolver {
+  return (info) => {
+    const auth = info.request.headers.get('Authorization')
+    if (!auth?.startsWith('Bearer ')) {
+      return new HttpResponse(null, { status: 401 })
+    }
+    return resolver(info)
+  }
+}
 
 export const mockChats = [
   { id: 'chat-1', title: 'First Chat', started_at: '2024-01-01T00:00:00Z' },
@@ -11,7 +21,7 @@ export const mockMeetings = [
 ]
 
 export const handlers = [
-  // Auth
+  // Auth (no token required)
   http.post('/api/auth/token', () =>
     HttpResponse.json({ access_token: 'fake-token', token_type: 'bearer' }),
   ),
@@ -20,67 +30,67 @@ export const handlers = [
   ),
 
   // Conversations
-  http.get('/api/conversations', () => HttpResponse.json(mockChats)),
-  http.post('/api/conversations', () =>
+  http.get('/api/conversations', withAuth(() => HttpResponse.json(mockChats))),
+  http.post('/api/conversations', withAuth(() =>
     HttpResponse.json({
       id: 'new-chat-1',
       title: 'New Chat',
       started_at: '2024-01-03T00:00:00Z',
     }),
-  ),
-  http.get('/api/conversations/:id', () =>
+  )),
+  http.get('/api/conversations/:id', withAuth(() =>
     HttpResponse.json([
       { role: 'user', content: 'Hello' },
       { role: 'assistant', content: 'Hi there' },
     ]),
-  ),
+  )),
   http.put(
     '/api/conversations/:id',
-    () => new HttpResponse(null, { status: 204 }),
+    withAuth(() => new HttpResponse(null, { status: 204 })),
   ),
   http.delete(
     '/api/conversations/:id',
-    () => new HttpResponse(null, { status: 204 }),
+    withAuth(() => new HttpResponse(null, { status: 204 })),
   ),
-  http.post('/api/conversations/:id/chat', () =>
+  http.post('/api/conversations/:id/chat', withAuth(() =>
     HttpResponse.json('Assistant response here'),
-  ),
+  )),
 
   // Meetings
-  http.get('/api/meetings', () => HttpResponse.json(mockMeetings)),
-  http.post('/api/meetings', () =>
+  http.get('/api/meetings', withAuth(() => HttpResponse.json(mockMeetings))),
+  http.post('/api/meetings', withAuth(() =>
     HttpResponse.json([
       { id: 'new-meeting-1', title: 'New Meeting', date: '2024-02-01' },
     ]),
-  ),
-  http.get('/api/meetings/summary/:id', () =>
+  )),
+  http.get('/api/meetings/summary/:id', withAuth(() =>
     HttpResponse.json({
       summary: '## Summary\nContent here',
       title: 'Team Meeting',
       date: '2024-01-15',
     }),
-  ),
-  http.get('/api/meetings/transcription/:id', () =>
+  )),
+  http.get('/api/meetings/transcription/:id', withAuth(() =>
     HttpResponse.json({
       transcription: 'Speaker 1: Hello everyone',
       title: 'Team Meeting',
       date: '2024-01-15',
     }),
-  ),
+  )),
   http.patch(
     '/api/meetings/:id',
-    () => new HttpResponse(null, { status: 204 }),
+    withAuth(() => new HttpResponse(null, { status: 204 })),
   ),
   http.delete(
     '/api/meetings/:id',
-    () => new HttpResponse(null, { status: 204 }),
+    withAuth(() => new HttpResponse(null, { status: 204 })),
   ),
 
   // Transcription
-  http.get('/api/settings/transcription/languages', () =>
+  http.get('/api/settings/transcription/languages', withAuth(() =>
     HttpResponse.json([
       { code: 'en', name: 'English' },
       { code: 'es', name: 'Spanish' },
     ]),
-  ),
+  )),
 ]

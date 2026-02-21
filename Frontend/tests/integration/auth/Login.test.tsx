@@ -2,21 +2,16 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { Route, Routes } from 'react-router-dom'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 
 import LogIn from '../../../src/pages/auth/LogIn'
 import SignUp from '../../../src/pages/auth/SignUp'
 import { server } from '../../mocks/server'
-import { renderWithRouter, setAuthToken, setupStoreReset } from '../../utils'
+import { renderWithRouter, setupStoreReset } from '../../utils'
 
 setupStoreReset()
 
 describe('LogIn Page', () => {
-  beforeEach(() => {
-    // fetchBackend requires a token even for auth endpoints
-    setAuthToken('dummy')
-  })
-
   afterEach(() => {
     localStorage.removeItem('access_token')
   })

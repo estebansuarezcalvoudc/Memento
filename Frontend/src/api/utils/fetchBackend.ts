@@ -7,14 +7,12 @@ export default async function fetchBackend<T>(
 ) {
   const token = localStorage.getItem('access_token')
 
-  if (!token) {
-    throw new Error('No access token found')
-  }
-
   const isFormData = body instanceof FormData
 
-  const headers: HeadersInit = {
-    Authorization: `Bearer ${token}`,
+  const headers: HeadersInit = {}
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
   }
 
   // Only add Content-Type for JSON
@@ -32,7 +30,6 @@ export default async function fetchBackend<T>(
     throw new Error(`HTTP error! status: ${response.status}`)
   }
 
-  // Handle 204 No Content responses
   if (response.status === 204) {
     return null
   }
