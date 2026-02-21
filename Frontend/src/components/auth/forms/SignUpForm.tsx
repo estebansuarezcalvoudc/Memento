@@ -1,7 +1,7 @@
 import { useActionState } from 'react'
 import { useNavigate, type NavigateFunction } from 'react-router-dom'
 
-import useAuthAPI from '../../../api/useAuthAPI'
+import { register } from '../../../api/authAPI'
 import { useSetIsUserAuth, type SetIsUserAuth } from '../../../stores/authStore'
 import FormButton from '../../common/FormButton'
 import FormErrors from '../../common/FormErrors'
@@ -17,7 +17,6 @@ interface FormState {
 export default function SignUpForm() {
   const navigate = useNavigate()
   const setIsUserAuth = useSetIsUserAuth()
-  const { register } = useAuthAPI()
   const [formState, formAction, isPending] = useActionState<
     FormState,
     FormData

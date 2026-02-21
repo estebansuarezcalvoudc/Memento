@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { useSendMessage } from '../../hooks/useChatsQueries'
+import { useSendMessage } from '../../api/queries/useChatsQueries'
 import SendMessageButton from './SendMessageButton'
 
 interface UserChatInputProps {
