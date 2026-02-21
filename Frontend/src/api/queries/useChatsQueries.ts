@@ -3,52 +3,28 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type Chat, type Message } from '../../types/chats'
 import fetchBackend from '../utils/fetchBackend'
 
-async function getAllChats(): Promise<Chat[]> {
-  return fetchBackend('GET', 'conversations')
-}
-
-async function getChat(id: string): Promise<Message[]> {
-  return fetchBackend('GET', `conversations/${id}`)
-}
-
-async function createChat(message: string): Promise<Chat> {
-  return fetchBackend('POST', 'conversations', { message })
-}
-
-async function sendMessage(id: string, message: string): Promise<string> {
-  return fetchBackend('POST', `conversations/${id}/chat`, { message })
-}
-
-async function updateChatTitle(id: string, title: string): Promise<null> {
-  return fetchBackend('PUT', `conversations/${id}`, { title })
-}
-
-async function deleteChat(id: string): Promise<null> {
-  return fetchBackend('DELETE', `conversations/${id}`)
-}
-
 const CHATS_KEY = ['chats'] as const
 const chatKey = (id: string) => ['chat', id] as const
 
 export function useGetChats() {
-  return useQuery({
+  return useQuery<Chat[]>({
     queryKey: CHATS_KEY,
-    queryFn: getAllChats,
+    queryFn: () => fetchBackend('GET', 'conversations'),
   })
 }
 
 export function useGetChatMessages(id: string | undefined) {
-  return useQuery({
+  return useQuery<Message[]>({
     queryKey: chatKey(id!),
-    queryFn: () => getChat(id!),
+    queryFn: () => fetchBackend('GET', `conversations/${id}`),
     enabled: !!id,
   })
 }
 
 export function useCreateChat() {
   const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: createChat,
+  return useMutation<Chat, Error, string>({
+    mutationFn: message => fetchBackend('POST', 'conversations', { message }),
     onSuccess: newChat => {
       queryClient.setQueryData<Chat[]>(CHATS_KEY, old =>
         old ? [newChat, ...old] : [newChat],
@@ -59,8 +35,9 @@ export function useCreateChat() {
 
 export function useSendMessage(chatId: string) {
   const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (message: string) => sendMessage(chatId, message),
+  return useMutation<string, Error, string>({
+    mutationFn: message =>
+      fetchBackend('POST', `conversations/${chatId}/chat`, { message }),
     onMutate: async message => {
       await queryClient.cancelQueries({ queryKey: chatKey(chatId) })
       const previous = queryClient.getQueryData<Message[]>(chatKey(chatId))
@@ -84,9 +61,9 @@ export function useSendMessage(chatId: string) {
 
 export function useUpdateChatTitle() {
   const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: ({ id, title }: { id: string; title: string }) =>
-      updateChatTitle(id, title),
+  return useMutation<null, Error, { id: string; title: string }>({
+    mutationFn: ({ id, title }) =>
+      fetchBackend('PUT', `conversations/${id}`, { title }),
     onMutate: ({ id, title }) => {
       const previous = queryClient.getQueryData<Chat[]>(CHATS_KEY)
       queryClient.setQueryData<Chat[]>(
@@ -110,8 +87,8 @@ export function useUpdateChatTitle() {
 
 export function useDeleteChat() {
   const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: deleteChat,
+  return useMutation<null, Error, string>({
+    mutationFn: id => fetchBackend('DELETE', `conversations/${id}`),
     onMutate: async id => {
       await queryClient.cancelQueries({ queryKey: CHATS_KEY })
       const previous = queryClient.getQueryData<Chat[]>(CHATS_KEY)

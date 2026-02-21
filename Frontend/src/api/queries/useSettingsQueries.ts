@@ -7,13 +7,9 @@ export interface LanguageOption {
   name: string
 }
 
-async function getSupportedLanguages(): Promise<LanguageOption[]> {
-  return fetchBackend('GET', 'settings/transcription/languages')
-}
-
 export function useGetSupportedLanguages() {
-  return useQuery({
+  return useQuery<LanguageOption[]>({
     queryKey: ['settings', 'languages'],
-    queryFn: getSupportedLanguages,
+    queryFn: () => fetchBackend('GET', 'settings/transcription/languages'),
   })
 }
