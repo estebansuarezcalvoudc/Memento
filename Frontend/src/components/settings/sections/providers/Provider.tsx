@@ -4,8 +4,8 @@ import { useUpdateProviderStatus } from '../../../../api/queries/settings/usePro
 import { type Provider } from '../../../../types/settings/providers'
 import Toggle from '../../../common/Toggle'
 import Tooltip from '../../../common/Tooltip'
-import ApiKeySection from './ApiKeySection'
 import SubSectionTitle from '../SubSectionTitle'
+import ApiKeySection from './ApiKeySection'
 
 export default function Provider({ provider }: { provider: Provider }) {
   const {
@@ -18,21 +18,34 @@ export default function Provider({ provider }: { provider: Provider }) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   function showTooltip(message: string) {
-    if (timerRef.current) clearTimeout(timerRef.current)
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+    }
     setTooltipMessage(message)
     timerRef.current = setTimeout(() => setTooltipMessage(null), 3000)
   }
 
   useEffect(() => {
-    if (isError) showTooltip('At least one provider needs to be available')
+    if (isError) {
+      showTooltip('At least one provider needs to be available')
+    }
   }, [isError])
 
-  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current) }, [])
+  useEffect(
+    () => () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+      }
+    },
+    [],
+  )
 
   const missingApiKey = provider.requiresApiKey && !provider.hasApiKey
 
   function handleToggleAreaClick() {
-    if (missingApiKey) showTooltip('You must add an API key before activating this provider')
+    if (missingApiKey) {
+      showTooltip('You must add an API key before activating this provider')
+    }
   }
 
   return (
@@ -42,11 +55,16 @@ export default function Provider({ provider }: { provider: Provider }) {
         <div className="relative">
           <Toggle
             enabled={provider.active}
-            onChange={active => updateStatus({ providerName: provider.name, active })}
+            onChange={active =>
+              updateStatus({ providerName: provider.name, active })
+            }
             disabled={isUpdatingStatus || missingApiKey}
           />
           {missingApiKey && (
-            <div className="absolute inset-0 z-10 cursor-not-allowed" onClick={handleToggleAreaClick} />
+            <div
+              className="absolute inset-0 z-10 cursor-not-allowed"
+              onClick={handleToggleAreaClick}
+            />
           )}
           {tooltipMessage && <Tooltip message={tooltipMessage} />}
         </div>

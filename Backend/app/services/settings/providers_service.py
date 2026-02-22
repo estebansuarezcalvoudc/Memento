@@ -77,8 +77,20 @@ class ProvidersService:
                 detail=f"Invalid provider: {provider_name}",
             )
 
+        providers = self._repository.get_providers(username)
+        active_providers = [p for p in providers if p.active]
+        is_last_active = len(active_providers) <= 1 and any(
+            p.name == provider_name for p in active_providers
+        )
+        if is_last_active:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot remove the API key of the last active provider",
+            )
+
         self._repository.delete_provider_api_key(username, provider_name)
-        _logger.info(f"API key deleted for provider {provider_name}")
+        self._repository.update_provider_status(username, provider_name, False)
+        _logger.info(f"API key deleted and provider {provider_name} deactivated")
 
     def set_provider_status(
         self, username: str, provider_name: str, active: bool
