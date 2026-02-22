@@ -19,7 +19,7 @@ export default function SettingsDialog({ dialogRef }: SettingsDialogProps) {
     <Dialog dialogRef={dialogRef}>
       <div className="flex h-full">
         <SettingsSidebar section={section} setSection={setSection} />
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-4">
           {section === Section.General && <GeneralSettings />}
           {section === Section.Provider && <ProvidersView />}
           {section === Section.MeetingsProcessing && (

@@ -5,6 +5,7 @@ import { type Provider } from '../../../../types/settings/providers'
 import Toggle from '../../../common/Toggle'
 import Tooltip from '../../../common/Tooltip'
 import ApiKeySection from './ApiKeySection'
+import SubSectionTitle from '../SubSectionTitle'
 
 export default function Provider({ provider }: { provider: Provider }) {
   const {
@@ -26,9 +27,7 @@ export default function Provider({ provider }: { provider: Provider }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="font-ubuntu text-lg text-stone-800">
-          {provider.name}
-        </span>
+        <SubSectionTitle title={provider.name} />
         <div className="relative">
           <Toggle
             enabled={provider.active}
