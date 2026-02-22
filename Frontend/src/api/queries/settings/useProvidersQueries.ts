@@ -18,7 +18,6 @@ export function useDeleteApiKey() {
     mutationFn: providerName =>
       fetchBackend('DELETE', `settings/providers/${providerName}/api-key`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: PROVIDERS_KEY }),
-    onError: () => {},
   })
 }
 
@@ -26,7 +25,7 @@ export function useUpdateProviderStatus() {
   const queryClient = useQueryClient()
   return useMutation<null, Error, { providerName: string; active: boolean }>({
     mutationFn: ({ providerName, active }) =>
-      fetchBackend('PATCH', `settings/providers/${providerName}/status`, { active }),
+      fetchBackend('PUT', `settings/providers/${providerName}/status`, { active }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: PROVIDERS_KEY }),
     onError: () => queryClient.invalidateQueries({ queryKey: PROVIDERS_KEY }),
   })
@@ -40,6 +39,5 @@ export function useUploadApiKey() {
         api_key: apiKey,
       }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: PROVIDERS_KEY }),
-    onError: () => {},
   })
 }

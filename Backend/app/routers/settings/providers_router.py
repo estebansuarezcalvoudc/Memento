@@ -105,7 +105,7 @@ async def delete_provider_api_key(
         )
 
 
-@router.patch(
+@router.put(
     "/{provider_name}/status",
     status_code=status.HTTP_204_NO_CONTENT,
 )
