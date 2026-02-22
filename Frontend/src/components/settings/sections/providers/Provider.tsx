@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { useUpdateProviderStatus } from '../../../../api/queries/settings/useProvidersQueries'
 import { type Provider } from '../../../../types/settings/providers'
@@ -14,15 +14,26 @@ export default function Provider({ provider }: { provider: Provider }) {
     isError,
   } = useUpdateProviderStatus()
 
-  const [showError, setShowError] = useState(false)
+  const [tooltipMessage, setTooltipMessage] = useState<string | null>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function showTooltip(message: string) {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    setTooltipMessage(message)
+    timerRef.current = setTimeout(() => setTooltipMessage(null), 3000)
+  }
 
   useEffect(() => {
-    if (isError) {
-      setShowError(true)
-      const timer = setTimeout(() => setShowError(false), 3000)
-      return () => clearTimeout(timer)
-    }
+    if (isError) showTooltip('At least one provider needs to be available')
   }, [isError])
+
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current) }, [])
+
+  const missingApiKey = provider.requiresApiKey && !provider.hasApiKey
+
+  function handleToggleAreaClick() {
+    if (missingApiKey) showTooltip('You must add an API key before activating this provider')
+  }
 
   return (
     <div className="flex flex-col gap-2">
@@ -32,9 +43,12 @@ export default function Provider({ provider }: { provider: Provider }) {
           <Toggle
             enabled={provider.active}
             onChange={active => updateStatus({ providerName: provider.name, active })}
-            disabled={isUpdatingStatus || (provider.requiresApiKey && !provider.hasApiKey)}
+            disabled={isUpdatingStatus || missingApiKey}
           />
-          {showError && <Tooltip message="Debe haber al menos un proveedor activo" />}
+          {missingApiKey && (
+            <div className="absolute inset-0 z-10 cursor-not-allowed" onClick={handleToggleAreaClick} />
+          )}
+          {tooltipMessage && <Tooltip message={tooltipMessage} />}
         </div>
       </div>
       {provider.requiresApiKey && (
