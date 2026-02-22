@@ -12,20 +12,6 @@ class ModelConfig(BaseModel):
     max_tokens: int = Field(default=2000, gt=0)
 
 
-class ConfiguredModelsResponse(BaseModel):
-    """Response with user's configured models"""
-
-    chat_model: ModelConfig | None = None
-    summary_model: ModelConfig | None = None
-
-
-class ConfiguredModelsRequest(BaseModel):
-    """Request to update configured models (partial update allowed)"""
-
-    chat_model: ModelConfig | None = None
-    summary_model: ModelConfig | None = None
-
-
 class AvailableModel(BaseModel):
     """A model available from a provider"""
 

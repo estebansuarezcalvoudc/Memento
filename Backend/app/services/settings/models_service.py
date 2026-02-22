@@ -3,11 +3,17 @@ from ...core.openai_factory import create_openai_client
 from ...repositories.interfaces.settings_repo import SettingsRepository
 from ...schemas.settings.model_schema import (
     AvailableModel,
-    ConfiguredModelsRequest,
-    ConfiguredModelsResponse,
+    ModelConfig,
 )
 
 _logger = setup_logger(__name__)
+
+
+_OPENAI_LLM_PREFIXES = ("gpt-", "o1-", "o3-", "o4-", "chatgpt-")
+
+
+def _is_openai_llm(model_id: str) -> bool:
+    return any(model_id.startswith(prefix) for prefix in _OPENAI_LLM_PREFIXES)
 
 
 class ModelsService:
@@ -37,6 +43,8 @@ class ModelsService:
                 models_response = client.models.list()
 
                 for model in models_response.data:
+                    if provider.name == "OpenAI" and not _is_openai_llm(model.id):
+                        continue
                     available_models.append(
                         AvailableModel(id=model.id, provider=provider.name)
                     )
@@ -48,45 +56,44 @@ class ModelsService:
 
         return available_models
 
-    def get_configured_models(self, username: str) -> ConfiguredModelsResponse:
-        """
-        Get user's configured models
-
-        Args:
-            username: User's username
-
-        Returns:
-            ConfiguredModelsResponse with chat_model and summary_model
-        """
+    def get_chat_model(self, username: str) -> ModelConfig | None:
+        """Get user's configured chat model"""
         model_settings = self._repository.get_model_settings(username)
-
         if model_settings is None:
-            return ConfiguredModelsResponse(chat_model=None, summary_model=None)
+            return None
+        return model_settings.get("chat_model")
 
-        return ConfiguredModelsResponse(
-            chat_model=model_settings.get("chat_model"),
-            summary_model=model_settings.get("summary_model"),
-        )
+    def get_summary_model(self, username: str) -> ModelConfig | None:
+        """Get user's configured summary model"""
+        model_settings = self._repository.get_model_settings(username)
+        if model_settings is None:
+            return None
+        return model_settings.get("summary_model")
 
-    def update_configured_models(
-        self, username: str, request: ConfiguredModelsRequest
-    ) -> ConfiguredModelsResponse:
+    def update_chat_model(self, username: str, model: ModelConfig) -> ModelConfig:
         """
-        Update user's configured models (partial update)
+        Update user's chat model configuration
 
         Args:
             username: User's username
-            request: Models to update
+            model: New chat model configuration
 
         Returns:
-            Updated ConfiguredModelsResponse
+            Updated ModelConfig
         """
-        update_data = {}
-        if request.chat_model is not None:
-            update_data["chat_model"] = request.chat_model.model_dump()
-        if request.summary_model is not None:
-            update_data["summary_model"] = request.summary_model.model_dump()
+        self._repository.update_model_settings(username, {"chat_model": model.model_dump()})
+        return model
 
-        self._repository.update_model_settings(username, update_data)
+    def update_summary_model(self, username: str, model: ModelConfig) -> ModelConfig:
+        """
+        Update user's summary model configuration
 
-        return self.get_configured_models(username)
+        Args:
+            username: User's username
+            model: New summary model configuration
+
+        Returns:
+            Updated ModelConfig
+        """
+        self._repository.update_model_settings(username, {"summary_model": model.model_dump()})
+        return model
