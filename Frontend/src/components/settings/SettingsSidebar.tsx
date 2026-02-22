@@ -28,6 +28,11 @@ export default function SettingsSidebar({
         onClick={() => setSection(Section.Transcription)}
       />
       <SettingsSectionButton
+        label={Section.Summarization}
+        isSelected={Section.Summarization === section}
+        onClick={() => setSection(Section.Summarization)}
+      />
+      <SettingsSectionButton
         label={Section.Account}
         isSelected={Section.Account === section}
         onClick={() => setSection(Section.Account)}

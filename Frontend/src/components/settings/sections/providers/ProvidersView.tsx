@@ -1,6 +1,4 @@
 import { useGetProviders } from '../../../../api/queries/settings/useProvidersQueries'
-import { Section } from '../Section'
-import SectionHeader from '../SectionHeader'
 import Provider from './Provider'
 
 export default function ProvidersView() {
@@ -28,7 +26,6 @@ export default function ProvidersView() {
 
   return (
     <>
-      <SectionHeader section={Section.Provider} />
       {content}
     </>
   )

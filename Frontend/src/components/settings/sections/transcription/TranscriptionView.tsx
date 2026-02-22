@@ -4,8 +4,6 @@ import {
   useUpdateTranscriptionConfiguration,
 } from '../../../../api/queries/settings/useTranscriptionQueries'
 import Select from '../../../common/Select'
-import { Section } from '../Section'
-import SectionHeader from '../SectionHeader'
 import SubSectionTitle from '../SubSectionTitle'
 
 export default function TranscriptionView() {
@@ -18,7 +16,6 @@ export default function TranscriptionView() {
 
   return (
     <>
-      <SectionHeader section={Section.Transcription} />
       {isLoading ? (
         <span>Loading...</span>
       ) : (

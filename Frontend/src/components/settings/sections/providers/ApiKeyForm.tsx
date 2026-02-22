@@ -2,6 +2,9 @@ import { useActionState } from 'react'
 
 import { useUploadApiKey } from '../../../../api/queries/settings/useProvidersQueries'
 import { HttpError } from '../../../../api/utils/fetchBackend'
+import CancelButton from '../CancelButton'
+import ConfirmButton from '../ConfirmButton'
+import ErrorMessage from '../ErrorMessage'
 
 interface FormState {
   errors: null | string[]
@@ -33,26 +36,10 @@ export default function ApiKeyForm({ providerName, onClose }: ApiKeyFormProps) {
           placeholder="Enter your API key"
           className="font-ubuntu h-8 flex-1 rounded-lg border border-stone-300 bg-transparent px-3 text-sm text-stone-800 outline-none focus:border-stone-500"
         />
-        <button
-          type="submit"
-          disabled={isPending}
-          className="font-ubuntu h-8 cursor-pointer rounded-lg bg-lime-400 hover:bg-lime-500 px-3 text-sm text-stone-800 disabled:opacity-50"
-        >
-          {isPending ? 'Saving...' : 'Confirm'}
-        </button>
-        <button
-          type="button"
-          onClick={onClose}
-          className="font-ubuntu h-8 cursor-pointer rounded-lg px-3 hover:bg-stone-300 text-sm text-stone-500 hover:text-stone-800"
-        >
-          Cancel
-        </button>
+        <ConfirmButton isPending={isPending} />
+        <CancelButton onClick={onClose} />
       </div>
-      {formState.errors && (
-        <span className="font-ubuntu text-sm text-red-500">
-          {formState.errors[0]}
-        </span>
-      )}
+      {formState.errors && <ErrorMessage message={formState.errors[0]} />}
     </form>
   )
 }
