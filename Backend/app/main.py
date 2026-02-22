@@ -17,8 +17,8 @@ _tags_metadata = [
     },
     {"name": "Settings - Models", "description": "Manage model configurations"},
     {
-        "name": "Settings - Transcription - WhisperX",
-        "description": "Manage WhisperX transcription configuration",
+        "name": "Settings - Transcription",
+        "description": "Manage transcription configuration",
     },
     {
         "name": "Settings - Templates",
