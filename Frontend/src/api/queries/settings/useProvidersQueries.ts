@@ -19,6 +19,14 @@ export function useDeleteApiKey() {
     onError: () => {},
   })
 }
+export function useUpdateProviderStatus() {
+  return useMutation<null, Error, { providerName: string; active: boolean }>({
+    mutationFn: ({ providerName, active }) =>
+      fetchBackend('PATCH', `settings/providers/${providerName}/status`, { active }),
+    onError: () => {},
+  })
+}
+
 export function useUploadApiKey() {
   return useMutation<null, Error, { providerName: string; apiKey: string }>({
     mutationFn: ({ providerName, apiKey }) =>

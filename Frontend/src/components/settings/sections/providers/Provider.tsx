@@ -1,10 +1,9 @@
 import { useActionState, useState } from 'react'
 
-import { useUploadApiKey, useDeleteApiKey } from '../../../../api/queries/settings/useProvidersQueries'
+import { useUploadApiKey, useDeleteApiKey, useUpdateProviderStatus } from '../../../../api/queries/settings/useProvidersQueries'
 import { HttpError } from '../../../../api/utils/fetchBackend'
 import { type Provider } from '../../../../types/settings/providers'
-import FormButton from '../../../common/FormButton'
-import Input from '../../../common/Input'
+import Toggle from '../../../common/Toggle'
 
 interface FormState {
   errors: null | string[]
@@ -16,6 +15,14 @@ export default function Provider({ provider }: { provider: Provider }) {
 
   const { mutateAsync: uploadApiKey } = useUploadApiKey()
   const { mutateAsync: deleteApiKey } = useDeleteApiKey()
+
+  const [isActive, setIsActive] = useState(provider.active)
+  const { mutate: updateStatus, isPending: isUpdatingStatus } = useUpdateProviderStatus()
+
+  function handleToggle(enabled: boolean) {
+    setIsActive(enabled)
+    updateStatus({ providerName: provider.name, active: enabled })
+  }
 
   const [formState, formAction, isPending] = useActionState<FormState, FormData>(
     async (_prev, formData) => {
@@ -42,9 +49,12 @@ export default function Provider({ provider }: { provider: Provider }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="font-ubuntu text-lg text-stone-800">{provider.name}</span>
+      <div className="flex items-center justify-between">
+        <span className="font-ubuntu text-lg text-stone-800">{provider.name}</span>
+        <Toggle enabled={isActive} onChange={handleToggle} disabled={isUpdatingStatus} />
+      </div>
 
-      {provider.requiresApiKey && (
+      {provider.requiresApiKey ? (
         hasKey ? (
           <div className="flex items-center gap-3">
             <span className="font-ubuntu text-sm text-green-600">✓ API key added</span>
@@ -57,13 +67,24 @@ export default function Provider({ provider }: { provider: Provider }) {
           </div>
         ) : isAdding ? (
           <form action={formAction} className="flex flex-col gap-2">
-            <div className="flex items-end gap-2">
-              <Input label="API Key" name="apiKey" type="text" placeholder="Enter your API key" />
-              <FormButton isPending={isPending} text="Confirm" classes="mb-[3px]" />
+            <div className="flex items-center gap-2">
+              <input
+                name="apiKey"
+                type="text"
+                placeholder="Enter your API key"
+                className="font-ubuntu h-8 flex-1 rounded-md border border-stone-300 bg-transparent px-3 text-sm text-stone-800 outline-none focus:border-stone-500"
+              />
+              <button
+                type="submit"
+                disabled={isPending}
+                className="font-ubuntu h-8 rounded-md bg-stone-800 px-3 text-sm text-white disabled:opacity-50"
+              >
+                {isPending ? 'Saving...' : 'Confirm'}
+              </button>
               <button
                 type="button"
                 onClick={() => setIsAdding(false)}
-                className="font-ubuntu mb-[3px] h-8 rounded-lg px-4 text-sm text-stone-600 hover:text-stone-800"
+                className="font-ubuntu h-8 rounded-md px-3 text-sm text-stone-500 hover:text-stone-800"
               >
                 Cancel
               </button>
@@ -80,7 +101,7 @@ export default function Provider({ provider }: { provider: Provider }) {
             + Add API key
           </button>
         )
-      )}
+      ) : <span>Does not require API key</span>}
     </div>
   )
 }
