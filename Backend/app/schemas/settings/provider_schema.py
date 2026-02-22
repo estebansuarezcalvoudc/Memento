@@ -37,12 +37,6 @@ class ProviderStatusRequest(BaseModel):
     active: bool = Field(..., description="Whether to activate or deactivate provider")
 
 
-class ProvidersListResponse(BaseModel):
-    """Response with list of all providers"""
-
-    providers: list[Provider]
-
-
 class ProviderSettings(BaseModel):
     """Internal model for provider settings stored in database"""
 

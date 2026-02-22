@@ -7,8 +7,8 @@ from ...dependencies.auth_dependencies import get_current_active_user
 from ...dependencies.service_dependencies import get_providers_service
 from ...schemas.auth.auth_schema import User
 from ...schemas.settings.provider_schema import (
+    Provider,
     ProviderAPIKeyRequest,
-    ProvidersListResponse,
     ProviderStatusRequest,
 )
 from ...services.settings.providers_service import ProvidersService
@@ -17,11 +17,11 @@ _logger = setup_logger(__name__)
 router = APIRouter(prefix="/providers", tags=["Settings - Providers"])
 
 
-@router.get("", response_model=ProvidersListResponse)
+@router.get("", response_model=list[Provider])
 async def get_providers(
     current_user: Annotated[User, Depends(get_current_active_user)],
     service: Annotated[ProvidersService, Depends(get_providers_service)],
-) -> ProvidersListResponse:
+) -> list[Provider]:
     """
     Get all available providers with their status for the current user
 
@@ -29,8 +29,7 @@ async def get_providers(
         ProvidersListResponse: List of providers with their configuration status
     """
     try:
-        providers = service.get_providers(current_user.username)
-        return ProvidersListResponse(providers=providers)
+        return service.get_providers(current_user.username)
     except HTTPException:
         raise
     except Exception as e:
