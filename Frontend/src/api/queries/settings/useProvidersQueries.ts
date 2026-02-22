@@ -28,7 +28,7 @@ export function useUpdateProviderStatus() {
     mutationFn: ({ providerName, active }) =>
       fetchBackend('PATCH', `settings/providers/${providerName}/status`, { active }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: PROVIDERS_KEY }),
-    onError: () => {},
+    onError: () => queryClient.invalidateQueries({ queryKey: PROVIDERS_KEY }),
   })
 }
 

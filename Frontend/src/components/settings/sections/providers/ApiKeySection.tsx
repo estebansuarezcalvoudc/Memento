@@ -17,15 +17,15 @@ export default function ApiKeySection({
 
   if (hasApiKey) {
     return (
-      <div className="flex items-center gap-3">
-        <span className="font-ubuntu text-sm text-green-600">
-          ✓ API key added
+      <div className="flex items-center gap-8">
+        <span className="font-ubuntu text-base text-green-600">
+          API key added
         </span>
         <button
           onClick={() => deleteApiKey(providerName)}
-          className="font-ubuntu text-sm text-red-500 hover:text-red-700"
+          className="font-ubuntu cursor-pointer rounded-lg px-2 py-1 text-base text-red-500 hover:bg-red-300 hover:text-red-700"
         >
-          Delete
+          Remove API key
         </button>
       </div>
     )
@@ -43,7 +43,7 @@ export default function ApiKeySection({
   return (
     <button
       onClick={() => setIsAdding(true)}
-      className="font-ubuntu w-fit text-sm text-stone-500 underline hover:text-stone-800"
+      className="font-ubuntu w-fit cursor-pointer text-sm text-stone-500 underline hover:text-stone-800"
     >
       Add API key
     </button>

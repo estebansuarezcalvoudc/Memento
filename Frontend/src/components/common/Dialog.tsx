@@ -28,7 +28,7 @@ export default function Dialog({
     <dialog
       ref={innerRef}
       aria-modal="true"
-      className="fixed top-1/2 left-1/2 z-[9990] h-[80vh] max-h-[90vh] w-[90vw] max-w-4xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl bg-white p-0 shadow-xl"
+      className="fixed top-1/2 left-1/2 z-[9990] h-[80vh] max-h-[90vh] w-[90vw] max-w-4xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl bg-white p-0 backdrop-blur-xl"
       onKeyDown={e => {
         if (e.key === 'Escape') {
           e.preventDefault()
