@@ -4,7 +4,7 @@ import Dialog, { type DialogHandler } from '../common/Dialog'
 import AccountSettings from './sections/AccountSettings'
 import GeneralSettings from './sections/GeneralSettings'
 import MeetingProcessingSettings from './sections/MeetingProcessingSettings'
-import ProviderSettings from './sections/ProviderSettings'
+import ProvidersView from './sections/providers/ProvidersView'
 import { Section } from './sections/Section'
 import SettingsSidebar from './SettingsSidebar'
 
@@ -13,7 +13,7 @@ interface SettingsDialogProps {
 }
 
 export default function SettingsDialog({ dialogRef }: SettingsDialogProps) {
-  const [section, setSection] = useState(Section.General)
+  const [section, setSection] = useState<Section>(Section.General)
 
   return (
     <Dialog dialogRef={dialogRef}>
@@ -21,7 +21,7 @@ export default function SettingsDialog({ dialogRef }: SettingsDialogProps) {
         <SettingsSidebar section={section} setSection={setSection} />
         <div className="flex-1 overflow-auto p-6">
           {section === Section.General && <GeneralSettings />}
-          {section === Section.Provider && <ProviderSettings />}
+          {section === Section.Provider && <ProvidersView />}
           {section === Section.MeetingsProcessing && (
             <MeetingProcessingSettings />
           )}

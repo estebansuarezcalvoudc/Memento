@@ -1,7 +1,7 @@
 import fetchBackend from './utils/fetchBackend'
 
 export interface Token {
-  access_token: string
+  accessToken: string
   token_type: string
 }
 

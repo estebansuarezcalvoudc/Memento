@@ -60,7 +60,7 @@ async function signupAction(
   register: (
     email: string,
     password: string,
-  ) => Promise<{ access_token: string; token_type: string }>,
+  ) => Promise<{ accessToken: string; token_type: string }>,
 ): Promise<FormState> {
   const email = (formData.get('email') ?? '') as string
   const password = (formData.get('password') ?? '') as string
@@ -102,12 +102,12 @@ async function processSignup(
   register: (
     email: string,
     password: string,
-  ) => Promise<{ access_token: string; token_type: string }>,
+  ) => Promise<{ accessToken: string; token_type: string }>,
 ): Promise<FormState> {
   try {
     const data = await register(email, password)
-    const { access_token } = data
-    localStorage.setItem('access_token', access_token)
+    const { accessToken } = data
+    localStorage.setItem('access_token', accessToken)
     setIsUserAuth(true)
 
     navigate('/')
