@@ -1,7 +1,8 @@
 export const Section = {
   General: 'General',
   Provider: 'Provider',
-  MeetingsProcessing: 'Meetings processing',
+  Transcription: 'Transcription',
+  Summarization: 'Summarization',
   Account: 'Account',
 } as const
 

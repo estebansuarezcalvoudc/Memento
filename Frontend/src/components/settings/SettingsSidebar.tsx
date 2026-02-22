@@ -23,9 +23,9 @@ export default function SettingsSidebar({
         onClick={() => setSection(Section.Provider)}
       />
       <SettingsSectionButton
-        label={Section.MeetingsProcessing}
-        isSelected={Section.MeetingsProcessing === section}
-        onClick={() => setSection(Section.MeetingsProcessing)}
+        label={Section.Transcription}
+        isSelected={Section.Transcription === section}
+        onClick={() => setSection(Section.Transcription)}
       />
       <SettingsSectionButton
         label={Section.Account}

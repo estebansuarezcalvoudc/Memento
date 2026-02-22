@@ -32,7 +32,7 @@ export default function Select({
         className="font-ubuntu h-8 rounded-lg bg-stone-300 px-2 text-base text-stone-800"
         {...props}
       >
-        <option value="">{placeholder}</option>
+        {placeholder && <option value="">{placeholder}</option>}
         {options.map(option => (
           <option key={option.code} value={option.code}>
             {option.name}
