@@ -16,9 +16,9 @@ export default function ProvidersView() {
     </span>
   } else {
     content = (
-      <ul className='divide-y divide-gray-200'>
+      <ul className="divide-y divide-gray-200">
         {providers?.map((provider, index) => (
-          <li key={index} className='py-4'>
+          <li key={index} className="py-4">
             <Provider provider={provider} />
           </li>
         ))}
