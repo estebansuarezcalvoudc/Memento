@@ -1,3 +1,5 @@
+import camelcaseKeys from 'camelcase-keys'
+
 type method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
 export default async function fetchBackend<T>(
@@ -34,5 +36,5 @@ export default async function fetchBackend<T>(
     return null
   }
 
-  return await response.json()
+  return camelcaseKeys(await response.json(), { deep: true })
 }

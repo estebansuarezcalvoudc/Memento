@@ -1,7 +1,7 @@
 export interface Chat {
   id: string
   title: string
-  started_at?: string
+  startedAt?: string
 }
 
 export interface Message {
