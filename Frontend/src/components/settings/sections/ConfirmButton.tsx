@@ -20,7 +20,7 @@ export default function ConfirmButton({
       type={type}
       disabled={disabled || isPending}
       onClick={onClick}
-      className="font-ubuntu h-8 cursor-pointer rounded-lg bg-lime-400 px-3 text-sm text-stone-800 hover:bg-lime-500 disabled:opacity-50"
+      className="font-ubuntu h-8 cursor-pointer rounded-lg bg-lime-400 px-3 text-base text-stone-800 hover:bg-lime-500 disabled:opacity-50"
     >
       {isPending ? pendingLabel : label}
     </button>

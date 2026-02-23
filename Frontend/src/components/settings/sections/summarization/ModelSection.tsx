@@ -46,7 +46,7 @@ export default function ModelSection() {
     <div className="flex flex-col gap-2">
       <SubSectionTitle title="Language Model" />
       {isLoading ? (
-        <span className="text-sm text-stone-500">Loading...</span>
+        <span className="text-base text-stone-500">Loading...</span>
       ) : (
         <>
           <Select

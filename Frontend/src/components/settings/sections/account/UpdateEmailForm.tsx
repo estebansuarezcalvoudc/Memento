@@ -16,11 +16,18 @@ interface UpdateEmailFormProps {
   onSuccess: (newUsername: string) => void
 }
 
-export default function UpdateEmailForm({ onClose, onSuccess }: UpdateEmailFormProps) {
+export default function UpdateEmailForm({
+  onClose,
+  onSuccess,
+}: UpdateEmailFormProps) {
   const { mutateAsync: updateUsername } = useUpdateUsername()
 
-  const [formState, formAction, isPending] = useActionState<FormState, FormData>(
-    (prev, formData) => updateEmailAction(prev, formData, updateUsername, onSuccess),
+  const [formState, formAction, isPending] = useActionState<
+    FormState,
+    FormData
+  >(
+    (prev, formData) =>
+      updateEmailAction(prev, formData, updateUsername, onSuccess),
     { errors: null },
   )
 
@@ -40,14 +47,21 @@ export default function UpdateEmailForm({ onClose, onSuccess }: UpdateEmailFormP
 async function updateEmailAction(
   _prev: FormState,
   formData: FormData,
-  updateUsername: (vars: { newUsername: string; password: string }) => Promise<{ accessToken: string; token_type: string }>,
+  updateUsername: (vars: {
+    newUsername: string
+    password: string
+  }) => Promise<{ accessToken: string; token_type: string }>,
   onSuccess: (newUsername: string) => void,
 ): Promise<FormState> {
   const newEmail = (formData.get('newEmail') ?? '') as string
   const password = (formData.get('password') ?? '') as string
 
-  if (!newEmail.trim()) return { errors: ['New email cannot be empty'] }
-  if (!password.trim()) return { errors: ['Password cannot be empty'] }
+  if (!newEmail.trim()) {
+    return { errors: ['New email cannot be empty'] }
+  }
+  if (!password.trim()) {
+    return { errors: ['Password cannot be empty'] }
+  }
 
   try {
     const token = await updateUsername({ newUsername: newEmail, password })
@@ -61,7 +75,10 @@ async function updateEmailAction(
     if (error instanceof HttpError && error.status === 400) {
       return { errors: ['A user with this email already exists'] }
     }
-    return { errors: [error instanceof Error ? error.message : 'Failed to update email'] }
+    return {
+      errors: [
+        error instanceof Error ? error.message : 'Failed to update email',
+      ],
+    }
   }
 }
-

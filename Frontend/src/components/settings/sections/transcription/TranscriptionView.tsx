@@ -45,7 +45,7 @@ export default function TranscriptionView() {
             </Select>
             {selectedDevice === 'cuda' && (
               <p className="mt-1 text-sm text-yellow-600 dark:text-yellow-400">
-                If the GPU is unavailable or fails, transcription will automatically fall back to CPU using <strong>int8</strong> precision.
+                If the GPU is unavailable or fails, transcription will automatically fall back to CPU using <strong>int8</strong> precision
               </p>
             )}
           </div>

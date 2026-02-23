@@ -62,7 +62,7 @@ export default function ApiKeySection({
   return (
     <button
       onClick={() => setIsAdding(true)}
-      className="font-ubuntu w-fit cursor-pointer text-sm text-stone-500 underline hover:text-stone-800"
+      className="font-ubuntu w-fit cursor-pointer text-base text-stone-500 underline hover:text-stone-800"
     >
       Add API key
     </button>

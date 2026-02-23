@@ -11,13 +11,13 @@ export default function Input({ label, ...props }: InputProps) {
     <div className="mt-3 flex flex-col align-middle">
       <label
         htmlFor={id}
-        className="font-ubuntu text-sm mb-1 ml-1 items-center justify-center text-stone-600"
+        className="font-ubuntu text-base mb-1 ml-1 items-center justify-center text-stone-600"
       >
         {label}
       </label>
       <input
         id={id}
-        className={`font-ubuntu h-8 w-full rounded-lg border border-stone-300 bg-transparent px-3 text-sm text-stone-800 outline-none focus:border-stone-500`}
+        className={`font-ubuntu h-8 w-full rounded-lg border border-stone-300 bg-transparent px-3 text-base text-stone-800 outline-none focus:border-stone-500`}
         {...props}
       />
     </div>
