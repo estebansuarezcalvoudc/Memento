@@ -38,7 +38,10 @@ export default function SidebarButtons() {
           onClick={() => dialogRef.current?.open()}
         />
 
-        <UploadMeetingsDialog dialogRef={dialogRef} />
+        <UploadMeetingsDialog
+            dialogRef={dialogRef}
+            onClose={() => dialogRef.current?.close()}
+          />
       </li>
     </ul>
   )

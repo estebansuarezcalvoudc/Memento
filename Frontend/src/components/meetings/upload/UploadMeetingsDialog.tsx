@@ -1,19 +1,15 @@
-import { useCallback } from 'react'
-
 import Dialog, { type DialogHandler } from '../../common/Dialog'
 import UploadMeetingsForm from './UploadMeetingsForm'
 
 interface UploadMeetingsDialogProps {
-  dialogRef: React.RefObject<DialogHandler>
+  dialogRef: React.Ref<DialogHandler>
+  onClose: () => void
 }
 
 export default function UploadMeetingsDialog({
   dialogRef,
+  onClose,
 }: UploadMeetingsDialogProps) {
-  const handleClose = useCallback(() => {
-    dialogRef.current?.close()
-  }, [dialogRef])
-
   return (
     <Dialog dialogRef={dialogRef}>
       <div className="absolute inset-0 flex flex-col px-4 pt-5">
@@ -28,7 +24,7 @@ export default function UploadMeetingsDialog({
           <div className="w-8" />
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <UploadMeetingsForm handleCloseDialog={handleClose} />
+          <UploadMeetingsForm handleCloseDialog={onClose} />
         </div>
       </div>
     </Dialog>
