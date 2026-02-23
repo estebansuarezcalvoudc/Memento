@@ -18,7 +18,7 @@ export default function Select({ label, children, ...props }: SelectProps) {
       </label>
       <select
         id={id}
-        className="font-ubuntu h-8 rounded-lg bg-stone-300 px-2 text-base text-stone-800"
+        className="font-ubuntu h-8 w-full rounded-lg border border-stone-300 bg-transparent px-3 text-sm text-stone-800 outline-none focus:border-stone-500"
         {...props}
       >
         {children}
