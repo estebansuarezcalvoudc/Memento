@@ -1,8 +1,8 @@
 import camelcaseKeys from 'camelcase-keys'
 
 export class HttpError extends Error {
-  constructor(public status: number) {
-    super(`HTTP error! status: ${status}`)
+  constructor(public status: number, message?: string) {
+    super(message ?? `HTTP error! status: ${status}`)
   }
 }
 
@@ -36,7 +36,8 @@ export default async function fetchBackend<T>(
   })
 
   if (!response.ok) {
-    throw new HttpError(response.status)
+    const body = await response.json().catch(() => null)
+    throw new HttpError(response.status, body?.detail ?? undefined)
   }
 
   if (response.status === 204) {

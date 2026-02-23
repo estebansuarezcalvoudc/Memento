@@ -14,15 +14,15 @@ class TestProvidersEndpoints:
 
         assert response.status_code == 200
         data = response.json()
-        assert "providers" in data
-        assert len(data["providers"]) == 2
+        assert isinstance(data, list)
+        assert len(data) == 2
 
-        openai = next(p for p in data["providers"] if p["name"] == "OpenAI")
+        openai = next(p for p in data if p["name"] == "OpenAI")
         assert openai["requires_api_key"] is True
         assert openai["has_api_key"] is False
         assert openai["active"] is True
 
-        ollama = next(p for p in data["providers"] if p["name"] == "Ollama")
+        ollama = next(p for p in data if p["name"] == "Ollama")
         assert ollama["requires_api_key"] is False
         assert ollama["has_api_key"] is None
         assert ollama["active"] is True
@@ -57,7 +57,7 @@ class TestProvidersEndpoints:
 
         assert response.status_code == 200
         data = response.json()
-        openai = next(p for p in data["providers"] if p["name"] == "OpenAI")
+        openai = next(p for p in data if p["name"] == "OpenAI")
         assert openai["has_api_key"] is True
         assert openai["active"] is True
 
@@ -154,7 +154,7 @@ class TestProvidersEndpoints:
     def test_update_provider_status_should_activate_provider(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        response = client.patch(
+        response = client.put(
             "/settings/providers/Ollama/status",
             headers=auth_headers,
             json={"active": True},
@@ -168,7 +168,7 @@ class TestProvidersEndpoints:
     def test_update_provider_status_should_deactivate_provider(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        response = client.patch(
+        response = client.put(
             "/settings/providers/OpenAI/status",
             headers=auth_headers,
             json={"active": False},
@@ -183,7 +183,7 @@ class TestProvidersEndpoints:
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         invalid_provider = "InvalidProvider"
 
-        response = client.patch(
+        response = client.put(
             f"/settings/providers/{invalid_provider}/status",
             headers=auth_headers,
             json={"active": True},
@@ -208,7 +208,7 @@ class TestProvidersEndpoints:
         response = client.delete("/settings/providers/OpenAI/api-key")
         assert response.status_code == 401
 
-        response = client.patch(
+        response = client.put(
             "/settings/providers/OpenAI/status",
             json={"active": True},
         )

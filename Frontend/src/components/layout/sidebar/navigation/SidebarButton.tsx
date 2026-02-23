@@ -64,7 +64,7 @@ function SidebarItemContent(props: SidebarItemContentProps) {
       {props.isSidebarOpen && (
         <span
           ref={textRef}
-          className="font-ubuntu ml-1.5 animate-[fadeInText_300ms_ease-out_50ms_forwards] text-left text-sm opacity-0"
+          className="font-ubuntu ml-1.5 animate-[fadeInText_300ms_ease-out_50ms_forwards] text-left text-base opacity-0"
         >
           {props.text}
         </span>
