@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 
 
 class TestWhisperXEndpoints:
-    def test_get_available_options_should_return_models_and_compute_types(
+    def test_get_available_options_should_return_models_compute_types_and_devices(
         self, client: TestClient
     ):
         response = client.get("/settings/transcription/available-options")
@@ -11,6 +11,7 @@ class TestWhisperXEndpoints:
         data = response.json()
         assert "models" in data
         assert "compute_types" in data
+        assert "devices" in data
 
         assert isinstance(data["models"], list)
         assert len(data["models"]) == 7
@@ -27,6 +28,11 @@ class TestWhisperXEndpoints:
         assert "int8" in data["compute_types"]
         assert "float16" in data["compute_types"]
         assert "float32" in data["compute_types"]
+
+        assert isinstance(data["devices"], list)
+        assert len(data["devices"]) == 2
+        assert "cuda" in data["devices"]
+        assert "cpu" in data["devices"]
 
     def test_get_supported_languages_should_return_language_codes(
         self, client: TestClient
@@ -70,6 +76,7 @@ class TestWhisperXEndpoints:
         data = response.json()
         assert data["model_size"] == "tiny"
         assert data["compute_type"] == "int8"
+        assert data["device"] == "cuda"
 
     def test_get_whisperx_configuration_should_return_user_settings(
         self, client: TestClient, auth_headers: dict, mock_mongo
@@ -81,6 +88,7 @@ class TestWhisperXEndpoints:
                 "transcription": {
                     "model_size": "medium",
                     "compute_type": "float16",
+                    "device": "cuda",
                 }
             },
         }
@@ -91,6 +99,7 @@ class TestWhisperXEndpoints:
         data = response.json()
         assert data["model_size"] == "medium"
         assert data["compute_type"] == "float16"
+        assert data["device"] == "cuda"
 
     def test_update_whisperx_configuration_should_save_settings(
         self, client: TestClient, auth_headers: dict, mock_mongo
@@ -109,6 +118,7 @@ class TestWhisperXEndpoints:
                     "transcription": {
                         "model_size": "large",
                         "compute_type": "float32",
+                        "device": "cuda",
                     }
                 },
             }
@@ -118,6 +128,7 @@ class TestWhisperXEndpoints:
         request_data = {
             "model_size": "large",
             "compute_type": "float32",
+            "device": "cuda",
         }
 
         response = client.patch(
@@ -130,11 +141,13 @@ class TestWhisperXEndpoints:
         data = response.json()
         assert data["model_size"] == "large"
         assert data["compute_type"] == "float32"
+        assert data["device"] == "cuda"
 
         mock_mongo.update_one.assert_called_once()
         call_args = mock_mongo.update_one.call_args
         assert "settings.transcription.model_size" in str(call_args)
         assert "settings.transcription.compute_type" in str(call_args)
+        assert "settings.transcription.device" in str(call_args)
 
     def test_update_whisperx_configuration_should_allow_partial_update(
         self, client: TestClient, auth_headers: dict, mock_mongo
@@ -176,6 +189,87 @@ class TestWhisperXEndpoints:
         update_dict = call_args[0][1]["$set"]
         assert "settings.transcription.model_size" in update_dict
         assert "settings.transcription.compute_type" not in update_dict  # Not updated
+
+    def test_update_whisperx_configuration_should_save_device(
+        self, client: TestClient, auth_headers: dict, mock_mongo
+    ):
+        def mongo_side_effect(query, projection=None):
+            if "password" in str(projection):
+                return {
+                    "username": "test@example.com",
+                    "password": "$2b$12$test_hashed_password",
+                }
+            return {
+                "username": "test@example.com",
+                "password": "$2b$12$test_hashed_password",
+                "settings": {"transcription": {"device": "cpu"}},
+            }
+
+        mock_mongo.find_one.side_effect = mongo_side_effect
+
+        response = client.patch(
+            "/settings/transcription/configuration",
+            headers=auth_headers,
+            json={"device": "cpu"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["device"] == "cpu"
+
+        call_args = mock_mongo.update_one.call_args
+        assert "settings.transcription.device" in str(call_args)
+
+    def test_update_whisperx_configuration_should_reject_invalid_device(
+        self, client: TestClient, auth_headers: dict, mock_mongo
+    ):
+        _ = mock_mongo
+
+        response = client.patch(
+            "/settings/transcription/configuration",
+            headers=auth_headers,
+            json={"device": "tpu"},
+        )
+
+        assert response.status_code == 422
+        mock_mongo.update_one.assert_not_called()
+
+    def test_update_whisperx_configuration_should_not_update_device_when_not_provided(
+        self, client: TestClient, auth_headers: dict, mock_mongo
+    ):
+        def mongo_side_effect(query, projection=None):
+            if "password" in str(projection):
+                return {
+                    "username": "test@example.com",
+                    "password": "$2b$12$test_hashed_password",
+                }
+            return {
+                "username": "test@example.com",
+                "password": "$2b$12$test_hashed_password",
+                "settings": {
+                    "transcription": {
+                        "model_size": "small",
+                        "compute_type": "int8",
+                        "device": "cuda",
+                    }
+                },
+            }
+
+        mock_mongo.find_one.side_effect = mongo_side_effect
+
+        response = client.patch(
+            "/settings/transcription/configuration",
+            headers=auth_headers,
+            json={"model_size": "small"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["device"] == "cuda"
+
+        call_args = mock_mongo.update_one.call_args
+        update_dict = call_args[0][1]["$set"]
+        assert "settings.transcription.device" not in update_dict
 
     def test_update_whisperx_configuration_should_reject_invalid_model_size(
         self, client: TestClient, auth_headers: dict, mock_mongo

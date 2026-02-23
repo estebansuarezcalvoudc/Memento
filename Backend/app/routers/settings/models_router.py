@@ -8,8 +8,7 @@ from ...dependencies.service_dependencies import get_models_service
 from ...schemas.auth.auth_schema import User
 from ...schemas.settings.model_schema import (
     AvailableModel,
-    ConfiguredModelsRequest,
-    ConfiguredModelsResponse,
+    ModelConfig,
 )
 from ...services.settings.models_service import ModelsService
 
@@ -22,12 +21,7 @@ async def get_available_models(
     current_user: Annotated[User, Depends(get_current_active_user)],
     service: Annotated[ModelsService, Depends(get_models_service)],
 ) -> list[AvailableModel]:
-    """
-    Get all available models from active providers
-
-    Returns:
-        List of available models with their provider
-    """
+    """Get all available models from active providers"""
     try:
         return service.get_available_models(current_user.username)
     except HTTPException:
@@ -40,51 +34,75 @@ async def get_available_models(
         )
 
 
-@router.get("/configured", response_model=ConfiguredModelsResponse)
-async def get_configured_models(
+@router.get("/chat", response_model=ModelConfig | None)
+async def get_chat_model(
     current_user: Annotated[User, Depends(get_current_active_user)],
     service: Annotated[ModelsService, Depends(get_models_service)],
-) -> ConfiguredModelsResponse:
-    """
-    Get user's configured models for chat and summary
-
-    Returns:
-        ConfiguredModelsResponse: Current model configuration
-    """
+) -> ModelConfig | None:
+    """Get user's configured chat model"""
     try:
-        return service.get_configured_models(current_user.username)
+        return service.get_chat_model(current_user.username)
     except HTTPException:
         raise
     except Exception as e:
-        _logger.error(f"Error getting configured models: {str(e)}", exc_info=True)
+        _logger.error(f"Error getting chat model: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error while getting configured models",
+            detail="Internal server error while getting chat model",
         )
 
 
-@router.patch("/configured", response_model=ConfiguredModelsResponse)
-async def update_configured_models(
-    request: ConfiguredModelsRequest,
+@router.get("/summary", response_model=ModelConfig | None)
+async def get_summary_model(
     current_user: Annotated[User, Depends(get_current_active_user)],
     service: Annotated[ModelsService, Depends(get_models_service)],
-) -> ConfiguredModelsResponse:
-    """
-    Update user's configured models (partial update)
-
-    Args:
-        request: Models to update (chat_model and/or summary_model)
-
-    Returns:
-        ConfiguredModelsResponse: Updated model configuration
-    """
+) -> ModelConfig | None:
+    """Get user's configured summary model"""
     try:
-        return service.update_configured_models(current_user.username, request)
+        return service.get_summary_model(current_user.username)
     except HTTPException:
         raise
     except Exception as e:
-        _logger.error(f"Error updating configured models: {str(e)}", exc_info=True)
+        _logger.error(f"Error getting summary model: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error while updating configured models",
+            detail="Internal server error while getting summary model",
+        )
+
+
+@router.put("/chat", response_model=ModelConfig)
+async def update_chat_model(
+    model: ModelConfig,
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    service: Annotated[ModelsService, Depends(get_models_service)],
+) -> ModelConfig:
+    """Update user's chat model configuration"""
+    try:
+        return service.update_chat_model(current_user.username, model)
+    except HTTPException:
+        raise
+    except Exception as e:
+        _logger.error(f"Error updating chat model: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error while updating chat model",
+        )
+
+
+@router.put("/summary", response_model=ModelConfig)
+async def update_summary_model(
+    model: ModelConfig,
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    service: Annotated[ModelsService, Depends(get_models_service)],
+) -> ModelConfig:
+    """Update user's summary model configuration"""
+    try:
+        return service.update_summary_model(current_user.username, model)
+    except HTTPException:
+        raise
+    except Exception as e:
+        _logger.error(f"Error updating summary model: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error while updating summary model",
         )

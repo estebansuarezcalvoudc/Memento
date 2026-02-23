@@ -1,8 +1,8 @@
-import { useDelayedDisplay } from '../../../hooks/useDelayedDisplay'
+import { useDelayedDisplay } from '../../../../hooks/useDelayedDisplay'
 import {
   useIsSidebarOpen,
   useToggleSidebar,
-} from '../../../stores/sidebarStore'
+} from '../../../../stores/sidebarStore'
 
 export default function Header() {
   const isSidebarOpen = useIsSidebarOpen()

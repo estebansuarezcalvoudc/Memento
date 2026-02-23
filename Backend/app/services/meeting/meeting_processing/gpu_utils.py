@@ -1,3 +1,4 @@
+import inspect
 from functools import wraps
 from typing import Any, Callable
 
@@ -47,8 +48,7 @@ def try_on_gpu(function: Callable[..., Any]):
                 f"{function.__name__.upper()} failed on GPU: {e}. Retrying on CPU"
             )
 
-            new_args = _replace_device_in_args(args)
-            new_kwargs = _replace_device_in_kwargs(kwargs)
+            new_args, new_kwargs = _replace_for_cpu_fallback(function, args, kwargs)
 
             return function(*new_args, **new_kwargs)
 
@@ -80,17 +80,24 @@ def _get_target_device(function, args, kwargs):
     return target_device
 
 
-def _replace_device_in_args(args: tuple) -> tuple:
-    return tuple(
-        "cpu" if isinstance(arg, str) and arg == "cuda" else arg for arg in args
-    )
+def _replace_for_cpu_fallback(function, args, kwargs):
+    """Replace device→cpu and compute_type→int8 for CPU fallback."""
+    param_names = list(inspect.signature(function).parameters.keys())
 
+    new_args = list(args)
+    for i, name in enumerate(param_names[: len(args)]):
+        if name == "device" and new_args[i] == "cuda":
+            new_args[i] = "cpu"
+        elif name == "compute_type" and new_args[i] in ("float16", "float32"):
+            new_args[i] = "int8"
 
-def _replace_device_in_kwargs(kwargs: dict) -> dict:
-    if "device" in kwargs:
-        kwargs["device"] = "cpu"
+    new_kwargs = dict(kwargs)
+    if "device" in new_kwargs:
+        new_kwargs["device"] = "cpu"
+    if "compute_type" in new_kwargs and new_kwargs["compute_type"] in ("float16", "float32"):
+        new_kwargs["compute_type"] = "int8"
 
-    return kwargs
+    return tuple(new_args), new_kwargs
 
 
 def _clear_gpu_cache(device):

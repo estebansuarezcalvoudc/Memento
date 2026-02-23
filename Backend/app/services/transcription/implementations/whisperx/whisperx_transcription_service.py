@@ -12,6 +12,7 @@ from .....repositories.interfaces.settings_repo import SettingsRepository
 from .....schemas.settings.whisperx_schema import (
     LANGUAGE_NAMES,
     ComputeType,
+    Device,
     WhisperXAvailableOptions,
     WhisperXConfiguration,
     WhisperXConfigurationUpdate,
@@ -41,9 +42,10 @@ class WhisperXTranscriptionService(TranscriptionService):
     ) -> TranscriptionResult:
         config = self._get_user_config(username)
         audio = self._load_audio(audio_bytes)
+        device = config.device
 
         transcription_result = self._transcribe_audio(
-            audio, language, self._device, config.compute_type, config.model_size
+            audio, language, device, config.compute_type, config.model_size
         )
 
         detected_language = (
@@ -51,9 +53,9 @@ class WhisperXTranscriptionService(TranscriptionService):
         )
 
         aligned = self._align_audio(
-            transcription_result, audio, self._device, detected_language
+            transcription_result, audio, device, detected_language
         )
-        segments = self._diarize_audio(audio, self._device)
+        segments = self._diarize_audio(audio, device)
         diarized = whisperx.assign_word_speakers(segments, aligned)
         text = self._build_dialogue(diarized)
 
@@ -71,7 +73,8 @@ class WhisperXTranscriptionService(TranscriptionService):
     def get_available_options(self) -> WhisperXAvailableOptions:
         models = list(get_args(WhisperXModel))
         compute_types = list(get_args(ComputeType))
-        return WhisperXAvailableOptions(models=models, compute_types=compute_types)
+        devices = list(get_args(Device))
+        return WhisperXAvailableOptions(models=models, compute_types=compute_types, devices=devices)
 
     def get_user_configuration(self, username: str) -> WhisperXConfiguration:
         return self._get_user_config(username)

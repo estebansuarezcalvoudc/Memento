@@ -75,7 +75,7 @@ class TestModelsEndpoints:
         assert isinstance(models, list)
         assert len(models) == 0
 
-    def test_get_configured_models_should_return_user_configuration(
+    def test_get_chat_model_should_return_user_configuration(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
@@ -90,6 +90,26 @@ class TestModelsEndpoints:
                         "temperature": 0.7,
                         "max_tokens": 2000,
                     },
+                }
+            },
+        }
+
+        response = client.get("/settings/models/chat", headers=auth_headers)
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["provider"] == "OpenAI"
+        assert data["model_name"] == "gpt-4o"
+
+    def test_get_summary_model_should_return_user_configuration(
+        self, client: TestClient, auth_headers: dict, mock_mongo
+    ):
+        _ = mock_mongo  # Fixture needed for MongoDB mock setup
+        mock_mongo.find_one.return_value = {
+            "username": "test@example.com",
+            "password": "$2b$12$test_hashed_password",
+            "settings": {
+                "models": {
                     "summary_model": {
                         "provider": "Ollama",
                         "model_name": "llama3.1",
@@ -100,16 +120,14 @@ class TestModelsEndpoints:
             },
         }
 
-        response = client.get("/settings/models/configured", headers=auth_headers)
+        response = client.get("/settings/models/summary", headers=auth_headers)
 
         assert response.status_code == 200
         data = response.json()
-        assert data["chat_model"]["provider"] == "OpenAI"
-        assert data["chat_model"]["model_name"] == "gpt-4o"
-        assert data["summary_model"]["provider"] == "Ollama"
-        assert data["summary_model"]["model_name"] == "llama3.1"
+        assert data["provider"] == "Ollama"
+        assert data["model_name"] == "llama3.1"
 
-    def test_get_configured_models_should_return_null_when_no_configuration(
+    def test_get_model_should_return_null_when_no_configuration(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
@@ -118,14 +136,10 @@ class TestModelsEndpoints:
             "password": "$2b$12$test_hashed_password",
         }
 
-        response = client.get("/settings/models/configured", headers=auth_headers)
+        assert client.get("/settings/models/chat", headers=auth_headers).json() is None
+        assert client.get("/settings/models/summary", headers=auth_headers).json() is None
 
-        assert response.status_code == 200
-        data = response.json()
-        assert data["chat_model"] is None
-        assert data["summary_model"] is None
-
-    def test_update_configured_models_should_save_configuration(
+    def test_update_chat_model_should_save_configuration(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
@@ -135,16 +149,14 @@ class TestModelsEndpoints:
         }
 
         request_data = {
-            "chat_model": {
-                "provider": "OpenAI",
-                "model_name": "gpt-4o",
-                "temperature": 0.8,
-                "max_tokens": 3000,
-            }
+            "provider": "OpenAI",
+            "model_name": "gpt-4o",
+            "temperature": 0.8,
+            "max_tokens": 3000,
         }
 
-        response = client.patch(
-            "/settings/models/configured",
+        response = client.put(
+            "/settings/models/chat",
             headers=auth_headers,
             json=request_data,
         )
@@ -154,51 +166,32 @@ class TestModelsEndpoints:
         call_args = mock_mongo.update_one.call_args
         assert "settings.models.chat_model" in call_args[0][1]["$set"]
 
-    def test_update_configured_models_should_allow_partial_update(
+    def test_update_summary_model_should_save_configuration(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
-
-        def mongo_side_effect(query, projection=None):
-            if "password" in str(projection):
-                return {
-                    "username": "test@example.com",
-                    "password": "$2b$12$test_hashed_password",
-                }
-            return {
-                "username": "test@example.com",
-                "password": "$2b$12$test_hashed_password",
-                "settings": {
-                    "models": {
-                        "chat_model": {
-                            "provider": "OpenAI",
-                            "model_name": "gpt-4o",
-                            "temperature": 0.7,
-                            "max_tokens": 2000,
-                        }
-                    }
-                },
-            }
-
-        mock_mongo.find_one.side_effect = mongo_side_effect
-
-        request_data = {
-            "summary_model": {
-                "provider": "Ollama",
-                "model_name": "llama3.1",
-                "temperature": 0.5,
-                "max_tokens": 1500,
-            }
+        mock_mongo.find_one.return_value = {
+            "username": "test@example.com",
+            "password": "$2b$12$test_hashed_password",
         }
 
-        response = client.patch(
-            "/settings/models/configured",
+        request_data = {
+            "provider": "Ollama",
+            "model_name": "llama3.1",
+            "temperature": 0.5,
+            "max_tokens": 1500,
+        }
+
+        response = client.put(
+            "/settings/models/summary",
             headers=auth_headers,
             json=request_data,
         )
 
         assert response.status_code == 200
         mock_mongo.update_one.assert_called_once()
+        call_args = mock_mongo.update_one.call_args
+        assert "settings.models.summary_model" in call_args[0][1]["$set"]
 
     def test_models_endpoints_should_require_authentication(
         self, client: TestClient, mock_mongo
@@ -208,18 +201,30 @@ class TestModelsEndpoints:
         response = client.get("/settings/models/available")
         assert response.status_code == 401
 
-        response = client.get("/settings/models/configured")
+        response = client.get("/settings/models/chat")
         assert response.status_code == 401
 
-        response = client.patch(
-            "/settings/models/configured",
+        response = client.get("/settings/models/summary")
+        assert response.status_code == 401
+
+        response = client.put(
+            "/settings/models/chat",
             json={
-                "chat_model": {
-                    "provider": "OpenAI",
-                    "model_name": "gpt-4o",
-                    "temperature": 0.7,
-                    "max_tokens": 2000,
-                }
+                "provider": "OpenAI",
+                "model_name": "gpt-4o",
+                "temperature": 0.7,
+                "max_tokens": 2000,
+            },
+        )
+        assert response.status_code == 401
+
+        response = client.put(
+            "/settings/models/summary",
+            json={
+                "provider": "OpenAI",
+                "model_name": "gpt-4o",
+                "temperature": 0.7,
+                "max_tokens": 2000,
             },
         )
         assert response.status_code == 401

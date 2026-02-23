@@ -118,6 +118,7 @@ class SettingsMongoRepository(AbstractSettingsRepository):
                     f"settings.providers.{provider_name}.active": True,
                 }
             },
+            upsert=True,
         )
 
     def get_provider_api_key_encrypted(

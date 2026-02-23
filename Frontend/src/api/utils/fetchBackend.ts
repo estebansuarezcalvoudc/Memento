@@ -1,7 +1,16 @@
-type method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+import camelcaseKeys from 'camelcase-keys'
+
+export class HttpError extends Error {
+  constructor(public status: number) {
+    super(`HTTP error! status: ${status}`)
+  }
+}
+
+
+type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
 export default async function fetchBackend<T>(
-  method: method,
+  method: Method,
   url: string,
   body?: T,
 ) {
@@ -27,12 +36,12 @@ export default async function fetchBackend<T>(
   })
 
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`)
+    throw new HttpError(response.status)
   }
 
   if (response.status === 204) {
     return null
   }
 
-  return await response.json()
+  return camelcaseKeys(await response.json(), { deep: true })
 }

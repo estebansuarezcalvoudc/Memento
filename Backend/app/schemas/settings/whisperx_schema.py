@@ -62,6 +62,9 @@ WhisperXModel = Literal[
 # WhisperX compute types
 ComputeType = Literal["int8", "float16", "float32"]
 
+# Device selection
+Device = Literal["cuda", "cpu"]
+
 
 class WhisperXConfiguration(BaseModel):
     """User's WhisperX configuration for transcription"""
@@ -72,6 +75,10 @@ class WhisperXConfiguration(BaseModel):
     compute_type: ComputeType = Field(
         default="int8",
         description="Compute precision type (int8 for CPU, float16 for GPU)",
+    )
+    device: Device = Field(
+        default="cuda",
+        description="Device to use for transcription. 'cuda' falls back to CPU automatically if GPU is unavailable.",
     )
 
 
@@ -84,6 +91,9 @@ class WhisperXConfigurationUpdate(BaseModel):
     compute_type: Optional[ComputeType] = Field(
         None, description="Compute precision type"
     )
+    device: Optional[Device] = Field(
+        None, description="Device to use for transcription"
+    )
 
 
 class WhisperXAvailableOptions(BaseModel):
@@ -91,3 +101,4 @@ class WhisperXAvailableOptions(BaseModel):
 
     models: list[str] = Field(..., description="List of available WhisperX model sizes")
     compute_types: list[str] = Field(..., description="List of available compute types")
+    devices: list[str] = Field(..., description="List of available device options")
