@@ -3,10 +3,10 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 
-import ModelSection from '../../../src/components/settings/sections/summarization/ModelSection'
-import { server } from '../../mocks/server'
-import { withAuth } from '../../mocks/withAuth'
-import { renderWithRouter, setAuthToken, setupStoreReset } from '../../utils'
+import ModelSection from '../../../../src/components/settings/sections/summarization/ModelSection'
+import { server } from '../../../mocks/server'
+import { withAuth } from '../../../mocks/withAuth'
+import { renderWithRouter, setAuthToken, setupStoreReset } from '../../../utils'
 
 setupStoreReset()
 
