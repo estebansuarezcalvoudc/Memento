@@ -32,6 +32,7 @@ class ActiveSession(BaseModel):
 
 class ChangeUsernameRequest(BaseModel):
     new_username: str
+    password: str
 
 
 class ChangePasswordRequest(BaseModel):

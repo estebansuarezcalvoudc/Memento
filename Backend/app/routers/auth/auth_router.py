@@ -53,7 +53,7 @@ async def change_username(
     service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> Token:
     try:
-        return service.change_username(current_user.username, body.new_username)
+        return service.change_username(current_user.username, body.new_username, body.password)
     except HTTPException:
         raise
     except Exception as e:
