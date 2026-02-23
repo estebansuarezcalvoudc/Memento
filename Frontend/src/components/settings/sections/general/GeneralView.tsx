@@ -5,7 +5,7 @@ export default function GeneralView() {
     <>
       <Select label="Theme">
         <option value="system">System</option>
-        <option value="light">Ligh</option>
+        <option value="light">Light</option>
         <option value="dark">Dark</option>
       </Select>
       <Select label='Language'>

@@ -4,14 +4,14 @@ import Dialog, { type DialogHandler } from '../../common/Dialog'
 import UploadMeetingsForm from './UploadMeetingsForm'
 
 interface UploadMeetingsDialogProps {
-  dialogRef: React.Ref<DialogHandler>
+  dialogRef: React.RefObject<DialogHandler>
 }
 
 export default function UploadMeetingsDialog({
   dialogRef,
 }: UploadMeetingsDialogProps) {
   const handleClose = useCallback(() => {
-    ; (dialogRef as React.RefObject<DialogHandler>).current?.close()
+    dialogRef.current?.close()
   }, [dialogRef])
 
   return (
