@@ -58,7 +58,7 @@ export default function MeetingItemEdit({
 
   return (
     <>
-      <span className="font-ubuntu text-base text-stone-500">{index}</span>
+      <span className="font-ubuntu text-sm text-stone-500">{index}</span>
       <input
         type="text"
         value={editState.title}

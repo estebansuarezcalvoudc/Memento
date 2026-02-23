@@ -4,7 +4,7 @@ import {
   useUpdateTranscriptionConfiguration,
 } from '../../../../api/queries/settings/useTranscriptionQueries'
 import Select from '../../../common/Select'
-import SubSectionTitle from '../ui/SubSectionTitle'
+import SubSectionTitle from '../SubSectionTitle'
 
 export default function TranscriptionView() {
   const { data: options, isLoading: optionsLoading } = useGetTranscriptionOptions()
@@ -45,7 +45,7 @@ export default function TranscriptionView() {
             </Select>
             {selectedDevice === 'cuda' && (
               <p className="mt-1 text-sm text-yellow-600 dark:text-yellow-400">
-                If the GPU is unavailable or fails, transcription will automatically fall back to CPU using <strong>int8</strong> precision
+                If the GPU is unavailable or fails, transcription will automatically fall back to CPU using <strong>int8</strong> precision.
               </p>
             )}
           </div>

@@ -21,7 +21,7 @@ export default function ChatOptionsButton({
       {...props}
     >
       {svg}
-      <span className="font-ubuntu ml-1.5 text-left text-base">{text}</span>
+      <span className="font-ubuntu ml-1.5 text-left text-sm">{text}</span>
     </button>
   )
 }

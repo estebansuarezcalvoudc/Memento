@@ -28,13 +28,3 @@ class ActiveSession(BaseModel):
     username: str
     access_token: str
     expire_time: datetime.datetime
-
-
-class ChangeUsernameRequest(BaseModel):
-    new_username: str
-    password: str
-
-
-class ChangePasswordRequest(BaseModel):
-    current_password: str
-    new_password: str

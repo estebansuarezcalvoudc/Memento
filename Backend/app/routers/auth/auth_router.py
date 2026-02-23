@@ -4,15 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from ...core.logging import setup_logger
-from ...dependencies.auth_dependencies import get_current_active_user
 from ...dependencies.service_dependencies import get_auth_service
-from ...schemas.auth.auth_schema import (
-    ChangePasswordRequest,
-    ChangeUsernameRequest,
-    Token,
-    UserCreate,
-)
-from ...schemas.auth.auth_schema import User
+from ...schemas.auth.auth_schema import Token, UserCreate
 from ...services.auth.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -44,39 +37,3 @@ async def login_for_access_token(
     service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> Token:
     return service.authenticate_user(form_data.username, form_data.password)
-
-
-@router.patch("/username")
-async def change_username(
-    body: ChangeUsernameRequest,
-    current_user: Annotated[User, Depends(get_current_active_user)],
-    service: Annotated[AuthService, Depends(get_auth_service)],
-) -> Token:
-    try:
-        return service.change_username(current_user.username, body.new_username, body.password)
-    except HTTPException:
-        raise
-    except Exception as e:
-        _logger.error(f"Error changing username: {str(e)}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error while changing username",
-        )
-
-
-@router.patch("/password")
-async def change_password(
-    body: ChangePasswordRequest,
-    current_user: Annotated[User, Depends(get_current_active_user)],
-    service: Annotated[AuthService, Depends(get_auth_service)],
-) -> None:
-    try:
-        service.change_password(current_user.username, body.current_password, body.new_password)
-    except HTTPException:
-        raise
-    except Exception as e:
-        _logger.error(f"Error changing password: {str(e)}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error while changing password",
-        )

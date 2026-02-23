@@ -8,10 +8,10 @@ import {
 import { type ModelConfig } from '../../../../types/settings/models'
 import Input from '../../../common/Input'
 import Select from '../../../common/Select'
-import CancelButton from '../ui/CancelButton'
-import ConfirmButton from '../ui/ConfirmButton'
-import ErrorMessage from '../ui/ErrorMessage'
-import SubSectionTitle from '../ui/SubSectionTitle'
+import CancelButton from '../CancelButton'
+import ConfirmButton from '../ConfirmButton'
+import ErrorMessage from '../ErrorMessage'
+import SubSectionTitle from '../SubSectionTitle'
 
 export default function ModelSection() {
   const { data: availableModels, isLoading: modelsLoading } =
@@ -46,7 +46,7 @@ export default function ModelSection() {
     <div className="flex flex-col gap-2">
       <SubSectionTitle title="Language Model" />
       {isLoading ? (
-        <span className="text-base text-stone-500">Loading...</span>
+        <span className="text-sm text-stone-500">Loading...</span>
       ) : (
         <>
           <Select

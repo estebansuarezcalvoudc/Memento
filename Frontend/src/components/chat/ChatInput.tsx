@@ -26,7 +26,7 @@ export default function ChatInput({ chatId }: UserChatInputProps) {
   }
 
   return (
-    <div className="font-ubuntu mb-2.5 flex h-12 items-center rounded-3xl bg-stone-200 px-2 pl-3 text-base">
+    <div className="font-ubuntu mb-2.5 flex h-12 items-center rounded-3xl bg-stone-200 px-2 pl-3 text-sm">
       <input
         className="flex-1 bg-transparent text-stone-800 outline-none"
         placeholder="Some message..."

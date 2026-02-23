@@ -8,7 +8,7 @@ interface MeetingsListProps {
 export default function MeetingsList({ meetings }: MeetingsListProps) {
   const gridCols = 'grid-cols-[20px_1fr_150px_32px_32px]'
   const titlesClasses =
-    'font-ubuntu text-base tracking-wide text-stone-500 uppercase'
+    'font-ubuntu text-sm tracking-wide text-stone-500 uppercase'
 
   return (
     <div className="w-full">

@@ -18,6 +18,7 @@ class AuthRepository(ABC):
         Raises:
             HTTPException: If user already exists
         """
+        pass
 
     @abstractmethod
     def retrieve_user(self, username: str) -> Optional[UserCreate]:
@@ -30,29 +31,4 @@ class AuthRepository(ABC):
         Returns:
             UserCreate object if found, None otherwise
         """
-
-    @abstractmethod
-    def update_username(self, username: str, new_username: str) -> None:
-        """
-        Update a user's username
-
-        Args:
-            username: Current username
-            new_username: New username to set
-
-        Raises:
-            HTTPException: 404 if user is not found
-        """
-
-    @abstractmethod
-    def update_password(self, username: str, new_password: str) -> None:
-        """
-        Update a user's password
-
-        Args:
-            username: Username of the user
-            new_password: New (already hashed) password to set
-
-        Raises:
-            HTTPException: 404 if user is not found
-        """
+        pass

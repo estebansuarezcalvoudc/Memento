@@ -33,7 +33,7 @@ export default function MeetingItemView({
 
   return (
     <>
-      <span className="font-ubuntu text-base text-stone-500">{index}</span>
+      <span className="font-ubuntu text-sm text-stone-500">{index}</span>
       <NavLink
         to={`/meetings/${meeting.id}/transcription`}
         className="font-ubuntu truncate text-base text-stone-800"

@@ -18,17 +18,3 @@ export async function register(email: string, password: string): Promise<Token> 
     password,
   })
 }
-
-export async function updateUsername(newUsername: string, password: string): Promise<Token> {
-  return fetchBackend('PATCH', 'auth/username', {
-    new_username: newUsername,
-    password,
-  })
-}
-
-export async function updatePassword(currentPassword: string, newPassword: string): Promise<null> {
-  return fetchBackend('PATCH', 'auth/password', {
-    current_password: currentPassword,
-    new_password: newPassword,
-  })
-}

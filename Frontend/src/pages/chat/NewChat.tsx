@@ -32,7 +32,7 @@ export default function NewChat() {
 
       <div className="flex w-1/2 items-center rounded-3xl bg-stone-200 p-2">
         <input
-          className="font-ubuntu flex-1 rounded-xl p-2 text-base text-stone-800 outline-none"
+          className="font-ubuntu flex-1 rounded-xl p-2 text-sm text-stone-800 outline-none"
           placeholder="Some message..."
           value={userMessage}
           onChange={inputEvent => setUserMessage(inputEvent.target.value)}

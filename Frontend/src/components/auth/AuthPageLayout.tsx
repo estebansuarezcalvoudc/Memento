@@ -23,7 +23,7 @@ export default function AuthPageLayout({
           {title}
         </h2>
         {children}
-        <span className="font-ubuntu mt-5 block text-center text-base text-stone-800">
+        <span className="font-ubuntu mt-5 block text-center text-sm text-stone-800">
           {`${footerText} `}
           <Link to={linkTo} className="text-blue-700 underline">
             {linkText}

@@ -4,7 +4,7 @@ import { useUpdateProviderStatus } from '../../../../api/queries/settings/usePro
 import { type Provider } from '../../../../types/settings/providers'
 import Toggle from '../../../common/Toggle'
 import Tooltip from '../../../common/Tooltip'
-import SubSectionTitle from '../ui/SubSectionTitle'
+import SubSectionTitle from '../SubSectionTitle'
 import ApiKeySection from './ApiKeySection'
 
 export default function Provider({ provider }: { provider: Provider }) {
