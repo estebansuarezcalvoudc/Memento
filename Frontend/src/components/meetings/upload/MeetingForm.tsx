@@ -67,12 +67,13 @@ export default function MeetingForm({
         <Select
           label="Language"
           name={`meetings[${index}][language]`}
-          options={languages}
-          placeholder="Select a language"
           disabled={isPending}
           defaultValue={meeting.language}
           key={`${meeting.id}-language-${meeting.language || 'none'}`}
-        />
+        >
+          <option value="">Select a language</option>
+          {languages.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
+        </Select>
 
         <Input
           label="Number of speakers"

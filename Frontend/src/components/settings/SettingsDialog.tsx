@@ -1,14 +1,14 @@
 import { useState } from 'react'
 
 import Dialog, { type DialogHandler } from '../common/Dialog'
-import AccountSettings from './sections/AccountSettings'
-import GeneralSettings from './sections/GeneralSettings'
+import AccountView from './sections/account/AccountView'
+import GeneralView from './sections/general/GeneralView'
 import ProvidersView from './sections/providers/ProvidersView'
 import { Section } from './sections/Section'
 import SectionHeader from './sections/SectionHeader'
-import SettingsSidebar from './SettingsSidebar'
-import TranscriptionView from './sections/transcription/TranscriptionView'
 import SummarizationView from './sections/summarization/SummarizationView'
+import TranscriptionView from './sections/transcription/TranscriptionView'
+import SettingsSidebar from './SettingsSidebar'
 
 interface SettingsDialogProps {
   dialogRef: React.Ref<DialogHandler>
@@ -26,11 +26,11 @@ export default function SettingsDialog({ dialogRef }: SettingsDialogProps) {
             <SectionHeader section={section} />
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
-            {section === Section.General && <GeneralSettings />}
+            {section === Section.General && <GeneralView />}
             {section === Section.Provider && <ProvidersView />}
             {section === Section.Transcription && <TranscriptionView />}
             {section === Section.Summarization && <SummarizationView />}
-            {section === Section.Account && <AccountSettings />}
+            {section === Section.Account && <AccountView />}
           </div>
         </div>
       </div>

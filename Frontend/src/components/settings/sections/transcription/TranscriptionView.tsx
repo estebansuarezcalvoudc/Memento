@@ -24,25 +24,25 @@ export default function TranscriptionView() {
             <SubSectionTitle title="WhisperX" />
             <Select
               label="Model size"
-              options={(options?.models ?? []).map(m => ({ code: m, name: m }))}
               value={config?.modelSize ?? ''}
               onChange={e => updateConfig({ model_size: e.target.value })}
-              placeholder=""
-            />
+            >
+              {(options?.models ?? []).map(m => <option key={m} value={m}>{m}</option>)}
+            </Select>
             <Select
               label="Compute type"
-              options={(options?.computeTypes ?? []).map(c => ({ code: c, name: c }))}
               value={config?.computeType ?? ''}
               onChange={e => updateConfig({ compute_type: e.target.value })}
-              placeholder=""
-            />
+            >
+              {(options?.computeTypes ?? []).map(c => <option key={c} value={c}>{c}</option>)}
+            </Select>
             <Select
               label="Device"
-              options={(options?.devices ?? []).map(d => ({ code: d, name: d }))}
               value={selectedDevice}
               onChange={e => updateConfig({ device: e.target.value })}
-              placeholder=""
-            />
+            >
+              {(options?.devices ?? []).map(d => <option key={d} value={d}>{d}</option>)}
+            </Select>
             {selectedDevice === 'cuda' && (
               <p className="mt-1 text-sm text-yellow-600 dark:text-yellow-400">
                 If the GPU is unavailable or fails, transcription will automatically fall back to CPU using <strong>int8</strong> precision.

@@ -32,10 +32,6 @@ export default function ModelSection() {
   const isModified = draft !== undefined
   const isLoading = modelsLoading || configLoading
 
-  const modelOptions = (availableModels ?? []).map(m => ({
-    code: m.id,
-    name: `${m.provider} — ${m.id}`,
-  }))
   const isValid = value.provider !== '' && value.modelName !== ''
 
   function handleSave() {
@@ -55,7 +51,6 @@ export default function ModelSection() {
         <>
           <Select
             label="Model"
-            options={modelOptions}
             value={value.modelName}
             onChange={e => {
               const selected = availableModels?.find(
@@ -65,8 +60,14 @@ export default function ModelSection() {
                 patch({ modelName: selected.id, provider: selected.provider })
               }
             }}
-            placeholder="Select a model"
-          />
+          >
+            <option value="">Select a model</option>
+            {(availableModels ?? []).map(m => (
+              <option key={m.id} value={m.id}>
+                {m.provider} — {m.id}
+              </option>
+            ))}
+          </Select>
           <Input
             label="Temperature"
             type="number"
