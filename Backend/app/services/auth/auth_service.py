@@ -53,7 +53,9 @@ class AuthService:
         user = self._repository.retrieve_user(username)
 
         if not user:
-            raise HTTPException(status_code=status.HTTP_418_IM_A_TEAPOT)
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist"
+            )
 
         if not pwd_context.verify(password, user.password):
             raise HTTPException(
