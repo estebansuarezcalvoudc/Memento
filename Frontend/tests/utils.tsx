@@ -19,7 +19,7 @@ export function renderWithRouter(
   ui: React.ReactElement,
   { route = '/' }: { route?: string } = {},
 ) {
-  ensurePortal('upload-meetings-modal')
+  ensurePortal('dialog')
   ensurePortal('notification')
 
   const queryClient = new QueryClient({
