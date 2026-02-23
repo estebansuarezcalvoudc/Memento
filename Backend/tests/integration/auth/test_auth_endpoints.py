@@ -147,13 +147,14 @@ class TestAuthEndpoints:
         self, client: TestClient, mock_mongo, auth_headers
     ):
         # 1st call: auth middleware retrieves current user
-        # 2nd call: service checks new username is not taken
-        mock_mongo.find_one.side_effect = [_USER_DOC, None]
+        # 2nd call: service retrieves current user to verify password
+        # 3rd call: service checks new username is not taken
+        mock_mongo.find_one.side_effect = [_USER_DOC, _USER_DOC, None]
         mock_mongo.update_one.return_value = MagicMock(matched_count=1)
 
         response = client.patch(
             "/auth/username",
-            json={"new_username": "newname@example.com"},
+            json={"new_username": "newname@example.com", "password": "password123"},
             headers=auth_headers,
         )
 
@@ -167,12 +168,13 @@ class TestAuthEndpoints:
         self, client: TestClient, mock_mongo, auth_headers
     ):
         # 1st call: auth middleware retrieves current user
-        # 2nd call: service finds new username already exists
-        mock_mongo.find_one.side_effect = [_USER_DOC, _USER_DOC]
+        # 2nd call: service retrieves current user to verify password
+        # 3rd call: service finds new username already exists
+        mock_mongo.find_one.side_effect = [_USER_DOC, _USER_DOC, _USER_DOC]
 
         response = client.patch(
             "/auth/username",
-            json={"new_username": "taken@example.com"},
+            json={"new_username": "taken@example.com", "password": "password123"},
             headers=auth_headers,
         )
 
@@ -183,15 +185,16 @@ class TestAuthEndpoints:
     def test_change_username_should_fail_when_user_not_found_in_db(
         self, client: TestClient, mock_mongo, auth_headers
     ):
-        # 1st call: auth middleware retrieves current user (ok)
-        # 2nd call: new username is free
+        # 1st call: auth middleware retrieves current user
+        # 2nd call: service retrieves current user to verify password
+        # 3rd call: new username is free
         # update_one: matched_count=0 means the document was deleted between calls
-        mock_mongo.find_one.side_effect = [_USER_DOC, None]
+        mock_mongo.find_one.side_effect = [_USER_DOC, _USER_DOC, None]
         mock_mongo.update_one.return_value = MagicMock(matched_count=0)
 
         response = client.patch(
             "/auth/username",
-            json={"new_username": "newname@example.com"},
+            json={"new_username": "newname@example.com", "password": "password123"},
             headers=auth_headers,
         )
 
