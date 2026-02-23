@@ -48,3 +48,38 @@ class AuthService:
             )
 
         return AuthService._create_access_token(data={"sub": user.username})
+
+    def change_username(self, username: str, new_username: str, password: str) -> Token:
+        user = self._repository.retrieve_user(username)
+
+        if not user:
+            raise HTTPException(status_code=status.HTTP_418_IM_A_TEAPOT)
+
+        if not pwd_context.verify(password, user.password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="The introduced password is not correct",
+            )
+
+        if self._repository.retrieve_user(new_username):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="A user with this username already exists",
+            )
+
+        self._repository.update_username(username, new_username)
+        return AuthService._create_access_token(data={"sub": new_username})
+
+    def change_password(
+        self, username: str, current_password: str, new_password: str
+    ) -> None:
+        user = self._repository.retrieve_user(username)
+
+        if not user or not pwd_context.verify(current_password, user.password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        self._repository.update_password(username, pwd_context.hash(new_password))

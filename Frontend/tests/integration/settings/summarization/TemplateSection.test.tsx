@@ -3,10 +3,10 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 
-import TemplateSection from '../../../src/components/settings/sections/summarization/TemplateSection'
-import { server } from '../../mocks/server'
-import { withAuth } from '../../mocks/withAuth'
-import { renderWithRouter, setAuthToken, setupStoreReset } from '../../utils'
+import TemplateSection from '../../../../src/components/settings/sections/summarization/TemplateSection'
+import { server } from '../../../mocks/server'
+import { withAuth } from '../../../mocks/withAuth'
+import { renderWithRouter, setAuthToken, setupStoreReset } from '../../../utils'
 
 setupStoreReset()
 
@@ -21,7 +21,9 @@ describe('TemplateSection', () => {
     setAuthToken()
     renderWithRouter(<TemplateSection />)
     const textarea = await screen.findByRole('textbox')
-    expect(textarea).toHaveValue('You are a helpful assistant. Summarize the meeting.')
+    expect(textarea).toHaveValue(
+      'You are a helpful assistant. Summarize the meeting.',
+    )
   })
 
   it('Save and Cancel are disabled while no edits have been made', async () => {
@@ -50,7 +52,9 @@ describe('TemplateSection', () => {
     const original = textarea.textContent ?? ''
     await user.type(textarea, ' Extra text.')
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
-    expect(textarea).toHaveValue('You are a helpful assistant. Summarize the meeting.')
+    expect(textarea).toHaveValue(
+      'You are a helpful assistant. Summarize the meeting.',
+    )
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
     void original
   })
@@ -72,18 +76,23 @@ describe('TemplateSection', () => {
     renderWithRouter(<TemplateSection />)
     await screen.findByRole('textbox')
     await user.click(screen.getByRole('button', { name: 'Reset to default' }))
-    expect(screen.getByRole('textbox')).toHaveValue('Default system prompt text here.')
+    expect(screen.getByRole('textbox')).toHaveValue(
+      'Default system prompt text here.',
+    )
   })
 
   it('Save calls the PUT endpoint and disables Save/Cancel on success', async () => {
     const user = userEvent.setup()
     let savedPrompt = ''
     server.use(
-      http.put('/api/settings/templates/prompt', withAuth(async ({ request }) => {
-        const body = await request.json() as { system_prompt: string }
-        savedPrompt = body.system_prompt
-        return HttpResponse.json({ system_prompt: body.system_prompt })
-      })),
+      http.put(
+        '/api/settings/templates/prompt',
+        withAuth(async ({ request }) => {
+          const body = (await request.json()) as { system_prompt: string }
+          savedPrompt = body.system_prompt
+          return HttpResponse.json({ system_prompt: body.system_prompt })
+        }),
+      ),
     )
     setAuthToken()
     renderWithRouter(<TemplateSection />)
@@ -103,15 +112,18 @@ describe('TemplateSection', () => {
   it('shows an error message when Save fails', async () => {
     const user = userEvent.setup()
     server.use(
-      http.put('/api/settings/templates/prompt', withAuth(() =>
-        new HttpResponse(null, { status: 500 }),
-      )),
+      http.put(
+        '/api/settings/templates/prompt',
+        withAuth(() => new HttpResponse(null, { status: 500 })),
+      ),
     )
     setAuthToken()
     renderWithRouter(<TemplateSection />)
     const textarea = await screen.findByRole('textbox')
     await user.type(textarea, ' Extra text here.')
     await user.click(screen.getByRole('button', { name: 'Save' }))
-    expect(await screen.findByText('Failed to save. Please try again.')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Failed to save. Please try again.'),
+    ).toBeInTheDocument()
   })
 })

@@ -35,3 +35,25 @@ class AuthMongoRepository(AbstractAuthRepository):
             return None
 
         return UserCreate(username=result["username"], password=result["password"])
+
+    def update_username(self, username: str, new_username: str) -> None:
+        result = self._collection.update_one(
+            {"username": username}, {"$set": {"username": new_username}}
+        )
+
+        if result.matched_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+
+    def update_password(self, username: str, new_password: str) -> None:
+        result = self._collection.update_one(
+            {"username": username}, {"$set": {"password": new_password}}
+        )
+
+        if result.matched_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )

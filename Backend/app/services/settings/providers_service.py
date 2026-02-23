@@ -89,7 +89,6 @@ class ProvidersService:
             )
 
         self._repository.delete_provider_api_key(username, provider_name)
-        self._repository.update_provider_status(username, provider_name, False)
         _logger.info(f"API key deleted and provider {provider_name} deactivated")
 
     def set_provider_status(
