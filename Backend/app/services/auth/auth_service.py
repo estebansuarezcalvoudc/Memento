@@ -67,7 +67,14 @@ class AuthService:
                 detail="A user with this username already exists",
             )
 
-        self._repository.update_username(username, new_username)
+        try:
+            self._repository.update_username(username, new_username)
+        except Exception as exc:
+            # Handle potential race condition where another user claimed the username
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="A user with this username already exists",
+            ) from exc
         return AuthService._create_access_token(data={"sub": new_username})
 
     def change_password(
