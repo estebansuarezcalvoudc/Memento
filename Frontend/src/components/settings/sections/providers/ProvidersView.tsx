@@ -9,9 +9,11 @@ export default function ProvidersView() {
   if (isLoading) {
     content = <span>Loading providers...</span>
   } else if (error) {
-    ; <span>
-      Error {error.name}: {error.message}
-    </span>
+    content = (
+      <span>
+        Error {error.name}: {error.message}
+      </span>
+    )
   } else {
     content = (
       <ul className="divide-y divide-gray-300">

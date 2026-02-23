@@ -5,9 +5,7 @@ import {
   newChatImage,
   uploadMeetingsImage,
 } from '../../../../assets/buttonsImages'
-import UploadMeetingsDialog, {
-  type UploadMeetingsDialogHandler,
-} from '../../../meetings/upload/UploadMeetingsDialog'
+import UploadMeetingsDialog from '../../../meetings/upload/UploadMeetingsDialog'
 import { SidebarButton } from './SidebarButton'
 import type { DialogHandler } from '../../../common/Dialog'
 

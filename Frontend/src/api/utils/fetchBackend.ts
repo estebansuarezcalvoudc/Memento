@@ -7,9 +7,10 @@ export class HttpError extends Error {
 }
 
 
+type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
 export default async function fetchBackend<T>(
-  method: method,
+  method: Method,
   url: string,
   body?: T,
 ) {
