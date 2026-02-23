@@ -1,7 +1,6 @@
 import { useActionState } from 'react'
 
 import { useUpdateUsername } from '../../../../api/queries/auth/useAuthQueries'
-import { HttpError } from '../../../../api/utils/fetchBackend'
 import Input from '../../../common/Input'
 import CancelButton from '../CancelButton'
 import ConfirmButton from '../ConfirmButton'
@@ -32,11 +31,11 @@ export default function UpdateEmailForm({
   )
 
   return (
-    <form action={formAction} className="flex flex-col gap-3">
+    <form action={formAction} className="flex flex-col gap-1">
       <Input name="newEmail" type="email" label="New email" />
       <Input name="password" type="password" label="Password" />
       {formState.errors && <ErrorMessage message={formState.errors[0]} />}
-      <div className="flex justify-center gap-2">
+      <div className="mt-4 flex justify-center gap-x-2">
         <ConfirmButton label="Save" isPending={isPending} />
         <CancelButton onClick={onClose} disabled={isPending} />
       </div>
@@ -69,12 +68,6 @@ async function updateEmailAction(
     onSuccess(newEmail)
     return { errors: null }
   } catch (error) {
-    if (error instanceof HttpError && error.status === 401) {
-      return { errors: ['Incorrect password'] }
-    }
-    if (error instanceof HttpError && error.status === 400) {
-      return { errors: ['A user with this email already exists'] }
-    }
     return {
       errors: [
         error instanceof Error ? error.message : 'Failed to update email',

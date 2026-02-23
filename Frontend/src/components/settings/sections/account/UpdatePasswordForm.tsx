@@ -1,7 +1,6 @@
 import { useActionState } from 'react'
 
 import { useUpdatePassword } from '../../../../api/queries/auth/useAuthQueries'
-import { HttpError } from '../../../../api/utils/fetchBackend'
 import Input from '../../../common/Input'
 import CancelButton from '../CancelButton'
 import ConfirmButton from '../ConfirmButton'
@@ -39,7 +38,7 @@ export default function UpdatePasswordForm({
         label="Confirm new password"
       />
       {formState.errors && <ErrorMessage message={formState.errors[0]} />}
-      <div className="flex justify-center mt-4 gap-2">
+      <div className="mt-4 flex justify-center gap-x-2">
         <ConfirmButton label="Save" isPending={isPending} />
         <CancelButton onClick={onClose} disabled={isPending} />
       </div>
@@ -75,9 +74,6 @@ async function updatePasswordAction(
     onClose()
     return { errors: null }
   } catch (error) {
-    if (error instanceof HttpError && error.status === 401) {
-      return { errors: ['Incorrect current password'] }
-    }
     return {
       errors: [
         error instanceof Error ? error.message : 'Failed to update password',
