@@ -4,7 +4,7 @@ import {
   useUpdateTranscriptionConfiguration,
 } from '../../../../api/queries/settings/useTranscriptionQueries'
 import Select from '../../../common/Select'
-import SubSectionTitle from '../SubSectionTitle'
+import SubSectionTitle from '../ui/SubSectionTitle'
 
 export default function TranscriptionView() {
   const { data: options, isLoading: optionsLoading } = useGetTranscriptionOptions()

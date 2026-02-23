@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { useDeleteApiKey } from '../../../../api/queries/settings/useProvidersQueries'
 import { HttpError } from '../../../../api/utils/fetchBackend'
-import ErrorMessage from '../ErrorMessage'
+import ErrorMessage from '../ui/ErrorMessage'
 import ApiKeyForm from './ApiKeyForm'
 
 interface ApiKeySectionProps {

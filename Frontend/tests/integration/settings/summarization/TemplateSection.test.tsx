@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 import TemplateSection from '../../../../src/components/settings/sections/summarization/TemplateSection'
 import { server } from '../../../mocks/server'
 import { withAuth } from '../../../mocks/withAuth'
-import { renderWithRouter, setAuthToken, setupStoreReset } from '../../utils'
+import { renderWithRouter, setAuthToken, setupStoreReset } from '../../../utils'
 
 setupStoreReset()
 

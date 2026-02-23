@@ -10,12 +10,21 @@ import SummarizationView from './sections/summarization/SummarizationView'
 import TranscriptionView from './sections/transcription/TranscriptionView'
 import SettingsSidebar from './SettingsSidebar'
 
+const SECTION_VIEWS: Record<Section, React.ComponentType> = {
+  [Section.General]: GeneralView,
+  [Section.Provider]: ProvidersView,
+  [Section.Transcription]: TranscriptionView,
+  [Section.Summarization]: SummarizationView,
+  [Section.Account]: AccountView,
+}
+
 interface SettingsDialogProps {
   dialogRef: React.Ref<DialogHandler>
 }
 
 export default function SettingsDialog({ dialogRef }: SettingsDialogProps) {
   const [section, setSection] = useState<Section>(Section.General)
+  const ActiveView = SECTION_VIEWS[section]
 
   return (
     <Dialog dialogRef={dialogRef}>
@@ -26,11 +35,7 @@ export default function SettingsDialog({ dialogRef }: SettingsDialogProps) {
             <SectionHeader section={section} />
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
-            {section === Section.General && <GeneralView />}
-            {section === Section.Provider && <ProvidersView />}
-            {section === Section.Transcription && <TranscriptionView />}
-            {section === Section.Summarization && <SummarizationView />}
-            {section === Section.Account && <AccountView />}
+            <ActiveView />
           </div>
         </div>
       </div>

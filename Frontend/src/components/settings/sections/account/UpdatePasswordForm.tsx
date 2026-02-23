@@ -2,9 +2,9 @@ import { useActionState } from 'react'
 
 import { useUpdatePassword } from '../../../../api/queries/auth/useAuthQueries'
 import Input from '../../../common/Input'
-import CancelButton from '../CancelButton'
-import ConfirmButton from '../ConfirmButton'
-import ErrorMessage from '../ErrorMessage'
+import CancelButton from '../ui/CancelButton'
+import ConfirmButton from '../ui/ConfirmButton'
+import ErrorMessage from '../ui/ErrorMessage'
 
 interface FormState {
   errors: null | string[]

@@ -8,10 +8,10 @@ import {
 import { type ModelConfig } from '../../../../types/settings/models'
 import Input from '../../../common/Input'
 import Select from '../../../common/Select'
-import CancelButton from '../CancelButton'
-import ConfirmButton from '../ConfirmButton'
-import ErrorMessage from '../ErrorMessage'
-import SubSectionTitle from '../SubSectionTitle'
+import CancelButton from '../ui/CancelButton'
+import ConfirmButton from '../ui/ConfirmButton'
+import ErrorMessage from '../ui/ErrorMessage'
+import SubSectionTitle from '../ui/SubSectionTitle'
 
 export default function ModelSection() {
   const { data: availableModels, isLoading: modelsLoading } =
