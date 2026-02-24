@@ -35,3 +35,6 @@ class Settings(BaseSettings):
     @property
     def mongo_url(self) -> str:
         return f"mongodb://{self.mongo_user}:{self.mongo_password}@{self.mongo_host}:{self.mongo_port}"
+
+
+settings = Settings()

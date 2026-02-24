@@ -48,7 +48,7 @@ async def create_conversation(
 
 
 @router.post(
-    "/conversations/{id}/chat",
+    "/{id}/chat",
     status_code=status.HTTP_200_OK,
     summary="Send a message to the chatbot and get a response",
     tags=["Conversations"],

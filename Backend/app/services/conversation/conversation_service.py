@@ -22,10 +22,8 @@ class ConversationService(metaclass=SingletonMeta):
     async def create_conversation(
         self, conversation_create_request: ConversationCreateRequest, username: str
     ) -> ConversationCreateResponse:
-        model_instructions = ""
-
         created_conversation = self._repository.store_conversation(
-            "New chat", username, [model_instructions]
+            "New chat", username, []
         )
 
         asyncio.create_task(
@@ -76,8 +74,7 @@ class ConversationService(metaclass=SingletonMeta):
         return self._repository.retrieve_all_conversations_metadata(username)
 
     def retrieve_dialogue(self, id: str, username: str) -> ConversationDialogueRetrieve:
-        dialogue = self._repository.fetch_conversation(id, username)
-        return ConversationDialogueRetrieve(messages=dialogue)
+        return self._repository.fetch_conversation(id, username)
 
     def _filter_displayable_messages(
         self, messages: list[dict]
