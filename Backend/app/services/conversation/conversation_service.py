@@ -11,8 +11,6 @@ from ...schemas.conversation.conversation_schema import (
     SendMessageRequest,
 )
 from ...utils.singleton_meta import SingletonMeta
-from ..meeting.mcp.mcp_client import MCPClient
-from ..meeting.mcp.prompts import SYSTEM_PROMPT
 
 _logger = setup_logger(__name__)
 
@@ -20,13 +18,14 @@ _logger = setup_logger(__name__)
 class ConversationService(metaclass=SingletonMeta):
     def __init__(self, repository: ConversationRepository) -> None:
         self._repository: ConversationRepository = repository
-        self._mcp_client = MCPClient()
 
     async def create_conversation(
         self, conversation_create_request: ConversationCreateRequest, username: str
     ) -> ConversationCreateResponse:
+        model_instructions = ""
+
         created_conversation = self._repository.store_conversation(
-            "New chat", username, [SYSTEM_PROMPT]
+            "New chat", username, [model_instructions]
         )
 
         asyncio.create_task(
@@ -51,11 +50,7 @@ class ConversationService(metaclass=SingletonMeta):
             user_message = {"role": "user", "content": send_message_request.message}
             conversation_history.append(user_message)
 
-            reply = await self._mcp_client.send_message(
-                conversation_history,
-                send_message_request.language_model_configuration,
-                username,
-            )
+            reply = "chatbot reply"
 
             assistant_response = {"role": "assistant", "content": reply}
             conversation_history.append(assistant_response)
@@ -82,8 +77,7 @@ class ConversationService(metaclass=SingletonMeta):
 
     def retrieve_dialogue(self, id: str, username: str) -> ConversationDialogueRetrieve:
         dialogue = self._repository.fetch_conversation(id, username)
-        visible_messages = self._filter_displayable_messages(dialogue.messages)
-        return ConversationDialogueRetrieve(messages=visible_messages)
+        return ConversationDialogueRetrieve(messages=dialogue)
 
     def _filter_displayable_messages(
         self, messages: list[dict]

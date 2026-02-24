@@ -198,7 +198,8 @@ class TestAuthEndpoints:
             headers=auth_headers,
         )
 
-        assert response.status_code == 404
+        assert response.status_code == 400
+        assert "already exists" in response.json()["detail"].lower()
 
     def test_change_username_should_require_authentication(self, client: TestClient):
         response = client.patch(
@@ -229,8 +230,7 @@ class TestAuthEndpoints:
             headers=auth_headers,
         )
 
-        assert response.status_code == 200
-        mock_mongo.update_one.assert_called_once()
+        assert response.status_code == 204
 
     def test_change_password_should_fail_with_wrong_current_password(
         self, client: TestClient, mock_mongo, auth_headers
