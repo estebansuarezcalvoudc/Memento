@@ -22,7 +22,7 @@ def get_auth_service() -> AuthService:
 
 
 def get_conversation_service() -> ConversationService:
-    return ConversationService(ConversationMongoRepository())
+    return ConversationService(ConversationMongoRepository(), SettingsMongoRepository())
 
 
 def get_meeting_service() -> MeetingService:

@@ -54,6 +54,14 @@ services:
     image: ollama/ollama
     ports:
       - 8001:${OLLAMA_PORT}
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     networks:
       - back_net
     restart: unless-stopped

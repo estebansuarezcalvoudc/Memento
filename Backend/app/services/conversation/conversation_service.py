@@ -1,6 +1,8 @@
 import asyncio
+from datetime import datetime
 
 import chromadb
+import dateparser.search
 from chromadb.errors import NotFoundError as ChromaNotFoundError
 from langchain_chroma import Chroma
 from langchain_ollama import OllamaEmbeddings, ChatOllama
@@ -15,8 +17,8 @@ from langchain_openai import ChatOpenAI
 from ...core.encryption import decrypt_api_key
 from ...core.logging import setup_logger
 from ...core.settings import settings
-from ...repositories.implementations.mongo.settings_repo import SettingsMongoRepository
 from ...repositories.interfaces.conversation_repo import ConversationRepository
+from ...repositories.interfaces.settings_repo import SettingsRepository
 from ...schemas.conversation.conversation_schema import (
     ConversationCreateRequest,
     ConversationCreateResponse,
@@ -37,6 +39,8 @@ _CONTEXTUALIZE_PROMPT = ChatPromptTemplate.from_messages(
             (
                 "Given the conversation history and the latest user question, "
                 "reformulate it as a standalone question that can be understood without the history. "
+                "If the question contains relative time references (e.g. 'today', 'yesterday', 'this week'), "
+                "resolve them to exact dates using the current date: {current_date}. "
                 "Do NOT answer it, just reformulate it if needed, otherwise return it as is."
             ),
         ),
@@ -52,6 +56,8 @@ _QA_PROMPT = ChatPromptTemplate.from_messages(
             (
                 "You are a helpful assistant with access to the user's meeting notes. "
                 "Use the retrieved meeting context below to answer the question. "
+                "When the context contains relevant information, present it directly and completely without asking for confirmation. "
+                "If the context contains no meetings matching what the user asked, say so clearly. "
                 "If the context is not relevant, answer based on your general knowledge.\n\n"
                 "Context:\n{context}"
             ),
@@ -63,12 +69,23 @@ _QA_PROMPT = ChatPromptTemplate.from_messages(
 
 
 def _format_docs(docs: list[Document]) -> str:
-    return "\n\n".join(doc.page_content for doc in docs)
+    parts = []
+    for doc in docs:
+        meta = doc.metadata
+        header_parts = []
+        if title := meta.get("title"):
+            header_parts.append(f"Title: {title}")
+        if date := meta.get("date"):
+            header_parts.append(f"Date: {date}")
+        header = "\n".join(header_parts)
+        parts.append(f"{header}\n{doc.page_content}" if header else doc.page_content)
+    return "\n\n".join(parts)
 
 
 class ConversationService(metaclass=SingletonMeta):
-    def __init__(self, repository: ConversationRepository) -> None:
+    def __init__(self, repository: ConversationRepository, settings_repository: SettingsRepository) -> None:
         self._repository: ConversationRepository = repository
+        self._settings_repository: SettingsRepository = settings_repository
         self._embeddings = OllamaEmbeddings(
             base_url=settings.ollama_url,
             model=settings.rag_embedding_model,
@@ -91,9 +108,25 @@ class ConversationService(metaclass=SingletonMeta):
             self._vector_store = self._create_vector_store()
         return self._vector_store
 
+    def _resolve_chat_model(self, username: str) -> LanguageModelConfiguration:
+        """Load chat model from user settings, falling back to defaults."""
+        model_settings = self._settings_repository.get_model_settings(username)
+        if model_settings and (chat_model := model_settings.get("chat_model")):
+            return LanguageModelConfiguration(
+                provider=chat_model["provider"],
+                model=chat_model["model_name"],
+                options={
+                    "temperature": chat_model.get("temperature", 0.2),
+                    "max_tokens": chat_model.get("max_tokens", 2000),
+                },
+            )
+        return LanguageModelConfiguration()
+
     def _build_llm(
         self, llm_config: LanguageModelConfiguration, username: str
     ) -> BaseChatModel:
+        _logger.info(f"Creating model {llm_config.model}")
+
         options = llm_config.options.copy()
         temperature = options.pop("temperature")
         max_tokens = options.pop("max_tokens")
@@ -106,8 +139,7 @@ class ConversationService(metaclass=SingletonMeta):
                 num_predict=max_tokens,
             )
 
-        settings_repo = SettingsMongoRepository()
-        provider_settings = settings_repo.get_provider_settings(username, "OpenAI")
+        provider_settings = self._settings_repository.get_provider_settings(username, "OpenAI")
         if not provider_settings or not provider_settings.api_key_encrypted:
             raise RuntimeError(f"OpenAI API key not configured for user {username}")
         api_key = decrypt_api_key(provider_settings.api_key_encrypted)
@@ -121,21 +153,48 @@ class ConversationService(metaclass=SingletonMeta):
 
     def _build_rag_chain(self, llm_config: LanguageModelConfiguration, username: str):
         llm = self._build_llm(llm_config, username)
-        retriever = self._get_vector_store().as_retriever(
-            search_kwargs={"filter": {"username": username}, "k": 5}
-        )
 
         contextualize_chain = _CONTEXTUALIZE_PROMPT | llm | StrOutputParser()
 
-        def contextualize_if_needed(input: dict) -> str:
+        def contextualize_if_needed(input: dict) -> dict:
+            current_date = input.get("current_date", "")
             if input.get("chat_history"):
-                return contextualize_chain.invoke(input)
-            return input["input"]
+                query = contextualize_chain.invoke(input)
+            elif current_date:
+                query = contextualize_chain.invoke({**input, "chat_history": []})
+            else:
+                query = input["input"]
+            _logger.debug(f"RAG query: {query}")
+            return {"query": query, "current_date": current_date}
+
+        def retrieve_with_date_filter(input: dict) -> list[Document]:
+            query = input["query"]
+            current_date_str = input.get("current_date", "")
+
+            relative_base = (
+                datetime.strptime(current_date_str, "%Y-%m-%d")
+                if current_date_str
+                else None
+            )
+            dateparser_settings = {"PREFER_DAY_OF_MONTH": "first"}
+            if relative_base:
+                dateparser_settings["RELATIVE_BASE"] = relative_base
+
+            chroma_filter: dict
+            matches = dateparser.search.search_dates(query, settings=dateparser_settings)
+            if matches:
+                date_str = matches[0][1].strftime("%Y-%m-%d")
+                _logger.debug(f"Date filter applied: {date_str}")
+                chroma_filter = {"$and": [{"username": {"$eq": username}}, {"date": {"$eq": date_str}}]}
+            else:
+                chroma_filter = {"username": {"$eq": username}}
+
+            return self._get_vector_store().similarity_search(query, k=5, filter=chroma_filter)
 
         return (
             RunnablePassthrough.assign(
                 context=RunnableLambda(contextualize_if_needed)
-                | retriever
+                | RunnableLambda(retrieve_with_date_filter)
                 | _format_docs
             )
             | _QA_PROMPT
@@ -182,13 +241,13 @@ class ConversationService(metaclass=SingletonMeta):
                 if m.get("role") in ("user", "assistant") and m.get("content")
             ]
 
-            rag_chain = self._build_rag_chain(
-                send_message_request.language_model_configuration, username
-            )
+            llm_config = self._resolve_chat_model(username)
+            rag_chain = self._build_rag_chain(llm_config, username)
             reply = await rag_chain.ainvoke(
                 {
                     "input": send_message_request.message,
                     "chat_history": chat_history,
+                    "current_date": send_message_request.current_datetime.strftime("%Y-%m-%d"),
                 }
             )
 

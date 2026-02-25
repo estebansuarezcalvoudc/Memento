@@ -21,6 +21,9 @@ class SendMessageRequest(BaseModel):
         default_factory=LanguageModelConfiguration,
         description="Configuration for the language model and provider",
     )
+    current_datetime: datetime = Field(
+        description="Current date and time of the user (with timezone offset). Used for resolving relative time references like 'today'.",
+    )
 
 
 ConversationCreateRequest = SendMessageRequest
