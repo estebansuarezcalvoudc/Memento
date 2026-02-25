@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     mongo_password: str
     mongo_port: int
 
+    chroma_host: str
+    chroma_port: int
+    rag_embedding_model: str
+    rag_collection_name: str
+
     @property
     def ollama_url(self) -> str:
         return f"http://{self.ollama_host}:{self.ollama_port}"

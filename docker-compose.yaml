@@ -23,6 +23,7 @@ services:
     depends_on:
       - ollama
       - mongo_db
+      - chromadb
     deploy:
       resources:
         reservations:
@@ -37,6 +38,16 @@ services:
     networks:
       - back_net
       - front_net
+    restart: unless-stopped
+
+  chromadb:
+    image: chromadb/chroma
+    ports:
+      - "8002:8000"
+    volumes:
+      - chroma_data:/data
+    networks:
+      - back_net
     restart: unless-stopped
 
   ollama:
@@ -62,6 +73,7 @@ services:
 
 volumes:
   mongodb_data:
+  chroma_data:
 
 networks:
   back_net:
