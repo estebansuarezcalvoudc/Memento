@@ -54,6 +54,8 @@ services:
     image: ollama/ollama
     ports:
       - 8001:${OLLAMA_PORT}
+    volumes:
+      - ollama_data:/root/.ollama
     runtime: nvidia
     deploy:
       resources:
@@ -82,6 +84,7 @@ services:
 volumes:
   mongodb_data:
   chroma_data:
+  ollama_data:
 
 networks:
   back_net:
