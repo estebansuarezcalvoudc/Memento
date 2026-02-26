@@ -19,7 +19,7 @@ from ...utils.singleton_meta import SingletonMeta
 _logger = setup_logger(__name__)
 
 
-class RagService(metaclass=SingletonMeta):
+class Rag(metaclass=SingletonMeta):
     def __init__(
         self,
         settings_repository: SettingsRepository,
@@ -132,7 +132,7 @@ class RagService(metaclass=SingletonMeta):
             RunnablePassthrough.assign(
                 context=RunnableLambda(contextualize_if_needed)
                 | RunnableLambda(retrieve_with_date_filter)
-                | RagService._format_docs
+                | Rag._format_docs
             )
             | QA_PROMPT
             | llm

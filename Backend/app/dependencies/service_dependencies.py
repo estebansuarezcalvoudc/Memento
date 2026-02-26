@@ -15,7 +15,7 @@ from ..repositories.implementations.mongo.meeting_mongo_repo import (
 from ..repositories.implementations.mongo.settings_repo import SettingsMongoRepository
 from ..services.auth.auth_service import AuthService
 from ..services.conversation.conversation_service import ConversationService
-from ..services.conversation.rag_service import RagService
+from ..services.conversation.rag import Rag
 from ..services.meeting.meeting_service import MeetingService
 from ..services.settings.models_service import ModelsService
 from ..services.settings.providers_service import ProvidersService
@@ -63,8 +63,8 @@ def get_auth_service() -> AuthService:
     return AuthService(AuthMongoRepository())
 
 
-def get_rag_service() -> RagService:
-    return RagService(SettingsMongoRepository(), get_vector_store())
+def get_rag_service() -> Rag:
+    return Rag(SettingsMongoRepository(), get_vector_store())
 
 
 def get_conversation_service() -> ConversationService:

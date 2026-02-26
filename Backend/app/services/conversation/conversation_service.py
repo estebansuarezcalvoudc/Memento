@@ -10,7 +10,7 @@ from ...schemas.conversation.conversation_schema import (
     ConversationUpdateRequest,
     SendMessageRequest,
 )
-from .rag_service import RagService
+from .rag import Rag
 
 _logger = setup_logger(__name__)
 
@@ -19,10 +19,10 @@ class ConversationService:
     def __init__(
         self,
         repository: ConversationRepository,
-        rag_service: RagService,
+        rag_service: Rag,
     ) -> None:
         self._repository: ConversationRepository = repository
-        self._rag_service: RagService = rag_service
+        self._rag_service: Rag = rag_service
 
     async def create_conversation(
         self, conversation_create_request: ConversationCreateRequest, username: str
