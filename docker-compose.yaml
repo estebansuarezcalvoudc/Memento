@@ -23,7 +23,7 @@ services:
     depends_on:
       - ollama
       - mongo_db
-      - elastic_search
+      - chromadb
     deploy:
       resources:
         reservations:
@@ -40,10 +40,30 @@ services:
       - front_net
     restart: unless-stopped
 
+  chromadb:
+    image: chromadb/chroma
+    ports:
+      - "8002:8000"
+    volumes:
+      - chroma_data:/data
+    networks:
+      - back_net
+    restart: unless-stopped
+
   ollama:
     image: ollama/ollama
     ports:
       - 8001:${OLLAMA_PORT}
+    volumes:
+      - ollama_data:/root/.ollama
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     networks:
       - back_net
     restart: unless-stopped
@@ -61,25 +81,10 @@ services:
       - back_net
     restart: unless-stopped
 
-  elastic_search:
-    image: elasticsearch:9.1.2
-    ports:
-      - 9200:${ELASTIC_SEARCH_PORT}
-    volumes:
-      - elastic_search_data:/usr/share/elasticsearch/data
-    environment:
-      - discovery.type=single-node
-      - ELASTIC_PASSWORD=${ELASTIC_SEARCH_PASSWORD}
-      - xpack.security.enabled=true
-      - xpack.security.http.ssl.enabled=false
-      - xpack.security.transport.ssl.enabled=false
-    networks:
-      - back_net
-    restart: unless-stopped
-
 volumes:
   mongodb_data:
-  elastic_search_data:
+  chroma_data:
+  ollama_data:
 
 networks:
   back_net:

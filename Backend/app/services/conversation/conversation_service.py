@@ -10,23 +10,25 @@ from ...schemas.conversation.conversation_schema import (
     ConversationUpdateRequest,
     SendMessageRequest,
 )
-from ...utils.singleton_meta import SingletonMeta
-from ..meeting.mcp.mcp_client import MCPClient
-from ..meeting.mcp.prompts import SYSTEM_PROMPT
+from .rag import Rag
 
 _logger = setup_logger(__name__)
 
 
-class ConversationService(metaclass=SingletonMeta):
-    def __init__(self, repository: ConversationRepository) -> None:
+class ConversationService:
+    def __init__(
+        self,
+        repository: ConversationRepository,
+        rag_service: Rag,
+    ) -> None:
         self._repository: ConversationRepository = repository
-        self._mcp_client = MCPClient()
+        self._rag_service: Rag = rag_service
 
     async def create_conversation(
         self, conversation_create_request: ConversationCreateRequest, username: str
     ) -> ConversationCreateResponse:
         created_conversation = self._repository.store_conversation(
-            "New chat", username, [SYSTEM_PROMPT]
+            "New chat", username, []
         )
 
         asyncio.create_task(
@@ -51,10 +53,11 @@ class ConversationService(metaclass=SingletonMeta):
             user_message = {"role": "user", "content": send_message_request.message}
             conversation_history.append(user_message)
 
-            reply = await self._mcp_client.send_message(
-                conversation_history,
-                send_message_request.language_model_configuration,
-                username,
+            reply = await self._rag_service.get_reply(
+                message=send_message_request.message,
+                conversation_history=conversation_history[:-1],
+                current_date=send_message_request.current_datetime.strftime("%Y-%m-%d"),
+                username=username,
             )
 
             assistant_response = {"role": "assistant", "content": reply}
@@ -81,29 +84,7 @@ class ConversationService(metaclass=SingletonMeta):
         return self._repository.retrieve_all_conversations_metadata(username)
 
     def retrieve_dialogue(self, id: str, username: str) -> ConversationDialogueRetrieve:
-        dialogue = self._repository.fetch_conversation(id, username)
-        visible_messages = self._filter_displayable_messages(dialogue.messages)
-        return ConversationDialogueRetrieve(messages=visible_messages)
-
-    def _filter_displayable_messages(
-        self, messages: list[dict]
-    ) -> list[dict[str, str]]:
-        visible_messages = []
-
-        for message in messages:
-            role = message.get("role")
-
-            if role == "user":
-                visible_messages.append(
-                    {"role": role, "content": message.get("content", "")}
-                )
-            elif role == "assistant" and "tool_calls" not in message:
-                if message.get("content"):  # Solo si tiene contenido
-                    visible_messages.append(
-                        {"role": role, "content": message.get("content", "")}
-                    )
-
-        return visible_messages
+        return self._repository.fetch_conversation(id, username)
 
     def update_conversation_metadata(
         self, id: str, metadata: ConversationUpdateRequest, username: str

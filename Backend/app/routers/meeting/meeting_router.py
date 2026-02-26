@@ -129,7 +129,7 @@ async def retrieve_all_meetings_metadata(
 
 
 @router.get(
-    "/meetings/summary/{id}",
+    "/summary/{id}",
     status_code=status.HTTP_200_OK,
     summary="Retrieve the summary of a meeting",
 )
@@ -152,7 +152,7 @@ async def retrieve_meeting_summary(
 
 
 @router.get(
-    "/meetings/transcription/{id}",
+    "/transcription/{id}",
     status_code=status.HTTP_200_OK,
     summary="Retrieve the transcription of a meeting",
 )

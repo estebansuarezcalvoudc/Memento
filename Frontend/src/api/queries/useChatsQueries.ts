@@ -24,7 +24,11 @@ export function useGetChatMessages(id: string | undefined) {
 export function useCreateChat() {
   const queryClient = useQueryClient()
   return useMutation<Chat, Error, string>({
-    mutationFn: message => fetchBackend('POST', 'conversations', { message }),
+    mutationFn: message =>
+      fetchBackend('POST', 'conversations', {
+        message,
+        current_datetime: new Date().toISOString(),
+      }),
     onSuccess: newChat => {
       queryClient.setQueryData<Chat[]>(CHATS_KEY, old =>
         old ? [newChat, ...old] : [newChat],
@@ -37,13 +41,20 @@ export function useSendMessage(chatId: string) {
   const queryClient = useQueryClient()
   return useMutation<string, Error, string>({
     mutationFn: message =>
-      fetchBackend('POST', `conversations/${chatId}/chat`, { message }),
+      fetchBackend('POST', `conversations/${chatId}/chat`, {
+        message,
+        current_datetime: new Date().toISOString(),
+      }),
     onMutate: async message => {
       await queryClient.cancelQueries({ queryKey: chatKey(chatId) })
       const previous = queryClient.getQueryData<Message[]>(chatKey(chatId))
       queryClient.setQueryData<Message[]>(chatKey(chatId), old => [
         ...(old ?? []),
-        { role: 'user', content: message },
+        {
+          role: 'user',
+          content: message,
+          current_datetime: new Date().toISOString(),
+        },
       ])
       return { previous }
     },

@@ -24,7 +24,7 @@ def _mongo_side_effect(meeting_data):
 
 class TestRetrieveAllMeetingsEndpoint:
     def test_retrieve_all_meetings_should_return_list_of_user_meetings(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
         mock_mongo.find.return_value = [
             {
@@ -46,7 +46,7 @@ class TestRetrieveAllMeetingsEndpoint:
         mock_mongo.find.assert_called_once()
 
     def test_retrieve_all_meetings_should_return_empty_list_when_user_has_no_meetings(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
         mock_mongo.find.return_value = []
 
@@ -65,7 +65,7 @@ class TestRetrieveAllMeetingsEndpoint:
 
 class TestRetrieveMeetingSummaryEndpoint:
     def test_retrieve_summary_should_return_summary_of_existing_meeting(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
         mock_mongo.find_one.side_effect = _mongo_side_effect(
             meeting_data={
@@ -76,7 +76,7 @@ class TestRetrieveMeetingSummaryEndpoint:
         )
 
         response = client.get(
-            f"/meetings/meetings/summary/{VALID_MEETING_ID}", headers=auth_headers
+            f"/meetings/summary/{VALID_MEETING_ID}", headers=auth_headers
         )
 
         assert response.status_code == 200
@@ -85,35 +85,33 @@ class TestRetrieveMeetingSummaryEndpoint:
         assert data["title"] == "Q1 Planning"
 
     def test_retrieve_summary_should_return_404_when_meeting_does_not_exist(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
         mock_mongo.find_one.side_effect = _mongo_side_effect(meeting_data=None)
 
         response = client.get(
-            f"/meetings/meetings/summary/{VALID_MEETING_ID}", headers=auth_headers
+            f"/meetings/summary/{VALID_MEETING_ID}", headers=auth_headers
         )
 
         assert response.status_code == 404
         assert "not found" in response.json()["detail"].lower()
 
     def test_retrieve_summary_should_return_422_for_invalid_meeting_id_format(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
-        response = client.get(
-            "/meetings/meetings/summary/not-a-valid-id", headers=auth_headers
-        )
+        response = client.get("/meetings/summary/not-a-valid-id", headers=auth_headers)
 
         assert response.status_code == 422
 
     def test_retrieve_summary_should_require_authentication(self, client: TestClient):
-        response = client.get(f"/meetings/meetings/summary/{VALID_MEETING_ID}")
+        response = client.get(f"/meetings/summary/{VALID_MEETING_ID}")
 
         assert response.status_code == 401
 
 
 class TestRetrieveMeetingTranscriptionEndpoint:
     def test_retrieve_transcription_should_return_transcription_of_existing_meeting(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
         mock_mongo.find_one.side_effect = _mongo_side_effect(
             meeting_data={
@@ -124,7 +122,7 @@ class TestRetrieveMeetingTranscriptionEndpoint:
         )
 
         response = client.get(
-            f"/meetings/meetings/transcription/{VALID_MEETING_ID}", headers=auth_headers
+            f"/meetings/transcription/{VALID_MEETING_ID}", headers=auth_headers
         )
 
         assert response.status_code == 200
@@ -133,22 +131,22 @@ class TestRetrieveMeetingTranscriptionEndpoint:
         assert data["title"] == "Q1 Planning"
 
     def test_retrieve_transcription_should_return_404_when_meeting_does_not_exist(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
         mock_mongo.find_one.side_effect = _mongo_side_effect(meeting_data=None)
 
         response = client.get(
-            f"/meetings/meetings/transcription/{VALID_MEETING_ID}", headers=auth_headers
+            f"/meetings/transcription/{VALID_MEETING_ID}", headers=auth_headers
         )
 
         assert response.status_code == 404
         assert "not found" in response.json()["detail"].lower()
 
     def test_retrieve_transcription_should_return_422_for_invalid_meeting_id_format(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
         response = client.get(
-            "/meetings/meetings/transcription/not-a-valid-id", headers=auth_headers
+            "/meetings/transcription/not-a-valid-id", headers=auth_headers
         )
 
         assert response.status_code == 422
@@ -156,6 +154,6 @@ class TestRetrieveMeetingTranscriptionEndpoint:
     def test_retrieve_transcription_should_require_authentication(
         self, client: TestClient
     ):
-        response = client.get(f"/meetings/meetings/transcription/{VALID_MEETING_ID}")
+        response = client.get(f"/meetings/transcription/{VALID_MEETING_ID}")
 
         assert response.status_code == 401

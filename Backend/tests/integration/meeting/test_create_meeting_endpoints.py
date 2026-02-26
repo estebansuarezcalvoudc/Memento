@@ -7,7 +7,9 @@ from fastapi.testclient import TestClient
 
 VALID_MEETING_ID = "507f1f77bcf86cd799439011"
 
-from app.services.transcription.interfaces.transcription_service import TranscriptionResult
+from app.services.transcription.interfaces.transcription_service import (
+    TranscriptionResult,
+)
 
 _PATCH_TRANSCRIBE = "app.services.transcription.implementations.whisperx.whisperx_transcription_service.WhisperXTranscriptionService.transcribe"
 _PATCH_SUMMARIZE = "app.services.meeting.meeting_service.get_meeting_summary"
@@ -31,7 +33,7 @@ def _meetings_data(
 
 class TestCreateMeetingsEndpoint:
     def test_create_meetings_should_process_audio_and_return_201(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
         mock_mongo.insert_one.return_value.inserted_id = ObjectId(VALID_MEETING_ID)
 
@@ -39,7 +41,9 @@ class TestCreateMeetingsEndpoint:
             patch(_PATCH_TRANSCRIBE) as mock_transcribe,
             patch(_PATCH_SUMMARIZE) as mock_summarize,
         ):
-            mock_transcribe.return_value = TranscriptionResult(text="Speaker 1: Hello.", language="en")
+            mock_transcribe.return_value = TranscriptionResult(
+                text="Speaker 1: Hello.", language="en"
+            )
             mock_summarize.return_value = "The team discussed Q1 goals."
 
             response = client.post(
@@ -51,7 +55,7 @@ class TestCreateMeetingsEndpoint:
 
         assert response.status_code == 201
         mock_mongo.insert_one.assert_called_once()
-        mock_elasticsearch.index.assert_called_once()
+        mock_vector_store.add_documents.assert_called_once()
 
     def test_create_meetings_should_require_authentication(self, client: TestClient):
         response = client.post(
@@ -63,7 +67,7 @@ class TestCreateMeetingsEndpoint:
         assert response.status_code == 401
 
     def test_create_meetings_should_reject_unsupported_audio_format(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
         response = client.post(
             "/meetings",
@@ -76,7 +80,7 @@ class TestCreateMeetingsEndpoint:
         assert "unsupported audio format" in response.json()["detail"].lower()
 
     def test_create_meetings_should_reject_non_audio_content_type(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
         response = client.post(
             "/meetings",
@@ -89,7 +93,7 @@ class TestCreateMeetingsEndpoint:
         assert "not an audio file" in response.json()["detail"].lower()
 
     def test_create_meetings_should_reject_invalid_meetings_data_json(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
         response = client.post(
             "/meetings",
@@ -102,7 +106,7 @@ class TestCreateMeetingsEndpoint:
         assert "invalid json format" in response.json()["detail"].lower()
 
     def test_create_meetings_should_fail_when_metadata_count_mismatches_audio_files(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
         # Arrange: two metadata entries but only one audio file
         meetings_data = json.dumps(

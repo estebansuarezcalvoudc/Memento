@@ -1,5 +1,9 @@
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+
+from ....core.language_model_factory import language_model_factory
 from ....core.logging import log_execution_time, setup_logger
-from ....core.openai_factory import create_openai_client
+from ....repositories.implementations.mongo.settings_repo import SettingsMongoRepository
 from ....schemas.meeting.meeting_schema import ProcessingConfiguration
 
 _logger = setup_logger(__name__)
@@ -13,26 +17,26 @@ def get_meeting_summary(
 ) -> str:
     llm_config = processing_config.language_model_configuration
 
-    # Factory handles API key retrieval and model availability
-    openai = create_openai_client(
-        provider=llm_config.provider.value,
-        username=username,
-        ensure_model_available=(
-            llm_config.model if llm_config.provider.value == "Ollama" else None
-        ),
+    settings_repo = SettingsMongoRepository()
+    provider_settings = settings_repo.get_provider_settings(
+        username, llm_config.provider.value
     )
 
-    model_options = llm_config.options or {}
+    if not provider_settings or not provider_settings.api_key_encrypted:
+        raise RuntimeError(
+            f"{llm_config.provider.value} API key not configured for user {username}"
+        )
 
-    response = openai.chat.completions.create(
-        model=llm_config.model,
-        messages=[
-            {"role": "system", "content": processing_config.system_prompt},
-            {"role": "user", "content": diarized_dialogue},
-        ],
-        **model_options,
+    llm = language_model_factory(llm_config, provider_settings.api_key_encrypted)
+
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", processing_config.system_prompt),
+            ("human", "{dialogue}"),
+        ]
     )
 
-    _logger.info(f"Meeting summary created using model {llm_config.model}")
+    result = (prompt | llm | StrOutputParser()).invoke({"dialogue": diarized_dialogue})
 
-    return response.choices[0].message.content or ""
+    _logger.debug(f"Meeting summary created using model {llm_config.model}")
+    return result

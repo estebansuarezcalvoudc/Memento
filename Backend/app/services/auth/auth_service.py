@@ -71,6 +71,8 @@ class AuthService:
 
         try:
             self._repository.update_username(username, new_username)
+        except HTTPException:
+            raise
         except Exception as exc:
             # Handle potential race condition where another user claimed the username
             raise HTTPException(

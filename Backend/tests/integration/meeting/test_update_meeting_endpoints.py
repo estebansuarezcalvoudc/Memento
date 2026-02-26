@@ -23,7 +23,7 @@ def _mongo_side_effect(meeting_data):
 
 class TestUpdateMeetingEndpoint:
     def test_update_meeting_should_persist_changes_and_return_204(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
         mock_mongo.find_one.side_effect = _mongo_side_effect(
             meeting_data={
@@ -41,10 +41,10 @@ class TestUpdateMeetingEndpoint:
 
         assert response.status_code == 204
         mock_mongo.update_one.assert_called_once()
-        mock_elasticsearch.update.assert_called_once()
+        mock_vector_store._collection.update.assert_called_once()
 
     def test_update_meeting_should_allow_updating_only_date(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
         mock_mongo.find_one.side_effect = _mongo_side_effect(
             meeting_data={
@@ -62,9 +62,10 @@ class TestUpdateMeetingEndpoint:
 
         assert response.status_code == 204
         mock_mongo.update_one.assert_called_once()
+        mock_vector_store._collection.update.assert_called_once()
 
     def test_update_meeting_should_return_404_when_meeting_does_not_exist(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
         mock_mongo.find_one.side_effect = _mongo_side_effect(meeting_data=None)
 
@@ -78,7 +79,7 @@ class TestUpdateMeetingEndpoint:
         assert "not found" in response.json()["detail"].lower()
 
     def test_update_meeting_should_return_422_for_invalid_meeting_id_format(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
         response = client.patch(
             "/meetings/not-a-valid-id",

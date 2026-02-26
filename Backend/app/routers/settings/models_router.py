@@ -6,10 +6,7 @@ from ...core.logging import setup_logger
 from ...dependencies.auth_dependencies import get_current_active_user
 from ...dependencies.service_dependencies import get_models_service
 from ...schemas.auth.auth_schema import User
-from ...schemas.settings.model_schema import (
-    AvailableModel,
-    ModelConfig,
-)
+from ...schemas.settings.model_schema import AvailableModel, ModelConfig
 from ...services.settings.models_service import ModelsService
 
 _logger = setup_logger(__name__)

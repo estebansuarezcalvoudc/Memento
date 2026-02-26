@@ -18,8 +18,8 @@ class LanguageModelConfiguration(BaseModel):
         default="gpt-4o-mini",
         description="The specific model to use for generating responses",
     )
-    options: Optional[dict[str, Any]] = Field(
-        default={"temperature": 0.2},
+    options: dict[str, Any] = Field(
+        default={"temperature": 0.2, "max_tokens": 2000},
         description="Options for the language model (e.g., temperature, max_completion_tokens)",
     )
 

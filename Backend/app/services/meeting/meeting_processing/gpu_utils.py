@@ -94,7 +94,10 @@ def _replace_for_cpu_fallback(function, args, kwargs):
     new_kwargs = dict(kwargs)
     if "device" in new_kwargs:
         new_kwargs["device"] = "cpu"
-    if "compute_type" in new_kwargs and new_kwargs["compute_type"] in ("float16", "float32"):
+    if "compute_type" in new_kwargs and new_kwargs["compute_type"] in (
+        "float16",
+        "float32",
+    ):
         new_kwargs["compute_type"] = "int8"
 
     return tuple(new_args), new_kwargs

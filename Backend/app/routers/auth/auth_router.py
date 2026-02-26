@@ -10,9 +10,9 @@ from ...schemas.auth.auth_schema import (
     ChangePasswordRequest,
     ChangeUsernameRequest,
     Token,
+    User,
     UserCreate,
 )
-from ...schemas.auth.auth_schema import User
 from ...services.auth.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])

@@ -26,10 +26,11 @@ os.environ["OPENAI_KEY"] = "sk-test-key"
 os.environ["HF_TOKEN"] = "test-hf-token"
 os.environ["OLLAMA_HOST"] = "localhost"
 os.environ["OLLAMA_PORT"] = "11434"
-os.environ["ELASTIC_SEARCH_HOST"] = "localhost"
-os.environ["ELASTIC_SEARCH_PORT"] = "9200"
-os.environ["ELASTIC_SEARCH_USERNAME"] = "test"
-os.environ["ELASTIC_SEARCH_PASSWORD"] = "test"
+
+os.environ["CHROMA_HOST"] = "localhost"
+os.environ["CHROMA_PORT"] = "8000"
+os.environ["RAG_EMBEDDING_MODEL"] = "nomic-embed-text"
+os.environ["RAG_COLLECTION_NAME"] = "meetings"
 
 from app.main import app
 

@@ -58,31 +58,27 @@ class TestRetrieveAllConversationsEndpoint:
 
 
 class TestRetrieveDialogueEndpoint:
-    def test_retrieve_dialogue_should_return_only_user_and_assistant_messages(
+    def test_retrieve_dialogue_should_return_all_messages(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
+        stored_messages = [
+            {"role": "system", "content": "You are an assistant."},
+            {"role": "user", "content": "Hello"},
+            {"role": "assistant", "content": "Hi! How can I help?"},
+            {
+                "role": "assistant",
+                "content": None,
+                "tool_calls": [{"id": "call_1"}],
+            },
+        ]
         mock_mongo.find_one.side_effect = _mongo_side_effect(
-            conversation_data={
-                "messages": [
-                    {"role": "system", "content": "You are an assistant."},
-                    {"role": "user", "content": "Hello"},
-                    {"role": "assistant", "content": "Hi! How can I help?"},
-                    {
-                        "role": "assistant",
-                        "content": None,
-                        "tool_calls": [{"id": "call_1"}],
-                    },
-                ]
-            }
+            conversation_data={"messages": stored_messages}
         )
 
         response = client.get(f"/conversations/{VALID_CONV_ID}", headers=auth_headers)
 
         assert response.status_code == 200
-        messages = response.json()
-        assert len(messages) == 2
-        assert messages[0] == {"role": "user", "content": "Hello"}
-        assert messages[1] == {"role": "assistant", "content": "Hi! How can I help?"}
+        assert response.json() == stored_messages
 
     def test_retrieve_dialogue_should_return_404_when_conversation_does_not_exist(
         self, client: TestClient, auth_headers: dict, mock_mongo
