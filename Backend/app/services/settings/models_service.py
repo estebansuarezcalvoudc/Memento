@@ -1,10 +1,7 @@
 from ...core.logging import setup_logger
 from ...core.openai_factory import create_openai_client
 from ...repositories.interfaces.settings_repo import SettingsRepository
-from ...schemas.settings.model_schema import (
-    AvailableModel,
-    ModelConfig,
-)
+from ...schemas.settings.model_schema import AvailableModel, ModelConfig
 
 _logger = setup_logger(__name__)
 
@@ -81,7 +78,9 @@ class ModelsService:
         Returns:
             Updated ModelConfig
         """
-        self._repository.update_model_settings(username, {"chat_model": model.model_dump()})
+        self._repository.update_model_settings(
+            username, {"chat_model": model.model_dump()}
+        )
         return model
 
     def update_summary_model(self, username: str, model: ModelConfig) -> ModelConfig:
@@ -95,5 +94,7 @@ class ModelsService:
         Returns:
             Updated ModelConfig
         """
-        self._repository.update_model_settings(username, {"summary_model": model.model_dump()})
+        self._repository.update_model_settings(
+            username, {"summary_model": model.model_dump()}
+        )
         return model

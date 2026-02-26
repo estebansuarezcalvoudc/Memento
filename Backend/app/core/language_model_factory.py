@@ -2,20 +2,20 @@ from langchain_core.language_models import BaseChatModel
 from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI
 
-from app.core import settings
 from app.core.encryption import decrypt_api_key
 from app.core.logging import setup_logger
+from app.core.settings import settings
 from app.schemas.conversation.language_models_schema import LanguageModelConfiguration
 
 _logger = setup_logger(__name__)
 
 
 def language_model_factory(
-    llm_config: LanguageModelConfiguration, api_key: str
+    llm_config: LanguageModelConfiguration, api_key_encrypted: str
 ) -> BaseChatModel:
     _logger.debug(f"Creating model {llm_config.model}")
 
-    api_key = decrypt_api_key(api_key)
+    api_key = decrypt_api_key(api_key_encrypted)
 
     provider = llm_config.provider.value
     options = llm_config.options.copy()

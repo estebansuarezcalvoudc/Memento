@@ -99,9 +99,7 @@ class TestRetrieveMeetingSummaryEndpoint:
     def test_retrieve_summary_should_return_422_for_invalid_meeting_id_format(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
-        response = client.get(
-            "/meetings/summary/not-a-valid-id", headers=auth_headers
-        )
+        response = client.get("/meetings/summary/not-a-valid-id", headers=auth_headers)
 
         assert response.status_code == 422
 

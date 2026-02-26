@@ -86,26 +86,6 @@ class ConversationService:
     def retrieve_dialogue(self, id: str, username: str) -> ConversationDialogueRetrieve:
         return self._repository.fetch_conversation(id, username)
 
-    def _filter_displayable_messages(
-        self, messages: list[dict]
-    ) -> list[dict[str, str]]:
-        visible_messages = []
-
-        for message in messages:
-            role = message.get("role")
-
-            if role == "user":
-                visible_messages.append(
-                    {"role": role, "content": message.get("content", "")}
-                )
-            elif role == "assistant" and "tool_calls" not in message:
-                if message.get("content"):
-                    visible_messages.append(
-                        {"role": role, "content": message.get("content", "")}
-                    )
-
-        return visible_messages
-
     def update_conversation_metadata(
         self, id: str, metadata: ConversationUpdateRequest, username: str
     ):

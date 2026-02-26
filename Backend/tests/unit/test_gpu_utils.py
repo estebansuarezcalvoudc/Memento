@@ -10,7 +10,9 @@ from app.services.meeting.meeting_processing.gpu_utils import (
 )
 
 
-def _sample_transcribe(self_arg, audio, language=None, device="cpu", compute_type="int8", model_size="tiny"):
+def _sample_transcribe(
+    self_arg, audio, language=None, device="cpu", compute_type="int8", model_size="tiny"
+):
     return (device, compute_type)
 
 
@@ -20,21 +22,27 @@ def _sample_transcribe(self_arg, audio, language=None, device="cpu", compute_typ
 
 
 class TestReplaceForCpuFallback:
-    def test_replace_for_cpu_fallback_should_replace_cuda_device_in_positional_args(self):
+    def test_replace_for_cpu_fallback_should_replace_cuda_device_in_positional_args(
+        self,
+    ):
         args = (object(), "audio", None, "cuda", "int8", "tiny")
 
         new_args, _ = _replace_for_cpu_fallback(_sample_transcribe, args, {})
 
         assert new_args[3] == "cpu"
 
-    def test_replace_for_cpu_fallback_should_replace_float16_with_int8_in_positional_args(self):
+    def test_replace_for_cpu_fallback_should_replace_float16_with_int8_in_positional_args(
+        self,
+    ):
         args = (object(), "audio", None, "cuda", "float16", "tiny")
 
         new_args, _ = _replace_for_cpu_fallback(_sample_transcribe, args, {})
 
         assert new_args[4] == "int8"
 
-    def test_replace_for_cpu_fallback_should_replace_float32_with_int8_in_positional_args(self):
+    def test_replace_for_cpu_fallback_should_replace_float32_with_int8_in_positional_args(
+        self,
+    ):
         args = (object(), "audio", None, "cuda", "float32", "tiny")
 
         new_args, _ = _replace_for_cpu_fallback(_sample_transcribe, args, {})
@@ -60,21 +68,27 @@ class TestReplaceForCpuFallback:
     def test_replace_for_cpu_fallback_should_replace_cuda_device_in_kwargs(self):
         kwargs = {"device": "cuda", "compute_type": "int8"}
 
-        _, new_kwargs = _replace_for_cpu_fallback(_sample_transcribe, (object(),), kwargs)
+        _, new_kwargs = _replace_for_cpu_fallback(
+            _sample_transcribe, (object(),), kwargs
+        )
 
         assert new_kwargs["device"] == "cpu"
 
     def test_replace_for_cpu_fallback_should_replace_float16_with_int8_in_kwargs(self):
         kwargs = {"device": "cuda", "compute_type": "float16"}
 
-        _, new_kwargs = _replace_for_cpu_fallback(_sample_transcribe, (object(),), kwargs)
+        _, new_kwargs = _replace_for_cpu_fallback(
+            _sample_transcribe, (object(),), kwargs
+        )
 
         assert new_kwargs["compute_type"] == "int8"
 
     def test_replace_for_cpu_fallback_should_replace_float32_with_int8_in_kwargs(self):
         kwargs = {"device": "cuda", "compute_type": "float32"}
 
-        _, new_kwargs = _replace_for_cpu_fallback(_sample_transcribe, (object(),), kwargs)
+        _, new_kwargs = _replace_for_cpu_fallback(
+            _sample_transcribe, (object(),), kwargs
+        )
 
         assert new_kwargs["compute_type"] == "int8"
 
@@ -151,5 +165,7 @@ class TestTryOnGpu:
         def func(audio, model):
             return audio
 
-        with pytest.raises(ValueError, match="should receive an argument named <device>"):
+        with pytest.raises(
+            ValueError, match="should receive an argument named <device>"
+        ):
             func("audio_data", "tiny")

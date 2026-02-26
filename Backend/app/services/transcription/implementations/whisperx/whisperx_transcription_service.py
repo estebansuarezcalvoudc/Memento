@@ -20,7 +20,10 @@ from .....schemas.settings.whisperx_schema import (
 )
 from .....schemas.transcription.transcription_schema import LanguageOption
 from ....meeting.meeting_processing.gpu_utils import get_device, try_on_gpu
-from ...interfaces.transcription_service import TranscriptionResult, TranscriptionService
+from ...interfaces.transcription_service import (
+    TranscriptionResult,
+    TranscriptionService,
+)
 
 _logger = setup_logger(__name__)
 
@@ -74,7 +77,9 @@ class WhisperXTranscriptionService(TranscriptionService):
         models = list(get_args(WhisperXModel))
         compute_types = list(get_args(ComputeType))
         devices = list(get_args(Device))
-        return WhisperXAvailableOptions(models=models, compute_types=compute_types, devices=devices)
+        return WhisperXAvailableOptions(
+            models=models, compute_types=compute_types, devices=devices
+        )
 
     def get_user_configuration(self, username: str) -> WhisperXConfiguration:
         return self._get_user_config(username)
@@ -85,7 +90,9 @@ class WhisperXTranscriptionService(TranscriptionService):
         try:
             update = WhisperXConfigurationUpdate(**data)
         except ValidationError as e:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=e.errors())
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=e.errors()
+            )
         update_data = update.model_dump(exclude_none=True)
         if update_data:
             self._settings_repo.update_transcription_settings(username, update_data)

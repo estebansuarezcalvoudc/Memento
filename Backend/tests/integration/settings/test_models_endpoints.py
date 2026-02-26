@@ -137,7 +137,9 @@ class TestModelsEndpoints:
         }
 
         assert client.get("/settings/models/chat", headers=auth_headers).json() is None
-        assert client.get("/settings/models/summary", headers=auth_headers).json() is None
+        assert (
+            client.get("/settings/models/summary", headers=auth_headers).json() is None
+        )
 
     def test_update_chat_model_should_save_configuration(
         self, client: TestClient, auth_headers: dict, mock_mongo

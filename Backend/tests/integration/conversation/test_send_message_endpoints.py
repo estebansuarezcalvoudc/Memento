@@ -68,9 +68,7 @@ class TestSendMessageEndpoint:
         assert response.status_code == 422
 
     def test_send_message_should_require_authentication(self, client: TestClient):
-        response = client.post(
-            f"/conversations/{VALID_CONV_ID}/chat", json=_REQUEST
-        )
+        response = client.post(f"/conversations/{VALID_CONV_ID}/chat", json=_REQUEST)
 
         assert response.status_code == 401
 

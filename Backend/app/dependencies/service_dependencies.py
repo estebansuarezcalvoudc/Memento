@@ -1,3 +1,5 @@
+import threading
+
 import chromadb
 from chromadb.errors import NotFoundError as ChromaNotFoundError
 from langchain_chroma import Chroma
@@ -30,10 +32,10 @@ _embeddings = OllamaEmbeddings(
     base_url=settings.ollama_url,
     model=settings.rag_embedding_model,
 )
+
+
 def _get_chroma_client() -> chromadb.HttpClient:
-    return chromadb.HttpClient(
-        host=settings.chroma_host, port=settings.chroma_port
-    )
+    return chromadb.HttpClient(host=settings.chroma_host, port=settings.chroma_port)
 
 
 def _create_chroma_store() -> Chroma:
@@ -45,17 +47,21 @@ def _create_chroma_store() -> Chroma:
 
 
 _chroma_store: Chroma | None = None
+_chroma_store_lock = threading.Lock()
 
 
 def get_vector_store() -> Chroma:
     global _chroma_store
     if _chroma_store is None:
-        _chroma_store = _create_chroma_store()
+        with _chroma_store_lock:
+            if _chroma_store is None:
+                _chroma_store = _create_chroma_store()
     try:
-        _chroma_store._collection.count()
+        _get_chroma_client().get_collection(settings.rag_collection_name)
     except ChromaNotFoundError:
         _logger.warning("ChromaDB collection reference stale, reconnecting...")
-        _chroma_store = _create_chroma_store()
+        with _chroma_store_lock:
+            _chroma_store = _create_chroma_store()
     return _chroma_store
 
 

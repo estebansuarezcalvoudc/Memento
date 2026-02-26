@@ -1,4 +1,4 @@
-from typing import Literal, Optional, get_args
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 

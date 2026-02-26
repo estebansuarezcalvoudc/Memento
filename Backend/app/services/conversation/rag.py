@@ -9,17 +9,16 @@ from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_core.vectorstores import VectorStore
 
 from app.core.language_model_factory import language_model_factory
-from .rag_prompts import CONTEXTUALIZE_PROMPT, QA_PROMPT
 
 from ...core.logging import setup_logger
 from ...repositories.interfaces.settings_repo import SettingsRepository
 from ...schemas.conversation.language_models_schema import LanguageModelConfiguration
-from ...utils.singleton_meta import SingletonMeta
+from .rag_prompts import CONTEXTUALIZE_PROMPT, QA_PROMPT
 
 _logger = setup_logger(__name__)
 
 
-class Rag(metaclass=SingletonMeta):
+class Rag:
     def __init__(
         self,
         settings_repository: SettingsRepository,
@@ -71,7 +70,7 @@ class Rag(metaclass=SingletonMeta):
 
     def _build_rag_chain(self, llm_config: LanguageModelConfiguration, username: str):
         provider_settings = self._settings_repository.get_provider_settings(
-            username, "OpenAI"
+            username, llm_config.provider.value
         )
 
         if not provider_settings or not provider_settings.api_key_encrypted:

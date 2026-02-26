@@ -3,7 +3,9 @@ from typing import ClassVar
 
 from pydantic import BaseModel, Field, field_validator
 
-DEFAULT_PROMPT = (Path(__file__).parent.parent.parent / "assets" / "default_prompt.txt").read_text(encoding="utf-8")
+DEFAULT_PROMPT = (
+    Path(__file__).parent.parent.parent / "assets" / "default_prompt.txt"
+).read_text(encoding="utf-8")
 
 
 class SystemPromptResponse(BaseModel):

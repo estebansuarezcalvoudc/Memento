@@ -70,7 +70,9 @@ class TestWhisperXEndpoints:
             "password": "$2b$12$test_hashed_password",
         }
 
-        response = client.get("/settings/transcription/configuration", headers=auth_headers)
+        response = client.get(
+            "/settings/transcription/configuration", headers=auth_headers
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -93,7 +95,9 @@ class TestWhisperXEndpoints:
             },
         }
 
-        response = client.get("/settings/transcription/configuration", headers=auth_headers)
+        response = client.get(
+            "/settings/transcription/configuration", headers=auth_headers
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -338,4 +342,3 @@ class TestWhisperXEndpoints:
         assert data["compute_type"] == "float16"
 
         mock_mongo.update_one.assert_not_called()
-

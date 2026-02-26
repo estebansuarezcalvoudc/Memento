@@ -14,7 +14,9 @@ from ...schemas.meeting.meeting_schema import (
     ProcessingConfiguration,
     UpdateMeetingMetadata,
 )
-from ...services.transcription.interfaces.transcription_service import TranscriptionService
+from ...services.transcription.interfaces.transcription_service import (
+    TranscriptionService,
+)
 from ...utils.singleton_meta import SingletonMeta
 from .meeting_processing.summarization import get_meeting_summary
 
@@ -24,7 +26,12 @@ _TEXT_SPLITTER = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=2
 
 
 class MeetingService(metaclass=SingletonMeta):
-    def __init__(self, repository: MeetingRepository, transcription_service: TranscriptionService, vector_store: VectorStore) -> None:
+    def __init__(
+        self,
+        repository: MeetingRepository,
+        transcription_service: TranscriptionService,
+        vector_store: VectorStore,
+    ) -> None:
         self._repository: MeetingRepository = repository
         self._transcription_service = transcription_service
         self._vector_store = vector_store
@@ -70,7 +77,9 @@ class MeetingService(metaclass=SingletonMeta):
             meeting_metadata, summary, result.text, username
         )
 
-        self._index_meeting(created_meeting.id, meeting_metadata, summary, result.text, username)
+        self._index_meeting(
+            created_meeting.id, meeting_metadata, summary, result.text, username
+        )
 
         return created_meeting
 
@@ -121,6 +130,28 @@ class MeetingService(metaclass=SingletonMeta):
         self, id: str, meeting_data: UpdateMeetingMetadata, username: str
     ) -> None:
         self._repository.update_meeting_metadata(id, meeting_data, username)
+        self._update_vector_store_metadata(id, meeting_data)
+
+    def _update_vector_store_metadata(
+        self, meeting_id: str, meeting_data: UpdateMeetingMetadata
+    ) -> None:
+        updates = meeting_data.model_dump(exclude_none=True)
+        if not updates:
+            return
+        if "date" in updates:
+            updates["date"] = str(updates["date"])
+
+        result = self._vector_store._collection.get(where={"meeting_id": meeting_id})
+        if not result["ids"]:
+            return
+
+        updated_metadatas = [{**meta, **updates} for meta in result["metadatas"]]
+        self._vector_store._collection.update(
+            ids=result["ids"], metadatas=updated_metadatas
+        )
+        _logger.debug(
+            f"Updated vector store metadata for meeting {meeting_id}: {updates}"
+        )
 
     def delete_meeting(self, meeting_id: str, username: str) -> None:
         self._repository.delete_meeting(meeting_id, username)

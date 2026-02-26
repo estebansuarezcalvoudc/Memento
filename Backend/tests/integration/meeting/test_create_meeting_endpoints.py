@@ -7,7 +7,9 @@ from fastapi.testclient import TestClient
 
 VALID_MEETING_ID = "507f1f77bcf86cd799439011"
 
-from app.services.transcription.interfaces.transcription_service import TranscriptionResult
+from app.services.transcription.interfaces.transcription_service import (
+    TranscriptionResult,
+)
 
 _PATCH_TRANSCRIBE = "app.services.transcription.implementations.whisperx.whisperx_transcription_service.WhisperXTranscriptionService.transcribe"
 _PATCH_SUMMARIZE = "app.services.meeting.meeting_service.get_meeting_summary"
@@ -39,7 +41,9 @@ class TestCreateMeetingsEndpoint:
             patch(_PATCH_TRANSCRIBE) as mock_transcribe,
             patch(_PATCH_SUMMARIZE) as mock_summarize,
         ):
-            mock_transcribe.return_value = TranscriptionResult(text="Speaker 1: Hello.", language="en")
+            mock_transcribe.return_value = TranscriptionResult(
+                text="Speaker 1: Hello.", language="en"
+            )
             mock_summarize.return_value = "The team discussed Q1 goals."
 
             response = client.post(
