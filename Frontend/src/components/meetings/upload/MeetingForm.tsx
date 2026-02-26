@@ -26,7 +26,7 @@ export default function MeetingForm({
   return (
     <div
       key={meeting.id}
-      className="mt-4 rounded-2xl border-2 border-dotted border-stone-400 bg-stone-100 p-3"
+      className="border-b border-stone-200 py-4"
     >
       <div className="flex items-center justify-between gap-4">
         <span className="font-ubuntu text-lg text-stone-700">

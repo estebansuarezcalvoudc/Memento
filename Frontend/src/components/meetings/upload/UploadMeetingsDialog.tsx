@@ -12,18 +12,17 @@ export default function UploadMeetingsDialog({
 }: UploadMeetingsDialogProps) {
   return (
     <Dialog dialogRef={dialogRef}>
-      <div className="absolute inset-0 flex flex-col px-4 pt-5">
-        <div className="mb-1 flex shrink-0 items-center justify-between">
-          <div className="w-8" />
+      <div className="absolute inset-0 flex flex-col pt-5">
+        <div className="shrink-0 px-4">
           <h2
             id="upload-files-dialog-title"
-            className="font-dongle flex-1 text-center text-5xl text-stone-700"
+            className="font-ubuntu text-center text-2xl text-stone-800"
           >
             Upload Files
           </h2>
-          <div className="w-8" />
+          <hr className="mt-4 mb-2 border-t border-stone-500 opacity-100 transition-opacity duration-300" />
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto pl-4 pr-2">
           <UploadMeetingsForm handleCloseDialog={onClose} />
         </div>
       </div>
