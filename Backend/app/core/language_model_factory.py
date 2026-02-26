@@ -2,7 +2,7 @@ from langchain_core.language_models import BaseChatModel
 from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI
 
-from app.core import settings
+from app.core.settings import settings
 from app.core.encryption import decrypt_api_key
 from app.core.logging import setup_logger
 from app.schemas.conversation.language_models_schema import LanguageModelConfiguration

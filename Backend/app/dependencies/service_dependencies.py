@@ -52,7 +52,7 @@ def get_vector_store() -> Chroma:
     if _chroma_store is None:
         _chroma_store = _create_chroma_store()
     try:
-        _chroma_store._collection.count()
+        _get_chroma_client().get_collection(settings.rag_collection_name)
     except ChromaNotFoundError:
         _logger.warning("ChromaDB collection reference stale, reconnecting...")
         _chroma_store = _create_chroma_store()

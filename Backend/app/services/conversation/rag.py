@@ -14,12 +14,11 @@ from .rag_prompts import CONTEXTUALIZE_PROMPT, QA_PROMPT
 from ...core.logging import setup_logger
 from ...repositories.interfaces.settings_repo import SettingsRepository
 from ...schemas.conversation.language_models_schema import LanguageModelConfiguration
-from ...utils.singleton_meta import SingletonMeta
 
 _logger = setup_logger(__name__)
 
 
-class Rag(metaclass=SingletonMeta):
+class Rag:
     def __init__(
         self,
         settings_repository: SettingsRepository,
