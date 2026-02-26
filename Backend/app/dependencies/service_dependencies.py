@@ -30,24 +30,27 @@ _embeddings = OllamaEmbeddings(
     base_url=settings.ollama_url,
     model=settings.rag_embedding_model,
 )
-_chroma_client = chromadb.HttpClient(
-    host=settings.chroma_host, port=settings.chroma_port
-)
+def _get_chroma_client() -> chromadb.HttpClient:
+    return chromadb.HttpClient(
+        host=settings.chroma_host, port=settings.chroma_port
+    )
 
 
 def _create_chroma_store() -> Chroma:
     return Chroma(
-        client=_chroma_client,
+        client=_get_chroma_client(),
         collection_name=settings.rag_collection_name,
         embedding_function=_embeddings,
     )
 
 
-_chroma_store = _create_chroma_store()
+_chroma_store: Chroma | None = None
 
 
 def get_vector_store() -> Chroma:
     global _chroma_store
+    if _chroma_store is None:
+        _chroma_store = _create_chroma_store()
     try:
         _chroma_store._collection.count()
     except ChromaNotFoundError:

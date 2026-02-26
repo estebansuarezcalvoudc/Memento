@@ -118,7 +118,7 @@ async def retrieve_dialogue(
 ) -> Messages:
     try:
         dialogue = conversation_service.retrieve_dialogue(id, current_user.username)
-        return dialogue.messages
+        return conversation_service._filter_displayable_messages(dialogue.messages)
     except HTTPException:
         raise
     except Exception as e:

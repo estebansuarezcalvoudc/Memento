@@ -20,8 +20,8 @@ def _mongo_side_effect(meeting_data):
 
 
 class TestDeleteMeetingEndpoint:
-    def test_delete_meeting_should_remove_from_mongo_and_elasticsearch_and_return_204(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+    def test_delete_meeting_should_remove_from_mongo_and_vector_store_and_return_204(
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
         mock_mongo.find_one.side_effect = _mongo_side_effect(
             meeting_data={"language": "en"}
@@ -31,10 +31,10 @@ class TestDeleteMeetingEndpoint:
 
         assert response.status_code == 204
         mock_mongo.delete_one.assert_called_once()
-        mock_elasticsearch.delete.assert_called_once()
+        mock_vector_store.delete.assert_called_once()
 
     def test_delete_meeting_should_return_404_when_meeting_does_not_exist(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
         mock_mongo.find_one.side_effect = _mongo_side_effect(meeting_data=None)
 
@@ -44,7 +44,7 @@ class TestDeleteMeetingEndpoint:
         assert "not found" in response.json()["detail"].lower()
 
     def test_delete_meeting_should_return_422_for_invalid_meeting_id_format(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_elasticsearch
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_vector_store
     ):
         response = client.delete("/meetings/not-a-valid-id", headers=auth_headers)
 

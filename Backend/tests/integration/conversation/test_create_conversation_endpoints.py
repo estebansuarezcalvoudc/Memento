@@ -12,6 +12,7 @@ _PATCH_CREATE_TASK = (
 _REQUEST = {
     "message": "Hello, summarize my last meeting",
     "language_model_configuration": {"provider": "OpenAI", "model": "gpt-4o-mini"},
+    "current_datetime": "2024-01-15T10:00:00",
 }
 
 
@@ -22,7 +23,7 @@ def _closing_create_task(coro):
 
 class TestCreateConversationEndpoint:
     def test_create_conversation_should_store_conversation_and_return_200(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_mcp_client
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_rag_get_reply
     ):
         mock_mongo.insert_one.return_value.inserted_id = ObjectId(VALID_CONV_ID)
 
@@ -39,7 +40,7 @@ class TestCreateConversationEndpoint:
         mock_mongo.insert_one.assert_called_once()
 
     def test_create_conversation_should_schedule_initial_message_as_background_task(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_mcp_client
+        self, client: TestClient, auth_headers: dict, mock_mongo, mock_rag_get_reply
     ):
         mock_mongo.insert_one.return_value.inserted_id = ObjectId(VALID_CONV_ID)
 

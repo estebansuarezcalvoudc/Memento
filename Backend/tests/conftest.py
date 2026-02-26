@@ -27,6 +27,11 @@ os.environ["HF_TOKEN"] = "test-hf-token"
 os.environ["OLLAMA_HOST"] = "localhost"
 os.environ["OLLAMA_PORT"] = "11434"
 
+os.environ["CHROMA_HOST"] = "localhost"
+os.environ["CHROMA_PORT"] = "8000"
+os.environ["RAG_EMBEDDING_MODEL"] = "nomic-embed-text"
+os.environ["RAG_COLLECTION_NAME"] = "meetings"
+
 from app.main import app
 
 

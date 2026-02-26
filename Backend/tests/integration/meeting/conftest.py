@@ -18,15 +18,12 @@ def reset_meeting_service_singleton():
 
 
 @pytest.fixture
-def mock_elasticsearch():
+def mock_vector_store():
     """
-    Mock Elasticsearch to avoid real connections during tests.
-    Covers index initialization, document indexing, updates and deletes.
+    Mock the vector store to avoid real ChromaDB connections during tests.
+    Covers document indexing and deletion.
     """
-    with patch(
-        "app.repositories.implementations.mongo.meeting_mongo_repo.Elasticsearch"
-    ) as mock_es_class:
-        mock_es = MagicMock()
-        mock_es_class.return_value = mock_es
-        mock_es.indices.exists.return_value = False
-        yield mock_es
+    with patch("app.dependencies.service_dependencies.get_vector_store") as mock:
+        mock_store = MagicMock()
+        mock.return_value = mock_store
+        yield mock_store

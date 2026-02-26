@@ -155,4 +155,10 @@ class MeetingMongoRepository(AbstractMeetingRepository):
 
     @handle_invalid_id
     def delete_meeting(self, id: str, username: str) -> None:
+        meeting = self._collection.find_one({"username": username, "_id": ObjectId(id)})
+        if not meeting:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Meeting with id {id} not found",
+            )
         self._collection.delete_one({"username": username, "_id": ObjectId(id)})
