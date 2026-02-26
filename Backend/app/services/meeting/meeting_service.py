@@ -1,13 +1,9 @@
-import chromadb
-from chromadb.errors import NotFoundError as ChromaNotFoundError
 from fastapi import HTTPException, status
-from langchain_chroma import Chroma
-from langchain_ollama import OllamaEmbeddings
 from langchain_core.documents import Document
+from langchain_core.vectorstores import VectorStore
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from ...core.logging import setup_logger
-from ...core.settings import settings
 from ...repositories.interfaces.meeting_repo import MeetingRepository
 from ...schemas.meeting.meeting_schema import (
     CreateMeetingsBatchRequest,
@@ -28,30 +24,10 @@ _TEXT_SPLITTER = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=2
 
 
 class MeetingService(metaclass=SingletonMeta):
-    def __init__(self, repository: MeetingRepository, transcription_service: TranscriptionService) -> None:
+    def __init__(self, repository: MeetingRepository, transcription_service: TranscriptionService, vector_store: VectorStore) -> None:
         self._repository: MeetingRepository = repository
         self._transcription_service = transcription_service
-        self._embeddings = OllamaEmbeddings(
-            base_url=settings.ollama_url,
-            model=settings.rag_embedding_model,
-        )
-        self._chroma_client = chromadb.HttpClient(host=settings.chroma_host, port=settings.chroma_port)
-        self._vector_store = self._create_vector_store()
-
-    def _create_vector_store(self) -> Chroma:
-        return Chroma(
-            client=self._chroma_client,
-            collection_name=settings.rag_collection_name,
-            embedding_function=self._embeddings,
-        )
-
-    def _get_vector_store(self) -> Chroma:
-        try:
-            self._vector_store._collection.count()
-        except ChromaNotFoundError:
-            _logger.warning("ChromaDB collection reference stale, reconnecting...")
-            self._vector_store = self._create_vector_store()
-        return self._vector_store
+        self._vector_store = vector_store
 
     def process_meetings(
         self,
@@ -123,7 +99,7 @@ class MeetingService(metaclass=SingletonMeta):
         )
 
         ids = [f"{meeting_id}_t{i}" for i in range(len(chunks))] + [f"{meeting_id}_s"]
-        self._get_vector_store().add_documents(chunks + [summary_doc], ids=ids)
+        self._vector_store.add_documents(chunks + [summary_doc], ids=ids)
         _logger.debug(f"Indexed meeting {meeting_id} ({len(chunks)} chunks + summary)")
 
     def retrieve_all_meetings_metadata(
@@ -148,4 +124,4 @@ class MeetingService(metaclass=SingletonMeta):
 
     def delete_meeting(self, meeting_id: str, username: str) -> None:
         self._repository.delete_meeting(meeting_id, username)
-        self._get_vector_store()._collection.delete(where={"meeting_id": meeting_id})
+        self._vector_store.delete(where={"meeting_id": meeting_id})

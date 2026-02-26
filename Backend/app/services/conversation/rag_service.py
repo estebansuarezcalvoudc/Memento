@@ -1,21 +1,17 @@
 from datetime import datetime
 
-import chromadb
 import dateparser.search
-from chromadb.errors import NotFoundError as ChromaNotFoundError
 from fastapi import HTTPException, status
-from langchain_chroma import Chroma
-from langchain_ollama import OllamaEmbeddings
 from langchain_core.documents import Document
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
+from langchain_core.vectorstores import VectorStore
 
 from app.core.language_model_factory import language_model_factory
 from .rag_prompts import CONTEXTUALIZE_PROMPT, QA_PROMPT
 
 from ...core.logging import setup_logger
-from ...core.settings import settings
 from ...repositories.interfaces.settings_repo import SettingsRepository
 from ...schemas.conversation.language_models_schema import LanguageModelConfiguration
 from ...utils.singleton_meta import SingletonMeta
@@ -24,23 +20,13 @@ _logger = setup_logger(__name__)
 
 
 class RagService(metaclass=SingletonMeta):
-    def __init__(self, settings_repository: SettingsRepository) -> None:
+    def __init__(
+        self,
+        settings_repository: SettingsRepository,
+        vector_store: VectorStore,
+    ) -> None:
         self._settings_repository = settings_repository
-        self._embeddings = OllamaEmbeddings(
-            base_url=settings.ollama_url,
-            model=settings.rag_embedding_model,
-        )
-        self._chroma_client = chromadb.HttpClient(
-            host=settings.chroma_host, port=settings.chroma_port
-        )
-        self._vector_store = self._create_vector_store()
-
-    def _create_vector_store(self) -> Chroma:
-        return Chroma(
-            client=self._chroma_client,
-            collection_name=settings.rag_collection_name,
-            embedding_function=self._embeddings,
-        )
+        self._vector_store = vector_store
 
     async def get_reply(
         self,
@@ -138,7 +124,7 @@ class RagService(metaclass=SingletonMeta):
             else:
                 chroma_filter = {"username": {"$eq": username}}
 
-            return self._get_vector_store().similarity_search(
+            return self._vector_store.similarity_search(
                 query, k=5, filter=chroma_filter
             )
 
@@ -152,14 +138,6 @@ class RagService(metaclass=SingletonMeta):
             | llm
             | StrOutputParser()
         )
-
-    def _get_vector_store(self) -> Chroma:
-        try:
-            self._vector_store._collection.count()
-        except ChromaNotFoundError:
-            _logger.warning("ChromaDB collection reference stale, reconnecting...")
-            self._vector_store = self._create_vector_store()
-        return self._vector_store
 
     @staticmethod
     def _format_docs(docs: list[Document]) -> str:
