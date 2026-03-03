@@ -11,7 +11,6 @@ export default function Provider({ provider }: { provider: Provider }) {
   const {
     mutate: updateStatus,
     isPending: isUpdatingStatus,
-    isError,
   } = useUpdateProviderStatus()
 
   const [tooltipMessage, setTooltipMessage] = useState<string | null>(null)
@@ -25,14 +24,8 @@ export default function Provider({ provider }: { provider: Provider }) {
     timerRef.current = setTimeout(() => setTooltipMessage(null), 3000)
   }
 
-  useEffect(() => {
-    if (isError) {
-      showTooltip('At least one provider needs to be available')
-    }
-  }, [isError])
-
   useEffect(
-    () => () => {
+    () => {
       if (timerRef.current) {
         clearTimeout(timerRef.current)
       }
@@ -56,7 +49,10 @@ export default function Provider({ provider }: { provider: Provider }) {
           <Toggle
             enabled={provider.active && !missingApiKey}
             onChange={active =>
-              updateStatus({ providerName: provider.name, active })
+              updateStatus(
+                { providerName: provider.name, active },
+                { onError: () => showTooltip('At least one provider needs to be available') },
+              )
             }
             disabled={isUpdatingStatus || missingApiKey}
           />
