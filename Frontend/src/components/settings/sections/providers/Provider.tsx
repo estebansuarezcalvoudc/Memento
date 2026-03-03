@@ -54,7 +54,7 @@ export default function Provider({ provider }: { provider: Provider }) {
         <SubSectionTitle title={provider.name} />
         <div className="relative">
           <Toggle
-            enabled={provider.active}
+            enabled={provider.active && !missingApiKey}
             onChange={active =>
               updateStatus({ providerName: provider.name, active })
             }
