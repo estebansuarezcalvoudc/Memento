@@ -20,7 +20,7 @@ class TestProvidersEndpoints:
         openai = next(p for p in data if p["name"] == "OpenAI")
         assert openai["requires_api_key"] is True
         assert openai["has_api_key"] is False
-        assert openai["active"] is True
+        assert openai["active"] is False
 
         ollama = next(p for p in data if p["name"] == "Ollama")
         assert ollama["requires_api_key"] is False
@@ -60,6 +60,38 @@ class TestProvidersEndpoints:
         openai = next(p for p in data if p["name"] == "OpenAI")
         assert openai["has_api_key"] is True
         assert openai["active"] is True
+
+    def test_get_providers_should_return_inactive_openai_when_stored_active_but_no_api_key(
+        self, client: TestClient, auth_headers: dict, mock_mongo
+    ):
+        def mock_find_one_side_effect(_query, projection=None):
+            _ = _query
+            if projection and "settings.providers" in str(projection):
+                return {
+                    "username": "test@example.com",
+                    "settings": {
+                        "providers": {
+                            "OpenAI": {
+                                "active": True,
+                            }
+                        }
+                    },
+                }
+            else:
+                return {
+                    "username": "test@example.com",
+                    "password": "$2b$12$test_hashed_password",
+                }
+
+        mock_mongo.find_one.side_effect = mock_find_one_side_effect
+
+        response = client.get("/settings/providers", headers=auth_headers)
+
+        assert response.status_code == 200
+        data = response.json()
+        openai = next(p for p in data if p["name"] == "OpenAI")
+        assert openai["has_api_key"] is False
+        assert openai["active"] is False
 
     def test_add_provider_api_key_should_succeed_with_valid_key(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_openai
