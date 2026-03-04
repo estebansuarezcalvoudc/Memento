@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 
 import { useUpdateProviderStatus } from '../../../../api/queries/settings/useProvidersQueries'
 import { type Provider } from '../../../../types/settings/providers'
@@ -8,43 +8,18 @@ import SubSectionTitle from '../ui/SubSectionTitle'
 import ApiKeySection from './ApiKeySection'
 
 export default function Provider({ provider }: { provider: Provider }) {
-  const {
-    mutate: updateStatus,
-    isPending: isUpdatingStatus,
-    isError,
-  } = useUpdateProviderStatus()
+  const { mutate: updateStatus, isPending: isUpdatingStatus } =
+    useUpdateProviderStatus()
 
   const [tooltipMessage, setTooltipMessage] = useState<string | null>(null)
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  function showTooltip(message: string) {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current)
-    }
-    setTooltipMessage(message)
-    timerRef.current = setTimeout(() => setTooltipMessage(null), 3000)
-  }
-
-  useEffect(() => {
-    if (isError) {
-      showTooltip('At least one provider needs to be available')
-    }
-  }, [isError])
-
-  useEffect(
-    () => () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current)
-      }
-    },
-    [],
-  )
 
   const missingApiKey = provider.requiresApiKey && !provider.hasApiKey
 
   function handleToggleAreaClick() {
     if (missingApiKey) {
-      showTooltip('You must add an API key before activating this provider')
+      setTooltipMessage(
+        'You must add an API key before activating this provider',
+      )
     }
   }
 
@@ -56,7 +31,15 @@ export default function Provider({ provider }: { provider: Provider }) {
           <Toggle
             enabled={provider.active}
             onChange={active =>
-              updateStatus({ providerName: provider.name, active })
+              updateStatus(
+                { providerName: provider.name, active },
+                {
+                  onError: () =>
+                    setTooltipMessage(
+                      'At least one provider needs to be available',
+                    ),
+                },
+              )
             }
             disabled={isUpdatingStatus || missingApiKey}
           />
@@ -66,7 +49,7 @@ export default function Provider({ provider }: { provider: Provider }) {
               onClick={handleToggleAreaClick}
             />
           )}
-          {tooltipMessage && <Tooltip message={tooltipMessage} />}
+          <Tooltip message={tooltipMessage} />
         </div>
       </div>
       {provider.requiresApiKey && (

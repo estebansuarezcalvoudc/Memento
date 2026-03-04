@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from app.core.openai_factory import ProviderName
 
@@ -17,12 +17,12 @@ class Provider(BaseModel):
         None, description="Whether an API key is stored (null if not required)"
     )
 
-    @property
-    def enabled(self) -> bool:
-        """Provider is enabled if it has API key (when required) or doesn't need one"""
-        if not self.requires_api_key:
-            return True
-        return self.has_api_key or False
+    @model_validator(mode="after")
+    def active_requires_api_key_when_needed(self) -> "Provider":
+        """A provider cannot be active if it requires an API key but doesn't have one"""
+        if self.requires_api_key and not self.has_api_key:
+            self.active = False
+        return self
 
 
 class ProviderAPIKeyRequest(BaseModel):

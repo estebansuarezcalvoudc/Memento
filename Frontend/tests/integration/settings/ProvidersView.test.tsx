@@ -125,6 +125,21 @@ describe('ProvidersView – API key section', () => {
     expect(screen.getByPlaceholderText('Enter your API key')).toBeInTheDocument()
   })
 
+  it('toggle is disabled when provider requires API key but none has been added', async () => {
+    server.use(
+      http.get('/api/settings/providers', withAuth(() =>
+        HttpResponse.json([
+          { name: 'openai', requires_api_key: true, has_api_key: false, active: false },
+        ]),
+      )),
+    )
+    setAuthToken()
+    renderWithRouter(<ProvidersView />)
+    await screen.findByText('openai')
+    const toggle = screen.getByRole('switch')
+    expect(toggle).toBeDisabled()
+  })
+
   it('shows tooltip when clicking toggle with missing API key', async () => {
     const user = userEvent.setup()
     server.use(
