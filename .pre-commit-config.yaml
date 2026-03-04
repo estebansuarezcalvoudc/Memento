@@ -1,0 +1,43 @@
+repos:
+  - repo: https://github.com/pycqa/isort
+    rev: 6.0.1
+    hooks:
+      - id: isort
+        name: isort (backend)
+        args: ["--profile", "black"]
+        files: ^Backend/
+
+  - repo: https://github.com/psf/black
+    rev: 26.1.0
+    hooks:
+      - id: black
+        name: black (backend)
+        args: ["--target-version", "py311"]
+        files: ^Backend/
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        name: prettier (frontend)
+        files: ^Frontend/
+        additional_dependencies:
+          - "@ianvs/prettier-plugin-sort-imports@^4.7.0"
+          - "prettier-plugin-tailwindcss@^0.6.14"
+
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v9.33.0
+    hooks:
+      - id: eslint
+        name: eslint --fix (frontend)
+        args: ["--fix"]
+        files: ^Frontend/.*\.[jt]sx?$
+        types: [file]
+        additional_dependencies:
+          - "eslint@^9.33.0"
+          - "@eslint/js@^9.33.0"
+          - "typescript-eslint@^8.39.1"
+          - "eslint-plugin-react-hooks@^5.2.0"
+          - "eslint-plugin-react-refresh@^0.4.20"
+          - "globals@^16.3.0"
+          - "typescript@~5.8.3"
