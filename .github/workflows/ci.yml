@@ -6,16 +6,27 @@ on:
     branches:
       - main
 
+# Auto-fix commits require write access to repository contents.
+# For fork PRs the token won't have write access; the auto-commit step
+# is skipped gracefully in that case (see the conditional below).
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  backend:
-    name: Backend (Python)
+  # ── Auto-fix formatting ──────────────────────────────────────────────────
+  # Runs isort + black (Python) and prettier + eslint --fix (JS/TS),
+  # then commits any changes back to the branch.
+  # Skipped for PRs that originate from a fork (no write access to the fork).
+  format:
+    name: Auto-fix formatting
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Check out the actual PR/push branch so the auto-commit can push back.
+          ref: ${{ github.head_ref || github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
@@ -24,25 +35,14 @@ jobs:
           cache: pip
           cache-dependency-path: Backend/requirements.txt
 
-      - name: Install dependencies
-        run: pip install -r Backend/requirements.txt
+      - name: Install Python format tools
+        run: pip install black==26.1.0 isort==8.0.0
 
-      - name: Check import order (isort)
-        run: isort --check --profile black Backend/
+      - name: Fix import order (isort)
+        run: isort --profile black Backend/
 
-      - name: Check formatting (black)
-        run: black --check Backend/
-
-      - name: Run tests (pytest)
-        run: pytest --config-file=Backend/pytest.ini
-        working-directory: Backend
-
-  frontend:
-    name: Frontend (Node)
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
+      - name: Fix formatting (black)
+        run: black Backend/
 
       - name: Set up Node 20
         uses: actions/setup-node@v4
@@ -51,18 +51,53 @@ jobs:
           cache: npm
           cache-dependency-path: Frontend/package-lock.json
 
-      - name: Install dependencies
+      - name: Install frontend dependencies
         run: npm ci
         working-directory: Frontend
 
-      - name: Check formatting (prettier)
-        run: npm run format:check
+      - name: Fix frontend formatting (prettier)
+        run: npm run format
         working-directory: Frontend
 
-      - name: Lint (eslint)
-        run: npm run lint
+      - name: Fix frontend lint (eslint --fix)
+        # eslint --fix returns non-zero when unfixable errors remain;
+        # those will be caught by the lint step inside the frontend-test job.
+        run: npm run lint:fix || true
         working-directory: Frontend
 
-      - name: Run tests
-        run: npm test
-        working-directory: Frontend
+      - name: Commit formatting changes
+        # Only push back for same-repo PRs and direct pushes (not fork PRs).
+        if: >
+          github.event_name == 'push' ||
+          github.event.pull_request.head.repo.full_name == github.repository
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "style: auto-fix formatting [skip ci]"
+
+  # ── Backend tests (Docker) ───────────────────────────────────────────────
+  # Builds a lightweight Python 3.11 image (Backend/Dockerfile.test) and
+  # runs pytest inside it.  Heavy ML/GPU packages (torch, whisperx…) are
+  # stubbed at the pytest level via Backend/conftest.py so the image stays
+  # small and no NVIDIA runtime is required.
+  backend-test:
+    name: Backend tests (Docker)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run backend tests inside Docker
+        run: docker compose -f docker-compose.test.yml run --rm backend-test
+
+  # ── Frontend tests (Docker) ──────────────────────────────────────────────
+  # Builds a Node 20 Alpine image (Frontend/Dockerfile.test) and runs
+  # vitest + eslint inside it.
+  frontend-test:
+    name: Frontend tests (Docker)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run frontend tests inside Docker
+        run: docker compose -f docker-compose.test.yml run --rm frontend-test

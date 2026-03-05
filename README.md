@@ -23,6 +23,8 @@ pre-commit run --all-files
 ```
 
 > **Nota:** En local, pre-commit *modifica* los archivos automáticamente (auto-fix).
-> En CI el workflow solo comprueba el formato sin modificar nada (`--check`), por lo que
-> el pipeline fallará si hay archivos sin formatear. Usa pre-commit localmente para
-> asegurarte de que el código cumple el estilo antes de abrir una Pull Request.
+> En CI el workflow también auto-corrige el formateo y hace un commit de vuelta a la
+> rama (`style: auto-fix formatting [skip ci]`), por lo que si olvidas ejecutar
+> pre-commit antes de hacer push, el CI lo arreglará por ti automáticamente.
+> Los tests se ejecutan dentro de contenedores Docker ligeros para garantizar
+> reproducibilidad sin necesitar hardware GPU.
