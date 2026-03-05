@@ -24,7 +24,9 @@ export function useUpdateSummarizationPrompt() {
   const queryClient = useQueryClient()
   return useMutation<SummarizationPrompt, Error, string>({
     mutationFn: systemPrompt =>
-      fetchBackend('PUT', 'settings/templates/prompt', { system_prompt: systemPrompt }),
+      fetchBackend('PUT', 'settings/templates/prompt', {
+        system_prompt: systemPrompt,
+      }),
     onSuccess: data => {
       queryClient.setQueryData<SummarizationPrompt>(PROMPT_KEY, data)
     },

@@ -26,9 +26,5 @@ export default function ProvidersView() {
     )
   }
 
-  return (
-    <>
-      {content}
-    </>
-  )
+  return <>{content}</>
 }

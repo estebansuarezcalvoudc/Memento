@@ -28,7 +28,11 @@ export function useGetMeetingTranscription(id: string | undefined) {
     queryKey: ['meeting', 'transcription', id],
     queryFn: async () => {
       const data = await fetchBackend('GET', `meetings/transcription/${id}`)
-      return { content: data['transcription'], title: data.title, date: data.date }
+      return {
+        content: data['transcription'],
+        title: data.title,
+        date: data.date,
+      }
     },
     enabled: !!id,
   })

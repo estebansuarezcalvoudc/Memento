@@ -1,6 +1,5 @@
-from fastapi.testclient import TestClient
-
 from app.schemas.settings.templates_schema import DEFAULT_PROMPT
+from fastapi.testclient import TestClient
 
 
 class TestTemplatesEndpoints:

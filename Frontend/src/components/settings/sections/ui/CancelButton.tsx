@@ -3,7 +3,10 @@ interface CancelButtonProps {
   disabled?: boolean
 }
 
-export default function CancelButton({ onClick, disabled = false }: CancelButtonProps) {
+export default function CancelButton({
+  onClick,
+  disabled = false,
+}: CancelButtonProps) {
   return (
     <button
       type="button"

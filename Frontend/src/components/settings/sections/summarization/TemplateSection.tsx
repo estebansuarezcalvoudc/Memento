@@ -16,7 +16,11 @@ const MAX = 5000
 export default function TemplateSection() {
   const { data: promptData, isLoading } = useGetSummarizationPrompt()
   const { data: defaultData } = useGetDefaultSummarizationPrompt()
-  const { mutate: updatePrompt, isPending, isError } = useUpdateSummarizationPrompt()
+  const {
+    mutate: updatePrompt,
+    isPending,
+    isError,
+  } = useUpdateSummarizationPrompt()
 
   const [draft, setDraft] = useState<string | undefined>(undefined)
 
@@ -44,7 +48,9 @@ export default function TemplateSection() {
             className="w-full resize-y rounded-md border border-stone-300 bg-white p-3 font-mono text-base text-stone-800 focus:border-stone-500 focus:outline-none"
           />
           <div className="flex items-center justify-between">
-            <span className={`text-xs ${tooLong ? 'text-red-500' : 'text-stone-400'}`}>
+            <span
+              className={`text-xs ${tooLong ? 'text-red-500' : 'text-stone-400'}`}
+            >
               {value.length} / {MAX}
             </span>
             <div className="flex items-center gap-2">
@@ -55,7 +61,10 @@ export default function TemplateSection() {
               >
                 Reset to default
               </button>
-              <CancelButton onClick={() => setDraft(undefined)} disabled={isPending || !isModified} />
+              <CancelButton
+                onClick={() => setDraft(undefined)}
+                disabled={isPending || !isModified}
+              />
               <ConfirmButton
                 type="button"
                 label="Save"
@@ -66,9 +75,13 @@ export default function TemplateSection() {
             </div>
           </div>
           {tooShort && isModified && (
-            <ErrorMessage message={`Prompt must be at least ${MIN} characters.`} />
+            <ErrorMessage
+              message={`Prompt must be at least ${MIN} characters.`}
+            />
           )}
-          {isError && <ErrorMessage message="Failed to save. Please try again." />}
+          {isError && (
+            <ErrorMessage message="Failed to save. Please try again." />
+          )}
         </>
       )}
     </div>

@@ -1,14 +1,13 @@
 from datetime import datetime
 
 import dateparser.search
+from app.core.language_model_factory import language_model_factory
 from fastapi import HTTPException, status
 from langchain_core.documents import Document
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_core.vectorstores import VectorStore
-
-from app.core.language_model_factory import language_model_factory
 
 from ...core.logging import setup_logger
 from ...repositories.interfaces.settings_repo import SettingsRepository

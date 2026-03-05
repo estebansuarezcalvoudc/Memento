@@ -23,7 +23,9 @@ export default function ApiKeySection({
     deleteApiKey(providerName, {
       onError: err => {
         if (err instanceof HttpError && err.status === 400) {
-          setDeleteError('Cannot remove the API key of the last active provider')
+          setDeleteError(
+            'Cannot remove the API key of the last active provider',
+          )
         } else {
           setDeleteError('Failed to remove API key. Please try again.')
         }

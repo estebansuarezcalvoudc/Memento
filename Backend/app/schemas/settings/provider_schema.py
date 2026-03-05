@@ -1,8 +1,7 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field, model_validator
-
 from app.core.openai_factory import ProviderName
+from pydantic import BaseModel, Field, model_validator
 
 
 class Provider(BaseModel):

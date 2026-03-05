@@ -92,10 +92,13 @@ describe('ModelSection', () => {
     const user = userEvent.setup()
     let capturedBody: unknown
     server.use(
-      http.put('/api/settings/models/summary', withAuth(async ({ request }) => {
-        capturedBody = await request.json()
-        return HttpResponse.json(await request.clone().json())
-      })),
+      http.put(
+        '/api/settings/models/summary',
+        withAuth(async ({ request }) => {
+          capturedBody = await request.json()
+          return HttpResponse.json(await request.clone().json())
+        }),
+      ),
     )
     setAuthToken()
     renderWithRouter(<ModelSection />)
@@ -103,7 +106,10 @@ describe('ModelSection', () => {
     await user.selectOptions(screen.getByLabelText('Model'), 'llama3')
     await user.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() =>
-      expect(capturedBody).toMatchObject({ model_name: 'llama3', provider: 'ollama' }),
+      expect(capturedBody).toMatchObject({
+        model_name: 'llama3',
+        provider: 'ollama',
+      }),
     )
   })
 
@@ -122,23 +128,34 @@ describe('ModelSection', () => {
   it('shows an error message when Save fails', async () => {
     const user = userEvent.setup()
     server.use(
-      http.put('/api/settings/models/summary', withAuth(() =>
-        new HttpResponse(null, { status: 500 }),
-      )),
+      http.put(
+        '/api/settings/models/summary',
+        withAuth(() => new HttpResponse(null, { status: 500 })),
+      ),
     )
     setAuthToken()
     renderWithRouter(<ModelSection />)
     await screen.findByLabelText('Model')
     await user.selectOptions(screen.getByLabelText('Model'), 'llama3')
     await user.click(screen.getByRole('button', { name: 'Save' }))
-    expect(await screen.findByText('Failed to save. Please try again.')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Failed to save. Please try again.'),
+    ).toBeInTheDocument()
   })
 
   it('Save is disabled when no model is selected', async () => {
     server.use(
-      http.get('/api/settings/models/summary', withAuth(() =>
-        HttpResponse.json({ provider: '', model_name: '', temperature: 0.7, max_tokens: 2000 }),
-      )),
+      http.get(
+        '/api/settings/models/summary',
+        withAuth(() =>
+          HttpResponse.json({
+            provider: '',
+            model_name: '',
+            temperature: 0.7,
+            max_tokens: 2000,
+          }),
+        ),
+      ),
     )
     const user = userEvent.setup()
     setAuthToken()

@@ -8,7 +8,7 @@ export default function GeneralView() {
         <option value="light">Light</option>
         <option value="dark">Dark</option>
       </Select>
-      <Select label='Language'>
+      <Select label="Language">
         <option value="English">English</option>
         <option value="Spanish">Spanish</option>
       </Select>

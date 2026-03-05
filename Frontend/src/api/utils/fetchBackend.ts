@@ -1,11 +1,13 @@
 import camelcaseKeys from 'camelcase-keys'
 
 export class HttpError extends Error {
-  constructor(public status: number, message?: string) {
+  constructor(
+    public status: number,
+    message?: string,
+  ) {
     super(message ?? `HTTP error! status: ${status}`)
   }
 }
-
 
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 

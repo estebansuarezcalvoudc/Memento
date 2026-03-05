@@ -1,7 +1,6 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from app.services.conversation.conversation_service import ConversationService
 from app.services.conversation.rag import Rag
 from app.utils.singleton_meta import SingletonMeta

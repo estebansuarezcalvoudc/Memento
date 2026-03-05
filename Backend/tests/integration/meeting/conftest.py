@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from app.services.meeting.meeting_service import MeetingService
 from app.utils.singleton_meta import SingletonMeta
 

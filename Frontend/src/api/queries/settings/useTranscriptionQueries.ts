@@ -12,7 +12,8 @@ const CONFIGURATION_KEY = ['transcription', 'configuration']
 export function useGetTranscriptionOptions() {
   return useQuery<TranscriptionAvailableOptions>({
     queryKey: OPTIONS_KEY,
-    queryFn: () => fetchBackend('GET', 'settings/transcription/available-options'),
+    queryFn: () =>
+      fetchBackend('GET', 'settings/transcription/available-options'),
   })
 }
 
@@ -25,22 +26,36 @@ export function useGetTranscriptionConfiguration() {
 
 export function useUpdateTranscriptionConfiguration() {
   const queryClient = useQueryClient()
-  return useMutation<TranscriptionConfiguration, Error, Partial<Record<string, string>>>({
+  return useMutation<
+    TranscriptionConfiguration,
+    Error,
+    Partial<Record<string, string>>
+  >({
     mutationFn: update =>
       fetchBackend('PATCH', 'settings/transcription/configuration', update),
     onMutate: async update => {
       await queryClient.cancelQueries({ queryKey: CONFIGURATION_KEY })
-      const previous = queryClient.getQueryData<TranscriptionConfiguration>(CONFIGURATION_KEY)
+      const previous =
+        queryClient.getQueryData<TranscriptionConfiguration>(CONFIGURATION_KEY)
 
       const optimistic: Partial<TranscriptionConfiguration> = {}
-      if ('model_size' in update) optimistic.modelSize = update.model_size
-      if ('compute_type' in update) optimistic.computeType = update.compute_type
-      if ('device' in update) optimistic.device = update.device
+      if ('model_size' in update) {
+optimistic.modelSize = update.model_size
+}
+      if ('compute_type' in update) {
+optimistic.computeType = update.compute_type
+}
+      if ('device' in update) {
+optimistic.device = update.device
+}
 
-      queryClient.setQueryData<TranscriptionConfiguration>(CONFIGURATION_KEY, old => ({
-        ...old!,
-        ...optimistic,
-      }))
+      queryClient.setQueryData<TranscriptionConfiguration>(
+        CONFIGURATION_KEY,
+        old => ({
+          ...old!,
+          ...optimistic,
+        }),
+      )
 
       return { previous }
     },

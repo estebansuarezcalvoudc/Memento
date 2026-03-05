@@ -1,10 +1,9 @@
 from typing import Annotated
 
 import jwt
+from app.repositories.implementations.mongo.auth_mongo_repo import AuthMongoRepository
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-
-from app.repositories.implementations.mongo.auth_mongo_repo import AuthMongoRepository
 
 from ..core.settings import settings
 from ..repositories.interfaces.auth_repo import AuthRepository
