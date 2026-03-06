@@ -73,13 +73,23 @@ class Rag:
             username, llm_config.provider.value
         )
 
-        if not provider_settings or not provider_settings.api_key_encrypted:
+        _logger.debug(
+            f"_build_rag_chain: provider={llm_config.provider.value!r} "
+            f"provider_settings={provider_settings!r}"
+        )
+
+        if provider_settings is None or (
+            provider_settings.requires_api_key
+            and not provider_settings.api_key_encrypted
+        ):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"API key not configured for user {username}",
             )
 
-        llm = language_model_factory(llm_config, provider_settings.api_key_encrypted)
+        llm = language_model_factory(
+            llm_config, provider_settings.api_key_encrypted or ""
+        )
 
         contextualize_chain = CONTEXTUALIZE_PROMPT | llm | StrOutputParser()
 

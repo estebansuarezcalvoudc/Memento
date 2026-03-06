@@ -85,10 +85,14 @@ class SettingsMongoRepository(AbstractSettingsRepository):
             user_data.get("settings", {}).get("providers", {}).get(provider_name)
         )
 
+        requires_api_key = self.AVAILABLE_PROVIDERS.get(provider_name, {}).get(
+            "requires_api_key", True
+        )
+
         if not provider_data:
             return None
 
-        return ProviderSettings(**provider_data)
+        return ProviderSettings(**provider_data, requires_api_key=requires_api_key)
 
     def save_provider_api_key_encrypted(
         self, username: str, provider_name: str, encrypted_api_key: str
@@ -293,3 +297,32 @@ class SettingsMongoRepository(AbstractSettingsRepository):
 
     def delete_user_data(self, username: str) -> None:
         self._collection.delete_many({"username": username})
+
+    def initialize_user_settings(self, username: str) -> None:
+        """
+        Initialize default settings for a newly registered user.
+        Uses $setOnInsert so it is idempotent — existing documents are untouched.
+        """
+        self._collection.update_one(
+            {"username": username},
+            {
+                "$setOnInsert": {
+                    "username": username,
+                    "settings": {
+                        "providers": {
+                            "Ollama": {"active": True},
+                            "OpenAI": {"active": False},
+                        },
+                        "models": {
+                            "chat_model": {
+                                "provider": "Ollama",
+                                "model_name": "llama3.2:latest",
+                                "temperature": 0.7,
+                                "max_tokens": 2000,
+                            }
+                        },
+                    },
+                }
+            },
+            upsert=True,
+        )

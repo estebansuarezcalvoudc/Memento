@@ -37,6 +37,7 @@ class AuthService:
         )
 
         self._repository.store_user(user)
+        self._settings_repository.initialize_user_settings(user.username)
         return AuthService._create_access_token(data={"sub": user.username})
 
     @staticmethod

@@ -43,3 +43,4 @@ class ProviderSettings(BaseModel):
     api_key_encrypted: Optional[str] = None
     active: bool = True
     base_url: Optional[str] = None
+    requires_api_key: bool = True

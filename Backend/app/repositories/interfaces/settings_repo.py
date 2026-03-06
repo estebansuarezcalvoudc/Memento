@@ -167,6 +167,17 @@ class SettingsRepository(ABC):
         pass
 
     @abstractmethod
+    def initialize_user_settings(self, username: str) -> None:
+        """
+        Initialize default settings for a newly registered user.
+        Idempotent — safe to call even if the document already exists.
+
+        Args:
+            username: User's username
+        """
+        pass
+
+    @abstractmethod
     def delete_user_data(self, username: str) -> None:
         """
         Delete all settings belonging to a user
