@@ -5,9 +5,9 @@ import {
   newChatImage,
   uploadMeetingsImage,
 } from '../../../../assets/buttonsImages'
+import type { DialogHandler } from '../../../common/Dialog'
 import UploadMeetingsDialog from '../../../meetings/upload/UploadMeetingsDialog'
 import { SidebarButton } from './SidebarButton'
-import type { DialogHandler } from '../../../common/Dialog'
 
 export default function SidebarButtons() {
   const dialogRef = useRef<DialogHandler>(null)
@@ -39,9 +39,9 @@ export default function SidebarButtons() {
         />
 
         <UploadMeetingsDialog
-            dialogRef={dialogRef}
-            onClose={() => dialogRef.current?.close()}
-          />
+          dialogRef={dialogRef}
+          onClose={() => dialogRef.current?.close()}
+        />
       </li>
     </ul>
   )

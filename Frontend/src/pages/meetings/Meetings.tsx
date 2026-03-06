@@ -1,7 +1,7 @@
+import { useGetMeetings } from '../../api/queries/useMeetingsQueries'
 import PageContainer from '../../components/layout/PageContainer'
 import Header from '../../components/meetings/Header'
 import MeetingsList from '../../components/meetings/list/MeetingList'
-import { useGetMeetings } from '../../api/queries/useMeetingsQueries'
 
 export type { Meeting } from '../../types/meetings'
 

@@ -25,7 +25,9 @@ export function useUpdateProviderStatus() {
   const queryClient = useQueryClient()
   return useMutation<null, Error, { providerName: string; active: boolean }>({
     mutationFn: ({ providerName, active }) =>
-      fetchBackend('PUT', `settings/providers/${providerName}/status`, { active }),
+      fetchBackend('PUT', `settings/providers/${providerName}/status`, {
+        active,
+      }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: PROVIDERS_KEY }),
     onError: () => queryClient.invalidateQueries({ queryKey: PROVIDERS_KEY }),
   })

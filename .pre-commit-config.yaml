@@ -1,0 +1,41 @@
+repos:
+  - repo: local
+    hooks:
+      # --- BACKEND (Python) ---
+      - id: backend-isort
+        name: isort (Local)
+        entry: bash -c 'cd Backend && .venv/bin/isort --profile black "${@#Backend/}"' --
+        language: system
+        types: [python]
+        files: ^Backend/
+
+      - id: backend-black
+        name: black (Local)
+        entry: bash -c 'cd Backend && .venv/bin/black "${@#Backend/}"' --
+        language: system
+        types: [python]
+        files: ^Backend/
+
+      # --- FRONTEND (Node) ---
+      - id: frontend-eslint
+        name: ESLint (Local)
+        entry: |
+          bash -c '
+            cd Frontend && 
+            npx eslint --fix --quiet --rule "@typescript-eslint/no-non-null-assertion: off" "${@#Frontend/}"
+          ' --
+        language: system
+        files: ^Frontend/.*\.[jt]sx?$
+        pass_filenames: true
+
+      - id: frontend-prettier
+        name: Prettier (Local)
+        # Forzamos la lectura del config local por si acaso
+        entry: |
+          bash -c '
+            cd Frontend && 
+            npx prettier --write --ignore-unknown --config .prettierrc "${@#Frontend/}"
+          ' --
+        language: system
+        files: ^Frontend/
+        pass_filenames: true

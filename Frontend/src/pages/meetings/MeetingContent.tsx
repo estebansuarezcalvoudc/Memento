@@ -1,14 +1,14 @@
 import { NavLink, useParams } from 'react-router-dom'
 
-import { arrowBack } from '../../assets/buttonsImages'
-import PageContainer from '../../components/layout/PageContainer'
-import Header from '../../components/meetings/Header'
 import {
   useGetMeetingSummary,
   useGetMeetingTranscription,
 } from '../../api/queries/useMeetingsQueries'
+import { arrowBack } from '../../assets/buttonsImages'
+import PageContainer from '../../components/layout/PageContainer'
 import MeetingSummary from '../../components/meetings/content/MeetingSummary'
 import MeetingTranscription from '../../components/meetings/content/MeetingTranscription'
+import Header from '../../components/meetings/Header'
 
 type ContentType = 'transcription' | 'summary'
 

@@ -1,5 +1,5 @@
-import { removeImage } from '../../../assets/buttonsImages'
 import { type LanguageOption } from '../../../api/queries/useSettingsQueries'
+import { removeImage } from '../../../assets/buttonsImages'
 import Input from '../../common/Input'
 import Select from '../../common/Select'
 import { type MeetingFormData } from './UploadMeetingsForm'
@@ -24,10 +24,7 @@ export default function MeetingForm({
   const today = new Date().toISOString().split('T')[0]
 
   return (
-    <div
-      key={meeting.id}
-      className="border-b border-stone-200 py-4"
-    >
+    <div key={meeting.id} className="border-b border-stone-200 py-4">
       <div className="flex items-center justify-between gap-4">
         <span className="font-ubuntu text-lg text-stone-700">
           Meeting {index + 1}
@@ -72,7 +69,11 @@ export default function MeetingForm({
           key={`${meeting.id}-language-${meeting.language || 'none'}`}
         >
           <option value="">Select a language</option>
-          {languages.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
+          {languages.map(l => (
+            <option key={l.code} value={l.code}>
+              {l.name}
+            </option>
+          ))}
         </Select>
 
         <Input

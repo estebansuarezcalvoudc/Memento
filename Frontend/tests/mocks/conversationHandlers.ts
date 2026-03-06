@@ -8,20 +8,29 @@ export const mockChats = [
 ]
 
 export const conversationHandlers = [
-  http.get('/api/conversations', withAuth(() => HttpResponse.json(mockChats))),
-  http.post('/api/conversations', withAuth(() =>
-    HttpResponse.json({
-      id: 'new-chat-1',
-      title: 'New Chat',
-      started_at: '2024-01-03T00:00:00Z',
-    }),
-  )),
-  http.get('/api/conversations/:id', withAuth(() =>
-    HttpResponse.json([
-      { role: 'user', content: 'Hello' },
-      { role: 'assistant', content: 'Hi there' },
-    ]),
-  )),
+  http.get(
+    '/api/conversations',
+    withAuth(() => HttpResponse.json(mockChats)),
+  ),
+  http.post(
+    '/api/conversations',
+    withAuth(() =>
+      HttpResponse.json({
+        id: 'new-chat-1',
+        title: 'New Chat',
+        started_at: '2024-01-03T00:00:00Z',
+      }),
+    ),
+  ),
+  http.get(
+    '/api/conversations/:id',
+    withAuth(() =>
+      HttpResponse.json([
+        { role: 'user', content: 'Hello' },
+        { role: 'assistant', content: 'Hi there' },
+      ]),
+    ),
+  ),
   http.put(
     '/api/conversations/:id',
     withAuth(() => new HttpResponse(null, { status: 204 })),
@@ -30,7 +39,8 @@ export const conversationHandlers = [
     '/api/conversations/:id',
     withAuth(() => new HttpResponse(null, { status: 204 })),
   ),
-  http.post('/api/conversations/:id/chat', withAuth(() =>
-    HttpResponse.json('Assistant response here'),
-  )),
+  http.post(
+    '/api/conversations/:id/chat',
+    withAuth(() => HttpResponse.json('Assistant response here')),
+  ),
 ]

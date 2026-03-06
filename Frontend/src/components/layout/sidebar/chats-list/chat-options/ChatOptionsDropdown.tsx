@@ -2,14 +2,14 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { useEffect, type RefObject } from 'react'
 
 import {
+  useDeleteChat,
+  useUpdateChatTitle,
+} from '../../../../../api/queries/useChatsQueries'
+import {
   editImage,
   optionsImage,
   removeImage,
 } from '../../../../../assets/buttonsImages'
-import {
-  useDeleteChat,
-  useUpdateChatTitle,
-} from '../../../../../api/queries/useChatsQueries'
 import ChatOptionsButton from './ChatOptionButton'
 
 interface ChatOptionsDropdownProps {

@@ -37,8 +37,12 @@ describe('AccountView', () => {
 
     renderWithRouter(<AccountView />)
 
-    expect(screen.getByRole('button', { name: 'Edit email' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Change password' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Edit email' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Change password' }),
+    ).toBeInTheDocument()
   })
 
   it('clicking "Edit email" hides the action buttons and shows the email form', async () => {
@@ -47,8 +51,12 @@ describe('AccountView', () => {
 
     await user.click(screen.getByRole('button', { name: 'Edit email' }))
 
-    expect(screen.queryByRole('button', { name: 'Edit email' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Change password' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Edit email' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Change password' }),
+    ).not.toBeInTheDocument()
     expect(screen.getByLabelText('New email')).toBeInTheDocument()
     expect(screen.getByLabelText('Password')).toBeInTheDocument()
   })
@@ -59,8 +67,12 @@ describe('AccountView', () => {
 
     await user.click(screen.getByRole('button', { name: 'Change password' }))
 
-    expect(screen.queryByRole('button', { name: 'Edit email' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Change password' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Edit email' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Change password' }),
+    ).not.toBeInTheDocument()
     expect(screen.getByLabelText('Current password')).toBeInTheDocument()
     expect(screen.getByLabelText('New password')).toBeInTheDocument()
     expect(screen.getByLabelText('Confirm new password')).toBeInTheDocument()
@@ -75,7 +87,9 @@ describe('AccountView – Update email form', () => {
 
     await user.click(screen.getByRole('button', { name: 'Save' }))
 
-    expect(await screen.findByText('New email cannot be empty')).toBeInTheDocument()
+    expect(
+      await screen.findByText('New email cannot be empty'),
+    ).toBeInTheDocument()
   })
 
   it('submitting with an empty password shows a validation error', async () => {
@@ -86,7 +100,9 @@ describe('AccountView – Update email form', () => {
     await user.type(screen.getByLabelText('New email'), 'new@example.com')
     await user.click(screen.getByRole('button', { name: 'Save' }))
 
-    expect(await screen.findByText('Password cannot be empty')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Password cannot be empty'),
+    ).toBeInTheDocument()
   })
 
   it('clicking Cancel closes the form and restores the action buttons', async () => {
@@ -96,8 +112,12 @@ describe('AccountView – Update email form', () => {
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
 
-    expect(screen.getByRole('button', { name: 'Edit email' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Change password' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Edit email' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Change password' }),
+    ).toBeInTheDocument()
   })
 
   it('successful submission updates the displayed email and stores the new token', async () => {
@@ -115,9 +135,15 @@ describe('AccountView – Update email form', () => {
 
   it('API error shows the message returned by the backend', async () => {
     server.use(
-      http.patch('/api/auth/username', withAuth(() =>
-        HttpResponse.json({ detail: 'A user with this username already exists' }, { status: 400 }),
-      )),
+      http.patch(
+        '/api/auth/username',
+        withAuth(() =>
+          HttpResponse.json(
+            { detail: 'A user with this username already exists' },
+            { status: 400 },
+          ),
+        ),
+      ),
     )
     const { user } = setup()
     renderWithRouter(<AccountView />)
@@ -127,7 +153,9 @@ describe('AccountView – Update email form', () => {
     await user.type(screen.getByLabelText('Password'), 'secret')
     await user.click(screen.getByRole('button', { name: 'Save' }))
 
-    expect(await screen.findByText('A user with this username already exists')).toBeInTheDocument()
+    expect(
+      await screen.findByText('A user with this username already exists'),
+    ).toBeInTheDocument()
   })
 })
 
@@ -139,7 +167,9 @@ describe('AccountView – Update password form', () => {
 
     await user.click(screen.getByRole('button', { name: 'Save' }))
 
-    expect(await screen.findByText('Current password cannot be empty')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Current password cannot be empty'),
+    ).toBeInTheDocument()
   })
 
   it('submitting with an empty new password shows a validation error', async () => {
@@ -150,7 +180,9 @@ describe('AccountView – Update password form', () => {
     await user.type(screen.getByLabelText('Current password'), 'old-secret')
     await user.click(screen.getByRole('button', { name: 'Save' }))
 
-    expect(await screen.findByText('New password cannot be empty')).toBeInTheDocument()
+    expect(
+      await screen.findByText('New password cannot be empty'),
+    ).toBeInTheDocument()
   })
 
   it('submitting with non-matching passwords shows a validation error', async () => {
@@ -163,7 +195,9 @@ describe('AccountView – Update password form', () => {
     await user.type(screen.getByLabelText('Confirm new password'), 'different')
     await user.click(screen.getByRole('button', { name: 'Save' }))
 
-    expect(await screen.findByText('New passwords do not match')).toBeInTheDocument()
+    expect(
+      await screen.findByText('New passwords do not match'),
+    ).toBeInTheDocument()
   })
 
   it('clicking Cancel closes the form and restores the action buttons', async () => {
@@ -173,8 +207,12 @@ describe('AccountView – Update password form', () => {
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
 
-    expect(screen.getByRole('button', { name: 'Edit email' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Change password' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Edit email' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Change password' }),
+    ).toBeInTheDocument()
   })
 
   it('successful submission closes the form and restores the action buttons', async () => {
@@ -188,15 +226,20 @@ describe('AccountView – Update password form', () => {
     await user.click(screen.getByRole('button', { name: 'Save' }))
 
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Change password' })).toBeInTheDocument(),
+      expect(
+        screen.getByRole('button', { name: 'Change password' }),
+      ).toBeInTheDocument(),
     )
   })
 
   it('API error shows the message returned by the backend', async () => {
     server.use(
-      http.patch('/api/auth/password', withAuth(() =>
-        HttpResponse.json({ detail: 'Incorrect password' }, { status: 401 }),
-      )),
+      http.patch(
+        '/api/auth/password',
+        withAuth(() =>
+          HttpResponse.json({ detail: 'Incorrect password' }, { status: 401 }),
+        ),
+      ),
     )
     const { user } = setup()
     renderWithRouter(<AccountView />)

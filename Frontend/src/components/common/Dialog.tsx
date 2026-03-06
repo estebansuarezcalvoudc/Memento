@@ -13,10 +13,7 @@ interface DialogProps {
   children: React.ReactNode
 }
 
-export default function Dialog({
-  dialogRef,
-  children,
-}: DialogProps) {
+export default function Dialog({ dialogRef, children }: DialogProps) {
   const innerRef = useRef<HTMLDialogElement>(null)
 
   useImperativeHandle(dialogRef, () => ({

@@ -23,10 +23,11 @@ export default function Sidebar() {
       <ChatsList />
 
       <hr
-        className={`my-4 border-t border-stone-400 transition-opacity duration-300 ${isSidebarOpen
+        className={`my-4 border-t border-stone-400 transition-opacity duration-300 ${
+          isSidebarOpen
             ? 'block opacity-100 delay-150'
             : 'hidden opacity-0 delay-[0ms]'
-          }`}
+        }`}
       />
 
       <SidebarButton

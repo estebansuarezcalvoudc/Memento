@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import SendMessageButton from '../../components/chat/SendMessageButton'
 import { useCreateChat } from '../../api/queries/useChatsQueries'
+import SendMessageButton from '../../components/chat/SendMessageButton'
 
 export default function NewChat() {
   const [userMessage, setUserMessage] = useState('')
