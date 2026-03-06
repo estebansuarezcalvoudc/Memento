@@ -290,3 +290,6 @@ class SettingsMongoRepository(AbstractSettingsRepository):
             {"username": username},
             {"$set": {"settings.templates.system_prompt": system_prompt}},
         )
+
+    def delete_user_data(self, username: str) -> None:
+        self._collection.delete_many({"username": username})

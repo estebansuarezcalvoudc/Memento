@@ -57,3 +57,12 @@ class AuthMongoRepository(AbstractAuthRepository):
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found",
             )
+
+    def delete_account(self, username: str) -> None:
+        result = self._collection.delete_one({"username": username})
+
+        if result.deleted_count != 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Could not delete user {username}",
+            )

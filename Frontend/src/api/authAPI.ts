@@ -41,3 +41,9 @@ export async function updatePassword(
     new_password: newPassword,
   })
 }
+
+export async function deleteAccount(password: string): Promise<null> {
+  return fetchBackend('DELETE', 'auth', {
+    password,
+  })
+}

@@ -1,6 +1,11 @@
 import { useMutation } from '@tanstack/react-query'
 
-import { updatePassword, updateUsername, type Token } from '../../authAPI'
+import {
+  deleteAccount,
+  updatePassword,
+  updateUsername,
+  type Token,
+} from '../../authAPI'
 
 export function useUpdateUsername() {
   return useMutation<Token, Error, { newUsername: string; password: string }>({
@@ -17,5 +22,11 @@ export function useUpdatePassword() {
   >({
     mutationFn: ({ currentPassword, newPassword }) =>
       updatePassword(currentPassword, newPassword),
+  })
+}
+
+export function useDeleteAccount() {
+  return useMutation<null, Error, { password: string }>({
+    mutationFn: ({ password }) => deleteAccount(password),
   })
 }

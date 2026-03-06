@@ -162,3 +162,6 @@ class MeetingMongoRepository(AbstractMeetingRepository):
                 detail=f"Meeting with id {id} not found",
             )
         self._collection.delete_one({"username": username, "_id": ObjectId(id)})
+
+    def delete_user_data(self, username: str) -> None:
+        self._collection.delete_many({"username": username})

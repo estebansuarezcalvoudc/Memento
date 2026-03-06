@@ -117,3 +117,13 @@ class MeetingRepository(ABC):
             HTTPException: If meeting not found
         """
         pass
+
+    @abstractmethod
+    def delete_user_data(self, username: str) -> None:
+        """
+        Delete all meetings belonging to a user
+
+        Args:
+            username: Username whose data will be deleted
+        """
+        pass

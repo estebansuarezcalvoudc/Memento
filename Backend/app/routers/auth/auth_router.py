@@ -9,6 +9,7 @@ from ...dependencies.service_dependencies import get_auth_service
 from ...schemas.auth.auth_schema import (
     ChangePasswordRequest,
     ChangeUsernameRequest,
+    DeleteAccountRequest,
     Token,
     User,
     UserCreate,
@@ -83,4 +84,22 @@ async def change_password(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error while changing password",
+        )
+
+
+@router.delete("", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_account(
+    body: DeleteAccountRequest,
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    service: Annotated[AuthService, Depends(get_auth_service)],
+) -> None:
+    try:
+        service.delete_account(current_user.username, body.password)
+    except HTTPException:
+        raise
+    except Exception as e:
+        _logger.error(f"Error deleting account: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error while deleting account",
         )
