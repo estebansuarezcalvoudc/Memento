@@ -195,6 +195,38 @@ class TestModelsEndpoints:
         call_args = mock_mongo.update_one.call_args
         assert "settings.models.summary_model" in call_args[0][1]["$set"]
 
+    def test_get_chat_model_should_return_ollama_defaults_when_initialized_at_registration(
+        self, client: TestClient, auth_headers: dict, mock_mongo
+    ):
+        # Simulate the exact document produced by initialize_user_settings
+        mock_mongo.find_one.return_value = {
+            "username": "test@example.com",
+            "password": "$2b$12$test_hashed_password",
+            "settings": {
+                "providers": {
+                    "Ollama": {"active": True},
+                    "OpenAI": {"active": False},
+                },
+                "models": {
+                    "chat_model": {
+                        "provider": "Ollama",
+                        "model_name": "llama3.2:latest",
+                        "temperature": 0.7,
+                        "max_tokens": 2000,
+                    }
+                },
+            },
+        }
+
+        response = client.get("/settings/models/chat", headers=auth_headers)
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["provider"] == "Ollama"
+        assert data["model_name"] == "llama3.2:latest"
+        assert data["temperature"] == 0.7
+        assert data["max_tokens"] == 2000
+
     def test_models_endpoints_should_require_authentication(
         self, client: TestClient, mock_mongo
     ):

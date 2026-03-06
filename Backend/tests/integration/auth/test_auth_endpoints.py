@@ -49,6 +49,41 @@ class TestAuthEndpoints:
         assert "already exists" in response.json()["detail"].lower()
         mock_mongo.insert_one.assert_not_called()
 
+    def test_register_should_initialize_settings_with_ollama_active(
+        self, client: TestClient, mock_mongo
+    ):
+        mock_mongo.find_one.return_value = None  # User doesn't exist
+        mock_mongo.insert_one.return_value = MagicMock(inserted_id="test_id")
+
+        response = client.post(
+            "/auth/register",
+            json={"username": "newuser@example.com", "password": "securepass123"},
+        )
+
+        assert response.status_code == 200
+
+        # Find the update_one call that contains $setOnInsert (settings initialization)
+        set_on_insert_calls = [
+            call
+            for call in mock_mongo.update_one.call_args_list
+            if "$setOnInsert" in call.args[1]
+        ]
+        assert (
+            len(set_on_insert_calls) == 1
+        ), "Expected exactly one $setOnInsert call for settings initialization"
+
+        inserted = set_on_insert_calls[0].args[1]["$setOnInsert"]
+        providers = inserted["settings"]["providers"]
+        chat_model = inserted["settings"]["models"]["chat_model"]
+
+        assert providers["Ollama"]["active"] is True
+        assert providers["OpenAI"]["active"] is False
+        assert chat_model["provider"] == "Ollama"
+        assert chat_model["model_name"] == "llama3.2:latest"
+
+        # Verify upsert=True was passed
+        assert set_on_insert_calls[0].kwargs.get("upsert") is True
+
     def test_register_should_validate_required_fields(
         self, client: TestClient, mock_mongo
     ):
