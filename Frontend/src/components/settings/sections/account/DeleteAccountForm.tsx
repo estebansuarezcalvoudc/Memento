@@ -1,6 +1,11 @@
 import { useActionState } from 'react'
+import { useNavigate, type NavigateFunction } from 'react-router-dom'
 
 import { useDeleteAccount } from '../../../../api/queries/auth/useAuthQueries'
+import {
+  useSetIsUserAuth,
+  type SetIsUserAuth,
+} from '../../../../stores/authStore'
 import Input from '../../../common/Input'
 import CancelButton from '../ui/CancelButton'
 import ConfirmButton from '../ui/ConfirmButton'
@@ -16,15 +21,24 @@ interface DeleteAccountFormProps {
 
 export default function DeleteAccountForm({ onClose }: DeleteAccountFormProps) {
   const { mutateAsync: deleteAccount } = useDeleteAccount()
+  const navigate = useNavigate()
+  const setIsUserAuth = useSetIsUserAuth()
 
   const [formState, formAction, isPending] = useActionState<
     FormState,
     FormData
   >(
     (prev, formData) =>
-      deleteAccountAction(prev, formData, deleteAccount, onClose),
+      deleteAccountAction(
+        prev,
+        formData,
+        deleteAccount,
+        navigate,
+        setIsUserAuth,
+      ),
     { errors: null },
   )
+
   return (
     <form action={formAction} className="flex flex-col gap-1">
       <Input name="password" type="password" label="Password" />
@@ -41,7 +55,8 @@ async function deleteAccountAction(
   _prev: FormState,
   formData: FormData,
   deleteAccount: (vars: { password: string }) => Promise<null>,
-  onClose: () => void,
+  navigate: NavigateFunction,
+  setIsUserAuth: SetIsUserAuth,
 ): Promise<FormState> {
   const password = (formData.get('password') ?? '') as string
 
@@ -51,7 +66,8 @@ async function deleteAccountAction(
 
   try {
     await deleteAccount({ password })
-    onClose()
+    setIsUserAuth(false)
+    navigate('/')
     return { errors: null }
   } catch (error) {
     return {
