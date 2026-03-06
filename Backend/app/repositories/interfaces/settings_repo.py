@@ -167,13 +167,15 @@ class SettingsRepository(ABC):
         pass
 
     @abstractmethod
-    def initialize_user_settings(self, username: str) -> None:
+    def create_user_settings(self, username: str, data: dict) -> None:
         """
-        Initialize default settings for a newly registered user.
-        Idempotent — safe to call even if the document already exists.
+        Persist an initial settings document for a user.
+        Idempotent — if a document already exists for the user it is left
+        untouched (insert-if-not-exists semantics).
 
         Args:
             username: User's username
+            data: Settings data to persist (structure is defined by the caller)
         """
         pass
 

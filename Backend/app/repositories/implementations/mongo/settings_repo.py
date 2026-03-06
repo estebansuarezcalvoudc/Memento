@@ -3,6 +3,7 @@ from typing import Optional, cast
 import pymongo
 
 from ....core.openai_factory import ProviderName
+from ....core.providers_config import AVAILABLE_PROVIDERS
 from ....core.settings import settings
 from ....schemas.settings.provider_schema import Provider, ProviderSettings
 from ...interfaces.settings_repo import SettingsRepository as AbstractSettingsRepository
@@ -10,11 +11,6 @@ from ...interfaces.settings_repo import SettingsRepository as AbstractSettingsRe
 
 class SettingsMongoRepository(AbstractSettingsRepository):
     """Repository for user settings data access"""
-
-    AVAILABLE_PROVIDERS = {
-        "OpenAI": {"requires_api_key": True},
-        "Ollama": {"requires_api_key": False},
-    }
 
     def __init__(self) -> None:
         myclient = pymongo.MongoClient(settings.mongo_url)
@@ -40,7 +36,7 @@ class SettingsMongoRepository(AbstractSettingsRepository):
         )
 
         providers = []
-        for provider_name, config in self.AVAILABLE_PROVIDERS.items():
+        for provider_name, config in AVAILABLE_PROVIDERS.items():
             user_provider_data = user_providers.get(provider_name, {})
 
             has_api_key = None
@@ -85,7 +81,7 @@ class SettingsMongoRepository(AbstractSettingsRepository):
             user_data.get("settings", {}).get("providers", {}).get(provider_name)
         )
 
-        requires_api_key = self.AVAILABLE_PROVIDERS.get(provider_name, {}).get(
+        requires_api_key = AVAILABLE_PROVIDERS.get(provider_name, {}).get(
             "requires_api_key", True
         )
 
@@ -108,10 +104,10 @@ class SettingsMongoRepository(AbstractSettingsRepository):
         Raises:
             ValueError: If provider is not valid or doesn't require API key
         """
-        if provider_name not in self.AVAILABLE_PROVIDERS:
+        if provider_name not in AVAILABLE_PROVIDERS:
             raise ValueError(f"Invalid provider: {provider_name}")
 
-        if not self.AVAILABLE_PROVIDERS[provider_name]["requires_api_key"]:
+        if not AVAILABLE_PROVIDERS[provider_name]["requires_api_key"]:
             raise ValueError(f"Provider {provider_name} does not require an API key")
 
         self._collection.update_one(
@@ -295,34 +291,16 @@ class SettingsMongoRepository(AbstractSettingsRepository):
             {"$set": {"settings.templates.system_prompt": system_prompt}},
         )
 
-    def delete_user_data(self, username: str) -> None:
-        self._collection.delete_many({"username": username})
-
-    def initialize_user_settings(self, username: str) -> None:
+    def create_user_settings(self, username: str, data: dict) -> None:
         """
-        Initialize default settings for a newly registered user.
-        Uses $setOnInsert so it is idempotent — existing documents are untouched.
+        Persist an initial settings document for a user.
+        Uses $setOnInsert so existing documents are never overwritten.
         """
         self._collection.update_one(
             {"username": username},
-            {
-                "$setOnInsert": {
-                    "username": username,
-                    "settings": {
-                        "providers": {
-                            "Ollama": {"active": True},
-                            "OpenAI": {"active": False},
-                        },
-                        "models": {
-                            "chat_model": {
-                                "provider": "Ollama",
-                                "model_name": "llama3.2:latest",
-                                "temperature": 0.7,
-                                "max_tokens": 2000,
-                            }
-                        },
-                    },
-                }
-            },
+            {"$setOnInsert": {"username": username, "settings": data}},
             upsert=True,
         )
+
+    def delete_user_data(self, username: str) -> None:
+        self._collection.delete_many({"username": username})
