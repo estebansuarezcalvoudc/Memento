@@ -1,15 +1,15 @@
 import {
   useGetAvailableModels,
-  useGetSummaryModel,
-  useUpdateSummaryModel,
+  useGetChatModel,
+  useUpdateChatModel,
 } from '../../../../api/queries/settings/useModelsQueries'
 import ModelConfigSection from '../ui/ModelConfigSection'
 
-export default function ModelSection() {
+export default function ChatModelSection() {
   const { data: availableModels, isLoading: modelsLoading } =
     useGetAvailableModels()
-  const { data: currentModel, isLoading: configLoading } = useGetSummaryModel()
-  const { mutate: updateModel, isPending, isError } = useUpdateSummaryModel()
+  const { data: currentModel, isLoading: configLoading } = useGetChatModel()
+  const { mutate: updateModel, isPending, isError } = useUpdateChatModel()
 
   return (
     <ModelConfigSection
