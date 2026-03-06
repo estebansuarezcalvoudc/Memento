@@ -90,7 +90,16 @@ class AuthService:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect password",
-                headers={"WWW-Authenticate": "Bearer"},
             )
 
         self._repository.update_password(username, pwd_context.hash(new_password))
+
+    def delete_account(self, username: str, password: str) -> None:
+        user = self._repository.retrieve_user(username)
+
+        if not user or not pwd_context.verify(password, user.password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password"
+            )
+
+        self._repository.delete_account(username)

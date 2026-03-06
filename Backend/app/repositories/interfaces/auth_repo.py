@@ -56,3 +56,15 @@ class AuthRepository(ABC):
         Raises:
             HTTPException: 404 if user is not found
         """
+
+    @abstractmethod
+    def delete_account(self, username: str) -> None:
+        """
+        Delete a user's account
+
+        Args:
+            username: Username of the user
+
+        Raises:
+            HTTPException: 400 if user could not be deleted
+        """
