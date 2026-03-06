@@ -44,4 +44,4 @@ pytest==9.0.2
 
 # Dev tools
 black==26.1.0
-isort==8.0.0
+isort==6.0.1
