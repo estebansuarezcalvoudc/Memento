@@ -25,7 +25,7 @@ export default function AccountView() {
 
   return (
     <>
-      <div className="mt-2 flex-col">
+      <div className="flex-col">
         <div className="flex justify-between">
           <span className="font-ubuntu text-lg text-stone-700">
             <strong>Email:</strong> {username}
