@@ -39,8 +39,8 @@ export default function UpdatePasswordForm({
       />
       {formState.errors && <ErrorMessage message={formState.errors[0]} />}
       <div className="mt-4 flex justify-center gap-x-2">
-        <ConfirmButton label="Save" isPending={isPending} />
         <CancelButton onClick={onClose} disabled={isPending} />
+        <ConfirmButton label="Save" isPending={isPending} />
       </div>
     </form>
   )
