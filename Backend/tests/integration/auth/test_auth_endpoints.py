@@ -450,4 +450,4 @@ class TestAuthEndpoints:
         assert response.status_code == 204
         assert call_order.count("delete_many") == 3
         assert call_order.count("delete_one") == 1
-        assert call_order.index("delete_one") > call_order.index("delete_many")
+        assert call_order[-1] == "delete_one"

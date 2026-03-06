@@ -66,6 +66,7 @@ async function deleteAccountAction(
 
   try {
     await deleteAccount({ password })
+    localStorage.removeItem('access_token')
     setIsUserAuth(false)
     navigate('/')
     return { errors: null }

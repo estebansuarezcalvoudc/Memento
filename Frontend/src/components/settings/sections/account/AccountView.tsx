@@ -25,13 +25,13 @@ export default function AccountView() {
 
   return (
     <>
-      <div className="flex-col">
+      <div>
         <div className="flex justify-between">
           <span className="font-ubuntu text-lg text-stone-700">
             <strong>Email:</strong> {username}
           </span>
           {activeForm === null && (
-            <div className="gap-x-8">
+            <div className="flex gap-x-4">
               <button
                 onClick={() => setActiveForm('email')}
                 className="font-ubuntu cursor-pointer rounded-lg px-2 py-1 text-base text-stone-500 underline hover:text-stone-800"
