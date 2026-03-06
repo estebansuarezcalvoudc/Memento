@@ -66,7 +66,13 @@ def get_vector_store() -> Chroma:
 
 
 def get_auth_service() -> AuthService:
-    return AuthService(AuthMongoRepository())
+    return AuthService(
+        AuthMongoRepository(),
+        MeetingMongoRepository(),
+        ConversationMongoRepository(),
+        SettingsMongoRepository(),
+        get_vector_store(),
+    )
 
 
 def get_rag_service() -> Rag:

@@ -2,18 +2,33 @@ from datetime import datetime, timedelta, timezone
 
 import jwt
 from fastapi import HTTPException, status
+from langchain_core.vectorstores import VectorStore
 from passlib.context import CryptContext
 
 from ...core.settings import settings
 from ...repositories.interfaces.auth_repo import AuthRepository
+from ...repositories.interfaces.conversation_repo import ConversationRepository
+from ...repositories.interfaces.meeting_repo import MeetingRepository
+from ...repositories.interfaces.settings_repo import SettingsRepository
 from ...schemas.auth.auth_schema import Token, UserCreate
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class AuthService:
-    def __init__(self, repository: AuthRepository) -> None:
+    def __init__(
+        self,
+        repository: AuthRepository,
+        meeting_repository: MeetingRepository,
+        conversation_repository: ConversationRepository,
+        settings_repository: SettingsRepository,
+        vector_store: VectorStore,
+    ) -> None:
         self._repository: AuthRepository = repository
+        self._meeting_repository = meeting_repository
+        self._conversation_repository = conversation_repository
+        self._settings_repository = settings_repository
+        self._vector_store = vector_store
 
     def register(self, user_create: UserCreate) -> Token:
         user = UserCreate(
@@ -102,4 +117,8 @@ class AuthService:
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password"
             )
 
+        self._meeting_repository.delete_user_data(username)
+        self._conversation_repository.delete_user_data(username)
+        self._settings_repository.delete_user_data(username)
+        self._vector_store.delete(where={"username": username})
         self._repository.delete_account(username)

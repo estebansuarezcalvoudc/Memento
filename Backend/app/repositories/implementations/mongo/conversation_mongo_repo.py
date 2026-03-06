@@ -120,3 +120,6 @@ class ConversationMongoRepository(AbstractConversationRepository):
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Conversation with id={id} not found",
             )
+
+    def delete_user_data(self, username: str) -> None:
+        self._collection.delete_many({"username": username})
