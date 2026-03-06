@@ -23,11 +23,11 @@ export default function ModelSection() {
 
   const value: ModelConfig = draft ??
     currentModel ?? {
-    provider: '',
-    modelName: '',
-    temperature: 0.7,
-    maxTokens: 2000,
-  }
+      provider: '',
+      modelName: '',
+      temperature: 0.7,
+      maxTokens: 2000,
+    }
 
   const isModified = draft !== undefined
   const isLoading = modelsLoading || configLoading

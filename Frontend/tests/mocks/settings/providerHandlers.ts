@@ -8,16 +8,20 @@ export const mockProviders = [
 ]
 
 export const providerHandlers = [
-  http.get('/api/settings/providers', withAuth(() =>
-    HttpResponse.json(mockProviders),
-  )),
-  http.post('/api/settings/providers/:name/api-key', withAuth(() =>
-    new HttpResponse(null, { status: 200 }),
-  )),
-  http.delete('/api/settings/providers/:name/api-key', withAuth(() =>
-    new HttpResponse(null, { status: 204 }),
-  )),
-  http.put('/api/settings/providers/:name/status', withAuth(() =>
-    new HttpResponse(null, { status: 200 }),
-  )),
+  http.get(
+    '/api/settings/providers',
+    withAuth(() => HttpResponse.json(mockProviders)),
+  ),
+  http.post(
+    '/api/settings/providers/:name/api-key',
+    withAuth(() => new HttpResponse(null, { status: 200 })),
+  ),
+  http.delete(
+    '/api/settings/providers/:name/api-key',
+    withAuth(() => new HttpResponse(null, { status: 204 })),
+  ),
+  http.put(
+    '/api/settings/providers/:name/status',
+    withAuth(() => new HttpResponse(null, { status: 200 })),
+  ),
 ]

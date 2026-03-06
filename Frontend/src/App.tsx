@@ -1,14 +1,14 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import Sidebar from './components/layout/sidebar/Sidebar'
-import Chat from './pages/chat/Chat'
-import Home from './pages/Home'
 import LogIn from './pages/auth/LogIn'
+import SignUp from './pages/auth/SignUp'
+import Chat from './pages/chat/Chat'
+import NewChat from './pages/chat/NewChat'
+import Home from './pages/Home'
 import MeetingContent from './pages/meetings/MeetingContent'
 import Meetings from './pages/meetings/Meetings'
-import NewChat from './pages/chat/NewChat'
 import NotFound from './pages/NotFound'
-import SignUp from './pages/auth/SignUp'
 import { useIsUserAuth } from './stores/authStore'
 import { useIsSidebarOpen } from './stores/sidebarStore'
 

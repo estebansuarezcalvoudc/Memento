@@ -1,6 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { type AvailableModel, type ModelConfig } from '../../../types/settings/models'
+import {
+  type AvailableModel,
+  type ModelConfig,
+} from '../../../types/settings/models'
 import fetchBackend from '../../utils/fetchBackend'
 
 const AVAILABLE_MODELS_KEY = ['models', 'available']

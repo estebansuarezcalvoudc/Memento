@@ -22,7 +22,7 @@ export default function UploadMeetingsDialog({
           </h2>
           <hr className="mt-4 mb-2 border-t border-stone-500 opacity-100 transition-opacity duration-300" />
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto pl-4 pr-2">
+        <div className="min-h-0 flex-1 overflow-y-auto pr-2 pl-4">
           <UploadMeetingsForm handleCloseDialog={onClose} />
         </div>
       </div>

@@ -6,7 +6,10 @@ interface SettingsSidebarProps {
   setSection: (section: Section) => void
 }
 
-export default function SettingsSidebar({ section, setSection }: SettingsSidebarProps) {
+export default function SettingsSidebar({
+  section,
+  setSection,
+}: SettingsSidebarProps) {
   return (
     <aside className="flex h-full w-48 flex-col bg-stone-100 px-2 pt-4 text-stone-800">
       {Object.values(Section).map(s => (

@@ -3,10 +3,6 @@ import { useActionState, useEffect, useState } from 'react'
 import { useUploadMeetings } from '../../../api/queries/useMeetingsQueries'
 import { useGetSupportedLanguages } from '../../../api/queries/useSettingsQueries'
 import { type Meeting } from '../../../types/meetings'
-import {
-  parseMeetingsFromFormData,
-  type MeetingMetadata,
-} from './parseMeetingsFormData'
 import FormButton from '../../common/FormButton'
 import FormErrors from '../../common/FormErrors'
 import AddMeetingButton from './AddMeetingButton'
@@ -14,6 +10,10 @@ import MeetingForm from './MeetingForm'
 import ServerErrorNotification from './notifications/ServerErrorNotification'
 import SuccessNotification from './notifications/SuccessNotification'
 import UploadingNotification from './notifications/UploadingNotification'
+import {
+  parseMeetingsFromFormData,
+  type MeetingMetadata,
+} from './parseMeetingsFormData'
 
 export interface MeetingFormData {
   id: string

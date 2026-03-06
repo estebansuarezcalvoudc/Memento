@@ -60,9 +60,16 @@ describe('TranscriptionView', () => {
 
   it('does not show the CUDA warning when device is cpu', async () => {
     server.use(
-      http.get('/api/settings/transcription/configuration', withAuth(() =>
-        HttpResponse.json({ model_size: 'base', compute_type: 'float16', device: 'cpu' }),
-      )),
+      http.get(
+        '/api/settings/transcription/configuration',
+        withAuth(() =>
+          HttpResponse.json({
+            model_size: 'base',
+            compute_type: 'float16',
+            device: 'cpu',
+          }),
+        ),
+      ),
     )
     setAuthToken()
     renderWithRouter(<TranscriptionView />)
@@ -76,10 +83,17 @@ describe('TranscriptionView', () => {
     const user = userEvent.setup()
     let patchedBody: unknown
     server.use(
-      http.patch('/api/settings/transcription/configuration', withAuth(async ({ request }) => {
-        patchedBody = await request.json()
-        return HttpResponse.json({ model_size: 'small', compute_type: 'float16', device: 'cuda' })
-      })),
+      http.patch(
+        '/api/settings/transcription/configuration',
+        withAuth(async ({ request }) => {
+          patchedBody = await request.json()
+          return HttpResponse.json({
+            model_size: 'small',
+            compute_type: 'float16',
+            device: 'cuda',
+          })
+        }),
+      ),
     )
     setAuthToken()
     renderWithRouter(<TranscriptionView />)
@@ -92,10 +106,17 @@ describe('TranscriptionView', () => {
     const user = userEvent.setup()
     let patchedBody: unknown
     server.use(
-      http.patch('/api/settings/transcription/configuration', withAuth(async ({ request }) => {
-        patchedBody = await request.json()
-        return HttpResponse.json({ model_size: 'base', compute_type: 'int8', device: 'cuda' })
-      })),
+      http.patch(
+        '/api/settings/transcription/configuration',
+        withAuth(async ({ request }) => {
+          patchedBody = await request.json()
+          return HttpResponse.json({
+            model_size: 'base',
+            compute_type: 'int8',
+            device: 'cuda',
+          })
+        }),
+      ),
     )
     setAuthToken()
     renderWithRouter(<TranscriptionView />)
@@ -108,10 +129,17 @@ describe('TranscriptionView', () => {
     const user = userEvent.setup()
     let patchedBody: unknown
     server.use(
-      http.patch('/api/settings/transcription/configuration', withAuth(async ({ request }) => {
-        patchedBody = await request.json()
-        return HttpResponse.json({ model_size: 'base', compute_type: 'float16', device: 'cpu' })
-      })),
+      http.patch(
+        '/api/settings/transcription/configuration',
+        withAuth(async ({ request }) => {
+          patchedBody = await request.json()
+          return HttpResponse.json({
+            model_size: 'base',
+            compute_type: 'float16',
+            device: 'cpu',
+          })
+        }),
+      ),
     )
     setAuthToken()
     renderWithRouter(<TranscriptionView />)

@@ -11,10 +11,14 @@ export const authHandlers = [
   http.post('/api/auth/register', () =>
     HttpResponse.json({ access_token: 'fake-token', token_type: 'bearer' }),
   ),
-  http.patch('/api/auth/username', withAuth(() =>
-    HttpResponse.json({ access_token: NEW_AUTH_TOKEN, token_type: 'bearer' }),
-  )),
-  http.patch('/api/auth/password', withAuth(() =>
-    new HttpResponse(null, { status: 204 }),
-  )),
+  http.patch(
+    '/api/auth/username',
+    withAuth(() =>
+      HttpResponse.json({ access_token: NEW_AUTH_TOKEN, token_type: 'bearer' }),
+    ),
+  ),
+  http.patch(
+    '/api/auth/password',
+    withAuth(() => new HttpResponse(null, { status: 204 })),
+  ),
 ]
