@@ -4,7 +4,7 @@ from ...core.openai_factory import ProviderName
 
 
 class ModelConfig(BaseModel):
-    """Configuration for a specific model (chat or summary)"""
+    """Configuration for a specific model (chat, summary, or retrieval)"""
 
     provider: ProviderName
     model_name: str

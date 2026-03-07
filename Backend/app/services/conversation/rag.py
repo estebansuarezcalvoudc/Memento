@@ -12,7 +12,7 @@ from app.core.language_model_factory import language_model_factory
 
 from ...core.logging import setup_logger
 from ...repositories.interfaces.settings_repo import SettingsRepository
-from ...schemas.conversation.language_models_schema import LanguageModelConfiguration
+from ...schemas.settings.model_schema import ModelConfig
 from .rag_prompts import CONTEXTUALIZE_PROMPT, QA_PROMPT
 
 _logger = setup_logger(__name__)
@@ -44,11 +44,26 @@ class Rag:
             if m.get("role") in ("user", "assistant") and m.get("content")
         ]
 
-        chat_llm_config = self._resolve_chat_model(username)
-        retrieval_llm_config = self._resolve_retrieval_model(username, chat_llm_config)
-        rag_chain = self._build_rag_chain(
-            chat_llm_config, retrieval_llm_config, username
+        chat_config = self._settings_repository.get_chat_model(username)
+        if chat_config is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Chat model not configured",
+            )
+        retrieval_config = (
+            self._settings_repository.get_retrieval_model(username) or chat_config
         )
+
+        _logger.info(
+            f"Chat model:      provider={chat_config.provider!r}  "
+            f"model={chat_config.model_name!r}"
+        )
+        _logger.info(
+            f"Retrieval model: provider={retrieval_config.provider!r}  "
+            f"model={retrieval_config.model_name!r}"
+        )
+
+        rag_chain = self._build_rag_chain(chat_config, retrieval_config, username)
         return await rag_chain.ainvoke(
             {
                 "input": message,
@@ -57,46 +72,14 @@ class Rag:
             }
         )
 
-    def _resolve_chat_model(self, username: str) -> LanguageModelConfiguration:
-        """Load chat model from user settings, falling back to defaults."""
-        chat_model = self._settings_repository.get_chat_model(username)
-        if chat_model:
-            return LanguageModelConfiguration(
-                provider=chat_model.provider,
-                model=chat_model.model_name,
-                options={
-                    "temperature": chat_model.temperature,
-                    "max_tokens": chat_model.max_tokens,
-                },
-            )
-        return LanguageModelConfiguration()
-
-    def _resolve_retrieval_model(
-        self,
-        username: str,
-        fallback: LanguageModelConfiguration,
-    ) -> LanguageModelConfiguration:
-        """Load retrieval model from user settings, falling back to the chat model."""
-        retrieval_model = self._settings_repository.get_retrieval_model(username)
-        if retrieval_model:
-            return LanguageModelConfiguration(
-                provider=retrieval_model.provider,
-                model=retrieval_model.model_name,
-                options={
-                    "temperature": retrieval_model.temperature,
-                    "max_tokens": retrieval_model.max_tokens,
-                },
-            )
-        return fallback
-
-    def _get_llm(self, llm_config: LanguageModelConfiguration, username: str):
+    def _get_llm(self, llm_config: ModelConfig, username: str):
         """Resolve provider settings and instantiate an LLM for the given config."""
         provider_settings = self._settings_repository.get_provider_settings(
-            username, llm_config.provider.value
+            username, llm_config.provider
         )
 
         _logger.debug(
-            f"_get_llm: provider={llm_config.provider.value!r} "
+            f"_get_llm: provider={llm_config.provider!r} "
             f"provider_settings={provider_settings!r}"
         )
 
@@ -115,12 +98,12 @@ class Rag:
 
     def _build_rag_chain(
         self,
-        chat_llm_config: LanguageModelConfiguration,
-        retrieval_llm_config: LanguageModelConfiguration,
+        chat_config: ModelConfig,
+        retrieval_config: ModelConfig,
         username: str,
     ):
-        llm_chat = self._get_llm(chat_llm_config, username)
-        llm_retrieval = self._get_llm(retrieval_llm_config, username)
+        llm_chat = self._get_llm(chat_config, username)
+        llm_retrieval = self._get_llm(retrieval_config, username)
 
         contextualize_chain = CONTEXTUALIZE_PROMPT | llm_retrieval | StrOutputParser()
 
@@ -146,26 +129,17 @@ class Rag:
                 if current_date_str
                 else None
             )
-            dateparser_settings = {"PREFER_DAY_OF_MONTH": "first"}
-            if relative_base:
-                dateparser_settings["RELATIVE_BASE"] = relative_base
-
-            chroma_filter: dict
+            dateparser_settings = Rag._build_dateparser_settings(relative_base)
             matches = dateparser.search.search_dates(
                 query, settings=dateparser_settings
             )
+
+            date_str: str | None = None
             if matches:
                 date_str = matches[0][1].strftime("%Y-%m-%d")
                 _logger.debug(f"Date filter applied: {date_str}")
-                chroma_filter = {
-                    "$and": [
-                        {"username": {"$eq": username}},
-                        {"date": {"$eq": date_str}},
-                    ]
-                }
-            else:
-                chroma_filter = {"username": {"$eq": username}}
 
+            chroma_filter = Rag._build_chroma_filter(username, date_str)
             return self._vector_store.similarity_search(
                 query, k=5, filter=chroma_filter
             )
@@ -180,6 +154,24 @@ class Rag:
             | llm_chat
             | StrOutputParser()
         )
+
+    @staticmethod
+    def _build_dateparser_settings(relative_base: datetime | None) -> dict:
+        settings: dict = {"PREFER_DAY_OF_MONTH": "first"}
+        if relative_base:
+            settings["RELATIVE_BASE"] = relative_base
+        return settings
+
+    @staticmethod
+    def _build_chroma_filter(username: str, date_str: str | None) -> dict:
+        if date_str:
+            return {
+                "$and": [
+                    {"username": {"$eq": username}},
+                    {"date": {"$eq": date_str}},
+                ]
+            }
+        return {"username": {"$eq": username}}
 
     @staticmethod
     def _format_docs(docs: list[Document]) -> str:

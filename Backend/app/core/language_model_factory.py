@@ -5,37 +5,33 @@ from langchain_openai import ChatOpenAI
 from app.core.encryption import decrypt_api_key
 from app.core.logging import setup_logger
 from app.core.settings import settings
-from app.schemas.conversation.language_models_schema import LanguageModelConfiguration
+from app.schemas.settings.model_schema import ModelConfig
 
 _logger = setup_logger(__name__)
 
 
 def language_model_factory(
-    llm_config: LanguageModelConfiguration, api_key_encrypted: str
+    llm_config: ModelConfig, api_key_encrypted: str
 ) -> BaseChatModel:
-    _logger.debug(f"Creating model {llm_config.model}")
+    _logger.debug(f"Creating model {llm_config.model_name}")
 
-    provider = llm_config.provider.value
-    options = llm_config.options.copy()
-    temperature = options.pop("temperature")
-    max_tokens = options.pop("max_tokens")
-
-    match provider:
+    match llm_config.provider:
         case "Ollama":
             return ChatOllama(
                 base_url=settings.ollama_url,
-                model=llm_config.model,
-                temperature=temperature,
-                num_predict=max_tokens,
+                model=llm_config.model_name,
+                temperature=llm_config.temperature,
+                num_predict=llm_config.max_tokens,
             )
         case "OpenAI":
             api_key = decrypt_api_key(api_key_encrypted)
             return ChatOpenAI(
                 api_key=api_key,
-                model=llm_config.model,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                model_kwargs=options,
+                model=llm_config.model_name,
+                temperature=llm_config.temperature,
+                max_tokens=llm_config.max_tokens,
             )
         case _:
-            raise ValueError(f"Provider '{provider}' is not a valid provider")
+            raise ValueError(
+                f"Provider '{llm_config.provider}' is not a valid provider"
+            )

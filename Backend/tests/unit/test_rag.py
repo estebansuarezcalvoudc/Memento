@@ -4,10 +4,7 @@ Unit tests for Rag service: LLM selection logic.
 
 from unittest.mock import MagicMock, patch
 
-from app.schemas.conversation.language_models_schema import (
-    LanguageModelConfiguration,
-    ProviderType,
-)
+from app.schemas.settings.model_schema import ModelConfig
 from app.schemas.settings.provider_schema import ProviderSettings
 from app.services.conversation.rag import Rag
 
@@ -22,15 +19,17 @@ class TestBuildRagChain:
 
         rag = Rag(settings_repository=mock_repo, vector_store=MagicMock())
 
-        chat_config = LanguageModelConfiguration(
-            provider=ProviderType.OPENAI,
-            model="gpt-4o",
-            options={"temperature": 0.7, "max_tokens": 2000},
+        chat_config = ModelConfig(
+            provider="OpenAI",
+            model_name="gpt-4o",
+            temperature=0.7,
+            max_tokens=2000,
         )
-        retrieval_config = LanguageModelConfiguration(
-            provider=ProviderType.OLLAMA,
-            model="llama3.1",
-            options={"temperature": 0.2, "max_tokens": 1000},
+        retrieval_config = ModelConfig(
+            provider="Ollama",
+            model_name="llama3.1",
+            temperature=0.2,
+            max_tokens=1000,
         )
 
         with patch(
