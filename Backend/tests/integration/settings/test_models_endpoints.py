@@ -127,6 +127,32 @@ class TestModelsEndpoints:
         assert data["provider"] == "Ollama"
         assert data["model_name"] == "llama3.1"
 
+    def test_get_retrieval_model_should_return_user_configuration(
+        self, client: TestClient, auth_headers: dict, mock_mongo
+    ):
+        _ = mock_mongo  # Fixture needed for MongoDB mock setup
+        mock_mongo.find_one.return_value = {
+            "username": "test@example.com",
+            "password": "$2b$12$test_hashed_password",
+            "settings": {
+                "models": {
+                    "retrieval_model": {
+                        "provider": "Ollama",
+                        "model_name": "llama3.1",
+                        "temperature": 0.5,
+                        "max_tokens": 1500,
+                    },
+                }
+            },
+        }
+
+        response = client.get("/settings/models/retrieval", headers=auth_headers)
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["provider"] == "Ollama"
+        assert data["model_name"] == "llama3.1"
+
     def test_get_model_should_return_null_when_no_configuration(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
@@ -139,6 +165,10 @@ class TestModelsEndpoints:
         assert client.get("/settings/models/chat", headers=auth_headers).json() is None
         assert (
             client.get("/settings/models/summary", headers=auth_headers).json() is None
+        )
+        assert (
+            client.get("/settings/models/retrieval", headers=auth_headers).json()
+            is None
         )
 
     def test_update_chat_model_should_save_configuration(
@@ -194,6 +224,62 @@ class TestModelsEndpoints:
         mock_mongo.update_one.assert_called_once()
         call_args = mock_mongo.update_one.call_args
         assert "settings.models.summary_model" in call_args[0][1]["$set"]
+
+    def test_update_retrieval_model_should_save_configuration(
+        self, client: TestClient, auth_headers: dict, mock_mongo
+    ):
+        _ = mock_mongo  # Fixture needed for MongoDB mock setup
+        mock_mongo.find_one.return_value = {
+            "username": "test@example.com",
+            "password": "$2b$12$test_hashed_password",
+        }
+
+        request_data = {
+            "provider": "Ollama",
+            "model_name": "llama3.1",
+            "temperature": 0.5,
+            "max_tokens": 1500,
+        }
+
+        response = client.put(
+            "/settings/models/retrieval",
+            headers=auth_headers,
+            json=request_data,
+        )
+
+        assert response.status_code == 200
+        mock_mongo.update_one.assert_called_once()
+        call_args = mock_mongo.update_one.call_args
+        assert "settings.models.retrieval_model" in call_args[0][1]["$set"]
+
+    def test_update_retrieval_model_should_return_saved_configuration(
+        self, client: TestClient, auth_headers: dict, mock_mongo
+    ):
+        _ = mock_mongo  # Fixture needed for MongoDB mock setup
+        mock_mongo.find_one.return_value = {
+            "username": "test@example.com",
+            "password": "$2b$12$test_hashed_password",
+        }
+
+        request_data = {
+            "provider": "OpenAI",
+            "model_name": "gpt-4o-mini",
+            "temperature": 0.2,
+            "max_tokens": 1000,
+        }
+
+        response = client.put(
+            "/settings/models/retrieval",
+            headers=auth_headers,
+            json=request_data,
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["provider"] == request_data["provider"]
+        assert data["model_name"] == request_data["model_name"]
+        assert data["temperature"] == request_data["temperature"]
+        assert data["max_tokens"] == request_data["max_tokens"]
 
     def test_get_chat_model_should_return_ollama_defaults_when_initialized_at_registration(
         self, client: TestClient, auth_headers: dict, mock_mongo
@@ -254,6 +340,20 @@ class TestModelsEndpoints:
 
         response = client.put(
             "/settings/models/summary",
+            json={
+                "provider": "OpenAI",
+                "model_name": "gpt-4o",
+                "temperature": 0.7,
+                "max_tokens": 2000,
+            },
+        )
+        assert response.status_code == 401
+
+        response = client.get("/settings/models/retrieval")
+        assert response.status_code == 401
+
+        response = client.put(
+            "/settings/models/retrieval",
             json={
                 "provider": "OpenAI",
                 "model_name": "gpt-4o",
