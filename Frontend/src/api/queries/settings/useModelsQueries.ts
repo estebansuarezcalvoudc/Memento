@@ -62,3 +62,28 @@ export function useUpdateChatModel() {
     },
   })
 }
+
+const RETRIEVAL_MODEL_KEY = ['models', 'retrieval']
+
+export function useGetRetrievalModel() {
+  return useQuery<ModelConfig | null>({
+    queryKey: RETRIEVAL_MODEL_KEY,
+    queryFn: () => fetchBackend('GET', 'settings/models/retrieval'),
+  })
+}
+
+export function useUpdateRetrievalModel() {
+  const queryClient = useQueryClient()
+  return useMutation<ModelConfig, Error, ModelConfig>({
+    mutationFn: model =>
+      fetchBackend('PUT', 'settings/models/retrieval', {
+        provider: model.provider,
+        model_name: model.modelName,
+        temperature: model.temperature,
+        max_tokens: model.maxTokens,
+      }),
+    onSuccess: data => {
+      queryClient.setQueryData<ModelConfig>(RETRIEVAL_MODEL_KEY, data)
+    },
+  })
+}

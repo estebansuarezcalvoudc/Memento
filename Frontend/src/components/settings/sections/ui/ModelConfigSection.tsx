@@ -11,6 +11,13 @@ import ConfirmButton from './ConfirmButton'
 import ErrorMessage from './ErrorMessage'
 import SubSectionTitle from './SubSectionTitle'
 
+const DEFAULT_MODEL_CONFIG: ModelConfig = {
+  provider: '',
+  modelName: '',
+  temperature: 0.7,
+  maxTokens: 2000,
+}
+
 interface ModelConfigSectionProps {
   title: string
   availableModels: AvailableModel[] | undefined
@@ -32,24 +39,30 @@ export default function ModelConfigSection({
 }: ModelConfigSectionProps) {
   const [draft, setDraft] = useState<ModelConfig | undefined>(undefined)
 
-  const value: ModelConfig = draft ??
-    currentModel ?? {
-      provider: '',
-      modelName: '',
-      temperature: 0.7,
-      maxTokens: 2000,
-    }
-
+  const effectiveValue: ModelConfig =
+    draft ?? currentModel ?? DEFAULT_MODEL_CONFIG
   const isModified = draft !== undefined
-  const isValid = value.provider !== '' && value.modelName !== ''
+  const isValid =
+    effectiveValue.provider !== '' && effectiveValue.modelName !== ''
+
+  function patch(fields: Partial<ModelConfig>) {
+    setDraft({ ...effectiveValue, ...fields })
+  }
+
+  function handleModelChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const selected = availableModels?.find(m => m.id === e.target.value)
+    if (selected) {
+      patch({ modelName: selected.id, provider: selected.provider })
+    }
+  }
 
   function handleSave() {
     onSave(draft!)
     setDraft(undefined)
   }
 
-  function patch(fields: Partial<ModelConfig>) {
-    setDraft({ ...value, ...fields })
+  function handleCancel() {
+    setDraft(undefined)
   }
 
   return (
@@ -61,20 +74,13 @@ export default function ModelConfigSection({
         <>
           <Select
             label="Model"
-            value={value.modelName}
-            onChange={e => {
-              const selected = availableModels?.find(
-                m => m.id === e.target.value,
-              )
-              if (selected) {
-                patch({ modelName: selected.id, provider: selected.provider })
-              }
-            }}
+            value={effectiveValue.modelName}
+            onChange={handleModelChange}
           >
             <option value="">Select a model</option>
-            {(availableModels ?? []).map(m => (
-              <option key={m.id} value={m.id}>
-                {m.provider} — {m.id}
+            {(availableModels ?? []).map(model => (
+              <option key={model.id} value={model.id}>
+                {model.provider} — {model.id}
               </option>
             ))}
           </Select>
@@ -84,7 +90,7 @@ export default function ModelConfigSection({
             min={0}
             max={2}
             step={0.1}
-            value={value.temperature}
+            value={effectiveValue.temperature}
             onChange={e => patch({ temperature: parseFloat(e.target.value) })}
           />
           <Input
@@ -92,12 +98,12 @@ export default function ModelConfigSection({
             type="number"
             min={1}
             step={1}
-            value={value.maxTokens}
+            value={effectiveValue.maxTokens}
             onChange={e => patch({ maxTokens: parseInt(e.target.value) })}
           />
           <div className="mt-2 flex justify-end gap-2">
             <CancelButton
-              onClick={() => setDraft(undefined)}
+              onClick={handleCancel}
               disabled={isPending || !isModified}
             />
             <ConfirmButton

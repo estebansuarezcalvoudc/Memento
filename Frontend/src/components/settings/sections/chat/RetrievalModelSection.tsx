@@ -1,19 +1,20 @@
 import {
   useGetAvailableModels,
-  useGetChatModel,
-  useUpdateChatModel,
+  useGetRetrievalModel,
+  useUpdateRetrievalModel,
 } from '../../../../api/queries/settings/useModelsQueries'
 import ModelConfigSection from '../ui/ModelConfigSection'
 
-export default function ChatModelSection() {
+export default function RetrievalModelSection() {
   const { data: availableModels, isLoading: modelsLoading } =
     useGetAvailableModels()
-  const { data: currentModel, isLoading: configLoading } = useGetChatModel()
-  const { mutate: updateModel, isPending, isError } = useUpdateChatModel()
+  const { data: currentModel, isLoading: configLoading } =
+    useGetRetrievalModel()
+  const { mutate: updateModel, isPending, isError } = useUpdateRetrievalModel()
 
   return (
     <ModelConfigSection
-      title="Chat Model"
+      title="Retrieval Model"
       availableModels={availableModels}
       currentModel={currentModel}
       isLoading={modelsLoading || configLoading}
