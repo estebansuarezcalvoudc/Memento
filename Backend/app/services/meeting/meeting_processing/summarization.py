@@ -21,10 +21,15 @@ def get_meeting_summary(
     if llm_config is None:
         raise RuntimeError(f"Summary model not configured for user {username}")
 
+    _logger.debug(f"LLM config: {llm_config}")
     provider_settings = settings_repo.get_provider_settings(
         username, llm_config.provider
     )
-    if not provider_settings or not provider_settings.api_key_encrypted:
+
+    if not provider_settings or (
+        provider_settings.requires_api_key and not provider_settings.api_key_encrypted
+    ):
+        _logger.debug(f"Provider settings: {provider_settings}")
         raise RuntimeError(
             f"{llm_config.provider} API key not configured for user {username}"
         )

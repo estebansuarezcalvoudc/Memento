@@ -219,6 +219,7 @@ class SettingsMongoRepository(AbstractSettingsRepository):
         self._collection.update_one(
             {"username": username},
             {"$set": {"settings.models.summary_model": model.model_dump()}},
+            upsert=True,
         )
 
     def get_retrieval_model(self, username: str) -> ModelConfig | None:
@@ -236,6 +237,7 @@ class SettingsMongoRepository(AbstractSettingsRepository):
         self._collection.update_one(
             {"username": username},
             {"$set": {"settings.models.retrieval_model": model.model_dump()}},
+            upsert=True,
         )
 
     def get_transcription_settings(self, username: str) -> dict | None:
@@ -271,8 +273,7 @@ class SettingsMongoRepository(AbstractSettingsRepository):
             update_fields[f"settings.transcription.{key}"] = value
 
         self._collection.update_one(
-            {"username": username},
-            {"$set": update_fields},
+            {"username": username}, {"$set": update_fields}, upsert=True
         )
 
     def get_system_prompt(self, username: str) -> Optional[str]:
@@ -305,6 +306,7 @@ class SettingsMongoRepository(AbstractSettingsRepository):
         self._collection.update_one(
             {"username": username},
             {"$set": {"settings.templates.system_prompt": system_prompt}},
+            upsert=True,
         )
 
     def create_user_settings(self, username: str, data: dict) -> None:
