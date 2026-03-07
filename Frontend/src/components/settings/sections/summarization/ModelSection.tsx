@@ -19,7 +19,7 @@ export default function ModelSection() {
       isLoading={modelsLoading || configLoading}
       isPending={isPending}
       isError={isError}
-      onSave={config => updateModel(config)}
+      onSave={(config, options) => updateModel(config, options)}
     />
   )
 }
