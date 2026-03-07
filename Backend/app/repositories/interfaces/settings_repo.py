@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
+from ...schemas.settings.model_schema import ModelConfig
 from ...schemas.settings.provider_schema import Provider, ProviderSettings
 
 
@@ -95,26 +96,76 @@ class SettingsRepository(ABC):
         pass
 
     @abstractmethod
-    def get_model_settings(self, username: str) -> dict | None:
+    def get_chat_model(self, username: str) -> ModelConfig | None:
         """
-        Get user's model settings
+        Get user's chat model configuration
 
         Args:
             username: User's username
 
         Returns:
-            Dictionary with chat_model and summary_model or None
+            ModelConfig or None if not set
         """
         pass
 
     @abstractmethod
-    def update_model_settings(self, username: str, model_data: dict) -> None:
+    def update_chat_model(self, username: str, model: ModelConfig) -> None:
         """
-        Update user's model settings (partial update)
+        Update user's chat model configuration
 
         Args:
             username: User's username
-            model_data: Dictionary with chat_model and/or summary_model
+            model: Chat model configuration
+        """
+        pass
+
+    @abstractmethod
+    def get_summary_model(self, username: str) -> ModelConfig | None:
+        """
+        Get user's summary model configuration
+
+        Args:
+            username: User's username
+
+        Returns:
+            ModelConfig or None if not set
+        """
+        pass
+
+    @abstractmethod
+    def update_summary_model(self, username: str, model: ModelConfig) -> None:
+        """
+        Update user's summary model configuration
+
+        Args:
+            username: User's username
+            model: Summary model configuration
+        """
+        pass
+
+    @abstractmethod
+    def get_retrieval_model(self, username: str) -> ModelConfig | None:
+        """
+        Get user's retrieval model configuration.
+        The retrieval model is used to reformulate user messages into
+        optimised vector-store search queries.
+
+        Args:
+            username: User's username
+
+        Returns:
+            ModelConfig or None if not set
+        """
+        pass
+
+    @abstractmethod
+    def update_retrieval_model(self, username: str, model: ModelConfig) -> None:
+        """
+        Update user's retrieval model configuration
+
+        Args:
+            username: User's username
+            model: Retrieval model configuration
         """
         pass
 

@@ -44,8 +44,11 @@ class Rag:
             if m.get("role") in ("user", "assistant") and m.get("content")
         ]
 
-        llm_config = self._resolve_chat_model(username)
-        rag_chain = self._build_rag_chain(llm_config, username)
+        chat_llm_config = self._resolve_chat_model(username)
+        retrieval_llm_config = self._resolve_retrieval_model(username, chat_llm_config)
+        rag_chain = self._build_rag_chain(
+            chat_llm_config, retrieval_llm_config, username
+        )
         return await rag_chain.ainvoke(
             {
                 "input": message,
@@ -56,25 +59,44 @@ class Rag:
 
     def _resolve_chat_model(self, username: str) -> LanguageModelConfiguration:
         """Load chat model from user settings, falling back to defaults."""
-        model_settings = self._settings_repository.get_model_settings(username)
-        if model_settings and (chat_model := model_settings.get("chat_model")):
+        chat_model = self._settings_repository.get_chat_model(username)
+        if chat_model:
             return LanguageModelConfiguration(
-                provider=chat_model["provider"],
-                model=chat_model["model_name"],
+                provider=chat_model.provider,
+                model=chat_model.model_name,
                 options={
-                    "temperature": chat_model.get("temperature", 0.2),
-                    "max_tokens": chat_model.get("max_tokens", 2000),
+                    "temperature": chat_model.temperature,
+                    "max_tokens": chat_model.max_tokens,
                 },
             )
         return LanguageModelConfiguration()
 
-    def _build_rag_chain(self, llm_config: LanguageModelConfiguration, username: str):
+    def _resolve_retrieval_model(
+        self,
+        username: str,
+        fallback: LanguageModelConfiguration,
+    ) -> LanguageModelConfiguration:
+        """Load retrieval model from user settings, falling back to the chat model."""
+        retrieval_model = self._settings_repository.get_retrieval_model(username)
+        if retrieval_model:
+            return LanguageModelConfiguration(
+                provider=retrieval_model.provider,
+                model=retrieval_model.model_name,
+                options={
+                    "temperature": retrieval_model.temperature,
+                    "max_tokens": retrieval_model.max_tokens,
+                },
+            )
+        return fallback
+
+    def _get_llm(self, llm_config: LanguageModelConfiguration, username: str):
+        """Resolve provider settings and instantiate an LLM for the given config."""
         provider_settings = self._settings_repository.get_provider_settings(
             username, llm_config.provider.value
         )
 
         _logger.debug(
-            f"_build_rag_chain: provider={llm_config.provider.value!r} "
+            f"_get_llm: provider={llm_config.provider.value!r} "
             f"provider_settings={provider_settings!r}"
         )
 
@@ -87,20 +109,31 @@ class Rag:
                 detail=f"API key not configured for user {username}",
             )
 
-        llm = language_model_factory(
+        return language_model_factory(
             llm_config, provider_settings.api_key_encrypted or ""
         )
 
-        contextualize_chain = CONTEXTUALIZE_PROMPT | llm | StrOutputParser()
+    def _build_rag_chain(
+        self,
+        chat_llm_config: LanguageModelConfiguration,
+        retrieval_llm_config: LanguageModelConfiguration,
+        username: str,
+    ):
+        llm_chat = self._get_llm(chat_llm_config, username)
+        llm_retrieval = self._get_llm(retrieval_llm_config, username)
+
+        contextualize_chain = CONTEXTUALIZE_PROMPT | llm_retrieval | StrOutputParser()
 
         def contextualize_if_needed(input: dict) -> dict:
             current_date = input.get("current_date", "")
+
             if input.get("chat_history"):
                 query = contextualize_chain.invoke(input)
             elif current_date:
                 query = contextualize_chain.invoke({**input, "chat_history": []})
             else:
                 query = input["input"]
+
             _logger.debug(f"RAG query: {query}")
             return {"query": query, "current_date": current_date}
 
@@ -144,7 +177,7 @@ class Rag:
                 | Rag._format_docs
             )
             | QA_PROMPT
-            | llm
+            | llm_chat
             | StrOutputParser()
         )
 

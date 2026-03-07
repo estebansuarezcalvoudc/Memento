@@ -17,10 +17,3 @@ class AvailableModel(BaseModel):
 
     id: str  # Model identifier (e.g., "gpt-4o", "llama3.1")
     provider: str  # "OpenAI" or "Ollama"
-
-
-class ModelSettings(BaseModel):
-    """Model settings stored in MongoDB"""
-
-    chat_model: ModelConfig | None = None
-    summary_model: ModelConfig | None = None

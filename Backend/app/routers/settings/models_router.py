@@ -103,3 +103,40 @@ async def update_summary_model(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error while updating summary model",
         )
+
+
+@router.get("/retrieval", response_model=ModelConfig | None)
+async def get_retrieval_model(
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    service: Annotated[ModelsService, Depends(get_models_service)],
+) -> ModelConfig | None:
+    """Get user's configured retrieval model"""
+    try:
+        return service.get_retrieval_model(current_user.username)
+    except HTTPException:
+        raise
+    except Exception as e:
+        _logger.error(f"Error getting retrieval model: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error while getting retrieval model",
+        )
+
+
+@router.put("/retrieval", response_model=ModelConfig)
+async def update_retrieval_model(
+    model: ModelConfig,
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    service: Annotated[ModelsService, Depends(get_models_service)],
+) -> ModelConfig:
+    """Update user's retrieval model configuration"""
+    try:
+        return service.update_retrieval_model(current_user.username, model)
+    except HTTPException:
+        raise
+    except Exception as e:
+        _logger.error(f"Error updating retrieval model: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error while updating retrieval model",
+        )

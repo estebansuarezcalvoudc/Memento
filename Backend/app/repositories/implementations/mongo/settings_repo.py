@@ -5,6 +5,7 @@ import pymongo
 from ....core.openai_factory import ProviderName
 from ....core.providers_config import AVAILABLE_PROVIDERS
 from ....core.settings import settings
+from ....schemas.settings.model_schema import ModelConfig
 from ....schemas.settings.provider_schema import Provider, ProviderSettings
 from ...interfaces.settings_repo import SettingsRepository as AbstractSettingsRepository
 
@@ -186,40 +187,55 @@ class SettingsMongoRepository(AbstractSettingsRepository):
             {"$set": {f"settings.providers.{provider_name}.active": active}},
         )
 
-    def get_model_settings(self, username: str) -> dict | None:
-        """
-        Get user's model settings
-
-        Args:
-            username: User's username
-
-        Returns:
-            Dictionary with chat_model and summary_model or None
-        """
+    def get_chat_model(self, username: str) -> ModelConfig | None:
+        """Get user's chat model configuration"""
         user_data = self._collection.find_one(
-            {"username": username}, {"settings.models": 1, "_id": 0}
+            {"username": username}, {"settings.models.chat_model": 1, "_id": 0}
         )
-
         if not user_data or "settings" not in user_data:
             return None
+        data = user_data.get("settings", {}).get("models", {}).get("chat_model")
+        return ModelConfig(**data) if data else None
 
-        return user_data.get("settings", {}).get("models")
-
-    def update_model_settings(self, username: str, model_data: dict) -> None:
-        """
-        Update user's model settings (partial update)
-
-        Args:
-            username: User's username
-            model_data: Dictionary with chat_model and/or summary_model
-        """
-        update_fields = {}
-        for key, value in model_data.items():
-            update_fields[f"settings.models.{key}"] = value
-
+    def update_chat_model(self, username: str, model: ModelConfig) -> None:
+        """Update user's chat model configuration"""
         self._collection.update_one(
             {"username": username},
-            {"$set": update_fields},
+            {"$set": {"settings.models.chat_model": model.model_dump()}},
+        )
+
+    def get_summary_model(self, username: str) -> ModelConfig | None:
+        """Get user's summary model configuration"""
+        user_data = self._collection.find_one(
+            {"username": username}, {"settings.models.summary_model": 1, "_id": 0}
+        )
+        if not user_data or "settings" not in user_data:
+            return None
+        data = user_data.get("settings", {}).get("models", {}).get("summary_model")
+        return ModelConfig(**data) if data else None
+
+    def update_summary_model(self, username: str, model: ModelConfig) -> None:
+        """Update user's summary model configuration"""
+        self._collection.update_one(
+            {"username": username},
+            {"$set": {"settings.models.summary_model": model.model_dump()}},
+        )
+
+    def get_retrieval_model(self, username: str) -> ModelConfig | None:
+        """Get user's retrieval model configuration"""
+        user_data = self._collection.find_one(
+            {"username": username}, {"settings.models.retrieval_model": 1, "_id": 0}
+        )
+        if not user_data or "settings" not in user_data:
+            return None
+        data = user_data.get("settings", {}).get("models", {}).get("retrieval_model")
+        return ModelConfig(**data) if data else None
+
+    def update_retrieval_model(self, username: str, model: ModelConfig) -> None:
+        """Update user's retrieval model configuration"""
+        self._collection.update_one(
+            {"username": username},
+            {"$set": {"settings.models.retrieval_model": model.model_dump()}},
         )
 
     def get_transcription_settings(self, username: str) -> dict | None:
