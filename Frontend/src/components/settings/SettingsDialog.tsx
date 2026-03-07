@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import Dialog, { type DialogHandler } from '../common/Dialog'
 import AccountView from './sections/account/AccountView'
+import ChatView from './sections/chat/ChatView'
 import GeneralView from './sections/general/GeneralView'
 import ProvidersView from './sections/providers/ProvidersView'
 import { Section } from './sections/Section'
@@ -15,6 +16,7 @@ const SECTION_VIEWS: Record<Section, React.ComponentType> = {
   [Section.Provider]: ProvidersView,
   [Section.Transcription]: TranscriptionView,
   [Section.Summarization]: SummarizationView,
+  [Section.Chat]: ChatView,
   [Section.Account]: AccountView,
 }
 

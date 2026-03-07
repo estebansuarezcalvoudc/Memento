@@ -4,7 +4,7 @@ from ...core.openai_factory import ProviderName
 
 
 class ModelConfig(BaseModel):
-    """Configuration for a specific model (chat or summary)"""
+    """Configuration for a specific model (chat, summary, or retrieval)"""
 
     provider: ProviderName
     model_name: str
@@ -17,10 +17,3 @@ class AvailableModel(BaseModel):
 
     id: str  # Model identifier (e.g., "gpt-4o", "llama3.1")
     provider: str  # "OpenAI" or "Ollama"
-
-
-class ModelSettings(BaseModel):
-    """Model settings stored in MongoDB"""
-
-    chat_model: ModelConfig | None = None
-    summary_model: ModelConfig | None = None

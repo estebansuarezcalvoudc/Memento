@@ -3,6 +3,7 @@ export const Section = {
   Provider: 'Provider',
   Transcription: 'Transcription',
   Summarization: 'Summarization',
+  Chat: 'Chat',
   Account: 'Account',
 } as const
 

@@ -3,6 +3,7 @@ from openai import OpenAI
 
 from ...core.encryption import decrypt_api_key, encrypt_api_key
 from ...core.logging import setup_logger
+from ...core.providers_config import AVAILABLE_PROVIDERS
 from ...repositories.interfaces.settings_repo import SettingsRepository
 from ...schemas.settings.provider_schema import Provider
 
@@ -39,13 +40,13 @@ class ProvidersService:
         Raises:
             HTTPException: If provider is invalid or API key validation fails
         """
-        if provider_name not in self._repository.AVAILABLE_PROVIDERS:
+        if provider_name not in AVAILABLE_PROVIDERS:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid provider: {provider_name}",
             )
 
-        if not self._repository.AVAILABLE_PROVIDERS[provider_name]["requires_api_key"]:
+        if not AVAILABLE_PROVIDERS[provider_name]["requires_api_key"]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Provider {provider_name} does not require an API key",
@@ -71,7 +72,7 @@ class ProvidersService:
         Raises:
             HTTPException: If provider is invalid
         """
-        if provider_name not in self._repository.AVAILABLE_PROVIDERS:
+        if provider_name not in AVAILABLE_PROVIDERS:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid provider: {provider_name}",
@@ -105,7 +106,7 @@ class ProvidersService:
         Raises:
             HTTPException: If provider is invalid or it's the last active provider
         """
-        if provider_name not in self._repository.AVAILABLE_PROVIDERS:
+        if provider_name not in AVAILABLE_PROVIDERS:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid provider: {provider_name}",

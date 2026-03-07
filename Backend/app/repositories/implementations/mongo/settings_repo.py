@@ -3,18 +3,15 @@ from typing import Optional, cast
 import pymongo
 
 from ....core.openai_factory import ProviderName
+from ....core.providers_config import AVAILABLE_PROVIDERS
 from ....core.settings import settings
+from ....schemas.settings.model_schema import ModelConfig
 from ....schemas.settings.provider_schema import Provider, ProviderSettings
 from ...interfaces.settings_repo import SettingsRepository as AbstractSettingsRepository
 
 
 class SettingsMongoRepository(AbstractSettingsRepository):
     """Repository for user settings data access"""
-
-    AVAILABLE_PROVIDERS = {
-        "OpenAI": {"requires_api_key": True},
-        "Ollama": {"requires_api_key": False},
-    }
 
     def __init__(self) -> None:
         myclient = pymongo.MongoClient(settings.mongo_url)
@@ -40,7 +37,7 @@ class SettingsMongoRepository(AbstractSettingsRepository):
         )
 
         providers = []
-        for provider_name, config in self.AVAILABLE_PROVIDERS.items():
+        for provider_name, config in AVAILABLE_PROVIDERS.items():
             user_provider_data = user_providers.get(provider_name, {})
 
             has_api_key = None
@@ -85,10 +82,14 @@ class SettingsMongoRepository(AbstractSettingsRepository):
             user_data.get("settings", {}).get("providers", {}).get(provider_name)
         )
 
+        requires_api_key = AVAILABLE_PROVIDERS.get(provider_name, {}).get(
+            "requires_api_key", True
+        )
+
         if not provider_data:
             return None
 
-        return ProviderSettings(**provider_data)
+        return ProviderSettings(**provider_data, requires_api_key=requires_api_key)
 
     def save_provider_api_key_encrypted(
         self, username: str, provider_name: str, encrypted_api_key: str
@@ -104,10 +105,10 @@ class SettingsMongoRepository(AbstractSettingsRepository):
         Raises:
             ValueError: If provider is not valid or doesn't require API key
         """
-        if provider_name not in self.AVAILABLE_PROVIDERS:
+        if provider_name not in AVAILABLE_PROVIDERS:
             raise ValueError(f"Invalid provider: {provider_name}")
 
-        if not self.AVAILABLE_PROVIDERS[provider_name]["requires_api_key"]:
+        if not AVAILABLE_PROVIDERS[provider_name]["requires_api_key"]:
             raise ValueError(f"Provider {provider_name} does not require an API key")
 
         self._collection.update_one(
@@ -186,40 +187,57 @@ class SettingsMongoRepository(AbstractSettingsRepository):
             {"$set": {f"settings.providers.{provider_name}.active": active}},
         )
 
-    def get_model_settings(self, username: str) -> dict | None:
-        """
-        Get user's model settings
-
-        Args:
-            username: User's username
-
-        Returns:
-            Dictionary with chat_model and summary_model or None
-        """
+    def get_chat_model(self, username: str) -> ModelConfig | None:
+        """Get user's chat model configuration"""
         user_data = self._collection.find_one(
-            {"username": username}, {"settings.models": 1, "_id": 0}
+            {"username": username}, {"settings.models.chat_model": 1, "_id": 0}
         )
-
         if not user_data or "settings" not in user_data:
             return None
+        data = user_data.get("settings", {}).get("models", {}).get("chat_model")
+        return ModelConfig(**data) if data else None
 
-        return user_data.get("settings", {}).get("models")
-
-    def update_model_settings(self, username: str, model_data: dict) -> None:
-        """
-        Update user's model settings (partial update)
-
-        Args:
-            username: User's username
-            model_data: Dictionary with chat_model and/or summary_model
-        """
-        update_fields = {}
-        for key, value in model_data.items():
-            update_fields[f"settings.models.{key}"] = value
-
+    def update_chat_model(self, username: str, model: ModelConfig) -> None:
+        """Update user's chat model configuration"""
         self._collection.update_one(
             {"username": username},
-            {"$set": update_fields},
+            {"$set": {"settings.models.chat_model": model.model_dump()}},
+        )
+
+    def get_summary_model(self, username: str) -> ModelConfig | None:
+        """Get user's summary model configuration"""
+        user_data = self._collection.find_one(
+            {"username": username}, {"settings.models.summary_model": 1, "_id": 0}
+        )
+        if not user_data or "settings" not in user_data:
+            return None
+        data = user_data.get("settings", {}).get("models", {}).get("summary_model")
+        return ModelConfig(**data) if data else None
+
+    def update_summary_model(self, username: str, model: ModelConfig) -> None:
+        """Update user's summary model configuration"""
+        self._collection.update_one(
+            {"username": username},
+            {"$set": {"settings.models.summary_model": model.model_dump()}},
+            upsert=True,
+        )
+
+    def get_retrieval_model(self, username: str) -> ModelConfig | None:
+        """Get user's retrieval model configuration"""
+        user_data = self._collection.find_one(
+            {"username": username}, {"settings.models.retrieval_model": 1, "_id": 0}
+        )
+        if not user_data or "settings" not in user_data:
+            return None
+        data = user_data.get("settings", {}).get("models", {}).get("retrieval_model")
+        return ModelConfig(**data) if data else None
+
+    def update_retrieval_model(self, username: str, model: ModelConfig) -> None:
+        """Update user's retrieval model configuration"""
+        self._collection.update_one(
+            {"username": username},
+            {"$set": {"settings.models.retrieval_model": model.model_dump()}},
+            upsert=True,
         )
 
     def get_transcription_settings(self, username: str) -> dict | None:
@@ -255,8 +273,7 @@ class SettingsMongoRepository(AbstractSettingsRepository):
             update_fields[f"settings.transcription.{key}"] = value
 
         self._collection.update_one(
-            {"username": username},
-            {"$set": update_fields},
+            {"username": username}, {"$set": update_fields}, upsert=True
         )
 
     def get_system_prompt(self, username: str) -> Optional[str]:
@@ -289,6 +306,18 @@ class SettingsMongoRepository(AbstractSettingsRepository):
         self._collection.update_one(
             {"username": username},
             {"$set": {"settings.templates.system_prompt": system_prompt}},
+            upsert=True,
+        )
+
+    def create_user_settings(self, username: str, data: dict) -> None:
+        """
+        Persist an initial settings document for a user.
+        Uses $setOnInsert so existing documents are never overwritten.
+        """
+        self._collection.update_one(
+            {"username": username},
+            {"$setOnInsert": {"username": username, "settings": data}},
+            upsert=True,
         )
 
     def delete_user_data(self, username: str) -> None:

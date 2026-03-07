@@ -5,6 +5,7 @@ from fastapi import HTTPException, status
 from langchain_core.vectorstores import VectorStore
 from passlib.context import CryptContext
 
+from ...core.providers_config import DEFAULT_USER_SETTINGS
 from ...core.settings import settings
 from ...repositories.interfaces.auth_repo import AuthRepository
 from ...repositories.interfaces.conversation_repo import ConversationRepository
@@ -37,7 +38,11 @@ class AuthService:
         )
 
         self._repository.store_user(user)
+        self._initialize_default_settings(user.username)
         return AuthService._create_access_token(data={"sub": user.username})
+
+    def _initialize_default_settings(self, username: str) -> None:
+        self._settings_repository.create_user_settings(username, DEFAULT_USER_SETTINGS)
 
     @staticmethod
     def _create_access_token(data: dict) -> Token:

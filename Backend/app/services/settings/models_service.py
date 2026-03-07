@@ -55,17 +55,15 @@ class ModelsService:
 
     def get_chat_model(self, username: str) -> ModelConfig | None:
         """Get user's configured chat model"""
-        model_settings = self._repository.get_model_settings(username)
-        if model_settings is None:
-            return None
-        return model_settings.get("chat_model")
+        return self._repository.get_chat_model(username)
 
     def get_summary_model(self, username: str) -> ModelConfig | None:
         """Get user's configured summary model"""
-        model_settings = self._repository.get_model_settings(username)
-        if model_settings is None:
-            return None
-        return model_settings.get("summary_model")
+        return self._repository.get_summary_model(username)
+
+    def get_retrieval_model(self, username: str) -> ModelConfig | None:
+        """Get user's configured retrieval model"""
+        return self._repository.get_retrieval_model(username)
 
     def update_chat_model(self, username: str, model: ModelConfig) -> ModelConfig:
         """
@@ -78,9 +76,7 @@ class ModelsService:
         Returns:
             Updated ModelConfig
         """
-        self._repository.update_model_settings(
-            username, {"chat_model": model.model_dump()}
-        )
+        self._repository.update_chat_model(username, model)
         return model
 
     def update_summary_model(self, username: str, model: ModelConfig) -> ModelConfig:
@@ -94,7 +90,19 @@ class ModelsService:
         Returns:
             Updated ModelConfig
         """
-        self._repository.update_model_settings(
-            username, {"summary_model": model.model_dump()}
-        )
+        self._repository.update_summary_model(username, model)
+        return model
+
+    def update_retrieval_model(self, username: str, model: ModelConfig) -> ModelConfig:
+        """
+        Update user's retrieval model configuration
+
+        Args:
+            username: User's username
+            model: New retrieval model configuration
+
+        Returns:
+            Updated ModelConfig
+        """
+        self._repository.update_retrieval_model(username, model)
         return model

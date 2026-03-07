@@ -1,19 +1,20 @@
 import {
   useGetAvailableModels,
-  useGetSummaryModel,
-  useUpdateSummaryModel,
+  useGetRetrievalModel,
+  useUpdateRetrievalModel,
 } from '../../../../api/queries/settings/useModelsQueries'
 import ModelConfigSection from '../ui/ModelConfigSection'
 
-export default function ModelSection() {
+export default function RetrievalModelSection() {
   const { data: availableModels, isLoading: modelsLoading } =
     useGetAvailableModels()
-  const { data: currentModel, isLoading: configLoading } = useGetSummaryModel()
-  const { mutate: updateModel, isPending, isError } = useUpdateSummaryModel()
+  const { data: currentModel, isLoading: configLoading } =
+    useGetRetrievalModel()
+  const { mutate: updateModel, isPending, isError } = useUpdateRetrievalModel()
 
   return (
     <ModelConfigSection
-      title="Language Model"
+      title="Retrieval Model"
       availableModels={availableModels}
       currentModel={currentModel}
       isLoading={modelsLoading || configLoading}
