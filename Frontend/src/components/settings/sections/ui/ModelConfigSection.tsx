@@ -25,7 +25,7 @@ interface ModelConfigSectionProps {
   isLoading: boolean
   isPending: boolean
   isError: boolean
-  onSave: (config: ModelConfig) => void
+  onSave: (config: ModelConfig, options?: { onSuccess?: () => void }) => void
 }
 
 export default function ModelConfigSection({
@@ -57,8 +57,7 @@ export default function ModelConfigSection({
   }
 
   function handleSave() {
-    onSave(draft!)
-    setDraft(undefined)
+    onSave(draft!, { onSuccess: () => setDraft(undefined) })
   }
 
   function handleCancel() {
