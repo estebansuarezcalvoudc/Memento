@@ -14,16 +14,24 @@ AVAILABLE_PROVIDERS: dict[str, dict] = {
 }
 
 DEFAULT_USER_SETTINGS: dict = {
-    "providers": {
-        "Ollama": {"active": True},
-        "OpenAI": {"active": False},
-    },
     "models": {
         "chat_model": {
             "provider": "Ollama",
             "model_name": "llama3.2:latest",
             "temperature": 0.7,
             "max_tokens": 2000,
-        }
+        },
+        "summary_model": {
+            "provider": "Ollama",
+            "model_name": "llama3.2:latest",
+            "temperature": 0.3,
+            "max_tokens": 4000,
+        },
+        "retrieval_model": {
+            "provider": "Ollama",
+            "model_name": "llama3.2:latest",
+            "temperature": 0.0,
+            "max_tokens": 500,
+        },
     },
 }

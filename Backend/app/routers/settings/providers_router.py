@@ -6,11 +6,7 @@ from ...core.logging import setup_logger
 from ...dependencies.auth_dependencies import get_current_active_user
 from ...dependencies.service_dependencies import get_providers_service
 from ...schemas.auth.auth_schema import User
-from ...schemas.settings.provider_schema import (
-    Provider,
-    ProviderAPIKeyRequest,
-    ProviderStatusRequest,
-)
+from ...schemas.settings.provider_schema import Provider, ProviderAPIKeyRequest
 from ...services.settings.providers_service import ProvidersService
 
 _logger = setup_logger(__name__)
@@ -26,7 +22,7 @@ async def get_providers(
     Get all available providers with their status for the current user
 
     Returns:
-        ProvidersListResponse: List of providers with their configuration status
+        List of providers with their configuration status
     """
     try:
         return service.get_providers(current_user.username)
@@ -85,7 +81,8 @@ async def delete_provider_api_key(
     service: Annotated[ProvidersService, Depends(get_providers_service)],
 ) -> None:
     """
-    Delete API key for a provider
+    Delete API key for a provider. Any models currently using this provider
+    will be automatically reset to Ollama defaults.
 
     Args:
         provider_name: Name of the provider (e.g., "OpenAI")
@@ -102,38 +99,4 @@ async def delete_provider_api_key(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error while deleting API key",
-        )
-
-
-@router.put(
-    "/{provider_name}/status",
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-async def update_provider_status(
-    provider_name: str,
-    request: ProviderStatusRequest,
-    current_user: Annotated[User, Depends(get_current_active_user)],
-    service: Annotated[ProvidersService, Depends(get_providers_service)],
-) -> None:
-    """
-    Update provider active status
-
-    Args:
-        provider_name: Name of the provider (e.g., "OpenAI")
-        request: Request body containing the active status
-
-    Raises:
-        400: If provider is invalid
-    """
-    try:
-        service.set_provider_status(
-            current_user.username, provider_name, request.active
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        _logger.error(f"Error updating provider status: {str(e)}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error while updating provider status",
         )

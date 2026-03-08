@@ -12,10 +12,17 @@ from app.services.conversation.rag import Rag
 class TestBuildRagChain:
     def test_build_rag_chain_should_use_different_llms_for_retrieval_and_chat(self):
         mock_repo = MagicMock()
-        mock_repo.get_provider_settings.return_value = ProviderSettings(
-            requires_api_key=False,
-            active=True,
-        )
+
+        # OpenAI returns provider settings with an API key; Ollama has no DB entry (None)
+        def mock_get_provider_settings(username, provider_name):
+            if provider_name == "OpenAI":
+                return ProviderSettings(
+                    requires_api_key=True,
+                    api_key_encrypted="encrypted-key",
+                )
+            return None  # Ollama has no entry in DB
+
+        mock_repo.get_provider_settings.side_effect = mock_get_provider_settings
 
         rag = Rag(settings_repository=mock_repo, vector_store=MagicMock())
 

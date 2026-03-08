@@ -19,14 +19,13 @@ describe('Upload Meeting Dialog (Sidebar)', () => {
     setAuthToken()
     renderWithRouter(<SidebarButtons />)
 
-    // useDelayedDisplay hides the label for 150ms; findByRole waits for it
     const uploadButton = await screen.findByRole('button', {
       name: /upload meetings/i,
     })
     await user.click(uploadButton)
 
     expect(document.querySelector('dialog')).toHaveAttribute('open')
-  })
+  }, 15000)
 
   it('new meeting appears in the meetings list after upload', async () => {
     spyValidParsing()

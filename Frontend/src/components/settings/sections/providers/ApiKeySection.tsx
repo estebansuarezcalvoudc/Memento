@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
 import { useDeleteApiKey } from '../../../../api/queries/settings/useProvidersQueries'
-import { HttpError } from '../../../../api/utils/fetchBackend'
 import ErrorMessage from '../ui/ErrorMessage'
 import ApiKeyForm from './ApiKeyForm'
 
@@ -21,14 +20,8 @@ export default function ApiKeySection({
   function handleDelete() {
     setDeleteError(null)
     deleteApiKey(providerName, {
-      onError: err => {
-        if (err instanceof HttpError && err.status === 400) {
-          setDeleteError(
-            'Cannot remove the API key of the last active provider',
-          )
-        } else {
-          setDeleteError('Failed to remove API key. Please try again.')
-        }
+      onError: () => {
+        setDeleteError('Failed to remove API key. Please try again.')
       },
     })
   }

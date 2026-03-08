@@ -19,7 +19,13 @@ const CURRENT_MODEL = {
 function renderSection(
   overrides: Partial<React.ComponentProps<typeof ModelConfigSection>> = {},
 ) {
-  const onSave = vi.fn()
+  const onSave = vi
+    .fn()
+    .mockImplementation(
+      (_config: ModelConfig, opts?: { onSuccess?: () => void }) => {
+        opts?.onSuccess?.()
+      },
+    )
   render(
     <ModelConfigSection
       title="Test Model"
@@ -100,12 +106,15 @@ describe('ModelConfigSection', () => {
     const { onSave } = renderSection()
     await user.selectOptions(screen.getByLabelText('Model'), 'gpt-4o')
     await user.click(screen.getByRole('button', { name: 'Save' }))
-    expect(onSave).toHaveBeenCalledWith({
-      provider: 'OpenAI',
-      modelName: 'gpt-4o',
-      temperature: 0.7,
-      maxTokens: 2000,
-    })
+    expect(onSave).toHaveBeenCalledWith(
+      {
+        provider: 'OpenAI',
+        modelName: 'gpt-4o',
+        temperature: 0.7,
+        maxTokens: 2000,
+      },
+      expect.any(Object),
+    )
   })
 
   it('disables Save and Cancel after saving', async () => {

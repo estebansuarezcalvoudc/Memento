@@ -73,16 +73,73 @@ class TestAuthEndpoints:
         ), "Expected exactly one $setOnInsert call for settings initialization"
 
         inserted = set_on_insert_calls[0].args[1]["$setOnInsert"]
-        providers = inserted["settings"]["providers"]
         chat_model = inserted["settings"]["models"]["chat_model"]
 
-        assert providers["Ollama"]["active"] is True
-        assert providers["OpenAI"]["active"] is False
         assert chat_model["provider"] == "Ollama"
         assert chat_model["model_name"] == "llama3.2:latest"
 
         # Verify upsert=True was passed
         assert set_on_insert_calls[0].kwargs.get("upsert") is True
+
+    def test_register_should_initialize_all_three_models_with_ollama_defaults(
+        self, client: TestClient, mock_mongo
+    ):
+        mock_mongo.find_one.return_value = None
+        mock_mongo.insert_one.return_value = MagicMock(inserted_id="test_id")
+
+        client.post(
+            "/auth/register",
+            json={"username": "newuser@example.com", "password": "securepass123"},
+        )
+
+        set_on_insert_calls = [
+            call
+            for call in mock_mongo.update_one.call_args_list
+            if "$setOnInsert" in call.args[1]
+        ]
+        inserted = set_on_insert_calls[0].args[1]["$setOnInsert"]
+        models = inserted["settings"]["models"]
+
+        assert models["chat_model"] == {
+            "provider": "Ollama",
+            "model_name": "llama3.2:latest",
+            "temperature": 0.7,
+            "max_tokens": 2000,
+        }
+        assert models["summary_model"] == {
+            "provider": "Ollama",
+            "model_name": "llama3.2:latest",
+            "temperature": 0.3,
+            "max_tokens": 4000,
+        }
+        assert models["retrieval_model"] == {
+            "provider": "Ollama",
+            "model_name": "llama3.2:latest",
+            "temperature": 0.0,
+            "max_tokens": 500,
+        }
+
+    def test_register_should_not_initialize_provider_settings(
+        self, client: TestClient, mock_mongo
+    ):
+        mock_mongo.find_one.return_value = None
+        mock_mongo.insert_one.return_value = MagicMock(inserted_id="test_id")
+
+        client.post(
+            "/auth/register",
+            json={"username": "newuser@example.com", "password": "securepass123"},
+        )
+
+        set_on_insert_calls = [
+            call
+            for call in mock_mongo.update_one.call_args_list
+            if "$setOnInsert" in call.args[1]
+        ]
+        inserted = set_on_insert_calls[0].args[1]["$setOnInsert"]
+
+        # providers are derived at read-time from AVAILABLE_PROVIDERS;
+        # nothing should be persisted for them at registration
+        assert "providers" not in inserted["settings"]
 
     def test_register_should_validate_required_fields(
         self, client: TestClient, mock_mongo

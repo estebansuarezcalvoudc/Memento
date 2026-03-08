@@ -35,58 +35,6 @@ describe('ProvidersView', () => {
     renderWithRouter(<ProvidersView />)
     expect(await screen.findByText(/Error/i)).toBeInTheDocument()
   })
-
-  it('active provider has its toggle checked', async () => {
-    setAuthToken()
-    renderWithRouter(<ProvidersView />)
-    await screen.findByText('ollama')
-    const [ollamaSwitch] = screen.getAllByRole('switch')
-    expect(ollamaSwitch).toHaveAttribute('aria-checked', 'true')
-  })
-
-  it('inactive provider has its toggle unchecked', async () => {
-    setAuthToken()
-    renderWithRouter(<ProvidersView />)
-    await screen.findByText('openai')
-    const switches = screen.getAllByRole('switch')
-    expect(switches[1]).toHaveAttribute('aria-checked', 'false')
-  })
-
-  it('clicking a toggle calls the status endpoint', async () => {
-    const user = userEvent.setup()
-    let capturedBody: unknown
-    server.use(
-      http.put(
-        '/api/settings/providers/:name/status',
-        withAuth(async ({ request }) => {
-          capturedBody = await request.json()
-          return new HttpResponse(null, { status: 200 })
-        }),
-      ),
-    )
-    setAuthToken()
-    renderWithRouter(<ProvidersView />)
-    await screen.findByText('ollama')
-    await user.click(screen.getAllByRole('switch')[0])
-    await waitFor(() => expect(capturedBody).toEqual({ active: false }))
-  })
-
-  it('shows an error tooltip when toggling fails', async () => {
-    const user = userEvent.setup()
-    server.use(
-      http.put(
-        '/api/settings/providers/:name/status',
-        withAuth(() => new HttpResponse(null, { status: 400 })),
-      ),
-    )
-    setAuthToken()
-    renderWithRouter(<ProvidersView />)
-    await screen.findByText('ollama')
-    await user.click(screen.getAllByRole('switch')[0])
-    expect(
-      await screen.findByText('At least one provider needs to be available'),
-    ).toBeInTheDocument()
-  })
 })
 
 describe('ProvidersView – API key section', () => {
@@ -114,7 +62,6 @@ describe('ProvidersView – API key section', () => {
               name: 'openai',
               requires_api_key: true,
               has_api_key: false,
-              active: false,
             },
           ]),
         ),
@@ -138,7 +85,6 @@ describe('ProvidersView – API key section', () => {
               name: 'openai',
               requires_api_key: true,
               has_api_key: false,
-              active: false,
             },
           ]),
         ),
@@ -154,58 +100,6 @@ describe('ProvidersView – API key section', () => {
     ).toBeInTheDocument()
   })
 
-  it('toggle is disabled when provider requires API key but none has been added', async () => {
-    server.use(
-      http.get(
-        '/api/settings/providers',
-        withAuth(() =>
-          HttpResponse.json([
-            {
-              name: 'openai',
-              requires_api_key: true,
-              has_api_key: false,
-              active: false,
-            },
-          ]),
-        ),
-      ),
-    )
-    setAuthToken()
-    renderWithRouter(<ProvidersView />)
-    await screen.findByText('openai')
-    const toggle = screen.getByRole('switch')
-    expect(toggle).toBeDisabled()
-  })
-
-  it('shows tooltip when clicking toggle with missing API key', async () => {
-    const user = userEvent.setup()
-    server.use(
-      http.get(
-        '/api/settings/providers',
-        withAuth(() =>
-          HttpResponse.json([
-            {
-              name: 'openai',
-              requires_api_key: true,
-              has_api_key: false,
-              active: false,
-            },
-          ]),
-        ),
-      ),
-    )
-    setAuthToken()
-    renderWithRouter(<ProvidersView />)
-    await screen.findByText('openai')
-    const overlay = document.querySelector('.cursor-not-allowed') as HTMLElement
-    await user.click(overlay)
-    expect(
-      screen.getByText(
-        'You must add an API key before activating this provider',
-      ),
-    ).toBeInTheDocument()
-  })
-
   it('submitting an empty API key shows a validation error', async () => {
     const user = userEvent.setup()
     server.use(
@@ -217,7 +111,6 @@ describe('ProvidersView – API key section', () => {
               name: 'openai',
               requires_api_key: true,
               has_api_key: false,
-              active: false,
             },
           ]),
         ),
@@ -246,7 +139,6 @@ describe('ProvidersView – API key section', () => {
               name: 'openai',
               requires_api_key: true,
               has_api_key: false,
-              active: false,
             },
           ]),
         ),
@@ -291,25 +183,5 @@ describe('ProvidersView – API key section', () => {
       await screen.findByRole('button', { name: 'Remove API key' }),
     )
     await waitFor(() => expect(deleteCalled).toBe(true))
-  })
-
-  it('shows an error when deleting the last active provider API key', async () => {
-    const user = userEvent.setup()
-    server.use(
-      http.delete(
-        '/api/settings/providers/:name/api-key',
-        withAuth(() => new HttpResponse(null, { status: 400 })),
-      ),
-    )
-    setAuthToken()
-    renderWithRouter(<ProvidersView />)
-    await user.click(
-      await screen.findByRole('button', { name: 'Remove API key' }),
-    )
-    expect(
-      await screen.findByText(
-        'Cannot remove the API key of the last active provider',
-      ),
-    ).toBeInTheDocument()
   })
 })

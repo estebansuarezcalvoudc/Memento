@@ -4,6 +4,7 @@ import { type Provider } from '../../../types/settings/providers'
 import fetchBackend from '../../utils/fetchBackend'
 
 const PROVIDERS_KEY = ['providers']
+const AVAILABLE_MODELS_KEY = ['models', 'available']
 
 export function useGetProviders() {
   return useQuery<Provider[]>({
@@ -17,19 +18,10 @@ export function useDeleteApiKey() {
   return useMutation<null, Error, string>({
     mutationFn: providerName =>
       fetchBackend('DELETE', `settings/providers/${providerName}/api-key`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: PROVIDERS_KEY }),
-  })
-}
-
-export function useUpdateProviderStatus() {
-  const queryClient = useQueryClient()
-  return useMutation<null, Error, { providerName: string; active: boolean }>({
-    mutationFn: ({ providerName, active }) =>
-      fetchBackend('PUT', `settings/providers/${providerName}/status`, {
-        active,
-      }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: PROVIDERS_KEY }),
-    onError: () => queryClient.invalidateQueries({ queryKey: PROVIDERS_KEY }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PROVIDERS_KEY })
+      queryClient.invalidateQueries({ queryKey: AVAILABLE_MODELS_KEY })
+    },
   })
 }
 
