@@ -24,6 +24,18 @@ DEFAULT_USER_SETTINGS: dict = {
             "model_name": "llama3.2:latest",
             "temperature": 0.7,
             "max_tokens": 2000,
-        }
+        },
+        "summary_model": {
+            "provider": "Ollama",
+            "model_name": "llama3.2:latest",
+            "temperature": 0.3,
+            "max_tokens": 4000,
+        },
+        "retrieval_model": {
+            "provider": "Ollama",
+            "model_name": "llama3.2:latest",
+            "temperature": 0.0,
+            "max_tokens": 500,
+        },
     },
 }
