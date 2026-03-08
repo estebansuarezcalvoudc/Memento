@@ -173,7 +173,13 @@ class SettingsMongoRepository(AbstractSettingsRepository):
         user_data = self._collection.find_one(
             {"username": username}, {"settings.models.chat_model": 1, "_id": 0}
         )
-        data = user_data.get("settings", {}).get("models", {}).get("chat_model")
+        data = (
+            user_data.get("settings", {}).get("models", {}).get("chat_model")
+            if user_data
+            else None
+        )
+        if not data:
+            return None  # type: ignore[return-value]
         return ModelConfig(**data)
 
     def update_chat_model(self, username: str, model: ModelConfig) -> None:
@@ -188,7 +194,13 @@ class SettingsMongoRepository(AbstractSettingsRepository):
         user_data = self._collection.find_one(
             {"username": username}, {"settings.models.summary_model": 1, "_id": 0}
         )
-        data = user_data.get("settings", {}).get("models", {}).get("summary_model")
+        data = (
+            user_data.get("settings", {}).get("models", {}).get("summary_model")
+            if user_data
+            else None
+        )
+        if not data:
+            return None  # type: ignore[return-value]
         return ModelConfig(**data)
 
     def update_summary_model(self, username: str, model: ModelConfig) -> None:
@@ -204,7 +216,13 @@ class SettingsMongoRepository(AbstractSettingsRepository):
         user_data = self._collection.find_one(
             {"username": username}, {"settings.models.retrieval_model": 1, "_id": 0}
         )
-        data = user_data.get("settings", {}).get("models", {}).get("retrieval_model")
+        data = (
+            user_data.get("settings", {}).get("models", {}).get("retrieval_model")
+            if user_data
+            else None
+        )
+        if not data:
+            return None  # type: ignore[return-value]
         return ModelConfig(**data)
 
     def update_retrieval_model(self, username: str, model: ModelConfig) -> None:

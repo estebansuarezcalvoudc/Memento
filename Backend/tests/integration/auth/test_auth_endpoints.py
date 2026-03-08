@@ -73,11 +73,8 @@ class TestAuthEndpoints:
         ), "Expected exactly one $setOnInsert call for settings initialization"
 
         inserted = set_on_insert_calls[0].args[1]["$setOnInsert"]
-        providers = inserted["settings"]["providers"]
         chat_model = inserted["settings"]["models"]["chat_model"]
 
-        assert providers["Ollama"]["active"] is True
-        assert providers["OpenAI"]["active"] is False
         assert chat_model["provider"] == "Ollama"
         assert chat_model["model_name"] == "llama3.2:latest"
 

@@ -20,12 +20,10 @@ class TestProvidersEndpoints:
         openai = next(p for p in data if p["name"] == "OpenAI")
         assert openai["requires_api_key"] is True
         assert openai["has_api_key"] is False
-        assert openai["active"] is False
 
         ollama = next(p for p in data if p["name"] == "Ollama")
         assert ollama["requires_api_key"] is False
         assert ollama["has_api_key"] is None
-        assert ollama["active"] is True
 
     def test_get_providers_should_indicate_when_api_key_exists(
         self, client: TestClient, auth_headers: dict, mock_mongo
@@ -40,7 +38,6 @@ class TestProvidersEndpoints:
                         "providers": {
                             "OpenAI": {
                                 "api_key_encrypted": "encrypted_key_here",
-                                "active": True,
                             }
                         }
                     },
@@ -59,9 +56,8 @@ class TestProvidersEndpoints:
         data = response.json()
         openai = next(p for p in data if p["name"] == "OpenAI")
         assert openai["has_api_key"] is True
-        assert openai["active"] is True
 
-    def test_get_providers_should_return_inactive_openai_when_stored_active_but_no_api_key(
+    def test_get_providers_should_return_no_api_key_for_openai_without_key(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
         def mock_find_one_side_effect(_query, projection=None):
@@ -71,9 +67,7 @@ class TestProvidersEndpoints:
                     "username": "test@example.com",
                     "settings": {
                         "providers": {
-                            "OpenAI": {
-                                "active": True,
-                            }
+                            "OpenAI": {},
                         }
                     },
                 }
@@ -91,7 +85,6 @@ class TestProvidersEndpoints:
         data = response.json()
         openai = next(p for p in data if p["name"] == "OpenAI")
         assert openai["has_api_key"] is False
-        assert openai["active"] is False
 
     def test_add_provider_api_key_should_succeed_with_valid_key(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_openai
@@ -108,7 +101,6 @@ class TestProvidersEndpoints:
         mock_mongo.update_one.assert_called_once()
         call_args = mock_mongo.update_one.call_args
         assert "settings.providers.OpenAI.api_key_encrypted" in str(call_args)
-        assert "settings.providers.OpenAI.active" in str(call_args)
 
     def test_add_provider_api_key_should_reject_invalid_key_with_401(
         self, client: TestClient, auth_headers: dict, mock_mongo, mock_openai
@@ -154,9 +146,16 @@ class TestProvidersEndpoints:
         assert response.status_code == 400
         assert "does not require an API key" in response.json()["detail"]
 
-    def test_delete_provider_api_key_should_remove_key_and_deactivate(
+    def test_delete_provider_api_key_should_remove_key(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
+        # _apply_ollama_fallback will call find_one for each model getter
+        # Return a doc with no models so the fallback skips the update
+        mock_mongo.find_one.return_value = {
+            "username": "test@example.com",
+            "password": "$2b$12$test_hashed_password",
+        }
+
         response = client.delete(
             "/settings/providers/OpenAI/api-key",
             headers=auth_headers,
@@ -167,7 +166,6 @@ class TestProvidersEndpoints:
         call_args = mock_mongo.update_one.call_args
         assert "$unset" in str(call_args)
         assert "api_key_encrypted" in str(call_args)
-        assert "active" in str(call_args)
 
     def test_delete_provider_api_key_should_fail_with_invalid_provider(
         self, client: TestClient, auth_headers: dict, mock_mongo
@@ -178,47 +176,6 @@ class TestProvidersEndpoints:
         response = client.delete(
             f"/settings/providers/{invalid_provider}/api-key",
             headers=auth_headers,
-        )
-
-        assert response.status_code == 400
-        assert "Invalid provider" in response.json()["detail"]
-
-    def test_update_provider_status_should_activate_provider(
-        self, client: TestClient, auth_headers: dict, mock_mongo
-    ):
-        response = client.put(
-            "/settings/providers/Ollama/status",
-            headers=auth_headers,
-            json={"active": True},
-        )
-
-        assert response.status_code == 204
-        mock_mongo.update_one.assert_called_once()
-        call_args = mock_mongo.update_one.call_args
-        assert "settings.providers.Ollama.active" in str(call_args)
-
-    def test_update_provider_status_should_deactivate_provider(
-        self, client: TestClient, auth_headers: dict, mock_mongo
-    ):
-        response = client.put(
-            "/settings/providers/OpenAI/status",
-            headers=auth_headers,
-            json={"active": False},
-        )
-
-        assert response.status_code == 204
-        mock_mongo.update_one.assert_called_once()
-
-    def test_update_provider_status_should_fail_with_invalid_provider(
-        self, client: TestClient, auth_headers: dict, mock_mongo
-    ):
-        _ = mock_mongo  # Fixture needed for MongoDB mock setup
-        invalid_provider = "InvalidProvider"
-
-        response = client.put(
-            f"/settings/providers/{invalid_provider}/status",
-            headers=auth_headers,
-            json={"active": True},
         )
 
         assert response.status_code == 400
@@ -238,10 +195,4 @@ class TestProvidersEndpoints:
         assert response.status_code == 401
 
         response = client.delete("/settings/providers/OpenAI/api-key")
-        assert response.status_code == 401
-
-        response = client.put(
-            "/settings/providers/OpenAI/status",
-            json={"active": True},
-        )
         assert response.status_code == 401

@@ -13,7 +13,7 @@ class TestBuildRagChain:
     def test_build_rag_chain_should_use_different_llms_for_retrieval_and_chat(self):
         mock_repo = MagicMock()
 
-        # OpenAI returns provider settings with an API key; Ollama has no BD entry (None)
+        # OpenAI returns provider settings with an API key; Ollama has no DB entry (None)
         def mock_get_provider_settings(username, provider_name):
             if provider_name == "OpenAI":
                 return ProviderSettings(

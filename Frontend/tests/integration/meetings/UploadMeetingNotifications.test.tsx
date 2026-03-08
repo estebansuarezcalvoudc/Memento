@@ -219,6 +219,8 @@ describe('Upload Meeting Notifications', () => {
       expect(screen.getByText(/Title is required/i)).toBeInTheDocument(),
     )
 
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    await waitFor(() =>
+      expect(screen.queryByRole('status')).not.toBeInTheDocument(),
+    )
   })
 })
