@@ -11,6 +11,7 @@ from langchain_core.vectorstores import VectorStore
 from app.core.language_model_factory import language_model_factory
 
 from ...core.logging import setup_logger
+from ...core.providers_config import AVAILABLE_PROVIDERS
 from ...repositories.interfaces.settings_repo import SettingsRepository
 from ...schemas.settings.model_schema import ModelConfig
 from .rag_prompts import CONTEXTUALIZE_PROMPT, QA_PROMPT
@@ -45,14 +46,7 @@ class Rag:
         ]
 
         chat_config = self._settings_repository.get_chat_model(username)
-        if chat_config is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Chat model not configured",
-            )
-        retrieval_config = (
-            self._settings_repository.get_retrieval_model(username) or chat_config
-        )
+        retrieval_config = self._settings_repository.get_retrieval_model(username)
 
         _logger.info(
             f"Chat model:      provider={chat_config.provider!r}  "
@@ -83,18 +77,19 @@ class Rag:
             f"provider_settings={provider_settings!r}"
         )
 
-        if provider_settings is None or (
-            provider_settings.requires_api_key
-            and not provider_settings.api_key_encrypted
+        requires_api_key = AVAILABLE_PROVIDERS.get(llm_config.provider, {}).get(
+            "requires_api_key", True
+        )
+        if requires_api_key and (
+            provider_settings is None or not provider_settings.api_key_encrypted
         ):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"API key not configured for user {username}",
             )
 
-        return language_model_factory(
-            llm_config, provider_settings.api_key_encrypted or ""
-        )
+        api_key = provider_settings.api_key_encrypted if provider_settings else ""
+        return language_model_factory(llm_config, api_key or "")
 
     def _build_rag_chain(
         self,

@@ -82,7 +82,7 @@ class SettingsRepository(ABC):
         pass
 
     @abstractmethod
-    def get_chat_model(self, username: str) -> ModelConfig | None:
+    def get_chat_model(self, username: str) -> ModelConfig:
         """
         Get user's chat model configuration
 
@@ -90,7 +90,7 @@ class SettingsRepository(ABC):
             username: User's username
 
         Returns:
-            ModelConfig or None if not set
+            ModelConfig
         """
         pass
 
@@ -106,7 +106,7 @@ class SettingsRepository(ABC):
         pass
 
     @abstractmethod
-    def get_summary_model(self, username: str) -> ModelConfig | None:
+    def get_summary_model(self, username: str) -> ModelConfig:
         """
         Get user's summary model configuration
 
@@ -114,7 +114,7 @@ class SettingsRepository(ABC):
             username: User's username
 
         Returns:
-            ModelConfig or None if not set
+            ModelConfig
         """
         pass
 
@@ -130,7 +130,7 @@ class SettingsRepository(ABC):
         pass
 
     @abstractmethod
-    def get_retrieval_model(self, username: str) -> ModelConfig | None:
+    def get_retrieval_model(self, username: str) -> ModelConfig:
         """
         Get user's retrieval model configuration.
         The retrieval model is used to reformulate user messages into
@@ -140,7 +140,7 @@ class SettingsRepository(ABC):
             username: User's username
 
         Returns:
-            ModelConfig or None if not set
+            ModelConfig
         """
         pass
 

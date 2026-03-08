@@ -55,15 +55,15 @@ class ModelsService:
 
         return available_models
 
-    def get_chat_model(self, username: str) -> ModelConfig | None:
+    def get_chat_model(self, username: str) -> ModelConfig:
         """Get user's configured chat model"""
         return self._repository.get_chat_model(username)
 
-    def get_summary_model(self, username: str) -> ModelConfig | None:
+    def get_summary_model(self, username: str) -> ModelConfig:
         """Get user's configured summary model"""
         return self._repository.get_summary_model(username)
 
-    def get_retrieval_model(self, username: str) -> ModelConfig | None:
+    def get_retrieval_model(self, username: str) -> ModelConfig:
         """Get user's configured retrieval model"""
         return self._repository.get_retrieval_model(username)
 

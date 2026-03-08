@@ -168,15 +168,13 @@ class SettingsMongoRepository(AbstractSettingsRepository):
             },
         )
 
-    def get_chat_model(self, username: str) -> ModelConfig | None:
+    def get_chat_model(self, username: str) -> ModelConfig:
         """Get user's chat model configuration"""
         user_data = self._collection.find_one(
             {"username": username}, {"settings.models.chat_model": 1, "_id": 0}
         )
-        if not user_data or "settings" not in user_data:
-            return None
         data = user_data.get("settings", {}).get("models", {}).get("chat_model")
-        return ModelConfig(**data) if data else None
+        return ModelConfig(**data)
 
     def update_chat_model(self, username: str, model: ModelConfig) -> None:
         """Update user's chat model configuration"""
@@ -185,15 +183,13 @@ class SettingsMongoRepository(AbstractSettingsRepository):
             {"$set": {"settings.models.chat_model": model.model_dump()}},
         )
 
-    def get_summary_model(self, username: str) -> ModelConfig | None:
+    def get_summary_model(self, username: str) -> ModelConfig:
         """Get user's summary model configuration"""
         user_data = self._collection.find_one(
             {"username": username}, {"settings.models.summary_model": 1, "_id": 0}
         )
-        if not user_data or "settings" not in user_data:
-            return None
         data = user_data.get("settings", {}).get("models", {}).get("summary_model")
-        return ModelConfig(**data) if data else None
+        return ModelConfig(**data)
 
     def update_summary_model(self, username: str, model: ModelConfig) -> None:
         """Update user's summary model configuration"""
@@ -203,15 +199,13 @@ class SettingsMongoRepository(AbstractSettingsRepository):
             upsert=True,
         )
 
-    def get_retrieval_model(self, username: str) -> ModelConfig | None:
+    def get_retrieval_model(self, username: str) -> ModelConfig:
         """Get user's retrieval model configuration"""
         user_data = self._collection.find_one(
             {"username": username}, {"settings.models.retrieval_model": 1, "_id": 0}
         )
-        if not user_data or "settings" not in user_data:
-            return None
         data = user_data.get("settings", {}).get("models", {}).get("retrieval_model")
-        return ModelConfig(**data) if data else None
+        return ModelConfig(**data)
 
     def update_retrieval_model(self, username: str, model: ModelConfig) -> None:
         """Update user's retrieval model configuration"""

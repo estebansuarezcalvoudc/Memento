@@ -31,11 +31,11 @@ async def get_available_models(
         )
 
 
-@router.get("/chat", response_model=ModelConfig | None)
+@router.get("/chat", response_model=ModelConfig)
 async def get_chat_model(
     current_user: Annotated[User, Depends(get_current_active_user)],
     service: Annotated[ModelsService, Depends(get_models_service)],
-) -> ModelConfig | None:
+) -> ModelConfig:
     """Get user's configured chat model"""
     try:
         return service.get_chat_model(current_user.username)
@@ -49,11 +49,11 @@ async def get_chat_model(
         )
 
 
-@router.get("/summary", response_model=ModelConfig | None)
+@router.get("/summary", response_model=ModelConfig)
 async def get_summary_model(
     current_user: Annotated[User, Depends(get_current_active_user)],
     service: Annotated[ModelsService, Depends(get_models_service)],
-) -> ModelConfig | None:
+) -> ModelConfig:
     """Get user's configured summary model"""
     try:
         return service.get_summary_model(current_user.username)
@@ -105,11 +105,11 @@ async def update_summary_model(
         )
 
 
-@router.get("/retrieval", response_model=ModelConfig | None)
+@router.get("/retrieval", response_model=ModelConfig)
 async def get_retrieval_model(
     current_user: Annotated[User, Depends(get_current_active_user)],
     service: Annotated[ModelsService, Depends(get_models_service)],
-) -> ModelConfig | None:
+) -> ModelConfig:
     """Get user's configured retrieval model"""
     try:
         return service.get_retrieval_model(current_user.username)
