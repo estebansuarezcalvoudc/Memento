@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useSetIsUserAuth } from '../../../../stores/authStore'
+import InlineButton from '../ui/InlineButton'
 import DeleteAccountForm from './DeleteAccountForm'
 import UpdateEmailForm from './UpdateEmailForm'
 import UpdatePasswordForm from './UpdatePasswordForm'
@@ -36,34 +37,28 @@ export default function AccountView() {
           </span>
           {activeForm === null && (
             <div className="flex gap-x-2">
-              <button
-                onClick={() => setActiveForm('email')}
-                className="font-ubuntu cursor-pointer rounded-lg px-2 py-1 text-base text-stone-500 underline hover:text-stone-800"
-              >
+              <InlineButton onClick={() => setActiveForm('email')}>
                 Edit email
-              </button>
-              <button
-                onClick={() => setActiveForm('password')}
-                className="font-ubuntu cursor-pointer rounded-lg px-2 py-1 text-base text-stone-500 underline hover:text-stone-800"
-              >
+              </InlineButton>
+              <InlineButton onClick={() => setActiveForm('password')}>
                 Change password
-              </button>
-              <button
+              </InlineButton>
+              <InlineButton
+                variant="emphasis"
                 onClick={() => {
                   localStorage.removeItem('access_token')
                   setIsUserAuth(false)
                   navigate('/login')
                 }}
-                className="font-ubuntu cursor-pointer rounded-lg px-2 py-1 text-base text-stone-700 underline hover:text-stone-900"
               >
                 Log-out
-              </button>
-              <button
+              </InlineButton>
+              <InlineButton
+                variant="danger"
                 onClick={() => setActiveForm('delete account')}
-                className="font-ubuntu cursor-pointer rounded-lg px-2 py-1 text-base text-red-500 underline hover:text-red-800"
               >
                 Delete account
-              </button>
+              </InlineButton>
             </div>
           )}
         </div>
