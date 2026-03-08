@@ -32,9 +32,11 @@ class ModelsService:
         available_models = []
 
         providers = self._repository.get_providers(username)
-        active_providers = [p for p in providers if p.active]
+        available_providers = [
+            p for p in providers if not p.requires_api_key or p.has_api_key
+        ]
 
-        for provider in active_providers:
+        for provider in available_providers:
             try:
                 client = create_openai_client(provider.name, username=username)
                 models_response = client.models.list()

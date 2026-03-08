@@ -82,20 +82,6 @@ class SettingsRepository(ABC):
         pass
 
     @abstractmethod
-    def update_provider_status(
-        self, username: str, provider_name: str, active: bool
-    ) -> None:
-        """
-        Update provider active status
-
-        Args:
-            username: User's username
-            provider_name: Provider name
-            active: Whether to activate or deactivate
-        """
-        pass
-
-    @abstractmethod
     def get_chat_model(self, username: str) -> ModelConfig | None:
         """
         Get user's chat model configuration

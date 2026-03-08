@@ -3,8 +3,9 @@ from openai import OpenAI
 
 from ...core.encryption import decrypt_api_key, encrypt_api_key
 from ...core.logging import setup_logger
-from ...core.providers_config import AVAILABLE_PROVIDERS
+from ...core.providers_config import AVAILABLE_PROVIDERS, DEFAULT_USER_SETTINGS
 from ...repositories.interfaces.settings_repo import SettingsRepository
+from ...schemas.settings.model_schema import ModelConfig
 from ...schemas.settings.provider_schema import Provider
 
 _logger = setup_logger(__name__)
@@ -63,7 +64,8 @@ class ProvidersService:
 
     def delete_provider_api_key(self, username: str, provider_name: str) -> None:
         """
-        Delete API key for a provider
+        Delete API key for a provider and apply Ollama fallback for any models
+        that were using this provider.
 
         Args:
             username: User's username
@@ -78,55 +80,10 @@ class ProvidersService:
                 detail=f"Invalid provider: {provider_name}",
             )
 
-        providers = self._repository.get_providers(username)
-        active_providers = [p for p in providers if p.active]
-        is_last_active = len(active_providers) <= 1 and any(
-            p.name == provider_name for p in active_providers
-        )
-        if is_last_active:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot remove the API key of the last active provider",
-            )
-
         self._repository.delete_provider_api_key(username, provider_name)
-        _logger.info(f"API key deleted and provider {provider_name} deactivated")
+        _logger.info(f"API key deleted for provider {provider_name}")
 
-    def set_provider_status(
-        self, username: str, provider_name: str, active: bool
-    ) -> None:
-        """
-        Set provider active status
-
-        Args:
-            username: User's username
-            provider_name: Provider name
-            active: Whether to activate or deactivate
-
-        Raises:
-            HTTPException: If provider is invalid or it's the last active provider
-        """
-        if provider_name not in AVAILABLE_PROVIDERS:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid provider: {provider_name}",
-            )
-
-        if not active:
-            providers = self._repository.get_providers(username)
-            active_providers = [p for p in providers if p.active]
-            if len(active_providers) <= 1 and any(
-                p.name == provider_name for p in active_providers
-            ):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Cannot deactivate the last active provider",
-                )
-
-        self._repository.update_provider_status(username, provider_name, active)
-        _logger.info(
-            f"Provider {provider_name} {'activated' if active else 'deactivated'}"
-        )
+        self._apply_ollama_fallback(username, provider_name)
 
     def get_provider_api_key(self, username: str, provider_name: str) -> str | None:
         """
@@ -146,6 +103,40 @@ class ProvidersService:
             return None
 
         return decrypt_api_key(encrypted_key)
+
+    def _apply_ollama_fallback(self, username: str, removed_provider: str) -> None:
+        """
+        Reset any model that was using the given provider back to the Ollama defaults.
+
+        Args:
+            username: User's username
+            removed_provider: Provider whose API key was just removed
+        """
+        defaults = DEFAULT_USER_SETTINGS["models"]
+        checks = [
+            (
+                self._repository.get_chat_model,
+                self._repository.update_chat_model,
+                "chat_model",
+            ),
+            (
+                self._repository.get_summary_model,
+                self._repository.update_summary_model,
+                "summary_model",
+            ),
+            (
+                self._repository.get_retrieval_model,
+                self._repository.update_retrieval_model,
+                "retrieval_model",
+            ),
+        ]
+        for get_fn, update_fn, key in checks:
+            current = get_fn(username)
+            if current and current.provider == removed_provider:
+                update_fn(username, ModelConfig(**defaults[key]))
+                _logger.info(
+                    f"Fallback: reset {key} from {removed_provider} to Ollama defaults"
+                )
 
     def _validate_api_key(self, provider_name: str, api_key: str) -> None:
         """

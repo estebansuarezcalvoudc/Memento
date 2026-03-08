@@ -14,10 +14,6 @@ AVAILABLE_PROVIDERS: dict[str, dict] = {
 }
 
 DEFAULT_USER_SETTINGS: dict = {
-    "providers": {
-        "Ollama": {"active": True},
-        "OpenAI": {"active": False},
-    },
     "models": {
         "chat_model": {
             "provider": "Ollama",

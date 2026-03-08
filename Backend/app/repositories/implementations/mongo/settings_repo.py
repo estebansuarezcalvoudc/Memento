@@ -50,7 +50,6 @@ class SettingsMongoRepository(AbstractSettingsRepository):
                         ProviderName, provider_name
                     ),  # Safe cast: comes from AVAILABLE_PROVIDERS
                     requires_api_key=config["requires_api_key"],
-                    active=user_provider_data.get("active", True),
                     has_api_key=has_api_key,
                 )
             )
@@ -116,7 +115,6 @@ class SettingsMongoRepository(AbstractSettingsRepository):
             {
                 "$set": {
                     f"settings.providers.{provider_name}.api_key_encrypted": encrypted_api_key,
-                    f"settings.providers.{provider_name}.active": True,
                 }
             },
             upsert=True,
@@ -167,24 +165,7 @@ class SettingsMongoRepository(AbstractSettingsRepository):
             {"username": username},
             {
                 "$unset": {f"settings.providers.{provider_name}.api_key_encrypted": ""},
-                "$set": {f"settings.providers.{provider_name}.active": False},
             },
-        )
-
-    def update_provider_status(
-        self, username: str, provider_name: str, active: bool
-    ) -> None:
-        """
-        Update provider active status
-
-        Args:
-            username: User's username
-            provider_name: Provider name
-            active: Whether to activate or deactivate
-        """
-        self._collection.update_one(
-            {"username": username},
-            {"$set": {f"settings.providers.{provider_name}.active": active}},
         )
 
     def get_chat_model(self, username: str) -> ModelConfig | None:
