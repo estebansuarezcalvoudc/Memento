@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { useDeleteApiKey } from '../../../../api/queries/settings/useProvidersQueries'
 import ErrorMessage from '../ui/ErrorMessage'
+import InlineButton from '../ui/InlineButton'
 import ApiKeyForm from './ApiKeyForm'
 
 interface ApiKeySectionProps {
@@ -55,11 +56,6 @@ export default function ApiKeySection({
   }
 
   return (
-    <button
-      onClick={() => setIsAdding(true)}
-      className="font-ubuntu w-fit cursor-pointer text-base text-stone-500 underline hover:text-stone-800"
-    >
-      Add API key
-    </button>
+    <InlineButton onClick={() => setIsAdding(true)}>Add API key</InlineButton>
   )
 }

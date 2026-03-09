@@ -1,5 +1,8 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
+import { useSetIsUserAuth } from '../../../../stores/authStore'
+import InlineButton from '../ui/InlineButton'
 import DeleteAccountForm from './DeleteAccountForm'
 import UpdateEmailForm from './UpdateEmailForm'
 import UpdatePasswordForm from './UpdatePasswordForm'
@@ -22,6 +25,8 @@ function getUsernameFromToken(): string {
 export default function AccountView() {
   const [activeForm, setActiveForm] = useState<ActiveForm>(null)
   const [username, setUsername] = useState(() => getUsernameFromToken())
+  const navigate = useNavigate()
+  const setIsUserAuth = useSetIsUserAuth()
 
   return (
     <>
@@ -31,25 +36,29 @@ export default function AccountView() {
             <strong>Email:</strong> {username}
           </span>
           {activeForm === null && (
-            <div className="flex gap-x-4">
-              <button
-                onClick={() => setActiveForm('email')}
-                className="font-ubuntu cursor-pointer rounded-lg px-2 py-1 text-base text-stone-500 underline hover:text-stone-800"
-              >
+            <div className="flex gap-x-2">
+              <InlineButton onClick={() => setActiveForm('email')}>
                 Edit email
-              </button>
-              <button
-                onClick={() => setActiveForm('password')}
-                className="font-ubuntu cursor-pointer rounded-lg px-2 py-1 text-base text-stone-500 underline hover:text-stone-800"
-              >
+              </InlineButton>
+              <InlineButton onClick={() => setActiveForm('password')}>
                 Change password
-              </button>
-              <button
+              </InlineButton>
+              <InlineButton
+                variant="emphasis"
+                onClick={() => {
+                  localStorage.removeItem('access_token')
+                  setIsUserAuth(false)
+                  navigate('/login')
+                }}
+              >
+                Log out
+              </InlineButton>
+              <InlineButton
+                variant="danger"
                 onClick={() => setActiveForm('delete account')}
-                className="font-ubuntu cursor-pointer rounded-lg px-2 py-1 text-base text-red-500 underline hover:text-red-800"
               >
                 Delete account
-              </button>
+              </InlineButton>
             </div>
           )}
         </div>
