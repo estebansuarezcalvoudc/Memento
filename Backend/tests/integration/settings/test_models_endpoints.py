@@ -40,9 +40,9 @@ class TestModelsEndpoints:
         )
 
         with patch(
-            "app.services.settings.models_service.create_openai_client"
-        ) as mock_create_client:
-            mock_create_client.return_value = mock_openai
+            "app.services.settings.models_service.list_models"
+        ) as mock_list_models:
+            mock_list_models.return_value = ["gpt-4o", "gpt-3.5-turbo"]
 
             response = client.get("/settings/models/available", headers=auth_headers)
 
@@ -68,12 +68,17 @@ class TestModelsEndpoints:
             },
         }
 
-        response = client.get("/settings/models/available", headers=auth_headers)
+        with patch(
+            "app.services.settings.models_service.list_models"
+        ) as mock_list_models:
+            mock_list_models.return_value = []
 
-        assert response.status_code == 200
-        models = response.json()
-        assert isinstance(models, list)
-        assert len(models) == 0
+            response = client.get("/settings/models/available", headers=auth_headers)
+
+            assert response.status_code == 200
+            models = response.json()
+            assert isinstance(models, list)
+            assert len(models) == 0
 
     def test_get_chat_model_should_return_user_configuration(
         self, client: TestClient, auth_headers: dict, mock_mongo

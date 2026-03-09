@@ -8,10 +8,9 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_core.vectorstores import VectorStore
 
-from app.core.language_model_factory import language_model_factory
+from app.core.providers_config import AVAILABLE_PROVIDERS, create_llm
 
 from ...core.logging import setup_logger
-from ...core.providers_config import AVAILABLE_PROVIDERS
 from ...repositories.interfaces.settings_repo import SettingsRepository
 from ...schemas.settings.model_schema import ModelConfig
 from .rag_prompts import CONTEXTUALIZE_PROMPT, QA_PROMPT
@@ -89,7 +88,7 @@ class Rag:
             )
 
         api_key = provider_settings.api_key_encrypted if provider_settings else ""
-        return language_model_factory(llm_config, api_key or "")
+        return create_llm(llm_config, api_key or "")
 
     def _build_rag_chain(
         self,

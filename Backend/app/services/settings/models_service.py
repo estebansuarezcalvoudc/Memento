@@ -1,16 +1,9 @@
 from ...core.logging import setup_logger
-from ...core.openai_factory import create_openai_client
+from ...core.providers_config import list_models
 from ...repositories.interfaces.settings_repo import SettingsRepository
 from ...schemas.settings.model_schema import AvailableModel, ModelConfig
 
 _logger = setup_logger(__name__)
-
-
-_OPENAI_LLM_PREFIXES = ("gpt-", "o1-", "o3-", "o4-", "chatgpt-")
-
-
-def _is_openai_llm(model_id: str) -> bool:
-    return any(model_id.startswith(prefix) for prefix in _OPENAI_LLM_PREFIXES)
 
 
 class ModelsService:
@@ -32,25 +25,19 @@ class ModelsService:
         available_models = []
 
         providers = self._repository.get_providers(username)
-        available_providers = [
-            p for p in providers if not p.requires_api_key or p.has_api_key
-        ]
 
-        for provider in available_providers:
-            try:
-                client = create_openai_client(provider.name, username=username)
-                models_response = client.models.list()
+        for provider in providers:
+            if provider.requires_api_key and not provider.has_api_key:
+                continue
 
-                for model in models_response.data:
-                    if provider.name == "OpenAI" and not _is_openai_llm(model.id):
-                        continue
-                    available_models.append(
-                        AvailableModel(id=model.id, provider=provider.name)
-                    )
-
-            except Exception as e:
-                _logger.warning(
-                    f"Failed to fetch models from {provider.name}: {str(e)}"
+            encrypted_key = (
+                self._repository.get_provider_api_key_encrypted(username, provider.name)
+                if provider.requires_api_key
+                else None
+            )
+            for model_id in list_models(provider.name, encrypted_key):
+                available_models.append(
+                    AvailableModel(id=model_id, provider=provider.name)
                 )
 
         return available_models
