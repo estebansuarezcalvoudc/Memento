@@ -63,19 +63,6 @@ def _is_openai_llm(model_id: str) -> bool:
 def list_models(
     provider_name: ProviderName, api_key_encrypted: str | None = None
 ) -> list[str]:
-    """
-    List available models for a given provider.
-
-    Args:
-        provider_name: Provider name ("OpenAI" or "Ollama")
-        api_key_encrypted: Encrypted API key (required for OpenAI)
-
-    Returns:
-        List of model identifier strings
-
-    Raises:
-        ValueError: If the provider is unknown
-    """
     match provider_name:
         case "OpenAI":
             api_key = decrypt_api_key(api_key_encrypted or "")
@@ -89,19 +76,6 @@ def list_models(
 def create_llm(
     config: "ModelConfig", api_key_encrypted: str | None = None
 ) -> BaseChatModel:
-    """
-    Create a LangChain LLM instance for the given model configuration.
-
-    Args:
-        config: Model configuration (provider, model_name, temperature, max_tokens)
-        api_key_encrypted: Encrypted API key (required for OpenAI)
-
-    Returns:
-        Configured LangChain BaseChatModel instance
-
-    Raises:
-        ValueError: If the provider is unknown
-    """
     match config.provider:
         case "OpenAI":
             return ChatOpenAI(
