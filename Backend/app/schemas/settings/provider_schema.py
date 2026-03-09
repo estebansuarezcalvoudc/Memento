@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from app.core.openai_factory import ProviderName
+from app.core.providers_config import ProviderName
 
 
 class Provider(BaseModel):

@@ -1,9 +1,8 @@
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
-from ....core.language_model_factory import language_model_factory
 from ....core.logging import log_execution_time, setup_logger
-from ....core.providers_config import AVAILABLE_PROVIDERS
+from ....core.providers_config import AVAILABLE_PROVIDERS, create_llm
 from ....repositories.implementations.mongo.settings_repo import SettingsMongoRepository
 from ....schemas.meeting.meeting_schema import ProcessingConfiguration
 
@@ -37,7 +36,7 @@ def get_meeting_summary(
         )
 
     api_key = provider_settings.api_key_encrypted if provider_settings else ""
-    llm = language_model_factory(llm_config, api_key or "")
+    llm = create_llm(llm_config, api_key or "")
 
     prompt = ChatPromptTemplate.from_messages(
         [

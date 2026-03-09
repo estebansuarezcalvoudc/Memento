@@ -2,8 +2,7 @@ from typing import Optional, cast
 
 import pymongo
 
-from ....core.openai_factory import ProviderName
-from ....core.providers_config import AVAILABLE_PROVIDERS
+from ....core.providers_config import AVAILABLE_PROVIDERS, ProviderName
 from ....core.settings import settings
 from ....schemas.settings.model_schema import ModelConfig
 from ....schemas.settings.provider_schema import Provider, ProviderSettings

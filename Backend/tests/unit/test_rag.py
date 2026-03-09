@@ -39,9 +39,7 @@ class TestBuildRagChain:
             max_tokens=1000,
         )
 
-        with patch(
-            "app.services.conversation.rag.language_model_factory"
-        ) as mock_factory:
+        with patch("app.services.conversation.rag.create_llm") as mock_factory:
             mock_factory.return_value = MagicMock()
 
             rag._build_rag_chain(chat_config, retrieval_config, "test@example.com")
