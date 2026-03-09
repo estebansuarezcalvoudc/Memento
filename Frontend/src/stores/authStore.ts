@@ -17,3 +17,5 @@ export const useSetIsUserAuth = () => useAuthStore(state => state.setIsUserAuth)
 
 export const _resetAuthStore = () =>
   useAuthStore.setState({ isUserAuth: false })
+
+export const _getAuthState = () => useAuthStore.getState()

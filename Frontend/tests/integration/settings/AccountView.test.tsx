@@ -1,9 +1,12 @@
-import { screen, waitFor } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import AccountView from '../../../src/components/settings/sections/account/AccountView'
+import { _getAuthState } from '../../../src/stores/authStore'
 import { NEW_AUTH_TOKEN } from '../../mocks/authHandlers'
 import { server } from '../../mocks/server'
 import { withAuth } from '../../mocks/withAuth'
@@ -76,6 +79,54 @@ describe('AccountView', () => {
     expect(screen.getByLabelText('Current password')).toBeInTheDocument()
     expect(screen.getByLabelText('New password')).toBeInTheDocument()
     expect(screen.getByLabelText('Confirm new password')).toBeInTheDocument()
+  })
+
+  it('shows a "Log-out" button', () => {
+    setup()
+
+    renderWithRouter(<AccountView />)
+
+    expect(screen.getByRole('button', { name: 'Log-out' })).toBeInTheDocument()
+  })
+
+  it('clicking "Log-out" removes the access token from localStorage', async () => {
+    const { user } = setup()
+    renderWithRouter(<AccountView />)
+
+    await user.click(screen.getByRole('button', { name: 'Log-out' }))
+
+    expect(localStorage.getItem('access_token')).toBeNull()
+  })
+
+  it('clicking "Log-out" redirects to the login page', async () => {
+    const { user } = setup()
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    })
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/']}>
+          <Routes>
+            <Route path="/" element={<AccountView />} />
+            <Route path="/login" element={<div>Login page</div>} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Log-out' }))
+
+    expect(await screen.findByText('Login page')).toBeInTheDocument()
+  })
+
+  it('clicking "Log-out" sets isUserAuth to false', async () => {
+    const { user } = setup()
+    _getAuthState().setIsUserAuth(true)
+    renderWithRouter(<AccountView />)
+
+    await user.click(screen.getByRole('button', { name: 'Log-out' }))
+
+    expect(_getAuthState().isUserAuth).toBe(false)
   })
 })
 
