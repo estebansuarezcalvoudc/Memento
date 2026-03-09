@@ -81,24 +81,24 @@ describe('AccountView', () => {
     expect(screen.getByLabelText('Confirm new password')).toBeInTheDocument()
   })
 
-  it('shows a "Log-out" button', () => {
+  it('shows a "Log out" button', () => {
     setup()
 
     renderWithRouter(<AccountView />)
 
-    expect(screen.getByRole('button', { name: 'Log-out' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Log out' })).toBeInTheDocument()
   })
 
-  it('clicking "Log-out" removes the access token from localStorage', async () => {
+  it('clicking "Log out" removes the access token from localStorage', async () => {
     const { user } = setup()
     renderWithRouter(<AccountView />)
 
-    await user.click(screen.getByRole('button', { name: 'Log-out' }))
+    await user.click(screen.getByRole('button', { name: 'Log out' }))
 
     expect(localStorage.getItem('access_token')).toBeNull()
   })
 
-  it('clicking "Log-out" redirects to the login page', async () => {
+  it('clicking "Log out" redirects to the login page', async () => {
     const { user } = setup()
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
@@ -114,17 +114,17 @@ describe('AccountView', () => {
       </QueryClientProvider>,
     )
 
-    await user.click(screen.getByRole('button', { name: 'Log-out' }))
+    await user.click(screen.getByRole('button', { name: 'Log out' }))
 
     expect(await screen.findByText('Login page')).toBeInTheDocument()
   })
 
-  it('clicking "Log-out" sets isUserAuth to false', async () => {
+  it('clicking "Log out" sets isUserAuth to false', async () => {
     const { user } = setup()
     _getAuthState().setIsUserAuth(true)
     renderWithRouter(<AccountView />)
 
-    await user.click(screen.getByRole('button', { name: 'Log-out' }))
+    await user.click(screen.getByRole('button', { name: 'Log out' }))
 
     expect(_getAuthState().isUserAuth).toBe(false)
   })

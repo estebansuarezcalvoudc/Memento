@@ -51,7 +51,7 @@ export default function AccountView() {
                   navigate('/login')
                 }}
               >
-                Log-out
+                Log out
               </InlineButton>
               <InlineButton
                 variant="danger"
