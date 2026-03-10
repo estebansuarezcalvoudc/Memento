@@ -51,10 +51,13 @@ export default function TranscriptionView() {
               value={selectedDevice}
               onChange={e => {
                 const newDevice = e.target.value
-                updateConfig({ device: newDevice })
-                if (newDevice === 'cpu' && config?.computeType !== 'int8') {
-                  updateConfig({ compute_type: 'int8' })
+                const update: { device: string; compute_type?: string } = {
+                  device: newDevice,
                 }
+                if (newDevice === 'cpu' && config?.computeType !== 'int8') {
+                  update.compute_type = 'int8'
+                }
+                updateConfig(update)
               }}
             >
               {(options?.devices ?? []).map(d => (
