@@ -17,3 +17,8 @@ class AvailableModel(BaseModel):
 
     id: str  # Model identifier (e.g., "gpt-4o", "llama3.1")
     provider: str  # "OpenAI" or "Ollama"
+
+
+class PullModelRequest(BaseModel):
+    provider: ProviderName
+    model_name: str
