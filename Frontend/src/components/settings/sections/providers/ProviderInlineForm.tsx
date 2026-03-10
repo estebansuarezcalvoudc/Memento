@@ -1,5 +1,6 @@
 import { useActionState } from 'react'
 
+import InlineInput from '../../../common/InlineInput'
 import CancelButton from '../ui/CancelButton'
 import ConfirmButton from '../ui/ConfirmButton'
 import ErrorMessage from '../ui/ErrorMessage'
@@ -32,11 +33,11 @@ export default function ProviderInlineForm({
   return (
     <form action={formAction} className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        <input
+        <InlineInput
           name={inputName}
           type="text"
           placeholder={placeholder}
-          className="font-ubuntu h-8 min-w-48 flex-1 rounded-lg border border-stone-300 bg-transparent px-3 text-base text-stone-800 outline-none focus:border-stone-500"
+          className="min-w-48 flex-1"
         />
         <ConfirmButton isPending={isPending} />
         <CancelButton onClick={onClose} />

@@ -1,10 +1,13 @@
-import { type LanguageOption } from '../../../api/queries/useSettingsQueries'
-import { removeImage } from '../../../assets/buttonsImages'
-import Input from '../../common/Input'
-import Select from '../../common/Select'
-import { type MeetingFormData } from './UploadMeetingsForm'
+import { useState } from 'react'
 
-interface MeetingFormProps {
+import { type LanguageOption } from '../../../api/queries/useSettingsQueries'
+import InlineInput from '../../common/InlineInput'
+import { type MeetingFormData } from './UploadMeetingsForm'
+import ChevronToggleButton from './ChevronToggleButton'
+import MeetingOptionsRow from './MeetingOptionsRow'
+import RemoveButton from './RemoveButton'
+
+export interface MeetingFormProps {
   meeting: MeetingFormData
   index: number
   meetingsCount: number
@@ -12,6 +15,8 @@ interface MeetingFormProps {
   onRemove: (id: string) => void
   languages: LanguageOption[]
 }
+
+export const meetingFormGridCols = 'grid-cols-[20px_1fr_170px_1fr_32px_32px]'
 
 export default function MeetingForm({
   meeting,
@@ -22,78 +27,59 @@ export default function MeetingForm({
   languages,
 }: MeetingFormProps) {
   const today = new Date().toISOString().split('T')[0]
+  const [isExpanded, setIsExpanded] = useState(false)
 
   return (
-    <div key={meeting.id} className="border-b border-stone-200 py-4">
-      <div className="flex items-center justify-between gap-4">
-        <span className="font-ubuntu text-lg text-stone-700">
-          Meeting {index + 1}
-        </span>
+    <div className={`grid ${meetingFormGridCols} items-center gap-x-4 border-b border-stone-200 py-1`}>
+      <span className="font-ubuntu py-3 text-sm text-stone-500">{index + 1}</span>
 
-        <button
-          type="button"
-          onClick={() => onRemove(meeting.id)}
-          disabled={isPending || meetingsCount == 1}
-          className="cursor-pointer rounded-xl p-1 text-stone-700 hover:bg-stone-300 disabled:opacity-50"
-          aria-label="remove-meeting"
-        >
-          {removeImage}
-        </button>
-      </div>
+      <InlineInput
+        name={`meetings[${index}][title]`}
+        type="text"
+        placeholder="Title"
+        required
+        disabled={isPending}
+        defaultValue={meeting.title}
+        className="w-full"
+      />
 
-      <div className="grid grid-cols-1 gap-x-10 sm:grid-cols-2 lg:grid-cols-3">
-        <Input
-          label="Title"
-          name={`meetings[${index}][title]`}
-          type="text"
-          required
-          disabled={isPending}
-          defaultValue={meeting.title}
-        />
+      <InlineInput
+        name={`meetings[${index}][date]`}
+        type="date"
+        required
+        defaultValue={meeting.date || today}
+        max={today}
+        disabled={isPending}
+        className="w-full"
+      />
 
-        <Input
-          label="Date"
-          name={`meetings[${index}][date]`}
-          type="date"
-          required
-          defaultValue={meeting.date || today}
-          max={today}
-          disabled={isPending}
-        />
+      <InlineInput
+        name={`meetings[${index}][file]`}
+        type="file"
+        accept="audio/*"
+        required
+        disabled={isPending}
+        className="w-full"
+      />
 
-        <Select
-          label="Language"
-          name={`meetings[${index}][language]`}
-          disabled={isPending}
-          defaultValue={meeting.language}
-          key={`${meeting.id}-language-${meeting.language || 'none'}`}
-        >
-          <option value="">Select a language</option>
-          {languages.map(l => (
-            <option key={l.code} value={l.code}>
-              {l.name}
-            </option>
-          ))}
-        </Select>
+      <ChevronToggleButton
+        isExpanded={isExpanded}
+        onClick={() => setIsExpanded(prev => !prev)}
+        disabled={isPending}
+      />
 
-        <Input
-          label="Number of speakers"
-          name={`meetings[${index}][speakers]`}
-          type="number"
-          min="2"
-          disabled={isPending}
-          defaultValue={meeting.speakers}
-        />
+      <RemoveButton
+        onClick={() => onRemove(meeting.id)}
+        disabled={isPending || meetingsCount === 1}
+      />
 
-        <Input
-          label="Audio File"
-          name={`meetings[${index}][file]`}
-          type="file"
-          accept="audio/*"
-          required
-          disabled={isPending}
-        />
-      </div>
+      <MeetingOptionsRow
+        index={index}
+        meeting={meeting}
+        languages={languages}
+        isPending={isPending}
+        isExpanded={isExpanded}
+      />
     </div>
   )
 }

@@ -16,13 +16,13 @@ export default function UploadMeetingsDialog({
         <div className="shrink-0 px-4">
           <h2
             id="upload-files-dialog-title"
-            className="font-ubuntu text-center text-2xl text-stone-800"
+            className="font-ubuntu text-center text-3xl text-stone-800"
           >
             Upload Files
           </h2>
           <hr className="mt-4 mb-2 border-t border-stone-500 opacity-100 transition-opacity duration-300" />
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto pr-2 pl-4">
+        <div className="min-h-0 flex-1 overflow-y-auto px-8">
           <UploadMeetingsForm handleCloseDialog={onClose} />
         </div>
       </div>
