@@ -1,4 +1,7 @@
+from bson import ObjectId
 from fastapi.testclient import TestClient
+
+from tests.conftest import TEST_USER_ID
 
 
 class TestWhisperXEndpoints:
@@ -66,6 +69,7 @@ class TestWhisperXEndpoints:
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
         }
@@ -84,6 +88,7 @@ class TestWhisperXEndpoints:
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
             "settings": {
@@ -112,10 +117,12 @@ class TestWhisperXEndpoints:
         def mongo_side_effect(query, projection=None):
             if "password" in str(projection):
                 return {
+                    "_id": ObjectId(TEST_USER_ID),
                     "username": "test@example.com",
                     "password": "$2b$12$test_hashed_password",
                 }
             return {
+                "_id": ObjectId(TEST_USER_ID),
                 "username": "test@example.com",
                 "password": "$2b$12$test_hashed_password",
                 "settings": {
@@ -160,11 +167,13 @@ class TestWhisperXEndpoints:
         def mongo_side_effect(query, projection=None):
             if "password" in str(projection):
                 return {
+                    "_id": ObjectId(TEST_USER_ID),
                     "username": "test@example.com",
                     "password": "$2b$12$test_hashed_password",
                 }
 
             return {
+                "_id": ObjectId(TEST_USER_ID),
                 "username": "test@example.com",
                 "password": "$2b$12$test_hashed_password",
                 "settings": {
@@ -200,10 +209,12 @@ class TestWhisperXEndpoints:
         def mongo_side_effect(query, projection=None):
             if "password" in str(projection):
                 return {
+                    "_id": ObjectId(TEST_USER_ID),
                     "username": "test@example.com",
                     "password": "$2b$12$test_hashed_password",
                 }
             return {
+                "_id": ObjectId(TEST_USER_ID),
                 "username": "test@example.com",
                 "password": "$2b$12$test_hashed_password",
                 "settings": {"transcription": {"device": "cpu"}},
@@ -244,10 +255,12 @@ class TestWhisperXEndpoints:
         def mongo_side_effect(query, projection=None):
             if "password" in str(projection):
                 return {
+                    "_id": ObjectId(TEST_USER_ID),
                     "username": "test@example.com",
                     "password": "$2b$12$test_hashed_password",
                 }
             return {
+                "_id": ObjectId(TEST_USER_ID),
                 "username": "test@example.com",
                 "password": "$2b$12$test_hashed_password",
                 "settings": {
@@ -320,6 +333,7 @@ class TestWhisperXEndpoints:
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
             "settings": {

@@ -9,7 +9,10 @@ from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
+from bson import ObjectId
 from fastapi.testclient import TestClient
+
+TEST_USER_ID = "507f191e810c19729de860ea"
 
 # Set test environment variables before importing app
 os.environ["ENCRYPTION_KEY"] = (
@@ -63,6 +66,7 @@ def mock_mongo():
 
         # Default responses
         mock_collection.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
         }
@@ -103,7 +107,7 @@ def test_user_token() -> str:
 
     # Create token with test user
     expire = datetime.now(timezone.utc) + timedelta(minutes=30)
-    to_encode = {"sub": "test@example.com", "exp": expire}
+    to_encode = {"sub": TEST_USER_ID, "exp": expire}
     access_token = jwt.encode(to_encode, secret_key, algorithm=algorithm)
 
     return access_token

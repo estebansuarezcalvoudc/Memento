@@ -1,10 +1,17 @@
 from datetime import datetime
 
+from bson import ObjectId
 from fastapi.testclient import TestClient
+
+from tests.conftest import TEST_USER_ID
 
 VALID_MEETING_ID = "507f1f77bcf86cd799439011"
 
-_USER_DATA = {"username": "test@example.com", "password": "$2b$12$test_hashed_password"}
+_USER_DATA = {
+    "_id": ObjectId(TEST_USER_ID),
+    "username": "test@example.com",
+    "password": "$2b$12$test_hashed_password",
+}
 
 
 def _mongo_side_effect(meeting_data):
@@ -14,7 +21,7 @@ def _mongo_side_effect(meeting_data):
     """
 
     def side_effect(query, projection=None):
-        if "_id" in query:
+        if query.get("_id") == ObjectId(VALID_MEETING_ID):
             return meeting_data
         return _USER_DATA
 
