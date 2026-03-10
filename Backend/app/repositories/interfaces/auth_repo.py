@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from ...schemas.auth.auth_schema import UserInDB
+from ...schemas.auth.auth_schema import UserCreate, UserInDB
 
 
 class AuthRepository(ABC):
     """Abstract repository interface for authentication data access"""
 
     @abstractmethod
-    def store_user(self, user) -> str:
+    def store_user(self, user: UserCreate) -> str:
         """
         Store a new user in the data store
 
