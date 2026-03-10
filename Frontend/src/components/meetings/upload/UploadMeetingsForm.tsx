@@ -156,8 +156,16 @@ export default function UploadMeetingsForm({
       )}
 
       <div className="mt-5 mb-4 flex justify-center gap-4">
-        <SecondaryButton onClick={addMeeting} disabled={isPending} label="+ Add meeting" />
-        <ConfirmButton isPending={isPending} label="Submit" pendingLabel="Uploading..." />
+        <SecondaryButton
+          onClick={addMeeting}
+          disabled={isPending}
+          label="+ Add meeting"
+        />
+        <ConfirmButton
+          isPending={isPending}
+          label="Submit"
+          pendingLabel="Uploading..."
+        />
       </div>
     </form>
   )

@@ -57,7 +57,9 @@ export default function MeetingContent({ type }: MeetingContentProps) {
 
   if (query.isLoading) {
     displayContent = (
-      <span className="font-ubuntu text-lg text-stone-800 dark:text-stone-200">{loadingText}</span>
+      <span className="font-ubuntu text-lg text-stone-800 dark:text-stone-200">
+        {loadingText}
+      </span>
     )
   } else if (query.error) {
     displayContent = (

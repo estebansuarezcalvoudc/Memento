@@ -59,7 +59,9 @@ const useThemeStore = create<ThemeStore>()(
       partialize: state => ({ theme: state.theme }),
       // Al rehidratar desde localStorage, aplica el tema guardado en el DOM
       onRehydrateStorage: () => state => {
-        if (state) applyTheme(state.theme)
+        if (state) {
+          applyTheme(state.theme)
+        }
       },
     },
   ),

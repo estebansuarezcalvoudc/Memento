@@ -24,13 +24,23 @@ export default function MeetingOptionsRow({
 }: MeetingOptionsRowProps) {
   return (
     <div className="[grid-column:1/-1]">
-      <input type="hidden" name={`meetings[${index}][language]`} value={language} />
-      <input type="hidden" name={`meetings[${index}][speakers]`} value={speakers} />
+      <input
+        type="hidden"
+        name={`meetings[${index}][language]`}
+        value={language}
+      />
+      <input
+        type="hidden"
+        name={`meetings[${index}][speakers]`}
+        value={speakers}
+      />
 
       {isExpanded && (
         <div className="flex items-center justify-center gap-6 pb-3">
           <div className="flex items-center gap-2">
-            <label className="font-ubuntu shrink-0 text-xs text-stone-400 dark:text-stone-500">Language</label>
+            <label className="font-ubuntu shrink-0 text-xs text-stone-400 dark:text-stone-500">
+              Language
+            </label>
             <select
               value={language}
               onChange={e => onLanguageChange(e.target.value)}
@@ -48,7 +58,9 @@ export default function MeetingOptionsRow({
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="font-ubuntu shrink-0 text-xs text-stone-400 dark:text-stone-500">Speakers</label>
+            <label className="font-ubuntu shrink-0 text-xs text-stone-400 dark:text-stone-500">
+              Speakers
+            </label>
             <InlineInput
               type="number"
               min="2"

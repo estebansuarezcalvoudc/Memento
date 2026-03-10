@@ -6,9 +6,9 @@ import {
 } from '../../../../types/settings/models'
 import Input from '../../../common/Input'
 import Select from '../../../common/Select'
-import SecondaryButton from './SecondaryButton'
 import ConfirmButton from './ConfirmButton'
 import ErrorMessage from './ErrorMessage'
+import SecondaryButton from './SecondaryButton'
 import SubSectionTitle from './SubSectionTitle'
 
 const DEFAULT_MODEL_CONFIG: ModelConfig = {
@@ -68,7 +68,9 @@ export default function ModelConfigSection({
     <div className="flex flex-col gap-2">
       <SubSectionTitle title={title} />
       {isLoading ? (
-        <span className="text-base text-stone-500 dark:text-stone-400">Loading...</span>
+        <span className="text-base text-stone-500 dark:text-stone-400">
+          Loading...
+        </span>
       ) : (
         <>
           <Select

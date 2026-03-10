@@ -73,9 +73,7 @@ class MeetingMongoRepository(AbstractMeetingRepository):
         ]
 
     @handle_invalid_id
-    def retrieve_meeting_summary(
-        self, id: str, user_id: str
-    ) -> MeetingSummaryResponse:
+    def retrieve_meeting_summary(self, id: str, user_id: str) -> MeetingSummaryResponse:
         result = self._collection.find_one(
             {"user_id": user_id, "_id": ObjectId(id)},
             {"_id": False, "summary": True, "title": True, "date": True},

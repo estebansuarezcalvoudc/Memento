@@ -92,8 +92,7 @@ export function useUpdateRetrievalModel() {
 export function usePullModel() {
   const queryClient = useQueryClient()
   return useMutation<null, Error, PullModelRequest>({
-    mutationFn: vars =>
-      fetchBackend('POST', 'settings/models/pull', vars),
+    mutationFn: vars => fetchBackend('POST', 'settings/models/pull', vars),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: AVAILABLE_MODELS_KEY })
       await queryClient.invalidateQueries({ queryKey: RETRIEVAL_MODEL_KEY })

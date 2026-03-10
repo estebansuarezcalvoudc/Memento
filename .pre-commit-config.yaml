@@ -4,15 +4,15 @@ repos:
       # --- BACKEND (Python) ---
       - id: backend-isort
         name: isort (Local)
-        entry: bash -c 'cd Backend && .venv/bin/isort --profile black "${@#Backend/}"' --
-        language: system
+        entry: scripts/run-isort.sh
+        language: script
         types: [python]
         files: ^Backend/
 
       - id: backend-black
         name: black (Local)
-        entry: bash -c 'cd Backend && .venv/bin/black "${@#Backend/}"' --
-        language: system
+        entry: scripts/run-black.sh
+        language: script
         types: [python]
         files: ^Backend/
 

@@ -20,7 +20,9 @@ export default function ChatsList() {
     )
   } else if (!chats || chats.length === 0) {
     chatContent = (
-      <li className="p-4 text-center text-stone-400 dark:text-stone-500">No conversations yet</li>
+      <li className="p-4 text-center text-stone-400 dark:text-stone-500">
+        No conversations yet
+      </li>
     )
   } else {
     chatContent = chats.map(conversation => (

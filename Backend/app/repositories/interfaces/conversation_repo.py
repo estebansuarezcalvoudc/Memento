@@ -65,9 +65,7 @@ class ConversationRepository(ABC):
         pass
 
     @abstractmethod
-    def fetch_conversation(
-        self, id: str, user_id: str
-    ) -> ConversationDialogueRetrieve:
+    def fetch_conversation(self, id: str, user_id: str) -> ConversationDialogueRetrieve:
         """
         Fetch a specific conversation dialogue
 
