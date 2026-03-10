@@ -20,4 +20,8 @@ export const providerHandlers = [
     '/api/settings/providers/:name/api-key',
     withAuth(() => new HttpResponse(null, { status: 204 })),
   ),
+  http.post(
+    '/api/settings/models/pull',
+    withAuth(() => new HttpResponse(null, { status: 201 })),
+  ),
 ]

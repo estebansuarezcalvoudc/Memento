@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
-import { useDeleteApiKey } from '../../../../api/queries/settings/useProvidersQueries'
-import ErrorMessage from '../ui/ErrorMessage'
-import InlineButton from '../ui/InlineButton'
+import { useDeleteApiKey } from '../../../../../api/queries/settings/useProvidersQueries'
+import ErrorMessage from '../../ui/ErrorMessage'
+import InlineButton from '../../ui/InlineButton'
 import ApiKeyForm from './ApiKeyForm'
 
 interface ApiKeySectionProps {

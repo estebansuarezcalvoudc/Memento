@@ -42,9 +42,19 @@ export default async function fetchBackend<T>(
     throw new HttpError(response.status, body?.detail ?? undefined)
   }
 
-  if (response.status === 204) {
+  if (response.status === 204 || response.headers.get('content-length') === '0') {
     return null
   }
 
-  return camelcaseKeys(await response.json(), { deep: true })
+  const text = await response.text()
+  if (!text) {
+    return null
+  }
+
+  const parsed = JSON.parse(text)
+  if (parsed === null) {
+    return null
+  }
+
+  return camelcaseKeys(parsed, { deep: true })
 }

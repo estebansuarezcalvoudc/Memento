@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   type AvailableModel,
   type ModelConfig,
+  type PullModelRequest,
 } from '../../../types/settings/models'
 import fetchBackend from '../../utils/fetchBackend'
 
@@ -84,6 +85,18 @@ export function useUpdateRetrievalModel() {
       }),
     onSuccess: data => {
       queryClient.setQueryData<ModelConfig>(RETRIEVAL_MODEL_KEY, data)
+    },
+  })
+}
+
+export function usePullModel() {
+  const queryClient = useQueryClient()
+  return useMutation<null, Error, PullModelRequest>({
+    mutationFn: vars =>
+      fetchBackend('POST', 'settings/models/pull', vars),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: AVAILABLE_MODELS_KEY })
+      await queryClient.invalidateQueries({ queryKey: RETRIEVAL_MODEL_KEY })
     },
   })
 }

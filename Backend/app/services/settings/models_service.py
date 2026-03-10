@@ -1,9 +1,12 @@
-from ...core.logging import setup_logger
+from fastapi import HTTPException, status
+import ollama
 from ...core.providers_config import list_models
 from ...repositories.interfaces.settings_repo import SettingsRepository
-from ...schemas.settings.model_schema import AvailableModel, ModelConfig
-
-_logger = setup_logger(__name__)
+from ...schemas.settings.model_schema import (
+    AvailableModel,
+    ModelConfig,
+    PullModelRequest,
+)
 
 
 class ModelsService:
@@ -95,3 +98,12 @@ class ModelsService:
         """
         self._repository.update_retrieval_model(username, model)
         return model
+
+    def pull_model(self, pull_model_request: PullModelRequest) -> None:
+        if pull_model_request.provider == "Ollama":
+            ollama.pull(pull_model_request.model)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Provider '{pull_model_request.provider}' cannot pull models",
+            )

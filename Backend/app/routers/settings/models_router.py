@@ -1,12 +1,16 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from ...core.logging import setup_logger
 from ...dependencies.auth_dependencies import get_current_active_user
 from ...dependencies.service_dependencies import get_models_service
 from ...schemas.auth.auth_schema import User
-from ...schemas.settings.model_schema import AvailableModel, ModelConfig
+from ...schemas.settings.model_schema import (
+    AvailableModel,
+    ModelConfig,
+    PullModelRequest,
+)
 from ...services.settings.models_service import ModelsService
 
 _logger = setup_logger(__name__)
@@ -139,4 +143,27 @@ async def update_retrieval_model(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error while updating retrieval model",
+        )
+
+
+@router.post("/pull", status_code=status.HTTP_201_CREATED)
+async def pull_model(
+    pull_model_request: PullModelRequest,
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    service: Annotated[ModelsService, Depends(get_models_service)],
+) -> None:
+    _ = current_user
+    try:
+        service.pull_model(pull_model_request)
+        return Response(status_code=status.HTTP_201_CREATED)
+    except HTTPException:
+        raise
+    except Exception as e:
+        _logger.error(
+            f"Error pulling model '{pull_model_request.model}' from provider '{pull_model_request.provider}': {str(e)}",
+            exc_info=True,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error while pulling model",
         )

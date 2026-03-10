@@ -9,3 +9,8 @@ export interface AvailableModel {
   id: string
   provider: string
 }
+
+export interface PullModelRequest {
+  provider: string
+  model: string
+}
