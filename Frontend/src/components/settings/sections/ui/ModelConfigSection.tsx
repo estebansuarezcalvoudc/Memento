@@ -6,7 +6,7 @@ import {
 } from '../../../../types/settings/models'
 import Input from '../../../common/Input'
 import Select from '../../../common/Select'
-import CancelButton from './CancelButton'
+import SecondaryButton from './SecondaryButton'
 import ConfirmButton from './ConfirmButton'
 import ErrorMessage from './ErrorMessage'
 import SubSectionTitle from './SubSectionTitle'
@@ -101,7 +101,7 @@ export default function ModelConfigSection({
             onChange={e => patch({ maxTokens: parseInt(e.target.value) })}
           />
           <div className="mt-2 flex justify-end gap-2">
-            <CancelButton
+            <SecondaryButton
               onClick={handleCancel}
               disabled={isPending || !isModified}
             />

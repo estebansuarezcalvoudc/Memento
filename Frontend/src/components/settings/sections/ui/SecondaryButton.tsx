@@ -1,14 +1,14 @@
-interface CancelButtonProps {
+interface SecondaryButtonProps {
   onClick: () => void
   disabled?: boolean
   label?: string
 }
 
-export default function CancelButton({
+export default function SecondaryButton({
   onClick,
   disabled = false,
   label = 'Cancel',
-}: CancelButtonProps) {
+}: SecondaryButtonProps) {
   return (
     <button
       type="button"

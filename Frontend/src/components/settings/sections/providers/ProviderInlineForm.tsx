@@ -1,7 +1,7 @@
 import { useActionState } from 'react'
 
 import InlineInput from '../../../common/InlineInput'
-import CancelButton from '../ui/CancelButton'
+import SecondaryButton from '../ui/SecondaryButton'
 import ConfirmButton from '../ui/ConfirmButton'
 import ErrorMessage from '../ui/ErrorMessage'
 
@@ -40,7 +40,7 @@ export default function ProviderInlineForm({
           className="min-w-48 flex-1"
         />
         <ConfirmButton isPending={isPending} />
-        <CancelButton onClick={onClose} />
+        <SecondaryButton onClick={onClose} />
       </div>
       {formState.errors && <ErrorMessage message={formState.errors[0]} />}
     </form>

@@ -28,6 +28,8 @@ export default function MeetingForm({
 }: MeetingFormProps) {
   const today = new Date().toISOString().split('T')[0]
   const [isExpanded, setIsExpanded] = useState(false)
+  const [language, setLanguage] = useState(meeting.language ?? '')
+  const [speakers, setSpeakers] = useState(meeting.speakers ?? '')
 
   return (
     <div className={`grid ${meetingFormGridCols} items-center gap-x-4 border-b border-stone-200 py-1`}>
@@ -37,6 +39,7 @@ export default function MeetingForm({
         name={`meetings[${index}][title]`}
         type="text"
         placeholder="Title"
+        aria-label={`Meeting ${index + 1} title`}
         required
         disabled={isPending}
         defaultValue={meeting.title}
@@ -46,6 +49,7 @@ export default function MeetingForm({
       <InlineInput
         name={`meetings[${index}][date]`}
         type="date"
+        aria-label={`Meeting ${index + 1} date`}
         required
         defaultValue={meeting.date || today}
         max={today}
@@ -57,6 +61,7 @@ export default function MeetingForm({
         name={`meetings[${index}][file]`}
         type="file"
         accept="audio/*"
+        aria-label={`Meeting ${index + 1} audio file`}
         required
         disabled={isPending}
         className="w-full"
@@ -75,7 +80,10 @@ export default function MeetingForm({
 
       <MeetingOptionsRow
         index={index}
-        meeting={meeting}
+        language={language}
+        speakers={speakers}
+        onLanguageChange={setLanguage}
+        onSpeakersChange={setSpeakers}
         languages={languages}
         isPending={isPending}
         isExpanded={isExpanded}

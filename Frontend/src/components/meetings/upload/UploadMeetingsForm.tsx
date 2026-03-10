@@ -5,7 +5,7 @@ import { useGetSupportedLanguages } from '../../../api/queries/useSettingsQuerie
 import { type Meeting } from '../../../types/meetings'
 import FormErrors from '../../common/FormErrors'
 import ConfirmButton from '../../settings/sections/ui/ConfirmButton'
-import CancelButton from '../../settings/sections/ui/CancelButton'
+import SecondaryButton from '../../settings/sections/ui/SecondaryButton'
 import ColumnHeader from '../ColumnHeader'
 import MeetingForm, { meetingFormGridCols } from './MeetingForm'
 import ServerErrorNotification from './notifications/ServerErrorNotification'
@@ -156,7 +156,7 @@ export default function UploadMeetingsForm({
       )}
 
       <div className="mt-5 mb-4 flex justify-center gap-4">
-        <CancelButton onClick={addMeeting} disabled={isPending} label="+ Add meeting" />
+        <SecondaryButton onClick={addMeeting} disabled={isPending} label="+ Add meeting" />
         <ConfirmButton isPending={isPending} label="Submit" pendingLabel="Uploading..." />
       </div>
     </form>
