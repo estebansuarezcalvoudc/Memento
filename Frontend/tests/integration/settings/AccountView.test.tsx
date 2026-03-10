@@ -13,7 +13,7 @@ import { withAuth } from '../../mocks/withAuth'
 import { renderWithRouter, setupStoreReset } from '../../utils'
 
 const TEST_EMAIL = 'test@example.com'
-const TEST_TOKEN = `h.${btoa(JSON.stringify({ sub: TEST_EMAIL }))}.s`
+const TEST_TOKEN = `h.${btoa(JSON.stringify({ email: TEST_EMAIL }))}.s`
 
 function setup() {
   localStorage.setItem('access_token', TEST_TOKEN)
