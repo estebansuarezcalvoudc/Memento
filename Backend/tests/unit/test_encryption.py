@@ -3,7 +3,6 @@ Unit tests for core/encryption.py
 """
 
 import pytest
-from cryptography.fernet import Fernet
 
 from app.core.encryption import EncryptionError, decrypt_api_key, encrypt_api_key
 
@@ -44,31 +43,22 @@ class TestGetCipher:
     def test_get_cipher_should_raise_encryption_error_when_key_is_missing(
         self, monkeypatch
     ):
-        monkeypatch.setattr("app.core.encryption._get_cipher", _raise_missing_key)
-        with pytest.raises(EncryptionError):
-            _raise_missing_key()
+        import app.core.encryption as enc_module
+        import app.core.settings as settings_module
+
+        monkeypatch.setattr(settings_module.settings, "encryption_key", "")
+        with pytest.raises(EncryptionError, match="ENCRYPTION_KEY not found"):
+            enc_module._get_cipher()
 
     def test_get_cipher_should_raise_encryption_error_for_invalid_key_format(
         self, monkeypatch
     ):
         """Patch settings to return a key that is not valid base64-Fernet format."""
         import app.core.encryption as enc_module
+        import app.core.settings as settings_module
 
-        original = enc_module._get_cipher
-
-        def patched_get_cipher():
-            from app.core.encryption import EncryptionError
-
-            try:
-                return Fernet("not-a-valid-fernet-key".encode())
-            except Exception as e:
-                raise EncryptionError(f"Invalid ENCRYPTION_KEY format: {e}") from e
-
-        monkeypatch.setattr(enc_module, "_get_cipher", patched_get_cipher)
-
+        monkeypatch.setattr(
+            settings_module.settings, "encryption_key", "not-a-valid-fernet-key"
+        )
         with pytest.raises(EncryptionError, match="Invalid ENCRYPTION_KEY format"):
             enc_module._get_cipher()
-
-
-def _raise_missing_key():
-    raise EncryptionError("ENCRYPTION_KEY not found in settings.")
