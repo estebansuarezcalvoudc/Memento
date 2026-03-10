@@ -10,6 +10,7 @@ class TestModelsEndpoints:
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
 
         def mongo_side_effect(query, projection=None):
+            _ = query
             if "password" in str(projection):
                 return {
                     "username": "test@example.com",
@@ -366,4 +367,70 @@ class TestModelsEndpoints:
                 "max_tokens": 2000,
             },
         )
+        assert response.status_code == 401
+
+
+class TestPullModelEndpoint:
+    def test_pull_model_should_return_201_when_pulling_ollama_model(
+        self, client: TestClient, auth_headers: dict, mock_mongo
+    ):
+        _ = mock_mongo  # Fixture needed for MongoDB mock setup
+
+        with patch("app.services.settings.models_service.ollama") as mock_ollama:
+            mock_ollama.pull.return_value = None
+
+            response = client.post(
+                "/settings/models/pull",
+                headers=auth_headers,
+                json={"provider": "Ollama", "model_name": "llama3.2:latest"},
+            )
+
+        assert response.status_code == 201
+        mock_ollama.pull.assert_called_once_with("llama3.2:latest")
+
+    def test_pull_model_should_return_400_when_provider_does_not_support_pull(
+        self, client: TestClient, auth_headers: dict, mock_mongo
+    ):
+        _ = mock_mongo  # Fixture needed for MongoDB mock setup
+
+        with patch("app.services.settings.models_service.ollama") as mock_ollama:
+            response = client.post(
+                "/settings/models/pull",
+                headers=auth_headers,
+                json={"provider": "OpenAI", "model_name": "gpt-4o"},
+            )
+
+            mock_ollama.pull.assert_not_called()
+
+        assert response.status_code == 400
+        assert "OpenAI" in response.json()["detail"]
+        assert "cannot pull models" in response.json()["detail"]
+
+    def test_pull_model_should_return_500_when_ollama_raises_unexpected_error(
+        self, client: TestClient, auth_headers: dict, mock_mongo
+    ):
+        _ = mock_mongo  # Fixture needed for MongoDB mock setup
+
+        with patch("app.services.settings.models_service.ollama") as mock_ollama:
+            mock_ollama.pull.side_effect = Exception("Connection refused")
+
+            response = client.post(
+                "/settings/models/pull",
+                headers=auth_headers,
+                json={"provider": "Ollama", "model_name": "llama3.2:latest"},
+            )
+
+        assert response.status_code == 500
+        assert response.json()["detail"] == "Internal server error while pulling model"
+
+    def test_pull_model_should_require_authentication(
+        self, client: TestClient, mock_mongo
+    ):
+        _ = mock_mongo  # Fixture needed for MongoDB mock setup
+
+        response = client.post(
+            "/settings/models/pull",
+            json={"provider": "Ollama", "model_name": "llama3.2:latest"},
+        )
+
         assert response.status_code == 401
