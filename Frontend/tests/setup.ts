@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom'
 
-import { afterAll, afterEach, beforeAll } from 'vitest'
+import { afterAll, afterEach, beforeAll, vi } from 'vitest'
 
 import { server } from './mocks/server'
 
@@ -20,6 +20,19 @@ HTMLDialogElement.prototype.showModal = function () {
 HTMLDialogElement.prototype.close = function () {
   this.removeAttribute('open')
 }
+
+// jsdom does not implement window.matchMedia (used by themeStore)
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+})
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(() => {

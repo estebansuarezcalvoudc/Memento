@@ -11,12 +11,28 @@ interface ThemeStore {
 // Listener de cambios del sistema, guardado para poder eliminarlo si cambia la preferencia del usuario
 let systemThemeListener: ((e: MediaQueryListEvent) => void) | null = null
 
+// Instancia estable de MediaQueryList para evitar fugas de listeners al reutilizar la misma referencia
+let stableMediaQuery: MediaQueryList | null = null
+
+function getStableMediaQuery(): MediaQueryList | null {
+  // Guard for SSR/non-browser environments and older browsers without matchMedia support
+  if (typeof window === 'undefined' || !('matchMedia' in window)) {
+    return null
+  }
+  if (!stableMediaQuery) {
+    stableMediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+  }
+  return stableMediaQuery
+}
+
 function applyTheme(theme: Theme): void {
+  if (typeof document === 'undefined') return
+
   const root = document.documentElement
-  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+  const mediaQuery = getStableMediaQuery()
 
   // Elimina el listener anterior si lo hubiera
-  if (systemThemeListener) {
+  if (systemThemeListener && mediaQuery) {
     mediaQuery.removeEventListener('change', systemThemeListener)
     systemThemeListener = null
   }
@@ -27,20 +43,22 @@ function applyTheme(theme: Theme): void {
     root.classList.remove('dark')
   } else {
     // 'system': aplica el tema actual del sistema y suscribe a cambios futuros
-    if (mediaQuery.matches) {
-      root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
-    }
-
-    systemThemeListener = (e: MediaQueryListEvent) => {
-      if (e.matches) {
+    if (mediaQuery) {
+      if (mediaQuery.matches) {
         root.classList.add('dark')
       } else {
         root.classList.remove('dark')
       }
+
+      systemThemeListener = (e: MediaQueryListEvent) => {
+        if (e.matches) {
+          root.classList.add('dark')
+        } else {
+          root.classList.remove('dark')
+        }
+      }
+      mediaQuery.addEventListener('change', systemThemeListener)
     }
-    mediaQuery.addEventListener('change', systemThemeListener)
   }
 }
 

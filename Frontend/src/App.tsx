@@ -11,10 +11,13 @@ import Meetings from './pages/meetings/Meetings'
 import NotFound from './pages/NotFound'
 import { useIsUserAuth } from './stores/authStore'
 import { useIsSidebarOpen } from './stores/sidebarStore'
+import { useTheme } from './stores/themeStore'
 
 export default function App() {
   const isUserAuth = useIsUserAuth()
   const isSidebarOpen = useIsSidebarOpen()
+  // Initializes theme store on app startup so the persisted theme is applied immediately
+  useTheme()
 
   return (
     <BrowserRouter>
