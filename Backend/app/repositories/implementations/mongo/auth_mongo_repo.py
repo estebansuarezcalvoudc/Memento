@@ -3,6 +3,7 @@ from typing import Optional
 import pymongo
 from bson import ObjectId
 from fastapi import HTTPException, status
+from pymongo.errors import DuplicateKeyError
 
 from ....core.settings import settings
 from ....schemas.auth.auth_schema import UserCreate, UserInDB
@@ -14,18 +15,18 @@ class AuthMongoRepository(AbstractAuthRepository):
         myclient = pymongo.MongoClient(settings.mongo_url)
         mydb = myclient["tfg_db"]
         self._collection = mydb["auth"]
+        self._collection.create_index("username", unique=True)
 
     def store_user(self, user: UserCreate) -> str:
-        existing_user = self._collection.find_one({"username": user.username})
-        if existing_user is not None:
+        try:
+            result = self._collection.insert_one(
+                {"username": user.username, "password": user.password}
+            )
+        except DuplicateKeyError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="A user with this username already exists",
             )
-
-        result = self._collection.insert_one(
-            {"username": user.username, "password": user.password}
-        )
         return str(result.inserted_id)
 
     def retrieve_user(self, username: str) -> Optional[UserInDB]:
@@ -61,9 +62,15 @@ class AuthMongoRepository(AbstractAuthRepository):
         )
 
     def update_username(self, user_id: str, new_username: str) -> None:
-        result = self._collection.update_one(
-            {"_id": ObjectId(user_id)}, {"$set": {"username": new_username}}
-        )
+        try:
+            result = self._collection.update_one(
+                {"_id": ObjectId(user_id)}, {"$set": {"username": new_username}}
+            )
+        except DuplicateKeyError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="A user with this username already exists",
+            )
 
         if result.matched_count == 0:
             raise HTTPException(
