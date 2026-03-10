@@ -1,11 +1,16 @@
 from unittest.mock import MagicMock
 
+from bson import ObjectId
 from fastapi.testclient import TestClient
 from passlib.context import CryptContext
+from pymongo.errors import DuplicateKeyError
+
+from tests.conftest import TEST_USER_ID
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 _USER_DOC = {
+    "_id": ObjectId(TEST_USER_ID),
     "username": "test@example.com",
     "password": pwd_context.hash("password123"),
 }
@@ -33,10 +38,9 @@ class TestAuthEndpoints:
         self, client: TestClient, mock_mongo
     ):
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
-        mock_mongo.find_one.return_value = {
-            "username": "existing@example.com",
-            "password": pwd_context.hash("password123"),
-        }
+        mock_mongo.insert_one.side_effect = DuplicateKeyError(
+            "E11000 duplicate key error"
+        )
 
         request_data = {
             "username": "existing@example.com",
@@ -47,7 +51,7 @@ class TestAuthEndpoints:
 
         assert response.status_code == 400
         assert "already exists" in response.json()["detail"].lower()
-        mock_mongo.insert_one.assert_not_called()
+        mock_mongo.insert_one.assert_called_once()
 
     def test_register_should_initialize_settings_with_ollama_active(
         self, client: TestClient, mock_mongo
@@ -160,6 +164,7 @@ class TestAuthEndpoints:
     ):
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": pwd_context.hash("password123"),
         }
@@ -179,6 +184,7 @@ class TestAuthEndpoints:
     ):
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": pwd_context.hash("password123"),
         }
@@ -208,6 +214,7 @@ class TestAuthEndpoints:
     def test_login_should_use_form_data_format(self, client: TestClient, mock_mongo):
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": pwd_context.hash("password123"),
         }
@@ -409,7 +416,7 @@ class TestAuthEndpoints:
         assert response.status_code == 204
         mock_mongo.delete_many.assert_called()
         mock_vector_store.delete.assert_called_once_with(
-            where={"username": "test@example.com"}
+            where={"user_id": TEST_USER_ID}
         )
         mock_mongo.delete_one.assert_called_once()
 
@@ -476,8 +483,8 @@ class TestAuthEndpoints:
         assert response.status_code == 204
         assert mock_mongo.delete_many.call_count == 3
         for call in mock_mongo.delete_many.call_args_list:
-            assert call.args == ({"username": "test@example.com"},)
-        mock_mongo.delete_one.assert_called_once_with({"username": "test@example.com"})
+            assert call.args == ({"user_id": TEST_USER_ID},)
+        mock_mongo.delete_one.assert_called_once_with({"_id": ObjectId(TEST_USER_ID)})
 
     def test_delete_account_should_delete_vector_store_embeddings(
         self, client: TestClient, mock_mongo, auth_headers, mock_vector_store
@@ -495,7 +502,7 @@ class TestAuthEndpoints:
 
         assert response.status_code == 204
         mock_vector_store.delete.assert_called_once_with(
-            where={"username": "test@example.com"}
+            where={"user_id": TEST_USER_ID}
         )
 
     def test_delete_account_should_not_delete_any_data_with_wrong_password(

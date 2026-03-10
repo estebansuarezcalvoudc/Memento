@@ -71,4 +71,29 @@ describe('Chat Options', () => {
 
     expect(screen.getByDisplayValue('Renamed Chat')).toBeInTheDocument()
   })
+
+  it('rename chat saves when pressing Enter key', async () => {
+    const user = userEvent.setup()
+    setAuthToken()
+    renderWithRouter(
+      <Routes>
+        <Route
+          path="/chats/:chatId"
+          element={<ChatItem chatId="chat-1" chatTitle="First Chat" />}
+        />
+      </Routes>,
+      { route: '/chats/chat-1' },
+    )
+
+    await hoverAndOpenMenu(user, 'First Chat')
+
+    const renameButton = await screen.findByText('Rename')
+    await user.click(renameButton)
+
+    const input = screen.getByDisplayValue('First Chat')
+    await user.clear(input)
+    await user.type(input, 'Renamed via Enter{Enter}')
+
+    expect(screen.getByDisplayValue('Renamed via Enter')).toBeInTheDocument()
+  })
 })

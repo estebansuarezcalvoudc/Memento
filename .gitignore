@@ -239,3 +239,5 @@ Frontend/.vite
 *.njsproj
 *.sln
 *.sw?
+
+Frontend/coverage

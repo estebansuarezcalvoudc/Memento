@@ -1,6 +1,9 @@
 from unittest.mock import MagicMock, patch
 
+from bson import ObjectId
 from fastapi.testclient import TestClient
+
+from tests.conftest import TEST_USER_ID
 
 
 class TestModelsEndpoints:
@@ -13,11 +16,13 @@ class TestModelsEndpoints:
             _ = query
             if "password" in str(projection):
                 return {
+                    "_id": ObjectId(TEST_USER_ID),
                     "username": "test@example.com",
                     "password": "$2b$12$test_hashed_password",
                 }
 
             return {
+                "_id": ObjectId(TEST_USER_ID),
                 "username": "test@example.com",
                 "password": "$2b$12$test_hashed_password",
                 "settings": {
@@ -60,6 +65,7 @@ class TestModelsEndpoints:
     ):
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
             "settings": {
@@ -86,6 +92,7 @@ class TestModelsEndpoints:
     ):
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
             "settings": {
@@ -112,6 +119,7 @@ class TestModelsEndpoints:
     ):
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
             "settings": {
@@ -138,6 +146,7 @@ class TestModelsEndpoints:
     ):
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
             "settings": {
@@ -164,6 +173,7 @@ class TestModelsEndpoints:
     ):
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
         }
@@ -182,6 +192,7 @@ class TestModelsEndpoints:
     ):
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
         }
@@ -209,6 +220,7 @@ class TestModelsEndpoints:
     ):
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
         }
@@ -236,6 +248,7 @@ class TestModelsEndpoints:
     ):
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
         }
@@ -263,6 +276,7 @@ class TestModelsEndpoints:
     ):
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
         }
@@ -292,6 +306,7 @@ class TestModelsEndpoints:
     ):
         # Simulate the exact document produced by initialize_user_settings
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
             "settings": {

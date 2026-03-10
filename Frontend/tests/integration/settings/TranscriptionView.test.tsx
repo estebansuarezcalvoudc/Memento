@@ -145,6 +145,8 @@ describe('TranscriptionView', () => {
     renderWithRouter(<TranscriptionView />)
     await screen.findByLabelText('Device')
     await user.selectOptions(screen.getByLabelText('Device'), 'cpu')
-    await waitFor(() => expect(patchedBody).toEqual({ device: 'cpu' }))
+    await waitFor(() =>
+      expect(patchedBody).toEqual({ device: 'cpu', compute_type: 'int8' }),
+    )
   })
 })

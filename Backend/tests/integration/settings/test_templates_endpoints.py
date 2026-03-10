@@ -1,6 +1,8 @@
+from bson import ObjectId
 from fastapi.testclient import TestClient
 
 from app.schemas.settings.templates_schema import DEFAULT_PROMPT
+from tests.conftest import TEST_USER_ID
 
 
 class TestTemplatesEndpoints:
@@ -17,6 +19,7 @@ class TestTemplatesEndpoints:
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
         }
@@ -32,6 +35,7 @@ class TestTemplatesEndpoints:
     ):
         custom_prompt = "Custom analysis prompt for meetings"
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
             "settings": {"templates": {"system_prompt": custom_prompt}},
@@ -51,6 +55,7 @@ class TestTemplatesEndpoints:
         )  # Long enough (50+ chars)
 
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
         }
@@ -67,7 +72,7 @@ class TestTemplatesEndpoints:
 
         mock_mongo.update_one.assert_called_once()
         call_args = mock_mongo.update_one.call_args
-        assert call_args[0][0] == {"username": "test@example.com"}
+        assert call_args[0][0] == {"user_id": TEST_USER_ID}
         assert "$set" in call_args[0][1]
         assert "settings.templates.system_prompt" in call_args[0][1]["$set"]
 
@@ -77,6 +82,7 @@ class TestTemplatesEndpoints:
         short_prompt = "Too short"  # Less than 50 chars
 
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
         }
@@ -96,6 +102,7 @@ class TestTemplatesEndpoints:
         long_prompt = "A" * 5001  # More than 5000 chars
 
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
         }
@@ -115,6 +122,7 @@ class TestTemplatesEndpoints:
         empty_prompt = "   \n\t   "  # Only whitespace
 
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
         }
@@ -134,6 +142,7 @@ class TestTemplatesEndpoints:
         prompt_with_whitespace = "  " + ("Valid prompt text. " * 10) + "  "
 
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
         }

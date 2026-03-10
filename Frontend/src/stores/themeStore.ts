@@ -10,16 +10,20 @@ interface ThemeStore {
 
 // Listener de cambios del sistema, guardado para poder eliminarlo si cambia la preferencia del usuario
 let systemThemeListener: ((e: MediaQueryListEvent) => void) | null = null
+// MediaQueryList al que se suscribió el listener, para desuscribirse del mismo objeto
+let systemMediaQuery: MediaQueryList | null = null
 
 function applyTheme(theme: Theme): void {
   const root = document.documentElement
-  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
-  // Elimina el listener anterior si lo hubiera
-  if (systemThemeListener) {
-    mediaQuery.removeEventListener('change', systemThemeListener)
+  // Elimina el listener anterior del mismo MediaQueryList al que fue suscrito
+  if (systemThemeListener && systemMediaQuery) {
+    systemMediaQuery.removeEventListener('change', systemThemeListener)
     systemThemeListener = null
+    systemMediaQuery = null
   }
+
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
   if (theme === 'dark') {
     root.classList.add('dark')
@@ -40,6 +44,7 @@ function applyTheme(theme: Theme): void {
         root.classList.remove('dark')
       }
     }
+    systemMediaQuery = mediaQuery
     mediaQuery.addEventListener('change', systemThemeListener)
   }
 }

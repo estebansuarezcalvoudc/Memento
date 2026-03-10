@@ -1,4 +1,7 @@
+from bson import ObjectId
 from fastapi.testclient import TestClient
+
+from tests.conftest import TEST_USER_ID
 
 
 class TestProvidersEndpoints:
@@ -6,6 +9,7 @@ class TestProvidersEndpoints:
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
         }
@@ -33,6 +37,7 @@ class TestProvidersEndpoints:
             _ = _query
             if projection and "settings.providers" in str(projection):
                 return {
+                    "_id": ObjectId(TEST_USER_ID),
                     "username": "test@example.com",
                     "settings": {
                         "providers": {
@@ -44,6 +49,7 @@ class TestProvidersEndpoints:
                 }
             else:
                 return {
+                    "_id": ObjectId(TEST_USER_ID),
                     "username": "test@example.com",
                     "password": "$2b$12$test_hashed_password",
                 }
@@ -64,6 +70,7 @@ class TestProvidersEndpoints:
             _ = _query
             if projection and "settings.providers" in str(projection):
                 return {
+                    "_id": ObjectId(TEST_USER_ID),
                     "username": "test@example.com",
                     "settings": {
                         "providers": {
@@ -73,6 +80,7 @@ class TestProvidersEndpoints:
                 }
             else:
                 return {
+                    "_id": ObjectId(TEST_USER_ID),
                     "username": "test@example.com",
                     "password": "$2b$12$test_hashed_password",
                 }
@@ -152,6 +160,7 @@ class TestProvidersEndpoints:
         # _apply_ollama_fallback will call find_one for each model getter
         # Return a doc with no models so the fallback skips the update
         mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
             "password": "$2b$12$test_hashed_password",
         }

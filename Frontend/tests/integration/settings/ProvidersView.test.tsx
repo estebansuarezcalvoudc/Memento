@@ -184,4 +184,35 @@ describe('ProvidersView – API key section', () => {
     )
     await waitFor(() => expect(deleteCalled).toBe(true))
   })
+
+  it('submitting an invalid API key shows the error message', async () => {
+    const user = userEvent.setup()
+    server.use(
+      http.get(
+        '/api/settings/providers',
+        withAuth(() =>
+          HttpResponse.json([
+            { name: 'openai', requires_api_key: true, has_api_key: false },
+          ]),
+        ),
+      ),
+      http.post(
+        '/api/settings/providers/:name/api-key',
+        withAuth(() =>
+          HttpResponse.json({ detail: 'Unauthorized' }, { status: 401 }),
+        ),
+      ),
+    )
+    setAuthToken()
+    renderWithRouter(<ProvidersView />)
+    await user.click(
+      await screen.findByRole('button', { name: /Add API key/i }),
+    )
+    await user.type(
+      screen.getByPlaceholderText('Enter your API key'),
+      'bad-key',
+    )
+    await user.click(screen.getByRole('button', { name: 'Confirm' }))
+    expect(await screen.findByText('Invalid API key')).toBeInTheDocument()
+  })
 })
