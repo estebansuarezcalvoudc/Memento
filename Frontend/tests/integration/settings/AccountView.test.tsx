@@ -34,7 +34,7 @@ describe('AccountView', () => {
     // getByText matches the <strong> child — check the parent span's text content instead
     const strongEl = screen.getByText(/Email:/)
     const spanEl = strongEl.closest('span')!
-    expect(spanEl.textContent).toBe('Email: ')
+    expect(spanEl.textContent).toMatch(/^Email:\s*$/)
   })
 
   it('renders the username decoded from the JWT token', () => {

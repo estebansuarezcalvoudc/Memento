@@ -8,17 +8,13 @@ import {
 // matchMedia is not implemented in jsdom – we must stub it before any call
 // to applyTheme (which runs via _resetThemeStore inside beforeEach).
 function stubMatchMedia(matches = false) {
-  const addEventListenerSpy = vi.fn()
-  const removeEventListenerSpy = vi.fn()
-  vi.stubGlobal(
-    'matchMedia',
-    vi.fn().mockReturnValue({
-      matches,
-      addEventListener: addEventListenerSpy,
-      removeEventListener: removeEventListenerSpy,
-    }),
-  )
-  return { addEventListenerSpy, removeEventListenerSpy }
+  const matchMediaFn = vi.fn().mockImplementation(() => ({
+    matches,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  }))
+  vi.stubGlobal('matchMedia', matchMediaFn)
+  return matchMediaFn
 }
 
 describe('themeStore – applyTheme', () => {
@@ -58,19 +54,21 @@ describe('themeStore – applyTheme', () => {
   })
 
   it('setTheme("system") subscribes to media query changes', () => {
-    const { addEventListenerSpy } = stubMatchMedia(false)
+    const matchMediaMock = stubMatchMedia(false)
     _getThemeState().setTheme('system')
-    expect(addEventListenerSpy).toHaveBeenCalledWith(
+    const mql = matchMediaMock.mock.results.at(-1)!.value
+    expect(mql.addEventListener).toHaveBeenCalledWith(
       'change',
       expect.any(Function),
     )
   })
 
   it('switching away from "system" removes the previous listener', () => {
-    const { removeEventListenerSpy } = stubMatchMedia(false)
-    _getThemeState().setTheme('system') // installs listener
-    _getThemeState().setTheme('dark') // should remove it
-    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+    const matchMediaMock = stubMatchMedia(false)
+    _getThemeState().setTheme('system') // installs listener on first MediaQueryList
+    const firstMql = matchMediaMock.mock.results.at(-1)!.value
+    _getThemeState().setTheme('dark') // should remove it from the same MediaQueryList
+    expect(firstMql.removeEventListener).toHaveBeenCalledWith(
       'change',
       expect.any(Function),
     )
