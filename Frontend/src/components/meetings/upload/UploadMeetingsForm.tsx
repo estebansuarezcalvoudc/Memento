@@ -3,10 +3,11 @@ import { useActionState, useEffect, useState } from 'react'
 import { useUploadMeetings } from '../../../api/queries/useMeetingsQueries'
 import { useGetSupportedLanguages } from '../../../api/queries/useSettingsQueries'
 import { type Meeting } from '../../../types/meetings'
-import FormButton from '../../common/FormButton'
 import FormErrors from '../../common/FormErrors'
-import AddMeetingButton from './AddMeetingButton'
-import MeetingForm from './MeetingForm'
+import ConfirmButton from '../../settings/sections/ui/ConfirmButton'
+import SecondaryButton from '../../settings/sections/ui/SecondaryButton'
+import ColumnHeader from '../ColumnHeader'
+import MeetingForm, { meetingFormGridCols } from './MeetingForm'
 import ServerErrorNotification from './notifications/ServerErrorNotification'
 import SuccessNotification from './notifications/SuccessNotification'
 import UploadingNotification from './notifications/UploadingNotification'
@@ -110,6 +111,18 @@ export default function UploadMeetingsForm({
 
   return (
     <form action={handleSubmit}>
+      {/* Column header */}
+      <div
+        className={`grid ${meetingFormGridCols} gap-4 border-b border-stone-300 py-2`}
+      >
+        <ColumnHeader size="xs">#</ColumnHeader>
+        <ColumnHeader size="xs">Title</ColumnHeader>
+        <ColumnHeader size="xs">Date</ColumnHeader>
+        <ColumnHeader size="xs">File</ColumnHeader>
+        <div />
+        <div />
+      </div>
+
       {meetings.map((meeting, index) => (
         <MeetingForm
           key={meeting.id}
@@ -143,8 +156,8 @@ export default function UploadMeetingsForm({
       )}
 
       <div className="mt-5 mb-4 flex justify-center gap-4">
-        <AddMeetingButton onClick={addMeeting} isPending={isPending} />
-        <FormButton isPending={isPending} text="Submit" />
+        <SecondaryButton onClick={addMeeting} disabled={isPending} label="+ Add meeting" />
+        <ConfirmButton isPending={isPending} label="Submit" pendingLabel="Uploading..." />
       </div>
     </form>
   )

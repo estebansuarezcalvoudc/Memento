@@ -5,7 +5,7 @@ import {
   useGetSummarizationPrompt,
   useUpdateSummarizationPrompt,
 } from '../../../../api/queries/settings/useSummarizationQueries'
-import CancelButton from '../ui/CancelButton'
+import SecondaryButton from '../ui/SecondaryButton'
 import ConfirmButton from '../ui/ConfirmButton'
 import ErrorMessage from '../ui/ErrorMessage'
 import SubSectionTitle from '../ui/SubSectionTitle'
@@ -61,7 +61,7 @@ export default function TemplateSection() {
               >
                 Reset to default
               </button>
-              <CancelButton
+              <SecondaryButton
                 onClick={() => setDraft(undefined)}
                 disabled={isPending || !isModified}
               />

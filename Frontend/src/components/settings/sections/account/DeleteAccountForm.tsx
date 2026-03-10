@@ -7,7 +7,7 @@ import {
   type SetIsUserAuth,
 } from '../../../../stores/authStore'
 import Input from '../../../common/Input'
-import CancelButton from '../ui/CancelButton'
+import SecondaryButton from '../ui/SecondaryButton'
 import ConfirmButton from '../ui/ConfirmButton'
 import ErrorMessage from '../ui/ErrorMessage'
 
@@ -44,7 +44,7 @@ export default function DeleteAccountForm({ onClose }: DeleteAccountFormProps) {
       <Input name="password" type="password" label="Password" />
       {formState.errors && <ErrorMessage message={formState.errors[0]} />}
       <div className="mt-4 flex justify-center gap-x-2">
-        <CancelButton onClick={onClose} disabled={isPending} />
+        <SecondaryButton onClick={onClose} disabled={isPending} />
         <ConfirmButton label="Delete" color="red" isPending={isPending} />
       </div>
     </form>
