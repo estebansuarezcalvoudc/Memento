@@ -382,7 +382,7 @@ class TestPullModelEndpoint:
             response = client.post(
                 "/settings/models/pull",
                 headers=auth_headers,
-                json={"provider": "Ollama", "model_name": "llama3.2:latest"},
+                json={"provider": "Ollama", "model": "llama3.2:latest"},
             )
 
         assert response.status_code == 201
@@ -397,7 +397,7 @@ class TestPullModelEndpoint:
             response = client.post(
                 "/settings/models/pull",
                 headers=auth_headers,
-                json={"provider": "OpenAI", "model_name": "gpt-4o"},
+                json={"provider": "OpenAI", "model": "gpt-4o"},
             )
 
             mock_ollama.pull.assert_not_called()
@@ -417,7 +417,7 @@ class TestPullModelEndpoint:
             response = client.post(
                 "/settings/models/pull",
                 headers=auth_headers,
-                json={"provider": "Ollama", "model_name": "llama3.2:latest"},
+                json={"provider": "Ollama", "model": "llama3.2:latest"},
             )
 
         assert response.status_code == 500
@@ -430,7 +430,7 @@ class TestPullModelEndpoint:
 
         response = client.post(
             "/settings/models/pull",
-            json={"provider": "Ollama", "model_name": "llama3.2:latest"},
+            json={"provider": "Ollama", "model": "llama3.2:latest"},
         )
 
         assert response.status_code == 401

@@ -51,5 +51,10 @@ export default async function fetchBackend<T>(
     return null
   }
 
-  return camelcaseKeys(JSON.parse(text), { deep: true })
+  const parsed = JSON.parse(text)
+  if (parsed === null) {
+    return null
+  }
+
+  return camelcaseKeys(parsed, { deep: true })
 }

@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from ...core.logging import setup_logger
 from ...dependencies.auth_dependencies import get_current_active_user
@@ -154,7 +154,8 @@ async def pull_model(
 ) -> None:
     _ = current_user
     try:
-        return service.pull_model(pull_model_request)
+        service.pull_model(pull_model_request)
+        return Response(status_code=status.HTTP_201_CREATED)
     except HTTPException:
         raise
     except Exception as e:
