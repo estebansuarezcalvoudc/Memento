@@ -38,7 +38,7 @@ def get_user_prompt(
     Returns the user's custom prompt if configured, otherwise returns the default
     system prompt.
     """
-    return service.get_user_prompt(user.username)
+    return service.get_user_prompt(user.id)
 
 
 @router.put("/prompt", response_model=SystemPromptResponse)
@@ -53,4 +53,4 @@ def update_user_prompt(
     Allows users to customize the prompt used for meeting summarization.
     The prompt must be between 50-5000 characters.
     """
-    return service.update_user_prompt(user.username, update)
+    return service.update_user_prompt(user.id, update)

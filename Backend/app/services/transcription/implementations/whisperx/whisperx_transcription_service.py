@@ -41,9 +41,9 @@ class WhisperXTranscriptionService(TranscriptionService):
     # --- TranscriptionService interface ---
 
     def transcribe(
-        self, audio_bytes: bytes, language: str | None, username: str
+        self, audio_bytes: bytes, language: str | None, user_id: str
     ) -> TranscriptionResult:
-        config = self._get_user_config(username)
+        config = self._get_user_config(user_id)
         audio = self._load_audio(audio_bytes)
         device = config.device
 
@@ -81,11 +81,11 @@ class WhisperXTranscriptionService(TranscriptionService):
             models=models, compute_types=compute_types, devices=devices
         )
 
-    def get_user_configuration(self, username: str) -> WhisperXConfiguration:
-        return self._get_user_config(username)
+    def get_user_configuration(self, user_id: str) -> WhisperXConfiguration:
+        return self._get_user_config(user_id)
 
     def update_user_configuration(
-        self, username: str, data: dict
+        self, user_id: str, data: dict
     ) -> WhisperXConfiguration:
         try:
             update = WhisperXConfigurationUpdate(**data)
@@ -95,13 +95,13 @@ class WhisperXTranscriptionService(TranscriptionService):
             )
         update_data = update.model_dump(exclude_none=True)
         if update_data:
-            self._settings_repo.update_transcription_settings(username, update_data)
-        return self.get_user_configuration(username)
+            self._settings_repo.update_transcription_settings(user_id, update_data)
+        return self.get_user_configuration(user_id)
 
     # --- Private helpers ---
 
-    def _get_user_config(self, username: str) -> WhisperXConfiguration:
-        user_settings = self._settings_repo.get_transcription_settings(username)
+    def _get_user_config(self, user_id: str) -> WhisperXConfiguration:
+        user_settings = self._settings_repo.get_transcription_settings(user_id)
         if not user_settings:
             return WhisperXConfiguration()
         return WhisperXConfiguration(**user_settings)

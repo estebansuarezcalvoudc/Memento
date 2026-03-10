@@ -55,7 +55,7 @@ async def change_username(
 ) -> Token:
     try:
         return service.change_username(
-            current_user.username, body.new_username, body.password
+            current_user.id, body.new_username, body.password
         )
     except HTTPException:
         raise
@@ -75,7 +75,7 @@ async def change_password(
 ) -> None:
     try:
         service.change_password(
-            current_user.username, body.current_password, body.new_password
+            current_user.id, body.current_password, body.new_password
         )
     except HTTPException:
         raise
@@ -94,7 +94,7 @@ async def delete_account(
     service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> None:
     try:
-        service.delete_account(current_user.username, body.password)
+        service.delete_account(current_user.id, body.password)
     except HTTPException:
         raise
     except Exception as e:

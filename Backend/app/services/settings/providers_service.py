@@ -15,26 +15,26 @@ class ProvidersService:
     def __init__(self, repository: SettingsRepository) -> None:
         self._repository: SettingsRepository = repository
 
-    def get_providers(self, username: str) -> list[Provider]:
+    def get_providers(self, user_id: str) -> list[Provider]:
         """
         Get all providers with their status
 
         Args:
-            username: User's username
+            user_id: User's ID
 
         Returns:
             List of Provider objects
         """
-        return self._repository.get_providers(username)
+        return self._repository.get_providers(user_id)
 
     def add_provider_api_key(
-        self, username: str, provider_name: str, api_key: str
+        self, user_id: str, provider_name: str, api_key: str
     ) -> None:
         """
         Add and validate API key for a provider
 
         Args:
-            username: User's username
+            user_id: User's ID
             provider_name: Provider name
             api_key: Plain text API key
 
@@ -57,18 +57,18 @@ class ProvidersService:
 
         encrypted_key = encrypt_api_key(api_key)
         self._repository.save_provider_api_key_encrypted(
-            username, provider_name, encrypted_key
+            user_id, provider_name, encrypted_key
         )
 
         _logger.info(f"API key added for provider {provider_name}")
 
-    def delete_provider_api_key(self, username: str, provider_name: str) -> None:
+    def delete_provider_api_key(self, user_id: str, provider_name: str) -> None:
         """
         Delete API key for a provider and apply Ollama fallback for any models
         that were using this provider.
 
         Args:
-            username: User's username
+            user_id: User's ID
             provider_name: Provider name
 
         Raises:
@@ -80,36 +80,36 @@ class ProvidersService:
                 detail=f"Invalid provider: {provider_name}",
             )
 
-        self._repository.delete_provider_api_key(username, provider_name)
+        self._repository.delete_provider_api_key(user_id, provider_name)
         _logger.info(f"API key deleted for provider {provider_name}")
 
-        self._apply_ollama_fallback(username, provider_name)
+        self._apply_ollama_fallback(user_id, provider_name)
 
-    def get_provider_api_key(self, username: str, provider_name: str) -> str | None:
+    def get_provider_api_key(self, user_id: str, provider_name: str) -> str | None:
         """
         Get decrypted API key for a provider (for internal use)
 
         Args:
-            username: User's username
+            user_id: User's ID
             provider_name: Provider name
 
         Returns:
             Decrypted API key or None
         """
         encrypted_key = self._repository.get_provider_api_key_encrypted(
-            username, provider_name
+            user_id, provider_name
         )
         if not encrypted_key:
             return None
 
         return decrypt_api_key(encrypted_key)
 
-    def _apply_ollama_fallback(self, username: str, removed_provider: str) -> None:
+    def _apply_ollama_fallback(self, user_id: str, removed_provider: str) -> None:
         """
         Reset any model that was using the given provider back to the Ollama defaults.
 
         Args:
-            username: User's username
+            user_id: User's ID
             removed_provider: Provider whose API key was just removed
         """
         defaults = DEFAULT_USER_SETTINGS["models"]
@@ -131,9 +131,9 @@ class ProvidersService:
             ),
         ]
         for get_fn, update_fn, key in checks:
-            current = get_fn(username)
+            current = get_fn(user_id)
             if current and current.provider == removed_provider:
-                update_fn(username, ModelConfig(**defaults[key]))
+                update_fn(user_id, ModelConfig(**defaults[key]))
                 _logger.info(
                     f"Fallback: reset {key} from {removed_provider} to Ollama defaults"
                 )

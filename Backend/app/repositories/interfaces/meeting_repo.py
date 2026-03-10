@@ -18,7 +18,7 @@ class MeetingRepository(ABC):
         meeting_metadata: MeetingMetadataSchema,
         summary: str,
         transcription: str,
-        username: str,
+        user_id: str,
     ) -> MeetingMetadataResponse:
         """
         Store a new meeting
@@ -27,7 +27,7 @@ class MeetingRepository(ABC):
             meeting_metadata: Meeting metadata
             summary: Meeting summary
             transcription: Meeting transcription
-            username: Username of the meeting owner
+            user_id: ID of the meeting owner
 
         Returns:
             MeetingMetadataResponse with the created meeting data
@@ -36,13 +36,13 @@ class MeetingRepository(ABC):
 
     @abstractmethod
     def retrieve_all_meetings_metadata(
-        self, username: str
+        self, user_id: str
     ) -> list[MeetingMetadataResponse]:
         """
         Retrieve metadata for all meetings of a user
 
         Args:
-            username: Username to retrieve meetings for
+            user_id: User ID to retrieve meetings for
 
         Returns:
             List of MeetingMetadataResponse objects
@@ -51,14 +51,14 @@ class MeetingRepository(ABC):
 
     @abstractmethod
     def retrieve_meeting_summary(
-        self, id: str, username: str
+        self, id: str, user_id: str
     ) -> MeetingSummaryResponse:
         """
         Retrieve a meeting summary
 
         Args:
             id: Meeting ID
-            username: Username of the meeting owner
+            user_id: ID of the meeting owner
 
         Returns:
             MeetingSummaryResponse with the meeting summary
@@ -70,14 +70,14 @@ class MeetingRepository(ABC):
 
     @abstractmethod
     def retrieve_meeting_transcription(
-        self, id: str, username: str
+        self, id: str, user_id: str
     ) -> MeetingTranscriptionResponse:
         """
         Retrieve a meeting transcription
 
         Args:
             id: Meeting ID
-            username: Username of the meeting owner
+            user_id: ID of the meeting owner
 
         Returns:
             MeetingTranscriptionResponse with the meeting transcription
@@ -89,7 +89,7 @@ class MeetingRepository(ABC):
 
     @abstractmethod
     def update_meeting_metadata(
-        self, id: str, new_meeting_metadata: UpdateMeetingMetadata, username: str
+        self, id: str, new_meeting_metadata: UpdateMeetingMetadata, user_id: str
     ) -> None:
         """
         Update meeting metadata
@@ -97,7 +97,7 @@ class MeetingRepository(ABC):
         Args:
             id: Meeting ID
             new_meeting_metadata: New metadata to update
-            username: Username of the meeting owner
+            user_id: ID of the meeting owner
 
         Raises:
             HTTPException: If meeting not found
@@ -105,13 +105,13 @@ class MeetingRepository(ABC):
         pass
 
     @abstractmethod
-    def delete_meeting(self, id: str, username: str) -> None:
+    def delete_meeting(self, id: str, user_id: str) -> None:
         """
         Delete a meeting
 
         Args:
             id: Meeting ID
-            username: Username of the meeting owner
+            user_id: ID of the meeting owner
 
         Raises:
             HTTPException: If meeting not found
@@ -119,11 +119,11 @@ class MeetingRepository(ABC):
         pass
 
     @abstractmethod
-    def delete_user_data(self, username: str) -> None:
+    def delete_user_data(self, user_id: str) -> None:
         """
         Delete all meetings belonging to a user
 
         Args:
-            username: Username whose data will be deleted
+            user_id: User ID whose data will be deleted
         """
         pass

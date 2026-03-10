@@ -35,7 +35,7 @@ async def create_conversation(
 ) -> ConversationCreateResponse:
     try:
         response = await conversation_service.create_conversation(
-            conversation_create_request, current_user.username
+            conversation_create_request, current_user.id
         )
         return response
     except Exception as e:
@@ -63,7 +63,7 @@ async def send_message(
 ) -> str:
     try:
         return await conversation_service.send_message(
-            id, send_message_request, current_user.username
+            id, send_message_request, current_user.id
         )
     except HTTPException:
         raise
@@ -90,7 +90,7 @@ async def retrieve_all_conversations_metadata(
 ) -> list[ConversationMetadataRetrieve]:
     try:
         return conversation_service.retrieve_all_conversations_metadata(
-            current_user.username
+            current_user.id
         )
     except Exception as e:
         _logger.error(
@@ -117,7 +117,7 @@ async def retrieve_dialogue(
     ],
 ) -> Messages:
     try:
-        dialogue = conversation_service.retrieve_dialogue(id, current_user.username)
+        dialogue = conversation_service.retrieve_dialogue(id, current_user.id)
         return dialogue.messages
     except HTTPException:
         raise
@@ -148,7 +148,7 @@ async def update_conversation_metadata(
 ) -> None:
     try:
         conversation_service.update_conversation_metadata(
-            id, metadata, current_user.username
+            id, metadata, current_user.id
         )
     except HTTPException:
         raise
@@ -175,7 +175,7 @@ async def delete_conversation(
     ],
 ) -> None:
     try:
-        conversation_service.delete_conversation(id, current_user.username)
+        conversation_service.delete_conversation(id, current_user.id)
     except HTTPException:
         raise
     except Exception as e:

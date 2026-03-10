@@ -24,7 +24,7 @@ async def get_available_models(
 ) -> list[AvailableModel]:
     """Get all available models from active providers"""
     try:
-        return service.get_available_models(current_user.username)
+        return service.get_available_models(current_user.id)
     except HTTPException:
         raise
     except Exception as e:
@@ -42,7 +42,7 @@ async def get_chat_model(
 ) -> ModelConfig | None:
     """Get user's configured chat model"""
     try:
-        return service.get_chat_model(current_user.username)
+        return service.get_chat_model(current_user.id)
     except HTTPException:
         raise
     except Exception as e:
@@ -60,7 +60,7 @@ async def get_summary_model(
 ) -> ModelConfig | None:
     """Get user's configured summary model"""
     try:
-        return service.get_summary_model(current_user.username)
+        return service.get_summary_model(current_user.id)
     except HTTPException:
         raise
     except Exception as e:
@@ -79,7 +79,7 @@ async def update_chat_model(
 ) -> ModelConfig:
     """Update user's chat model configuration"""
     try:
-        return service.update_chat_model(current_user.username, model)
+        return service.update_chat_model(current_user.id, model)
     except HTTPException:
         raise
     except Exception as e:
@@ -98,7 +98,7 @@ async def update_summary_model(
 ) -> ModelConfig:
     """Update user's summary model configuration"""
     try:
-        return service.update_summary_model(current_user.username, model)
+        return service.update_summary_model(current_user.id, model)
     except HTTPException:
         raise
     except Exception as e:
@@ -116,7 +116,7 @@ async def get_retrieval_model(
 ) -> ModelConfig | None:
     """Get user's configured retrieval model"""
     try:
-        return service.get_retrieval_model(current_user.username)
+        return service.get_retrieval_model(current_user.id)
     except HTTPException:
         raise
     except Exception as e:
@@ -135,7 +135,7 @@ async def update_retrieval_model(
 ) -> ModelConfig:
     """Update user's retrieval model configuration"""
     try:
-        return service.update_retrieval_model(current_user.username, model)
+        return service.update_retrieval_model(current_user.id, model)
     except HTTPException:
         raise
     except Exception as e:

@@ -40,7 +40,7 @@ class MeetingService(metaclass=SingletonMeta):
         self,
         batch_request: CreateMeetingsBatchRequest,
         audio_bytes_list: list[bytes],
-        username: str,
+        user_id: str,
     ) -> list[MeetingMetadataResponse]:
         if len(batch_request.meetings_metadata) != len(audio_bytes_list):
             raise HTTPException(
@@ -53,7 +53,7 @@ class MeetingService(metaclass=SingletonMeta):
             batch_request.meetings_metadata, audio_bytes_list
         ):
             created_meeting = self._process_single_meeting(
-                metadata, audio_bytes, batch_request.processing_configuration, username
+                metadata, audio_bytes, batch_request.processing_configuration, user_id
             )
             created_meetings.append(created_meeting)
 
@@ -64,21 +64,21 @@ class MeetingService(metaclass=SingletonMeta):
         meeting_metadata: MeetingMetadata,
         audio_bytes: bytes,
         processing_config: ProcessingConfiguration,
-        username: str,
+        user_id: str,
     ) -> MeetingMetadataResponse:
         result = self._transcription_service.transcribe(
-            audio_bytes, meeting_metadata.language, username
+            audio_bytes, meeting_metadata.language, user_id
         )
         meeting_metadata.language = result.language
 
-        summary = get_meeting_summary(result.text, processing_config, username)
+        summary = get_meeting_summary(result.text, processing_config, user_id)
 
         created_meeting = self._repository.store_meeting(
-            meeting_metadata, summary, result.text, username
+            meeting_metadata, summary, result.text, user_id
         )
 
         self._index_meeting(
-            created_meeting.id, meeting_metadata, summary, result.text, username
+            created_meeting.id, meeting_metadata, summary, result.text, user_id
         )
 
         return created_meeting
@@ -89,11 +89,11 @@ class MeetingService(metaclass=SingletonMeta):
         meeting_metadata: MeetingMetadata,
         summary: str,
         transcription: str,
-        username: str,
+        user_id: str,
     ) -> None:
         base_metadata = {
             "meeting_id": meeting_id,
-            "username": username,
+            "user_id": user_id,
             "title": meeting_metadata.title,
             "date": str(meeting_metadata.date),
         }
@@ -112,24 +112,24 @@ class MeetingService(metaclass=SingletonMeta):
         _logger.debug(f"Indexed meeting {meeting_id} ({len(chunks)} chunks + summary)")
 
     def retrieve_all_meetings_metadata(
-        self, username: str
+        self, user_id: str
     ) -> list[MeetingMetadataResponse]:
-        return self._repository.retrieve_all_meetings_metadata(username)
+        return self._repository.retrieve_all_meetings_metadata(user_id)
 
     def retrieve_meeting_summary(
-        self, id: str, username: str
+        self, id: str, user_id: str
     ) -> MeetingSummaryResponse:
-        return self._repository.retrieve_meeting_summary(id, username)
+        return self._repository.retrieve_meeting_summary(id, user_id)
 
     def retrieve_meeting_transcription(
-        self, id: str, username: str
+        self, id: str, user_id: str
     ) -> MeetingTranscriptionResponse:
-        return self._repository.retrieve_meeting_transcription(id, username)
+        return self._repository.retrieve_meeting_transcription(id, user_id)
 
     def update_meeting(
-        self, id: str, meeting_data: UpdateMeetingMetadata, username: str
+        self, id: str, meeting_data: UpdateMeetingMetadata, user_id: str
     ) -> None:
-        self._repository.update_meeting_metadata(id, meeting_data, username)
+        self._repository.update_meeting_metadata(id, meeting_data, user_id)
         self._update_vector_store_metadata(id, meeting_data)
 
     def _update_vector_store_metadata(
@@ -153,6 +153,6 @@ class MeetingService(metaclass=SingletonMeta):
             f"Updated vector store metadata for meeting {meeting_id}: {updates}"
         )
 
-    def delete_meeting(self, meeting_id: str, username: str) -> None:
-        self._repository.delete_meeting(meeting_id, username)
+    def delete_meeting(self, meeting_id: str, user_id: str) -> None:
+        self._repository.delete_meeting(meeting_id, user_id)
         self._vector_store.delete(where={"meeting_id": meeting_id})

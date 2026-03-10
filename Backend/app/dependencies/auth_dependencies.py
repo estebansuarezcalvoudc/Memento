@@ -31,18 +31,18 @@ async def _get_current_user(
         payload = jwt.decode(
             token, settings.secret_key, algorithms=[settings.algorithm]
         )
-        username: str = payload.get("sub")
-        if username is None:
+        user_id: str = payload.get("sub")
+        if user_id is None:
             raise credentials_exception
     except jwt.InvalidTokenError:
         raise credentials_exception
 
-    user = users_repo.retrieve_user(username=username)
+    user = users_repo.retrieve_user_by_id(user_id=user_id)
     if user is None:
         raise credentials_exception
 
     # Return user without password for security
-    return User(username=user.username)
+    return User(id=user.id, username=user.username)
 
 
 async def get_current_active_user(

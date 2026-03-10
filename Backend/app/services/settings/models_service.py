@@ -15,26 +15,26 @@ class ModelsService:
     def __init__(self, repository: SettingsRepository) -> None:
         self._repository: SettingsRepository = repository
 
-    def get_available_models(self, username: str) -> list[AvailableModel]:
+    def get_available_models(self, user_id: str) -> list[AvailableModel]:
         """
         Get all available models from active providers
 
         Args:
-            username: User's username
+            user_id: User's ID
 
         Returns:
             List of AvailableModel objects
         """
         available_models = []
 
-        providers = self._repository.get_providers(username)
+        providers = self._repository.get_providers(user_id)
 
         for provider in providers:
             if provider.requires_api_key and not provider.has_api_key:
                 continue
 
             encrypted_key = (
-                self._repository.get_provider_api_key_encrypted(username, provider.name)
+                self._repository.get_provider_api_key_encrypted(user_id, provider.name)
                 if provider.requires_api_key
                 else None
             )
@@ -45,58 +45,58 @@ class ModelsService:
 
         return available_models
 
-    def get_chat_model(self, username: str) -> ModelConfig:
+    def get_chat_model(self, user_id: str) -> ModelConfig:
         """Get user's configured chat model"""
-        return self._repository.get_chat_model(username)
+        return self._repository.get_chat_model(user_id)
 
-    def get_summary_model(self, username: str) -> ModelConfig:
+    def get_summary_model(self, user_id: str) -> ModelConfig:
         """Get user's configured summary model"""
-        return self._repository.get_summary_model(username)
+        return self._repository.get_summary_model(user_id)
 
-    def get_retrieval_model(self, username: str) -> ModelConfig:
+    def get_retrieval_model(self, user_id: str) -> ModelConfig:
         """Get user's configured retrieval model"""
-        return self._repository.get_retrieval_model(username)
+        return self._repository.get_retrieval_model(user_id)
 
-    def update_chat_model(self, username: str, model: ModelConfig) -> ModelConfig:
+    def update_chat_model(self, user_id: str, model: ModelConfig) -> ModelConfig:
         """
         Update user's chat model configuration
 
         Args:
-            username: User's username
+            user_id: User's ID
             model: New chat model configuration
 
         Returns:
             Updated ModelConfig
         """
-        self._repository.update_chat_model(username, model)
+        self._repository.update_chat_model(user_id, model)
         return model
 
-    def update_summary_model(self, username: str, model: ModelConfig) -> ModelConfig:
+    def update_summary_model(self, user_id: str, model: ModelConfig) -> ModelConfig:
         """
         Update user's summary model configuration
 
         Args:
-            username: User's username
+            user_id: User's ID
             model: New summary model configuration
 
         Returns:
             Updated ModelConfig
         """
-        self._repository.update_summary_model(username, model)
+        self._repository.update_summary_model(user_id, model)
         return model
 
-    def update_retrieval_model(self, username: str, model: ModelConfig) -> ModelConfig:
+    def update_retrieval_model(self, user_id: str, model: ModelConfig) -> ModelConfig:
         """
         Update user's retrieval model configuration
 
         Args:
-            username: User's username
+            user_id: User's ID
             model: New retrieval model configuration
 
         Returns:
             Updated ModelConfig
         """
-        self._repository.update_retrieval_model(username, model)
+        self._repository.update_retrieval_model(user_id, model)
         return model
 
     def pull_model(self, pull_model_request: PullModelRequest) -> None:
