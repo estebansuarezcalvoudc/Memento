@@ -15,3 +15,7 @@ export const useIsSidebarOpen = () =>
 
 export const useToggleSidebar = () =>
   useSidebarStore(state => state.toggleSidebar)
+
+export const _getSidebarState = () => useSidebarStore.getState()
+export const _resetSidebarStore = () =>
+  useSidebarStore.setState({ isSidebarOpen: true })

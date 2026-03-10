@@ -27,6 +27,43 @@ describe('Upload Meeting Dialog (Sidebar)', () => {
     expect(document.querySelector('dialog')).toHaveAttribute('open')
   }, 15000)
 
+  it('clicking the close button (×) closes the dialog', async () => {
+    const user = userEvent.setup()
+    setAuthToken()
+    renderWithRouter(<SidebarButtons />)
+
+    await user.click(
+      await screen.findByRole('button', { name: /upload meetings/i }),
+    )
+    expect(document.querySelector('dialog')).toHaveAttribute('open')
+
+    await user.click(screen.getByRole('button', { name: 'close-dialog' }))
+    expect(document.querySelector('dialog')).not.toHaveAttribute('open')
+  }, 15000)
+
+  it('pressing Escape closes the dialog', async () => {
+    const user = userEvent.setup()
+    setAuthToken()
+    renderWithRouter(<SidebarButtons />)
+
+    await user.click(
+      await screen.findByRole('button', { name: /upload meetings/i }),
+    )
+    const dialog = document.querySelector('dialog')
+    expect(dialog).toHaveAttribute('open')
+
+    // jsdom does not route keyboard events to <dialog> via userEvent.keyboard,
+    // so we dispatch the keydown event directly on the dialog element.
+    dialog!.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+        cancelable: true,
+      }),
+    )
+    expect(dialog).not.toHaveAttribute('open')
+  }, 15000)
+
   it('new meeting appears in the meetings list after upload', async () => {
     spyValidParsing()
     setAuthToken()

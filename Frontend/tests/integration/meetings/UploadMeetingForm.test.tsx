@@ -212,4 +212,37 @@ describe('MeetingForm – optional inputs toggle', () => {
     await waitFor(() => expect(capturedFormData).toBeDefined())
     expect(capturedFormData!.get('meetings[0][language]')).toBe('en')
   })
+
+  it('speakers value is submitted in the form data', async () => {
+    const user = userEvent.setup()
+    setAuthToken()
+
+    let capturedFormData: FormData | undefined
+    vi.spyOn(
+      parseFormDataModule,
+      'parseMeetingsFromFormData',
+    ).mockImplementation((fd: FormData) => {
+      capturedFormData = fd
+      return {
+        ok: true,
+        meetingsMetadata: [
+          { title: 'Test', date: '2024-01-01', number_of_speakers: 3 },
+        ],
+        audioFiles: [
+          new File(['audio'], 'recording.mp3', { type: 'audio/mpeg' }),
+        ],
+      }
+    })
+
+    renderWithRouter(<UploadMeetingsForm handleCloseDialog={vi.fn()} />)
+
+    // Expand options and type a speakers value
+    await user.click(screen.getByRole('button', { name: 'toggle options' }))
+    await user.type(screen.getByLabelText('Meeting 1 number of speakers'), '3')
+
+    submitForm()
+
+    await waitFor(() => expect(capturedFormData).toBeDefined())
+    expect(capturedFormData!.get('meetings[0][speakers]')).toBe('3')
+  })
 })

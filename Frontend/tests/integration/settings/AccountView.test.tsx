@@ -27,6 +27,16 @@ afterEach(() => {
 })
 
 describe('AccountView', () => {
+  it('shows empty email when no token is stored in localStorage', () => {
+    // no call to setup() — localStorage has no token
+    renderWithRouter(<AccountView />)
+    // When there is no token the username defaults to '' so the span has no email after "Email:"
+    // getByText matches the <strong> child — check the parent span's text content instead
+    const strongEl = screen.getByText(/Email:/)
+    const spanEl = strongEl.closest('span')!
+    expect(spanEl.textContent).toBe('Email: ')
+  })
+
   it('renders the username decoded from the JWT token', () => {
     setup()
 
@@ -300,6 +310,108 @@ describe('AccountView – Update password form', () => {
     await user.type(screen.getByLabelText('New password'), 'new-secret')
     await user.type(screen.getByLabelText('Confirm new password'), 'new-secret')
     await user.click(screen.getByRole('button', { name: 'Save' }))
+
+    expect(await screen.findByText('Incorrect password')).toBeInTheDocument()
+  })
+})
+
+describe('AccountView – Delete account form', () => {
+  it('clicking "Delete account" shows the delete form', async () => {
+    const { user } = setup()
+    renderWithRouter(<AccountView />)
+
+    await user.click(screen.getByRole('button', { name: 'Delete account' }))
+
+    expect(screen.getByLabelText('Password')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+  })
+
+  it('clicking "Delete account" hides the action buttons', async () => {
+    const { user } = setup()
+    renderWithRouter(<AccountView />)
+
+    await user.click(screen.getByRole('button', { name: 'Delete account' }))
+
+    expect(
+      screen.queryByRole('button', { name: 'Edit email' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Change password' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Delete account' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('submitting with an empty password shows a validation error', async () => {
+    const { user } = setup()
+    renderWithRouter(<AccountView />)
+    await user.click(screen.getByRole('button', { name: 'Delete account' }))
+
+    await user.click(screen.getByRole('button', { name: 'Delete' }))
+
+    expect(
+      await screen.findByText('Password cannot be empty'),
+    ).toBeInTheDocument()
+  })
+
+  it('clicking Cancel closes the form and restores the action buttons', async () => {
+    const { user } = setup()
+    renderWithRouter(<AccountView />)
+    await user.click(screen.getByRole('button', { name: 'Delete account' }))
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    expect(
+      screen.getByRole('button', { name: 'Edit email' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Change password' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Delete account' }),
+    ).toBeInTheDocument()
+  })
+
+  it('successful deletion removes the access token from localStorage', async () => {
+    const { user } = setup()
+    renderWithRouter(<AccountView />)
+    await user.click(screen.getByRole('button', { name: 'Delete account' }))
+
+    await user.type(screen.getByLabelText('Password'), 'secret')
+    await user.click(screen.getByRole('button', { name: 'Delete' }))
+
+    await waitFor(() => expect(localStorage.getItem('access_token')).toBeNull())
+  })
+
+  it('successful deletion sets isUserAuth to false', async () => {
+    const { user } = setup()
+    _getAuthState().setIsUserAuth(true)
+    renderWithRouter(<AccountView />)
+    await user.click(screen.getByRole('button', { name: 'Delete account' }))
+
+    await user.type(screen.getByLabelText('Password'), 'secret')
+    await user.click(screen.getByRole('button', { name: 'Delete' }))
+
+    await waitFor(() => expect(_getAuthState().isUserAuth).toBe(false))
+  })
+
+  it('API error shows the message returned by the backend', async () => {
+    server.use(
+      http.delete(
+        '/api/auth',
+        withAuth(() =>
+          HttpResponse.json({ detail: 'Incorrect password' }, { status: 401 }),
+        ),
+      ),
+    )
+    const { user } = setup()
+    renderWithRouter(<AccountView />)
+    await user.click(screen.getByRole('button', { name: 'Delete account' }))
+
+    await user.type(screen.getByLabelText('Password'), 'wrong')
+    await user.click(screen.getByRole('button', { name: 'Delete' }))
 
     expect(await screen.findByText('Incorrect password')).toBeInTheDocument()
   })

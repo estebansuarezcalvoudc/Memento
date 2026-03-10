@@ -21,4 +21,8 @@ export const authHandlers = [
     '/api/auth/password',
     withAuth(() => new HttpResponse(null, { status: 204 })),
   ),
+  http.delete(
+    '/api/auth',
+    withAuth(() => new HttpResponse(null, { status: 204 })),
+  ),
 ]
