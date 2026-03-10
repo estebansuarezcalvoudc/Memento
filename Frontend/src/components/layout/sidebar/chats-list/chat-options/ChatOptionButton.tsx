@@ -10,8 +10,8 @@ interface ChatOptionsButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>
 export default function ChatOptionsButton({
   svg,
   text,
-  textColor = 'text-stone-700',
-  hoverColor = 'hover:bg-stone-200',
+  textColor = 'text-stone-700 dark:text-stone-300',
+  hoverColor = 'hover:bg-stone-200 dark:hover:bg-stone-700',
   ...props
 }: ChatOptionsButtonProps) {
   return (

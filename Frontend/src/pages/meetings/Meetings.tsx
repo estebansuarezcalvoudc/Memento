@@ -13,7 +13,7 @@ export default function Meetings() {
   if (isLoading) {
     content = (
       <>
-        <span className="font-ubuntu text-lg text-stone-800">
+        <span className="font-ubuntu text-lg text-stone-800 dark:text-stone-200">
           Loading meetings
         </span>
       </>
@@ -26,7 +26,7 @@ export default function Meetings() {
     )
   } else if (!meetings || meetings.length === 0) {
     content = (
-      <span className="font-ubuntu text-lg text-stone-800">
+      <span className="font-ubuntu text-lg text-stone-800 dark:text-stone-200">
         You have not uploaded any meetings yet
       </span>
     )

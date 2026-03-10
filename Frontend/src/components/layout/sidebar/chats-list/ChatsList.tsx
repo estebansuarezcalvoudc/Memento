@@ -10,7 +10,7 @@ export default function ChatsList() {
 
   if (isLoading) {
     chatContent = (
-      <li className="p-4 text-center text-stone-400">
+      <li className="p-4 text-center text-stone-400 dark:text-stone-500">
         Loading conversations...
       </li>
     )
@@ -20,7 +20,7 @@ export default function ChatsList() {
     )
   } else if (!chats || chats.length === 0) {
     chatContent = (
-      <li className="p-4 text-center text-stone-400">No conversations yet</li>
+      <li className="p-4 text-center text-stone-400 dark:text-stone-500">No conversations yet</li>
     )
   } else {
     chatContent = chats.map(conversation => (
@@ -40,7 +40,7 @@ export default function ChatsList() {
           : 'hidden opacity-0 delay-[0ms]'
       } flex h-full flex-col overflow-hidden`}
     >
-      <h2 className="font-ubuntu mt-8 mb-2 ml-1.5 flex-shrink-0 truncate text-base text-stone-400">
+      <h2 className="font-ubuntu mt-8 mb-2 ml-1.5 flex-shrink-0 truncate text-base text-stone-400 dark:text-stone-500">
         Chats
       </h2>
       <ul className="custom-scrollbar flex-1 overflow-y-auto">{chatContent}</ul>

@@ -32,7 +32,7 @@ export default function AccountView() {
     <>
       <div>
         <div className="flex justify-between">
-          <span className="font-ubuntu text-lg text-stone-700">
+          <span className="font-ubuntu text-lg text-stone-700 dark:text-stone-300">
             <strong>Email:</strong> {username}
           </span>
           {activeForm === null && (

@@ -38,14 +38,14 @@ export default function TemplateSection() {
     <div className="flex flex-col gap-4">
       <SubSectionTitle title="Template" />
       {isLoading ? (
-        <span className="text-base text-stone-500">Loading...</span>
+        <span className="text-base text-stone-500 dark:text-stone-400">Loading...</span>
       ) : (
         <>
           <textarea
             value={value}
             onChange={e => setDraft(e.target.value)}
             rows={14}
-            className="w-full resize-y rounded-md border border-stone-300 bg-white p-3 font-mono text-base text-stone-800 focus:border-stone-500 focus:outline-none"
+            className="w-full resize-y rounded-md border border-stone-300 bg-white p-3 font-mono text-base text-stone-800 focus:border-stone-500 focus:outline-none dark:border-stone-600 dark:bg-stone-700 dark:text-stone-100 dark:focus:border-stone-400"
           />
           <div className="flex items-center justify-between">
             <span
@@ -57,7 +57,7 @@ export default function TemplateSection() {
               <button
                 onClick={() => setDraft(defaultData?.systemPrompt)}
                 disabled={isPending || !defaultData}
-                className="font-ubuntu h-8 cursor-pointer rounded-lg px-3 text-base text-stone-800 hover:bg-stone-300 disabled:opacity-50"
+                className="font-ubuntu h-8 cursor-pointer rounded-lg px-3 text-base text-stone-800 hover:bg-stone-300 disabled:opacity-50 dark:text-stone-200 dark:hover:bg-stone-700"
               >
                 Reset to default
               </button>

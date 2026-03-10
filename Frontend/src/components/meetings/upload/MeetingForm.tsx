@@ -32,8 +32,8 @@ export default function MeetingForm({
   const [speakers, setSpeakers] = useState(meeting.speakers ?? '')
 
   return (
-    <div className={`grid ${meetingFormGridCols} items-center gap-x-4 border-b border-stone-200 py-1`}>
-      <span className="font-ubuntu py-3 text-sm text-stone-500">{index + 1}</span>
+    <div className={`grid ${meetingFormGridCols} items-center gap-x-4 border-b border-stone-200 py-1 dark:border-stone-700`}>
+      <span className="font-ubuntu py-3 text-sm text-stone-500 dark:text-stone-400">{index + 1}</span>
 
       <InlineInput
         name={`meetings[${index}][title]`}

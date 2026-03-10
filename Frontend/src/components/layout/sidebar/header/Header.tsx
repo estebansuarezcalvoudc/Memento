@@ -14,13 +14,13 @@ export default function Header() {
       {isSidebarOpen && (
         <span
           ref={titleRef}
-          className="font-dongle animate-[fadeInText_300ms_ease-out_50ms_forwards] p-1 text-6xl text-stone-700 uppercase opacity-0"
+          className="font-dongle animate-[fadeInText_300ms_ease-out_50ms_forwards] p-1 text-6xl text-stone-700 uppercase opacity-0 dark:text-stone-300"
         >
           TFG
         </span>
       )}
       <button
-        className="flex size-9 cursor-pointer items-center justify-center rounded-xl hover:bg-stone-200"
+          className="flex size-9 cursor-pointer items-center justify-center rounded-xl text-stone-600 hover:bg-stone-200 dark:text-stone-400 dark:hover:bg-stone-700"
         onClick={toggleSidebar}
       >
         {isSidebarOpen ? hideSidebarIcon : showSidebarIcon}
@@ -36,7 +36,7 @@ const hideSidebarIcon = (
     height="24"
     viewBox="0 0 24 24"
     fill="none"
-    stroke="#57534e"
+    stroke="currentColor"
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
@@ -56,7 +56,7 @@ const showSidebarIcon = (
     height="24"
     viewBox="0 0 24 24"
     fill="none"
-    stroke="#57534e"
+    stroke="currentColor"
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"

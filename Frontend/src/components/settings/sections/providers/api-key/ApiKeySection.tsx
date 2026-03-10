@@ -31,7 +31,7 @@ export default function ApiKeySection({
     return (
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-8">
-          <span className="font-ubuntu text-base text-green-600">
+          <span className="font-ubuntu text-base text-green-600 dark:text-green-400">
             API key added
           </span>
           <button

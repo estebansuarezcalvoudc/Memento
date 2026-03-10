@@ -30,13 +30,13 @@ export default function MeetingOptionsRow({
       {isExpanded && (
         <div className="flex items-center justify-center gap-6 pb-3">
           <div className="flex items-center gap-2">
-            <label className="font-ubuntu shrink-0 text-xs text-stone-400">Language</label>
+            <label className="font-ubuntu shrink-0 text-xs text-stone-400 dark:text-stone-500">Language</label>
             <select
               value={language}
               onChange={e => onLanguageChange(e.target.value)}
               disabled={isPending}
               aria-label={`Meeting ${index + 1} language`}
-              className="font-ubuntu h-7 rounded-lg border border-stone-200 bg-transparent px-2 text-xs text-stone-600 outline-none focus:border-stone-400"
+              className="font-ubuntu h-7 rounded-lg border border-stone-200 bg-transparent px-2 text-xs text-stone-600 outline-none focus:border-stone-400 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300 dark:focus:border-stone-400"
             >
               <option value="">Any</option>
               {languages.map(l => (
@@ -48,7 +48,7 @@ export default function MeetingOptionsRow({
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="font-ubuntu shrink-0 text-xs text-stone-400">Speakers</label>
+            <label className="font-ubuntu shrink-0 text-xs text-stone-400 dark:text-stone-500">Speakers</label>
             <InlineInput
               type="number"
               min="2"

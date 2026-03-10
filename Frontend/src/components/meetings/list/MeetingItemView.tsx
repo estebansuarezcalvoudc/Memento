@@ -33,14 +33,14 @@ export default function MeetingItemView({
 
   return (
     <>
-      <span className="font-ubuntu text-base text-stone-500">{index}</span>
+      <span className="font-ubuntu text-base text-stone-500 dark:text-stone-400">{index}</span>
       <NavLink
         to={`/meetings/${meeting.id}/transcription`}
-        className="font-ubuntu truncate text-base text-stone-800"
+        className="font-ubuntu truncate text-base text-stone-800 dark:text-stone-100"
       >
         {meeting.title}
       </NavLink>
-      <span className="font-ubuntu text-base text-stone-600">
+      <span className="font-ubuntu text-base text-stone-600 dark:text-stone-400">
         {meeting.date}
       </span>
       <MeetingButton

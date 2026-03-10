@@ -57,7 +57,7 @@ export default function MeetingContent({ type }: MeetingContentProps) {
 
   if (query.isLoading) {
     displayContent = (
-      <span className="font-ubuntu text-lg text-stone-800">{loadingText}</span>
+      <span className="font-ubuntu text-lg text-stone-800 dark:text-stone-200">{loadingText}</span>
     )
   } else if (query.error) {
     displayContent = (
@@ -75,7 +75,7 @@ export default function MeetingContent({ type }: MeetingContentProps) {
         <div className="flex items-center gap-3">
           <NavLink
             to="/meetings"
-            className="rounded-full p-2 text-stone-800 hover:bg-blue-200 hover:text-blue-700"
+            className="rounded-full p-2 text-stone-800 hover:bg-blue-200 hover:text-blue-700 dark:text-stone-200 dark:hover:bg-blue-900 dark:hover:text-blue-300"
           >
             {arrowBack}
           </NavLink>
@@ -89,7 +89,7 @@ export default function MeetingContent({ type }: MeetingContentProps) {
         </NavLink>
       </div>
       {query.data && (
-        <div className="font-ubuntu mb-8 text-2xl text-stone-600">
+        <div className="font-ubuntu mb-8 text-2xl text-stone-600 dark:text-stone-400">
           {query.data.title} - {query.data.date}
         </div>
       )}

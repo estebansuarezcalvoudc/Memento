@@ -68,7 +68,7 @@ export default function ModelConfigSection({
     <div className="flex flex-col gap-2">
       <SubSectionTitle title={title} />
       {isLoading ? (
-        <span className="text-base text-stone-500">Loading...</span>
+        <span className="text-base text-stone-500 dark:text-stone-400">Loading...</span>
       ) : (
         <>
           <Select

@@ -7,7 +7,7 @@ export default function MeetingTranscription({ content }: { content: string }) {
 
   return (
     <div
-      className="font-ubuntu text-base [&_p]:mb-4"
+      className="font-ubuntu text-base text-stone-800 dark:text-stone-100 [&_p]:mb-4"
       dangerouslySetInnerHTML={{ __html: sanitizedContent }}
     />
   )
