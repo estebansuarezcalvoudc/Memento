@@ -22,14 +22,14 @@ class MeetingMongoRepository(AbstractMeetingRepository):
         myclient = pymongo.MongoClient(settings.mongo_url)
         mydb = myclient["tfg_db"]
         self._collection = mydb["meetings"]
-        self._collection.create_index("username", background=True)
+        self._collection.create_index("user_id", background=True)
 
     def store_meeting(
         self,
         meeting_metadata: MeetingMetadataSchema,
         summary: str,
         transcription: str,
-        username: str,
+        user_id: str,
     ) -> MeetingMetadataResponse:
         # Convert date to datetime for MongoDB compatibility
         meeting_date_mongo = datetime.combine(
@@ -38,7 +38,7 @@ class MeetingMongoRepository(AbstractMeetingRepository):
 
         result = self._collection.insert_one(
             {
-                "username": username,
+                "user_id": user_id,
                 "title": meeting_metadata.title,
                 "date": meeting_date_mongo,
                 "language": meeting_metadata.language,
@@ -55,10 +55,10 @@ class MeetingMongoRepository(AbstractMeetingRepository):
         )
 
     def retrieve_all_meetings_metadata(
-        self, username: str
+        self, user_id: str
     ) -> list[MeetingMetadataResponse]:
         result = self._collection.find(
-            {"username": username},
+            {"user_id": user_id},
             {"_id": True, "title": True, "date": True, "language": True},
         )
 
@@ -74,17 +74,17 @@ class MeetingMongoRepository(AbstractMeetingRepository):
 
     @handle_invalid_id
     def retrieve_meeting_summary(
-        self, id: str, username: str
+        self, id: str, user_id: str
     ) -> MeetingSummaryResponse:
         result = self._collection.find_one(
-            {"username": username, "_id": ObjectId(id)},
+            {"user_id": user_id, "_id": ObjectId(id)},
             {"_id": False, "summary": True, "title": True, "date": True},
         )
 
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Meeting with id={id} for user={username} not found",
+                detail=f"Meeting with id={id} for user_id={user_id} not found",
             )
 
         return MeetingSummaryResponse(
@@ -93,10 +93,10 @@ class MeetingMongoRepository(AbstractMeetingRepository):
 
     @handle_invalid_id
     def retrieve_meeting_transcription(
-        self, id: str, username: str
+        self, id: str, user_id: str
     ) -> MeetingTranscriptionResponse:
         result = self._collection.find_one(
-            {"username": username, "_id": ObjectId(id)},
+            {"user_id": user_id, "_id": ObjectId(id)},
             {"_id": False, "transcription": True, "title": True, "date": True},
         )
 
@@ -114,10 +114,10 @@ class MeetingMongoRepository(AbstractMeetingRepository):
 
     @handle_invalid_id
     def update_meeting_metadata(
-        self, id: str, new_meeting_metadata: UpdateMeetingMetadata, username: str
+        self, id: str, new_meeting_metadata: UpdateMeetingMetadata, user_id: str
     ) -> None:
         previous_data = self._collection.find_one(
-            {"username": username, "_id": ObjectId(id)},
+            {"user_id": user_id, "_id": ObjectId(id)},
             {"_id": False, "title": True, "date": True, "language": True},
         )
 
@@ -138,13 +138,13 @@ class MeetingMongoRepository(AbstractMeetingRepository):
             )
 
         self._collection.update_one(
-            {"username": username, "_id": ObjectId(id)},
+            {"user_id": user_id, "_id": ObjectId(id)},
             {"$set": update_data},
         )
 
-    def _get_meeting_language(self, id: str, username: str) -> Optional[str]:
+    def _get_meeting_language(self, id: str, user_id: str) -> Optional[str]:
         current_meeting = self._collection.find_one(
-            {"username": username, "_id": ObjectId(id)},
+            {"user_id": user_id, "_id": ObjectId(id)},
             {"_id": False, "language": True},
         )
 
@@ -154,14 +154,14 @@ class MeetingMongoRepository(AbstractMeetingRepository):
         return current_meeting["language"]
 
     @handle_invalid_id
-    def delete_meeting(self, id: str, username: str) -> None:
-        meeting = self._collection.find_one({"username": username, "_id": ObjectId(id)})
+    def delete_meeting(self, id: str, user_id: str) -> None:
+        meeting = self._collection.find_one({"user_id": user_id, "_id": ObjectId(id)})
         if not meeting:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Meeting with id {id} not found",
             )
-        self._collection.delete_one({"username": username, "_id": ObjectId(id)})
+        self._collection.delete_one({"user_id": user_id, "_id": ObjectId(id)})
 
-    def delete_user_data(self, username: str) -> None:
-        self._collection.delete_many({"username": username})
+    def delete_user_data(self, user_id: str) -> None:
+        self._collection.delete_many({"user_id": user_id})

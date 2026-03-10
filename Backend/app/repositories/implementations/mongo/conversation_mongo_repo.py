@@ -23,12 +23,12 @@ class ConversationMongoRepository(AbstractConversationRepository):
         myclient = pymongo.MongoClient(settings.mongo_url)
         mydb = myclient["tfg_db"]
         self._collection = mydb["conversations"]
-        self._collection.create_index("username", background=True)
+        self._collection.create_index("user_id", background=True)
 
     def store_conversation(
         self,
         conversation_title: str,
-        username: str,
+        user_id: str,
         initial_messages: Optional[list[dict]] = None,
     ) -> ConversationCreateResponse:
         if initial_messages is None:
@@ -38,7 +38,7 @@ class ConversationMongoRepository(AbstractConversationRepository):
 
         result = self._collection.insert_one(
             {
-                "username": username,
+                "user_id": user_id,
                 "title": conversation_title,
                 "started_at": started_at,
                 "messages": initial_messages,
@@ -56,17 +56,17 @@ class ConversationMongoRepository(AbstractConversationRepository):
         self,
         conversation_id: str,
         new_messages: list[dict],
-        username: str,
+        user_id: str,
     ) -> None:
         self._collection.update_one(
-            {"username": username, "_id": ObjectId(conversation_id)},
+            {"user_id": user_id, "_id": ObjectId(conversation_id)},
             {"$push": {"messages": {"$each": new_messages}}},
         )
 
     def retrieve_all_conversations_metadata(
-        self, username: str
+        self, user_id: str
     ) -> list[ConversationMetadataRetrieve]:
-        result = self._collection.find({"username": username}, {"messages": False})
+        result = self._collection.find({"user_id": user_id}, {"messages": False})
 
         return [
             ConversationMetadataRetrieve(
@@ -79,10 +79,10 @@ class ConversationMongoRepository(AbstractConversationRepository):
 
     @handle_invalid_id
     def fetch_conversation(
-        self, id: str, username: str
+        self, id: str, user_id: str
     ) -> ConversationDialogueRetrieve:
         result = self._collection.find_one(
-            {"username": username, "_id": ObjectId(id)},
+            {"user_id": user_id, "_id": ObjectId(id)},
             {"_id": False, "messages": True},
         )
 
@@ -96,10 +96,10 @@ class ConversationMongoRepository(AbstractConversationRepository):
 
     @handle_invalid_id
     def update_conversation_metadata(
-        self, id: str, metadata: ConversationUpdateRequest, username: str
+        self, id: str, metadata: ConversationUpdateRequest, user_id: str
     ) -> None:
         result = self._collection.update_one(
-            {"username": username, "_id": ObjectId(id)},
+            {"user_id": user_id, "_id": ObjectId(id)},
             {"$set": {"title": metadata.title}},
         )
 
@@ -110,9 +110,9 @@ class ConversationMongoRepository(AbstractConversationRepository):
             )
 
     @handle_invalid_id
-    def delete_conversation(self, id: str, username: str) -> None:
+    def delete_conversation(self, id: str, user_id: str) -> None:
         result = self._collection.delete_one(
-            {"username": username, "_id": ObjectId(id)}
+            {"user_id": user_id, "_id": ObjectId(id)}
         )
 
         if result.deleted_count == 0:
@@ -121,5 +121,5 @@ class ConversationMongoRepository(AbstractConversationRepository):
                 detail=f"Conversation with id={id} not found",
             )
 
-    def delete_user_data(self, username: str) -> None:
-        self._collection.delete_many({"username": username})
+    def delete_user_data(self, user_id: str) -> None:
+        self._collection.delete_many({"user_id": user_id})

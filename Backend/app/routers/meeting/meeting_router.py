@@ -60,7 +60,7 @@ async def create_meetings(
         audio_bytes_list = [await audio.read() for audio in audios]
 
         created_meetings = meeting_service.process_meetings(
-            batch_request, audio_bytes_list, current_user.username
+            batch_request, audio_bytes_list, current_user.id
         )
         return created_meetings
     except HTTPException:
@@ -118,7 +118,7 @@ async def retrieve_all_meetings_metadata(
     meeting_service: Annotated[MeetingService, Depends(get_meeting_service)],
 ) -> list[MeetingMetadataResponse]:
     try:
-        return meeting_service.retrieve_all_meetings_metadata(current_user.username)
+        return meeting_service.retrieve_all_meetings_metadata(current_user.id)
     except Exception as e:
         _logger.error(f"Error retrieving meetings: {str(e)}")
         _logger.error(f"Exception type: {type(e).__name__}")
@@ -139,7 +139,7 @@ async def retrieve_meeting_summary(
     meeting_service: Annotated[MeetingService, Depends(get_meeting_service)],
 ) -> MeetingSummaryResponse:
     try:
-        return meeting_service.retrieve_meeting_summary(id, current_user.username)
+        return meeting_service.retrieve_meeting_summary(id, current_user.id)
     except HTTPException:
         raise
     except Exception as e:
@@ -162,7 +162,7 @@ async def retrieve_meeting_transcription(
     meeting_service: Annotated[MeetingService, Depends(get_meeting_service)],
 ) -> MeetingTranscriptionResponse:
     try:
-        return meeting_service.retrieve_meeting_transcription(id, current_user.username)
+        return meeting_service.retrieve_meeting_transcription(id, current_user.id)
     except HTTPException:
         raise
     except Exception as e:
@@ -186,7 +186,7 @@ async def update_meeting(
     meeting_service: Annotated[MeetingService, Depends(get_meeting_service)],
 ) -> None:
     try:
-        meeting_service.update_meeting(id, meeting_data, current_user.username)
+        meeting_service.update_meeting(id, meeting_data, current_user.id)
     except HTTPException:
         raise
     except Exception as e:
@@ -209,7 +209,7 @@ async def delete_meeting(
     meeting_service: Annotated[MeetingService, Depends(get_meeting_service)],
 ) -> None:
     try:
-        meeting_service.delete_meeting(id, current_user.username)
+        meeting_service.delete_meeting(id, current_user.id)
     except HTTPException:
         raise
     except Exception as e:

@@ -1,26 +1,29 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from ...schemas.auth.auth_schema import UserCreate
+from ...schemas.auth.auth_schema import UserCreate, UserInDB
 
 
 class AuthRepository(ABC):
     """Abstract repository interface for authentication data access"""
 
     @abstractmethod
-    def store_user(self, user: UserCreate) -> None:
+    def store_user(self, user: UserCreate) -> str:
         """
         Store a new user in the data store
 
         Args:
             user: User data to store
 
+        Returns:
+            The generated user id (str)
+
         Raises:
             HTTPException: If user already exists
         """
 
     @abstractmethod
-    def retrieve_user(self, username: str) -> Optional[UserCreate]:
+    def retrieve_user(self, username: str) -> Optional[UserInDB]:
         """
         Retrieve a user by username
 
@@ -28,16 +31,28 @@ class AuthRepository(ABC):
             username: Username to search for
 
         Returns:
-            UserCreate object if found, None otherwise
+            UserInDB object if found, None otherwise
         """
 
     @abstractmethod
-    def update_username(self, username: str, new_username: str) -> None:
+    def retrieve_user_by_id(self, user_id: str) -> Optional[UserInDB]:
+        """
+        Retrieve a user by their id
+
+        Args:
+            user_id: The user's id (str representation of ObjectId)
+
+        Returns:
+            UserInDB object if found, None otherwise
+        """
+
+    @abstractmethod
+    def update_username(self, user_id: str, new_username: str) -> None:
         """
         Update a user's username
 
         Args:
-            username: Current username
+            user_id: The user's id
             new_username: New username to set
 
         Raises:
@@ -45,12 +60,12 @@ class AuthRepository(ABC):
         """
 
     @abstractmethod
-    def update_password(self, username: str, new_password: str) -> None:
+    def update_password(self, user_id: str, new_password: str) -> None:
         """
         Update a user's password
 
         Args:
-            username: Username of the user
+            user_id: The user's id
             new_password: New (already hashed) password to set
 
         Raises:
@@ -58,12 +73,12 @@ class AuthRepository(ABC):
         """
 
     @abstractmethod
-    def delete_account(self, username: str) -> None:
+    def delete_account(self, user_id: str) -> None:
         """
         Delete a user's account
 
         Args:
-            username: Username of the user
+            user_id: The user's id
 
         Raises:
             HTTPException: 400 if user could not be deleted

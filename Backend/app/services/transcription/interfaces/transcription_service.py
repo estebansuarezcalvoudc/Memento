@@ -20,7 +20,7 @@ class TranscriptionService(ABC):
 
     @abstractmethod
     def transcribe(
-        self, audio_bytes: bytes, language: str | None, username: str
+        self, audio_bytes: bytes, language: str | None, user_id: str
     ) -> TranscriptionResult:
         """
         Transcribe audio bytes into diarized text.
@@ -28,7 +28,7 @@ class TranscriptionService(ABC):
         Args:
             audio_bytes: Raw audio file bytes
             language: Optional ISO 639-1 language code hint
-            username: Username for retrieving user-specific configuration
+            user_id: User ID for retrieving user-specific configuration
 
         Returns:
             TranscriptionResult with diarized text and detected/provided language
@@ -54,25 +54,25 @@ class TranscriptionService(ABC):
         """
 
     @abstractmethod
-    def get_user_configuration(self, username: str) -> BaseModel:
+    def get_user_configuration(self, user_id: str) -> BaseModel:
         """
         Get the current transcription configuration for a user.
 
         Args:
-            username: User's username
+            user_id: User's ID
 
         Returns:
             Provider-specific Pydantic model with the user's configuration
         """
 
     @abstractmethod
-    def update_user_configuration(self, username: str, data: dict) -> BaseModel:
+    def update_user_configuration(self, user_id: str, data: dict) -> BaseModel:
         """
         Partially update the transcription configuration for a user.
         Validation of the data is delegated to the concrete implementation.
 
         Args:
-            username: User's username
+            user_id: User's ID
             data: Dictionary with the fields to update
 
         Returns:

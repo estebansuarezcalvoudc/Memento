@@ -32,7 +32,7 @@ class Rag:
         message: str,
         conversation_history: list[dict],
         current_date: str,
-        username: str,
+        user_id: str,
     ) -> str:
         chat_history = [
             (
@@ -44,8 +44,8 @@ class Rag:
             if m.get("role") in ("user", "assistant") and m.get("content")
         ]
 
-        chat_config = self._settings_repository.get_chat_model(username)
-        retrieval_config = self._settings_repository.get_retrieval_model(username)
+        chat_config = self._settings_repository.get_chat_model(user_id)
+        retrieval_config = self._settings_repository.get_retrieval_model(user_id)
 
         _logger.info(
             f"Chat model:      provider={chat_config.provider!r}  "
@@ -56,7 +56,7 @@ class Rag:
             f"model={retrieval_config.model_name!r}"
         )
 
-        rag_chain = self._build_rag_chain(chat_config, retrieval_config, username)
+        rag_chain = self._build_rag_chain(chat_config, retrieval_config, user_id)
         return await rag_chain.ainvoke(
             {
                 "input": message,
@@ -65,10 +65,10 @@ class Rag:
             }
         )
 
-    def _get_llm(self, llm_config: ModelConfig, username: str):
+    def _get_llm(self, llm_config: ModelConfig, user_id: str):
         """Resolve provider settings and instantiate an LLM for the given config."""
         provider_settings = self._settings_repository.get_provider_settings(
-            username, llm_config.provider
+            user_id, llm_config.provider
         )
 
         _logger.debug(
@@ -84,7 +84,7 @@ class Rag:
         ):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"API key not configured for user {username}",
+                detail=f"API key not configured for user_id={user_id}",
             )
 
         api_key = provider_settings.api_key_encrypted if provider_settings else ""
@@ -94,10 +94,10 @@ class Rag:
         self,
         chat_config: ModelConfig,
         retrieval_config: ModelConfig,
-        username: str,
+        user_id: str,
     ):
-        llm_chat = self._get_llm(chat_config, username)
-        llm_retrieval = self._get_llm(retrieval_config, username)
+        llm_chat = self._get_llm(chat_config, user_id)
+        llm_retrieval = self._get_llm(retrieval_config, user_id)
 
         contextualize_chain = CONTEXTUALIZE_PROMPT | llm_retrieval | StrOutputParser()
 
@@ -133,7 +133,7 @@ class Rag:
                 date_str = matches[0][1].strftime("%Y-%m-%d")
                 _logger.debug(f"Date filter applied: {date_str}")
 
-            chroma_filter = Rag._build_chroma_filter(username, date_str)
+            chroma_filter = Rag._build_chroma_filter(user_id, date_str)
             return self._vector_store.similarity_search(
                 query, k=5, filter=chroma_filter
             )
@@ -157,15 +157,15 @@ class Rag:
         return settings
 
     @staticmethod
-    def _build_chroma_filter(username: str, date_str: str | None) -> dict:
+    def _build_chroma_filter(user_id: str, date_str: str | None) -> dict:
         if date_str:
             return {
                 "$and": [
-                    {"username": {"$eq": username}},
+                    {"user_id": {"$eq": user_id}},
                     {"date": {"$eq": date_str}},
                 ]
             }
-        return {"username": {"$eq": username}}
+        return {"user_id": {"$eq": user_id}}
 
     @staticmethod
     def _format_docs(docs: list[Document]) -> str:

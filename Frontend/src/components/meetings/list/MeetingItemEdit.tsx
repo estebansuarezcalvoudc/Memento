@@ -20,6 +20,8 @@ export default function MeetingItemEdit({
   editState,
   setEditState,
 }: MeetingItemEditProps) {
+  const today = new Date().toISOString().split('T')[0]
+
   const { mutate: updateMeeting, isPending } = useUpdateMeeting()
 
   const handleTitleChange = (title: string) => {
@@ -38,6 +40,7 @@ export default function MeetingItemEdit({
     })
   }
 
+  
   const handleConfirm = () => {
     const updates: Partial<Meeting> = {}
 
@@ -75,6 +78,7 @@ export default function MeetingItemEdit({
         onChange={e => handleDateChange(e.target.value)}
         className="font-ubuntu h-6 rounded border border-stone-300 px-2 text-base text-stone-600 focus:border-blue-500 focus:outline-none"
         disabled={isPending}
+        max={today}
       />
       <MeetingButton
         image={confirmEditImage}

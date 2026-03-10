@@ -37,12 +37,14 @@ class AuthService:
             password=pwd_context.hash(user_create.password),
         )
 
-        self._repository.store_user(user)
-        self._initialize_default_settings(user.username)
-        return AuthService._create_access_token(data={"sub": user.username})
+        user_id = self._repository.store_user(user)
+        self._initialize_default_settings(user_id)
+        return AuthService._create_access_token(
+            data={"sub": user_id, "email": user.username}
+        )
 
-    def _initialize_default_settings(self, username: str) -> None:
-        self._settings_repository.create_user_settings(username, DEFAULT_USER_SETTINGS)
+    def _initialize_default_settings(self, user_id: str) -> None:
+        self._settings_repository.create_user_settings(user_id, DEFAULT_USER_SETTINGS)
 
     @staticmethod
     def _create_access_token(data: dict) -> Token:
@@ -67,10 +69,12 @@ class AuthService:
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        return AuthService._create_access_token(data={"sub": user.username})
+        return AuthService._create_access_token(
+            data={"sub": user.id, "email": user.username}
+        )
 
-    def change_username(self, username: str, new_username: str, password: str) -> Token:
-        user = self._repository.retrieve_user(username)
+    def change_username(self, user_id: str, new_username: str, password: str) -> Token:
+        user = self._repository.retrieve_user_by_id(user_id)
 
         if not user:
             raise HTTPException(
@@ -90,7 +94,7 @@ class AuthService:
             )
 
         try:
-            self._repository.update_username(username, new_username)
+            self._repository.update_username(user_id, new_username)
         except HTTPException:
             raise
         except Exception as exc:
@@ -99,12 +103,16 @@ class AuthService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="A user with this username already exists",
             ) from exc
-        return AuthService._create_access_token(data={"sub": new_username})
+
+        # sub stays the same (user_id is immutable); only email changes in the token
+        return AuthService._create_access_token(
+            data={"sub": user_id, "email": new_username}
+        )
 
     def change_password(
-        self, username: str, current_password: str, new_password: str
+        self, user_id: str, current_password: str, new_password: str
     ) -> None:
-        user = self._repository.retrieve_user(username)
+        user = self._repository.retrieve_user_by_id(user_id)
 
         if not user or not pwd_context.verify(current_password, user.password):
             raise HTTPException(
@@ -112,18 +120,18 @@ class AuthService:
                 detail="Incorrect password",
             )
 
-        self._repository.update_password(username, pwd_context.hash(new_password))
+        self._repository.update_password(user_id, pwd_context.hash(new_password))
 
-    def delete_account(self, username: str, password: str) -> None:
-        user = self._repository.retrieve_user(username)
+    def delete_account(self, user_id: str, password: str) -> None:
+        user = self._repository.retrieve_user_by_id(user_id)
 
         if not user or not pwd_context.verify(password, user.password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password"
             )
 
-        self._meeting_repository.delete_user_data(username)
-        self._conversation_repository.delete_user_data(username)
-        self._settings_repository.delete_user_data(username)
-        self._vector_store.delete(where={"username": username})
-        self._repository.delete_account(username)
+        self._meeting_repository.delete_user_data(user_id)
+        self._conversation_repository.delete_user_data(user_id)
+        self._settings_repository.delete_user_data(user_id)
+        self._vector_store.delete(where={"user_id": user_id})
+        self._repository.delete_account(user_id)

@@ -25,15 +25,15 @@ class ConversationService:
         self._rag_service: Rag = rag_service
 
     async def create_conversation(
-        self, conversation_create_request: ConversationCreateRequest, username: str
+        self, conversation_create_request: ConversationCreateRequest, user_id: str
     ) -> ConversationCreateResponse:
         created_conversation = self._repository.store_conversation(
-            "New chat", username, []
+            "New chat", user_id, []
         )
 
         asyncio.create_task(
             self.send_message(
-                created_conversation.id, conversation_create_request, username
+                created_conversation.id, conversation_create_request, user_id
             )
         )
 
@@ -43,10 +43,10 @@ class ConversationService:
         self,
         id: str,
         send_message_request: SendMessageRequest,
-        username: str,
+        user_id: str,
     ) -> str:
         try:
-            dialogue = self._repository.fetch_conversation(id, username)
+            dialogue = self._repository.fetch_conversation(id, user_id)
             conversation_history = dialogue.messages.copy()
             original_length = len(conversation_history)
 
@@ -57,7 +57,7 @@ class ConversationService:
                 message=send_message_request.message,
                 conversation_history=conversation_history[:-1],
                 current_date=send_message_request.current_datetime.strftime("%Y-%m-%d"),
-                username=username,
+                user_id=user_id,
             )
 
             assistant_response = {"role": "assistant", "content": reply}
@@ -66,7 +66,7 @@ class ConversationService:
             new_messages = conversation_history[original_length:]
 
             self._repository.append_new_messages_to_conversation(
-                id, new_messages, username
+                id, new_messages, user_id
             )
 
             _logger.debug("message processed")
@@ -79,17 +79,17 @@ class ConversationService:
             raise
 
     def retrieve_all_conversations_metadata(
-        self, username: str
+        self, user_id: str
     ) -> list[ConversationMetadataRetrieve]:
-        return self._repository.retrieve_all_conversations_metadata(username)
+        return self._repository.retrieve_all_conversations_metadata(user_id)
 
-    def retrieve_dialogue(self, id: str, username: str) -> ConversationDialogueRetrieve:
-        return self._repository.fetch_conversation(id, username)
+    def retrieve_dialogue(self, id: str, user_id: str) -> ConversationDialogueRetrieve:
+        return self._repository.fetch_conversation(id, user_id)
 
     def update_conversation_metadata(
-        self, id: str, metadata: ConversationUpdateRequest, username: str
+        self, id: str, metadata: ConversationUpdateRequest, user_id: str
     ):
-        return self._repository.update_conversation_metadata(id, metadata, username)
+        return self._repository.update_conversation_metadata(id, metadata, user_id)
 
-    def delete_conversation(self, id: str, username: str) -> None:
-        return self._repository.delete_conversation(id, username)
+    def delete_conversation(self, id: str, user_id: str) -> None:
+        return self._repository.delete_conversation(id, user_id)

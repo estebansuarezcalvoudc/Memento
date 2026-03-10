@@ -18,9 +18,18 @@ class UserCreate(BaseModel):
     password: str
 
 
+class UserInDB(BaseModel):
+    """User schema with id and password (for internal use only)"""
+
+    id: str
+    username: str
+    password: str
+
+
 class User(BaseModel):
     """User schema for authenticated users (without password)"""
 
+    id: str
     username: str
 
 

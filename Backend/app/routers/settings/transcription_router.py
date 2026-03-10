@@ -43,7 +43,7 @@ def get_configuration(
     """
     Get the current user's transcription configuration.
     """
-    return service.get_user_configuration(user.username)
+    return service.get_user_configuration(user.id)
 
 
 @router.patch("/configuration")
@@ -56,4 +56,4 @@ def update_configuration(
     Partially update the current user's transcription configuration.
     Accepted fields depend on the active transcription provider.
     """
-    return service.update_user_configuration(user.username, update)
+    return service.update_user_configuration(user.id, update)

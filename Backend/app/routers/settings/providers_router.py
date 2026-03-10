@@ -25,7 +25,7 @@ async def get_providers(
         List of providers with their configuration status
     """
     try:
-        return service.get_providers(current_user.username)
+        return service.get_providers(current_user.id)
     except HTTPException:
         raise
     except Exception as e:
@@ -59,7 +59,7 @@ async def add_provider_api_key(
     """
     try:
         service.add_provider_api_key(
-            current_user.username, provider_name, request.api_key
+            current_user.id, provider_name, request.api_key
         )
     except HTTPException:
         raise
@@ -91,7 +91,7 @@ async def delete_provider_api_key(
         400: If provider is invalid
     """
     try:
-        service.delete_provider_api_key(current_user.username, provider_name)
+        service.delete_provider_api_key(current_user.id, provider_name)
     except HTTPException:
         raise
     except Exception as e:
