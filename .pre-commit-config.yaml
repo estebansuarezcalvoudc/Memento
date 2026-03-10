@@ -4,14 +4,14 @@ repos:
       # --- BACKEND (Python) ---
       - id: backend-isort
         name: isort (Local)
-        entry: bash -c 'cd Backend && .venv/bin/isort --profile black "${@#Backend/}"' --
+        entry: bash -c 'if [ -x Backend/.venv/bin/isort ]; then ISORT=Backend/.venv/bin/isort; else ISORT=isort; fi && files=(); for f in "$@"; do files+=("${f#Backend/}"); done && cd Backend && $ISORT --profile black "${files[@]}"' --
         language: system
         types: [python]
         files: ^Backend/
 
       - id: backend-black
         name: black (Local)
-        entry: bash -c 'cd Backend && .venv/bin/black "${@#Backend/}"' --
+        entry: bash -c 'if [ -x Backend/.venv/bin/black ]; then BLACK=Backend/.venv/bin/black; else BLACK=black; fi && files=(); for f in "$@"; do files+=("${f#Backend/}"); done && cd Backend && $BLACK "${files[@]}"' --
         language: system
         types: [python]
         files: ^Backend/

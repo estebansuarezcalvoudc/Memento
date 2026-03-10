@@ -89,9 +89,7 @@ async def retrieve_all_conversations_metadata(
     ],
 ) -> list[ConversationMetadataRetrieve]:
     try:
-        return conversation_service.retrieve_all_conversations_metadata(
-            current_user.id
-        )
+        return conversation_service.retrieve_all_conversations_metadata(current_user.id)
     except Exception as e:
         _logger.error(
             f"Error retrieving all conversations metadata: {str(e)}", exc_info=True
@@ -147,9 +145,7 @@ async def update_conversation_metadata(
     ],
 ) -> None:
     try:
-        conversation_service.update_conversation_metadata(
-            id, metadata, current_user.id
-        )
+        conversation_service.update_conversation_metadata(id, metadata, current_user.id)
     except HTTPException:
         raise
     except Exception as e:

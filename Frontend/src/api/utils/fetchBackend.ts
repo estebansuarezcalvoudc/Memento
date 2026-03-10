@@ -42,7 +42,10 @@ export default async function fetchBackend<T>(
     throw new HttpError(response.status, body?.detail ?? undefined)
   }
 
-  if (response.status === 204 || response.headers.get('content-length') === '0') {
+  if (
+    response.status === 204 ||
+    response.headers.get('content-length') === '0'
+  ) {
     return null
   }
 

@@ -5,9 +5,9 @@ import {
   useGetSummarizationPrompt,
   useUpdateSummarizationPrompt,
 } from '../../../../api/queries/settings/useSummarizationQueries'
-import SecondaryButton from '../ui/SecondaryButton'
 import ConfirmButton from '../ui/ConfirmButton'
 import ErrorMessage from '../ui/ErrorMessage'
+import SecondaryButton from '../ui/SecondaryButton'
 import SubSectionTitle from '../ui/SubSectionTitle'
 
 const MIN = 50
@@ -38,7 +38,9 @@ export default function TemplateSection() {
     <div className="flex flex-col gap-4">
       <SubSectionTitle title="Template" />
       {isLoading ? (
-        <span className="text-base text-stone-500 dark:text-stone-400">Loading...</span>
+        <span className="text-base text-stone-500 dark:text-stone-400">
+          Loading...
+        </span>
       ) : (
         <>
           <textarea

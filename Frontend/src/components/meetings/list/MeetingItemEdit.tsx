@@ -40,7 +40,6 @@ export default function MeetingItemEdit({
     })
   }
 
-  
   const handleConfirm = () => {
     const updates: Partial<Meeting> = {}
 
@@ -64,7 +63,9 @@ export default function MeetingItemEdit({
 
   return (
     <>
-      <span className="font-ubuntu text-base text-stone-500 dark:text-stone-400">{index}</span>
+      <span className="font-ubuntu text-base text-stone-500 dark:text-stone-400">
+        {index}
+      </span>
       <input
         type="text"
         value={editState.title}

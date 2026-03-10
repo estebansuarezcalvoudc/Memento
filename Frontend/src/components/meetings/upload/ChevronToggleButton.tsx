@@ -37,7 +37,9 @@ export default function ChevronToggleButton({
           : 'text-stone-400 hover:bg-stone-100 hover:text-stone-600 dark:text-stone-500 dark:hover:bg-stone-700 dark:hover:text-stone-300'
       }`}
     >
-      <span className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
+      <span
+        className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+      >
         <ChevronIcon />
       </span>
     </button>

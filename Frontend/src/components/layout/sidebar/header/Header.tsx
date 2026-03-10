@@ -20,7 +20,7 @@ export default function Header() {
         </span>
       )}
       <button
-          className="flex size-9 cursor-pointer items-center justify-center rounded-xl text-stone-600 hover:bg-stone-200 dark:text-stone-400 dark:hover:bg-stone-700"
+        className="flex size-9 cursor-pointer items-center justify-center rounded-xl text-stone-600 hover:bg-stone-200 dark:text-stone-400 dark:hover:bg-stone-700"
         onClick={toggleSidebar}
       >
         {isSidebarOpen ? hideSidebarIcon : showSidebarIcon}

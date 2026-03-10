@@ -14,7 +14,9 @@ describe('PullModelSection', () => {
   it('shows "Pull model" button initially', () => {
     setAuthToken()
     renderWithRouter(<PullModelSection providerName="Ollama" />)
-    expect(screen.getByRole('button', { name: 'Pull model' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Pull model' }),
+    ).toBeInTheDocument()
   })
 
   it('clicking "Pull model" reveals the model name input form', async () => {
@@ -22,7 +24,9 @@ describe('PullModelSection', () => {
     setAuthToken()
     renderWithRouter(<PullModelSection providerName="Ollama" />)
     await user.click(screen.getByRole('button', { name: 'Pull model' }))
-    expect(screen.getByPlaceholderText('Enter the model name')).toBeInTheDocument()
+    expect(
+      screen.getByPlaceholderText('Enter the model name'),
+    ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Confirm' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
   })
@@ -51,13 +55,21 @@ describe('PullModelSection', () => {
     setAuthToken()
     renderWithRouter(<PullModelSection providerName="Ollama" />)
     await user.click(screen.getByRole('button', { name: 'Pull model' }))
-    await user.type(screen.getByPlaceholderText('Enter the model name'), 'llama3.2:latest')
+    await user.type(
+      screen.getByPlaceholderText('Enter the model name'),
+      'llama3.2:latest',
+    )
     await user.click(screen.getByRole('button', { name: 'Confirm' }))
     await waitFor(() =>
-      expect(requestBody).toEqual({ provider: 'Ollama', model: 'llama3.2:latest' }),
+      expect(requestBody).toEqual({
+        provider: 'Ollama',
+        model: 'llama3.2:latest',
+      }),
     )
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Pull model' })).toBeInTheDocument(),
+      expect(
+        screen.getByRole('button', { name: 'Pull model' }),
+      ).toBeInTheDocument(),
     )
   })
 
@@ -66,10 +78,16 @@ describe('PullModelSection', () => {
     setAuthToken()
     renderWithRouter(<PullModelSection providerName="Ollama" />)
     await user.click(screen.getByRole('button', { name: 'Pull model' }))
-    expect(screen.getByPlaceholderText('Enter the model name')).toBeInTheDocument()
+    expect(
+      screen.getByPlaceholderText('Enter the model name'),
+    ).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
-    expect(screen.getByRole('button', { name: 'Pull model' })).toBeInTheDocument()
-    expect(screen.queryByPlaceholderText('Enter the model name')).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Pull model' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByPlaceholderText('Enter the model name'),
+    ).not.toBeInTheDocument()
   })
 
   it('shows an error message when the pull endpoint returns an error', async () => {
@@ -88,7 +106,10 @@ describe('PullModelSection', () => {
     setAuthToken()
     renderWithRouter(<PullModelSection providerName="Ollama" />)
     await user.click(screen.getByRole('button', { name: 'Pull model' }))
-    await user.type(screen.getByPlaceholderText('Enter the model name'), 'gpt-4o')
+    await user.type(
+      screen.getByPlaceholderText('Enter the model name'),
+      'gpt-4o',
+    )
     await user.click(screen.getByRole('button', { name: 'Confirm' }))
     expect(
       await screen.findByText('Provider "OpenAI" cannot pull models'),

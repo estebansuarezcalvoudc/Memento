@@ -7,9 +7,9 @@ import {
   type SetIsUserAuth,
 } from '../../../../stores/authStore'
 import Input from '../../../common/Input'
-import SecondaryButton from '../ui/SecondaryButton'
 import ConfirmButton from '../ui/ConfirmButton'
 import ErrorMessage from '../ui/ErrorMessage'
+import SecondaryButton from '../ui/SecondaryButton'
 
 interface FormState {
   errors: null | string[]

@@ -1,5 +1,9 @@
+import {
+  useSetTheme,
+  useTheme,
+  type Theme,
+} from '../../../../stores/themeStore'
 import Select from '../../../common/Select'
-import { useSetTheme, useTheme, type Theme } from '../../../../stores/themeStore'
 
 export default function GeneralView() {
   const theme = useTheme()

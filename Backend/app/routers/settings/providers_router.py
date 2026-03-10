@@ -58,9 +58,7 @@ async def add_provider_api_key(
         401: If API key is invalid (validation failed)
     """
     try:
-        service.add_provider_api_key(
-            current_user.id, provider_name, request.api_key
-        )
+        service.add_provider_api_key(current_user.id, provider_name, request.api_key)
     except HTTPException:
         raise
     except Exception as e:
