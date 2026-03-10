@@ -50,9 +50,7 @@ class MeetingRepository(ABC):
         pass
 
     @abstractmethod
-    def retrieve_meeting_summary(
-        self, id: str, user_id: str
-    ) -> MeetingSummaryResponse:
+    def retrieve_meeting_summary(self, id: str, user_id: str) -> MeetingSummaryResponse:
         """
         Retrieve a meeting summary
 

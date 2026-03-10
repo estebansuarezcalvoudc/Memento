@@ -26,13 +26,13 @@ export default function NewChat() {
 
   return (
     <>
-      <h2 className="font-ubuntu mb-8 text-4xl text-stone-900">
+      <h2 className="font-ubuntu mb-8 text-4xl text-stone-900 dark:text-stone-100">
         How can I help you?
       </h2>
 
-      <div className="flex w-1/2 items-center rounded-3xl bg-stone-200 p-2">
+      <div className="flex w-1/2 items-center rounded-3xl bg-stone-200 p-2 dark:bg-stone-700">
         <input
-          className="font-ubuntu flex-1 rounded-xl p-2 text-base text-stone-800 outline-none"
+          className="font-ubuntu flex-1 rounded-xl p-2 text-base text-stone-800 outline-none dark:bg-transparent dark:text-stone-100"
           placeholder="Some message..."
           value={userMessage}
           onChange={inputEvent => setUserMessage(inputEvent.target.value)}

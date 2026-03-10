@@ -21,11 +21,11 @@ export default function ChatItem({ chatId, chatTitle }: ChatItemProps) {
       <NavLink to={`/chats/${chatId}`}>
         {({ isActive }) => (
           <div
-            className={`flex w-full items-center rounded-xl hover:bg-stone-300 ${isActive ? 'bg-stone-200' : ''}`}
+            className={`flex w-full items-center rounded-xl hover:bg-stone-300 dark:hover:bg-stone-700 ${isActive ? 'bg-stone-200 dark:bg-stone-700' : ''}`}
             onMouseEnter={() => setDivIsHovered(true)}
             onMouseLeave={() => setDivIsHovered(false)}
           >
-            <div className="flex-1 cursor-pointer truncate rounded-l-xl py-1.5 text-left text-stone-700">
+            <div className="flex-1 cursor-pointer truncate rounded-l-xl py-1.5 text-left text-stone-700 dark:text-stone-300">
               <input
                 ref={inputRef}
                 className="font-ubuntu pointer-events-none ml-1.5 truncate text-base"

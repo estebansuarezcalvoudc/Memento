@@ -4,7 +4,7 @@ interface PageContainerProps {
 
 export default function PageContainer({ children }: PageContainerProps) {
   return (
-    <div className="flex min-h-screen w-full flex-col items-center justify-start p-8">
+    <div className="flex min-h-screen w-full flex-col items-center justify-start p-8 text-stone-800 dark:text-stone-100">
       <div className="w-full max-w-4xl">{children}</div>
     </div>
   )

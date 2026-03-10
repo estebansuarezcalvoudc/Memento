@@ -78,9 +78,7 @@ class ConversationMongoRepository(AbstractConversationRepository):
         ]
 
     @handle_invalid_id
-    def fetch_conversation(
-        self, id: str, user_id: str
-    ) -> ConversationDialogueRetrieve:
+    def fetch_conversation(self, id: str, user_id: str) -> ConversationDialogueRetrieve:
         result = self._collection.find_one(
             {"user_id": user_id, "_id": ObjectId(id)},
             {"_id": False, "messages": True},
@@ -111,9 +109,7 @@ class ConversationMongoRepository(AbstractConversationRepository):
 
     @handle_invalid_id
     def delete_conversation(self, id: str, user_id: str) -> None:
-        result = self._collection.delete_one(
-            {"user_id": user_id, "_id": ObjectId(id)}
-        )
+        result = self._collection.delete_one({"user_id": user_id, "_id": ObjectId(id)})
 
         if result.deleted_count == 0:
             raise HTTPException(

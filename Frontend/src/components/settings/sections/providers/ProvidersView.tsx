@@ -16,7 +16,7 @@ export default function ProvidersView() {
     )
   } else {
     content = (
-      <ul className="divide-y divide-gray-300">
+      <ul className="divide-y divide-gray-300 dark:divide-stone-600">
         {providers?.map((provider, index) => (
           <li key={index} className="py-4">
             <Provider provider={provider} />

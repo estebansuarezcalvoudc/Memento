@@ -20,7 +20,7 @@ export default function App() {
     <BrowserRouter>
       {isUserAuth && <Sidebar />}
       <div
-        className={`flex min-h-screen flex-col items-center justify-center transition-all duration-300 ease-in-out ${
+        className={`flex min-h-screen flex-col items-center justify-center bg-white transition-all duration-300 ease-in-out dark:bg-stone-900 ${
           isUserAuth ? (isSidebarOpen ? 'ml-64' : 'ml-16') : 'ml-0'
         }`}
       >

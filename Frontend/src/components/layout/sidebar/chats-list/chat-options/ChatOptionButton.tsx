@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
-interface ChatOptionsButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ChatOptionsButtonProps
+  extends ButtonHTMLAttributes<HTMLButtonElement> {
   svg: ReactNode
   text: string
   textColor?: string
@@ -10,8 +11,8 @@ interface ChatOptionsButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>
 export default function ChatOptionsButton({
   svg,
   text,
-  textColor = 'text-stone-700',
-  hoverColor = 'hover:bg-stone-200',
+  textColor = 'text-stone-700 dark:text-stone-300',
+  hoverColor = 'hover:bg-stone-200 dark:hover:bg-stone-700',
   ...props
 }: ChatOptionsButtonProps) {
   return (

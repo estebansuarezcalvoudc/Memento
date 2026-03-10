@@ -24,7 +24,7 @@ type SidebarItemProps = SidebarButtonProps | SidebarLinkProps
 
 export function SidebarButton(props: SidebarItemProps) {
   const isSidebarOpen = useIsSidebarOpen()
-  const commonClasses = `${isSidebarOpen ? 'flex w-full items-center' : 'flex w-9'} cursor-pointer rounded-xl py-2 ${props.className || ''} ${isSidebarOpen ? 'gap-2' : ''} text-stone-700 hover:bg-stone-200`
+  const commonClasses = `${isSidebarOpen ? 'flex w-full items-center' : 'flex w-9'} cursor-pointer rounded-xl py-2 ${props.className || ''} ${isSidebarOpen ? 'gap-2' : ''} text-stone-700 hover:bg-stone-200 dark:text-stone-300 dark:hover:bg-stone-700`
 
   if (props.type === 'button') {
     return (
@@ -38,7 +38,7 @@ export function SidebarButton(props: SidebarItemProps) {
     <NavLink
       to={props.to}
       className={({ isActive }) =>
-        `${commonClasses} ${isActive ? 'bg-stone-200' : ''}`
+        `${commonClasses} ${isActive ? 'bg-stone-200 dark:bg-stone-700' : ''}`
       }
     >
       <SidebarItemContent isSidebarOpen={isSidebarOpen} {...props} />

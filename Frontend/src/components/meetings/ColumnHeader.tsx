@@ -11,7 +11,7 @@ export default function ColumnHeader({
 
   return (
     <span
-      className={`font-ubuntu tracking-wide text-stone-500 uppercase ${sizeClass}`}
+      className={`font-ubuntu tracking-wide text-stone-500 uppercase dark:text-stone-400 ${sizeClass}`}
     >
       {children}
     </span>

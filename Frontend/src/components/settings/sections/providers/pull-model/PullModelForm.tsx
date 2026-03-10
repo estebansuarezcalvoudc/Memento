@@ -17,7 +17,9 @@ export default function PullModelForm({
       inputName="modelName"
       placeholder="Enter the model name"
       emptyError="Model cannot be empty"
-      onSubmit={async (model) => { await pullModel({ provider: providerName, model }) }}
+      onSubmit={async model => {
+        await pullModel({ provider: providerName, model })
+      }}
       onClose={onClose}
     />
   )

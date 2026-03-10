@@ -1,8 +1,10 @@
 type InlineButtonVariant = 'default' | 'emphasis' | 'danger'
 
 const variantClasses: Record<InlineButtonVariant, string> = {
-  default: 'text-stone-500 hover:text-stone-800',
-  emphasis: 'text-stone-700 hover:text-stone-900',
+  default:
+    'text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-100',
+  emphasis:
+    'text-stone-700 hover:text-stone-900 dark:text-stone-300 dark:hover:text-stone-100',
   danger: 'text-red-500 hover:text-red-800',
 }
 

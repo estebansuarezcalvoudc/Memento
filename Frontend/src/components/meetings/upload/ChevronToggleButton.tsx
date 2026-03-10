@@ -33,11 +33,13 @@ export default function ChevronToggleButton({
       aria-expanded={isExpanded}
       className={`inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg p-1 transition-colors disabled:opacity-30 ${
         isExpanded
-          ? 'bg-stone-200 text-stone-700'
-          : 'text-stone-400 hover:bg-stone-100 hover:text-stone-600'
+          ? 'bg-stone-200 text-stone-700 dark:bg-stone-700 dark:text-stone-300'
+          : 'text-stone-400 hover:bg-stone-100 hover:text-stone-600 dark:text-stone-500 dark:hover:bg-stone-700 dark:hover:text-stone-300'
       }`}
     >
-      <span className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
+      <span
+        className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+      >
         <ChevronIcon />
       </span>
     </button>

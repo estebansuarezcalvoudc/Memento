@@ -97,4 +97,3 @@ class AuthMongoRepository(AbstractAuthRepository):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Could not delete user with id={user_id}",
             )
-

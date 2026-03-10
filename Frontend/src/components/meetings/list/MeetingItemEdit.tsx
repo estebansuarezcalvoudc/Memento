@@ -40,7 +40,6 @@ export default function MeetingItemEdit({
     })
   }
 
-  
   const handleConfirm = () => {
     const updates: Partial<Meeting> = {}
 
@@ -64,19 +63,21 @@ export default function MeetingItemEdit({
 
   return (
     <>
-      <span className="font-ubuntu text-base text-stone-500">{index}</span>
+      <span className="font-ubuntu text-base text-stone-500 dark:text-stone-400">
+        {index}
+      </span>
       <input
         type="text"
         value={editState.title}
         onChange={e => handleTitleChange(e.target.value)}
-        className="font-ubuntu h-6 truncate rounded border border-stone-300 px-2 text-base text-stone-800 focus:border-blue-500 focus:outline-none"
+        className="font-ubuntu h-6 truncate rounded border border-stone-300 px-2 text-base text-stone-800 focus:border-blue-500 focus:outline-none dark:border-stone-600 dark:bg-transparent dark:text-stone-100"
         disabled={isPending}
       />
       <input
         type="date"
         value={editState.date}
         onChange={e => handleDateChange(e.target.value)}
-        className="font-ubuntu h-6 rounded border border-stone-300 px-2 text-base text-stone-600 focus:border-blue-500 focus:outline-none"
+        className="font-ubuntu h-6 rounded border border-stone-300 px-2 text-base text-stone-600 focus:border-blue-500 focus:outline-none dark:border-stone-600 dark:bg-transparent dark:text-stone-300"
         disabled={isPending}
         max={today}
       />

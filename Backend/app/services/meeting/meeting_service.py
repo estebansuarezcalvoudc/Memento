@@ -116,9 +116,7 @@ class MeetingService(metaclass=SingletonMeta):
     ) -> list[MeetingMetadataResponse]:
         return self._repository.retrieve_all_meetings_metadata(user_id)
 
-    def retrieve_meeting_summary(
-        self, id: str, user_id: str
-    ) -> MeetingSummaryResponse:
+    def retrieve_meeting_summary(self, id: str, user_id: str) -> MeetingSummaryResponse:
         return self._repository.retrieve_meeting_summary(id, user_id)
 
     def retrieve_meeting_transcription(

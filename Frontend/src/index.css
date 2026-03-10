@@ -1,6 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Dongle&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
 @import 'tailwindcss';
 
+/* dark is activated with the class .dark in <html>, managed by themeStore */
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-dongle: 'Dongle', sans-serif;
 }
@@ -15,6 +18,10 @@
   scrollbar-color: #78716c #e4e6e7;
 }
 
+.dark .custom-scrollbar {
+  scrollbar-color: #57534e #44403c;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 8px;
 }
@@ -24,13 +31,25 @@
   border-radius: 4px;
 }
 
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: #44403c;
+}
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #78716c;
   border-radius: 4px;
 }
 
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #57534e;
+}
+
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #57534e;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #78716c;
 }
 
 /* Fade-in animation for sidebar text */

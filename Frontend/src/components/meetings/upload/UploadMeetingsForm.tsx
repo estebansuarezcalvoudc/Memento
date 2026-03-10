@@ -113,7 +113,7 @@ export default function UploadMeetingsForm({
     <form action={handleSubmit}>
       {/* Column header */}
       <div
-        className={`grid ${meetingFormGridCols} gap-4 border-b border-stone-300 py-2`}
+        className={`grid ${meetingFormGridCols} gap-4 border-b border-stone-300 py-2 dark:border-stone-600`}
       >
         <ColumnHeader size="xs">#</ColumnHeader>
         <ColumnHeader size="xs">Title</ColumnHeader>
@@ -156,8 +156,16 @@ export default function UploadMeetingsForm({
       )}
 
       <div className="mt-5 mb-4 flex justify-center gap-4">
-        <SecondaryButton onClick={addMeeting} disabled={isPending} label="+ Add meeting" />
-        <ConfirmButton isPending={isPending} label="Submit" pendingLabel="Uploading..." />
+        <SecondaryButton
+          onClick={addMeeting}
+          disabled={isPending}
+          label="+ Add meeting"
+        />
+        <ConfirmButton
+          isPending={isPending}
+          label="Submit"
+          pendingLabel="Uploading..."
+        />
       </div>
     </form>
   )

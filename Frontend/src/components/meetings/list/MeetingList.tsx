@@ -12,7 +12,7 @@ export default function MeetingsList({ meetings }: MeetingsListProps) {
   return (
     <div className="w-full">
       <div
-        className={`grid ${gridCols} gap-6 border-b border-stone-300 px-4 py-3`}
+        className={`grid ${gridCols} gap-6 border-b border-stone-300 px-4 py-3 dark:border-stone-600`}
       >
         <ColumnHeader>#</ColumnHeader>
         <ColumnHeader>Title</ColumnHeader>

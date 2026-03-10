@@ -1,9 +1,9 @@
 import { useActionState } from 'react'
 
 import InlineInput from '../../../common/InlineInput'
-import SecondaryButton from '../ui/SecondaryButton'
 import ConfirmButton from '../ui/ConfirmButton'
 import ErrorMessage from '../ui/ErrorMessage'
+import SecondaryButton from '../ui/SecondaryButton'
 
 interface FormState {
   errors: null | string[]
@@ -24,9 +24,19 @@ export default function ProviderInlineForm({
   onSubmit,
   onClose,
 }: ProviderInlineFormProps) {
-  const [formState, formAction, isPending] = useActionState<FormState, FormData>(
+  const [formState, formAction, isPending] = useActionState<
+    FormState,
+    FormData
+  >(
     (prev, formData) =>
-      providerInlineFormAction(prev, formData, inputName, emptyError, onSubmit, onClose),
+      providerInlineFormAction(
+        prev,
+        formData,
+        inputName,
+        emptyError,
+        onSubmit,
+        onClose,
+      ),
     { errors: null },
   )
 

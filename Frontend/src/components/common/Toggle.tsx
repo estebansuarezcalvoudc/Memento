@@ -13,7 +13,7 @@ export default function Toggle({ enabled, onChange, disabled }: ToggleProps) {
       disabled={disabled}
       onClick={() => onChange(!enabled)}
       className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors disabled:opacity-50 ${
-        enabled ? 'bg-lime-400' : 'bg-stone-300'
+        enabled ? 'bg-lime-400' : 'bg-stone-300 dark:bg-stone-600'
       }`}
     >
       <span
