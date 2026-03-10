@@ -41,7 +41,7 @@ export default function TranscriptionView() {
               onChange={e => updateConfig({ compute_type: e.target.value })}
             >
               {(options?.computeTypes ?? []).map(c => (
-                <option key={c} value={c}>
+                <option key={c} value={c} disabled={selectedDevice === 'cpu' && c !== 'int8'}>
                   {c}
                 </option>
               ))}
@@ -49,7 +49,13 @@ export default function TranscriptionView() {
             <Select
               label="Device"
               value={selectedDevice}
-              onChange={e => updateConfig({ device: e.target.value })}
+              onChange={e => {
+                const newDevice = e.target.value
+                updateConfig({ device: newDevice })
+                if (newDevice === 'cpu' && config?.computeType !== 'int8') {
+                  updateConfig({ compute_type: 'int8' })
+                }
+              }}
             >
               {(options?.devices ?? []).map(d => (
                 <option key={d} value={d}>
