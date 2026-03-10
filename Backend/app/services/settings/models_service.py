@@ -101,7 +101,13 @@ class ModelsService:
 
     def pull_model(self, pull_model_request: PullModelRequest) -> None:
         if pull_model_request.provider == "Ollama":
-            ollama.pull(pull_model_request.model_name)
+            try:
+                ollama.pull(pull_model_request.model)
+            except Exception:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Could not pull model '{pull_model_request.model}'",
+                )
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

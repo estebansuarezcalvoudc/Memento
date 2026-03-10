@@ -21,4 +21,4 @@ class AvailableModel(BaseModel):
 
 class PullModelRequest(BaseModel):
     provider: ProviderName
-    model_name: str
+    model: str

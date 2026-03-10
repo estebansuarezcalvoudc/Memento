@@ -159,7 +159,7 @@ async def pull_model(
         raise
     except Exception as e:
         _logger.error(
-            f"Error pulling model '{pull_model_request.model_name}' from provider '{pull_model_request.provider}': {str(e)}",
+            f"Error pulling model '{pull_model_request.model}' from provider '{pull_model_request.provider}': {str(e)}",
             exc_info=True,
         )
         raise HTTPException(
