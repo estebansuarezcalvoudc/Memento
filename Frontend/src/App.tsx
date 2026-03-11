@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import Sidebar from './components/layout/sidebar/Sidebar'
@@ -9,12 +10,19 @@ import Home from './pages/Home'
 import MeetingContent from './pages/meetings/MeetingContent'
 import Meetings from './pages/meetings/Meetings'
 import NotFound from './pages/NotFound'
-import { useIsUserAuth } from './stores/authStore'
+import { useIsUserAuth, useSetIsUserAuth } from './stores/authStore'
 import { useIsSidebarOpen } from './stores/sidebarStore'
 
 export default function App() {
   const isUserAuth = useIsUserAuth()
+  const setIsUserAuth = useSetIsUserAuth()
   const isSidebarOpen = useIsSidebarOpen()
+
+  useEffect(() => {
+    if (localStorage.getItem('access_token')) {
+      setIsUserAuth(true)
+    }
+  }, [])
 
   return (
     <BrowserRouter>
