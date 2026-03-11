@@ -1,4 +1,4 @@
-import { useActionState, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useUploadMeetings } from '../../../api/queries/useMeetingsQueries'
 import { useGetSupportedLanguages } from '../../../api/queries/useSettingsQueries'
@@ -48,13 +48,10 @@ export default function UploadMeetingsForm({
   const { mutateAsync: uploadMeetings } = useUploadMeetings()
   const { data: languages = [] } = useGetSupportedLanguages()
   const [meetings, setMeetings] = useState<MeetingFormData[]>([createMeeting()])
-
-  const uploadAction = createUploadMeetingsAction(uploadMeetings)
-
-  const [formState, formAction, isPending] = useActionState<
-    FormState,
-    FormData
-  >(uploadAction, { validationErrors: null })
+  const [isPending, setIsPending] = useState(false)
+  const [formState, setFormState] = useState<FormState>({
+    validationErrors: null,
+  })
 
   const [notification, setNotification] = useState<Notification>('none')
 
@@ -68,7 +65,6 @@ export default function UploadMeetingsForm({
       setNotification('uploading')
     } else if (formState.success) {
       setNotification('success')
-
       setMeetings([createMeeting()])
       handleCloseDialog()
     } else if (formState.serverError) {
@@ -76,7 +72,10 @@ export default function UploadMeetingsForm({
     }
   }, [isPending, formState, handleCloseDialog])
 
-  const handleSubmit = (formData: FormData) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+
     const updatedMeetings = meetings.map((meeting, index) => {
       const language = formData.get(`meetings[${index}][language]`) as string
       return {
@@ -94,7 +93,22 @@ export default function UploadMeetingsForm({
     })
 
     setMeetings(updatedMeetings)
-    formAction(formData)
+    setIsPending(true)
+
+    const parsed = parseMeetingsFromFormData(formData)
+    if (!parsed.ok) {
+      setFormState({ validationErrors: parsed.errors })
+      setIsPending(false)
+      return
+    }
+
+    const nextState = await processUploadMeetings(
+      parsed.meetingsMetadata,
+      parsed.audioFiles,
+      uploadMeetings,
+    )
+    setFormState(nextState)
+    setIsPending(false)
   }
 
   const addMeeting = () => setMeetings(prev => [...prev, createMeeting()])
@@ -110,8 +124,7 @@ export default function UploadMeetingsForm({
   }
 
   return (
-    <form action={handleSubmit}>
-      {/* Column header */}
+    <form onSubmit={handleSubmit}>
       <div
         className={`grid ${meetingFormGridCols} gap-4 border-b border-stone-300 py-2 dark:border-stone-600`}
       >
@@ -169,27 +182,6 @@ export default function UploadMeetingsForm({
       </div>
     </form>
   )
-}
-
-function createUploadMeetingsAction(
-  uploadMeetings: (formData: FormData) => Promise<Meeting[]>,
-) {
-  return async function uploadMeetingsAction(
-    _prevFormState: FormState,
-    formData: FormData,
-  ): Promise<FormState> {
-    const parsed = parseMeetingsFromFormData(formData)
-
-    if (!parsed.ok) {
-      return { validationErrors: parsed.errors }
-    }
-
-    return processUploadMeetings(
-      parsed.meetingsMetadata,
-      parsed.audioFiles,
-      uploadMeetings,
-    )
-  }
 }
 
 async function processUploadMeetings(
