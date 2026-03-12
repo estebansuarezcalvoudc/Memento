@@ -47,3 +47,7 @@ export async function deleteAccount(password: string): Promise<null> {
     password,
   })
 }
+
+export async function verifyToken(): Promise<{ id: string; username: string }> {
+  return fetchBackend('GET', 'auth/me')
+}

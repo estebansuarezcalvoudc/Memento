@@ -47,6 +47,13 @@ async def login_for_access_token(
     return service.authenticate_user(form_data.username, form_data.password)
 
 
+@router.get("/me")
+async def get_current_user_info(
+    current_user: Annotated[User, Depends(get_current_active_user)],
+) -> User:
+    return current_user
+
+
 @router.patch("/username")
 async def change_username(
     body: ChangeUsernameRequest,
