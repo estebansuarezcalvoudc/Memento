@@ -35,17 +35,7 @@ function renderPublicOnlyRoute(route = '/login') {
 }
 
 describe('ProtectedRoute', () => {
-  it('shows a spinner while auth is not yet initialized', () => {
-    _useAuthStore.setState({ authInitialized: false, isUserAuth: false })
-
-    renderProtectedRoute()
-
-    // ClipLoader has no role — the container div has aria-label="Loading"
-    expect(screen.getByLabelText('Loading')).toBeInTheDocument()
-    expect(screen.queryByText('Protected content')).not.toBeInTheDocument()
-  })
-
-  it('redirects to /login when not authenticated and auth is initialized', () => {
+  it('redirects to /login when not authenticated', () => {
     _useAuthStore.setState({ authInitialized: true, isUserAuth: false })
 
     renderProtectedRoute()
@@ -65,15 +55,6 @@ describe('ProtectedRoute', () => {
 })
 
 describe('PublicOnlyRoute', () => {
-  it('shows a spinner while auth is not yet initialized', () => {
-    _useAuthStore.setState({ authInitialized: false, isUserAuth: false })
-
-    renderPublicOnlyRoute()
-
-    expect(screen.getByLabelText('Loading')).toBeInTheDocument()
-    expect(screen.queryByText('Login page')).not.toBeInTheDocument()
-  })
-
   it('redirects to / when already authenticated', () => {
     _useAuthStore.setState({ authInitialized: true, isUserAuth: true })
 

@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { ClipLoader } from 'react-spinners'
 
 import { verifyToken } from './api/authAPI'
 import AuthGuard from './components/layout/AuthGuard'
@@ -15,6 +16,7 @@ import MeetingContent from './pages/meetings/MeetingContent'
 import Meetings from './pages/meetings/Meetings'
 import NotFound from './pages/NotFound'
 import {
+  useIsAuthInitialized,
   useIsUserAuth,
   useSetAuthInitialized,
   useSetIsUserAuth,
@@ -22,6 +24,7 @@ import {
 import { useIsSidebarOpen } from './stores/sidebarStore'
 
 export default function App() {
+  const authInitialized = useIsAuthInitialized()
   const isUserAuth = useIsUserAuth()
   const setIsUserAuth = useSetIsUserAuth()
   const setAuthInitialized = useSetAuthInitialized()
@@ -38,6 +41,17 @@ export default function App() {
       setAuthInitialized(true)
     }
   }, [setIsUserAuth, setAuthInitialized])
+
+  if (!authInitialized) {
+    return (
+      <div
+        aria-label="Loading"
+        className="flex h-screen items-center justify-center"
+      >
+        <ClipLoader />
+      </div>
+    )
+  }
 
   return (
     <BrowserRouter>
