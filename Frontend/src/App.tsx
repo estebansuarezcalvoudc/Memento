@@ -44,8 +44,9 @@ export default function App() {
       <AuthGuard />
       {isUserAuth && <Sidebar />}
       <div
-        className={`flex min-h-screen flex-col items-center justify-center bg-white transition-all duration-300 ease-in-out dark:bg-stone-900 ${
-          isUserAuth ? (isSidebarOpen ? 'ml-64' : 'ml-16') : 'ml-0'
+        className={`flex min-h-screen flex-col items-center justify-center bg-white dark:bg-stone-900 ${
+          isUserAuth &&
+          `transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-64' : 'ml-16'}`
         }`}
       >
         <Routes>
