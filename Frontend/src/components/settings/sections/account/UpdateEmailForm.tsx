@@ -1,4 +1,5 @@
 import { useActionState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useUpdateUsername } from '../../../../api/queries/auth/useAuthQueries'
 import Input from '../../../common/Input'
@@ -19,6 +20,7 @@ export default function UpdateEmailForm({
   onClose,
   onSuccess,
 }: UpdateEmailFormProps) {
+  const { t } = useTranslation()
   const { mutateAsync: updateUsername } = useUpdateUsername()
 
   const [formState, formAction, isPending] = useActionState<
@@ -26,18 +28,34 @@ export default function UpdateEmailForm({
     FormData
   >(
     (prev, formData) =>
-      updateEmailAction(prev, formData, updateUsername, onSuccess),
+      updateEmailAction(prev, formData, updateUsername, onSuccess, t),
     { errors: null },
   )
 
   return (
     <form action={formAction} className="flex flex-col gap-1">
-      <Input name="newEmail" type="email" label="New email" />
-      <Input name="password" type="password" label="Password" />
+      <Input
+        name="newEmail"
+        type="email"
+        label={t('settings.account.updateEmail.newEmail')}
+      />
+      <Input
+        name="password"
+        type="password"
+        label={t('settings.account.updateEmail.password')}
+      />
       {formState.errors && <ErrorMessage message={formState.errors[0]} />}
       <div className="mt-4 flex justify-center gap-x-2">
-        <SecondaryButton onClick={onClose} disabled={isPending} />
-        <ConfirmButton label="Save" isPending={isPending} />
+        <SecondaryButton
+          onClick={onClose}
+          disabled={isPending}
+          label={t('settings.buttons.cancel')}
+        />
+        <ConfirmButton
+          label={t('settings.buttons.save')}
+          isPending={isPending}
+          pendingLabel={t('settings.buttons.saving')}
+        />
       </div>
     </form>
   )
@@ -51,15 +69,16 @@ async function updateEmailAction(
     password: string
   }) => Promise<{ accessToken: string; token_type: string }>,
   onSuccess: (newUsername: string) => void,
+  t: (key: string) => string,
 ): Promise<FormState> {
   const newEmail = (formData.get('newEmail') ?? '') as string
   const password = (formData.get('password') ?? '') as string
 
   if (!newEmail.trim()) {
-    return { errors: ['New email cannot be empty'] }
+    return { errors: [t('settings.account.updateEmail.newEmailRequired')] }
   }
   if (!password.trim()) {
-    return { errors: ['Password cannot be empty'] }
+    return { errors: [t('settings.account.updateEmail.passwordRequired')] }
   }
 
   try {
@@ -70,7 +89,9 @@ async function updateEmailAction(
   } catch (error) {
     return {
       errors: [
-        error instanceof Error ? error.message : 'Failed to update email',
+        error instanceof Error
+          ? error.message
+          : t('settings.account.updateEmail.failed'),
       ],
     }
   }

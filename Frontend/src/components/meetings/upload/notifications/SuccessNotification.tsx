@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 
 import CloseNotificationButton from './CloseNotificationButton'
 
@@ -10,15 +11,19 @@ export default function SuccessNotification({
   numberOfMeetings: number
   onClose: () => void
 }) {
+  const { t } = useTranslation()
+
   useEffect(() => {
     const timeout = setTimeout(() => onClose(), 6000)
     return () => clearTimeout(timeout)
   }, [onClose])
 
   const spanText =
-    numberOfMeetings == 1
-      ? '1 meeting has been uploaded'
-      : `${numberOfMeetings} meetings have been uploaded`
+    numberOfMeetings === 1
+      ? t('meetings.uploadDialog.notifications.successOne')
+      : t('meetings.uploadDialog.notifications.successMany', {
+          count: numberOfMeetings,
+        })
 
   return createPortal(
     <div

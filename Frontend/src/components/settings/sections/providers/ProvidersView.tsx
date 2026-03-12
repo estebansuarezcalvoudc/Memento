@@ -1,17 +1,21 @@
+import { useTranslation } from 'react-i18next'
+
 import { useGetProviders } from '../../../../api/queries/settings/useProvidersQueries'
 import Provider from './Provider'
 
 export default function ProvidersView() {
+  const { t } = useTranslation()
   const { data: providers, isLoading, error } = useGetProviders()
 
   let content
 
   if (isLoading) {
-    content = <span>Loading providers...</span>
+    content = <span>{t('settings.providers.loading')}</span>
   } else if (error) {
     content = (
       <span>
-        Error {error.name}: {error.message}
+        {t('common.errorPrefix')}
+        {error.name}: {error.message}
       </span>
     )
   } else {

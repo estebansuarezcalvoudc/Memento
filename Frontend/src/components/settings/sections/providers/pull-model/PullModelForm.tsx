@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import { usePullModel } from '../../../../../api/queries/settings/useModelsQueries'
 import ProviderInlineForm from '../ProviderInlineForm'
 
@@ -10,13 +12,14 @@ export default function PullModelForm({
   providerName,
   onClose,
 }: PullModelFormProps) {
+  const { t } = useTranslation()
   const { mutateAsync: pullModel } = usePullModel()
 
   return (
     <ProviderInlineForm
       inputName="modelName"
-      placeholder="Enter the model name"
-      emptyError="Model cannot be empty"
+      placeholder={t('settings.providers.pullModelPlaceholder')}
+      emptyError={t('settings.providers.pullModelEmptyError')}
       onSubmit={async model => {
         await pullModel({ provider: providerName, model })
       }}

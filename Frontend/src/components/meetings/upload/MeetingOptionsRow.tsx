@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import { type LanguageOption } from '../../../api/queries/useSettingsQueries'
 import InlineInput from '../../common/InlineInput'
 
@@ -22,6 +24,8 @@ export default function MeetingOptionsRow({
   isPending,
   isExpanded,
 }: MeetingOptionsRowProps) {
+  const { t } = useTranslation()
+
   return (
     <div className="[grid-column:1/-1]">
       <input
@@ -39,7 +43,7 @@ export default function MeetingOptionsRow({
         <div className="flex items-center justify-center gap-6 pb-3">
           <div className="flex items-center gap-2">
             <label className="font-ubuntu shrink-0 text-xs text-stone-400 dark:text-stone-500">
-              Language
+              {t('meetings.uploadDialog.language')}
             </label>
             <select
               value={language}
@@ -48,7 +52,7 @@ export default function MeetingOptionsRow({
               aria-label={`Meeting ${index + 1} language`}
               className="font-ubuntu h-7 rounded-lg border border-stone-200 bg-transparent px-2 text-xs text-stone-600 outline-none focus:border-stone-400 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300 dark:focus:border-stone-400"
             >
-              <option value="">Any</option>
+              <option value="">{t('meetings.uploadDialog.languageAny')}</option>
               {languages.map(l => (
                 <option key={l.code} value={l.code}>
                   {l.name}
@@ -59,7 +63,7 @@ export default function MeetingOptionsRow({
 
           <div className="flex items-center gap-2">
             <label className="font-ubuntu shrink-0 text-xs text-stone-400 dark:text-stone-500">
-              Speakers
+              {t('meetings.uploadDialog.speakers')}
             </label>
             <InlineInput
               type="number"

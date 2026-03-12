@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 interface ConfirmButtonProps {
   label?: string
   color?: 'lime' | 'red'
@@ -9,14 +11,18 @@ interface ConfirmButtonProps {
 }
 
 export default function ConfirmButton({
-  label = 'Confirm',
+  label,
   color = 'lime',
-  pendingLabel = 'Saving...',
+  pendingLabel,
   isPending = false,
   disabled = false,
   type = 'submit',
   onClick,
 }: ConfirmButtonProps) {
+  const { t } = useTranslation()
+  const resolvedLabel = label ?? t('settings.buttons.confirm')
+  const resolvedPendingLabel = pendingLabel ?? t('settings.buttons.saving')
+
   const bgColor =
     color === 'lime'
       ? 'bg-lime-400 hover:bg-lime-500 text-stone-800'
@@ -29,7 +35,7 @@ export default function ConfirmButton({
       onClick={onClick}
       className={`font-ubuntu h-8 cursor-pointer rounded-lg ${bgColor} px-3 text-base disabled:opacity-50`}
     >
-      {isPending ? pendingLabel : label}
+      {isPending ? resolvedPendingLabel : resolvedLabel}
     </button>
   )
 }

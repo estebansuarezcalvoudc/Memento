@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import {
   useGetAvailableModels,
   useGetChatModel,
@@ -6,6 +8,7 @@ import {
 import ModelConfigSection from '../ui/ModelConfigSection'
 
 export default function ChatModelSection() {
+  const { t } = useTranslation()
   const { data: availableModels, isLoading: modelsLoading } =
     useGetAvailableModels()
   const { data: currentModel, isLoading: configLoading } = useGetChatModel()
@@ -13,7 +16,7 @@ export default function ChatModelSection() {
 
   return (
     <ModelConfigSection
-      title="Chat Model"
+      title={t('settings.chat.chatModel')}
       availableModels={availableModels}
       currentModel={currentModel}
       isLoading={modelsLoading || configLoading}

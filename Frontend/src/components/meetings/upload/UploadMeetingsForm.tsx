@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useUploadMeetings } from '../../../api/queries/useMeetingsQueries'
 import { useGetSupportedLanguages } from '../../../api/queries/useSettingsQueries'
@@ -45,6 +46,7 @@ export default function UploadMeetingsForm({
 }: {
   handleCloseDialog: () => void
 }) {
+  const { t } = useTranslation()
   const { mutateAsync: uploadMeetings } = useUploadMeetings()
   const { data: languages = [] } = useGetSupportedLanguages()
   const [meetings, setMeetings] = useState<MeetingFormData[]>([createMeeting()])
@@ -95,7 +97,7 @@ export default function UploadMeetingsForm({
     setMeetings(updatedMeetings)
     setIsPending(true)
 
-    const parsed = parseMeetingsFromFormData(formData)
+    const parsed = parseMeetingsFromFormData(formData, t)
     if (!parsed.ok) {
       setFormState({ validationErrors: parsed.errors })
       setIsPending(false)
@@ -128,10 +130,18 @@ export default function UploadMeetingsForm({
       <div
         className={`grid ${meetingFormGridCols} gap-4 border-b border-stone-300 py-2 dark:border-stone-600`}
       >
-        <ColumnHeader size="xs">#</ColumnHeader>
-        <ColumnHeader size="xs">Title</ColumnHeader>
-        <ColumnHeader size="xs">Date</ColumnHeader>
-        <ColumnHeader size="xs">File</ColumnHeader>
+        <ColumnHeader size="xs">
+          {t('meetings.uploadDialog.columns.number')}
+        </ColumnHeader>
+        <ColumnHeader size="xs">
+          {t('meetings.uploadDialog.columns.title')}
+        </ColumnHeader>
+        <ColumnHeader size="xs">
+          {t('meetings.uploadDialog.columns.date')}
+        </ColumnHeader>
+        <ColumnHeader size="xs">
+          {t('meetings.uploadDialog.columns.file')}
+        </ColumnHeader>
         <div />
         <div />
       </div>
@@ -172,12 +182,12 @@ export default function UploadMeetingsForm({
         <SecondaryButton
           onClick={addMeeting}
           disabled={isPending}
-          label="+ Add meeting"
+          label={t('meetings.uploadDialog.addMeeting')}
         />
         <ConfirmButton
           isPending={isPending}
-          label="Submit"
-          pendingLabel="Uploading..."
+          label={t('meetings.uploadDialog.submit')}
+          pendingLabel={t('meetings.uploadDialog.uploading')}
         />
       </div>
     </form>

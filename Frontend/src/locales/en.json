@@ -1,0 +1,202 @@
+{
+  "home": {
+    "welcome": "Welcome to TFG",
+    "subtitle": "Some text...",
+    "logIn": "Log in",
+    "signUp": "Sign up"
+  },
+  "notFound": {
+    "title": "404 - Page Not Found",
+    "message": "Sorry, the page you are looking for does not exist."
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in to TFG",
+      "footerText": "New to TFG?",
+      "linkText": "Create an account",
+      "signIn": "Sign in"
+    },
+    "signup": {
+      "title": "Sign up to TFG",
+      "footerText": "Already have an account?",
+      "linkText": "Log in",
+      "signUp": "Sign up"
+    },
+    "fields": {
+      "email": "email",
+      "password": "password",
+      "confirmPassword": "confirm password"
+    },
+    "errors": {
+      "emailRequired": "You must provide your email",
+      "passwordRequired": "You must provide your password",
+      "confirmPasswordRequired": "You must confirm your password",
+      "passwordsMismatch": "Provided passwords do not match",
+      "invalidCredentials": "Invalid credentials",
+      "signUpFailed": "Could not sign up"
+    }
+  },
+  "sidebar": {
+    "settings": "Settings",
+    "newChat": "New Chat",
+    "myMeetings": "My Meetings",
+    "uploadMeetings": "Upload Meetings",
+    "chats": "Chats",
+    "loadingConversations": "Loading conversations...",
+    "noConversations": "No conversations yet",
+    "errorPrefix": "Error: "
+  },
+  "chatOptions": {
+    "rename": "Rename",
+    "delete": "Delete"
+  },
+  "settings": {
+    "sections": {
+      "general": "General",
+      "provider": "Provider",
+      "transcription": "Transcription",
+      "summarization": "Summarization",
+      "chat": "Chat",
+      "account": "Account"
+    },
+    "general": {
+      "theme": "Theme",
+      "themeSystem": "System",
+      "themeLight": "Light",
+      "themeDark": "Dark",
+      "language": "Language",
+      "languageEnglish": "English",
+      "languageSpanish": "Spanish"
+    },
+    "account": {
+      "email": "Email",
+      "editEmail": "Edit email",
+      "changePassword": "Change password",
+      "logOut": "Log out",
+      "deleteAccount": "Delete account",
+      "updateEmail": {
+        "newEmail": "New email",
+        "password": "Password",
+        "newEmailRequired": "New email cannot be empty",
+        "passwordRequired": "Password cannot be empty",
+        "failed": "Failed to update email"
+      },
+      "updatePassword": {
+        "currentPassword": "Current password",
+        "newPassword": "New password",
+        "confirmNewPassword": "Confirm new password",
+        "currentPasswordRequired": "Current password cannot be empty",
+        "newPasswordRequired": "New password cannot be empty",
+        "passwordsMismatch": "New passwords do not match",
+        "failed": "Failed to update password"
+      },
+      "deleteAccountForm": {
+        "password": "Password",
+        "passwordRequired": "Password cannot be empty",
+        "failed": "Failed to delete account"
+      }
+    },
+    "providers": {
+      "loading": "Loading providers...",
+      "apiKeyAdded": "API key added",
+      "removeApiKey": "Remove API key",
+      "addApiKey": "Add API key",
+      "apiKeyPlaceholder": "Enter your API key",
+      "apiKeyEmptyError": "API key cannot be empty",
+      "invalidApiKey": "Invalid API key",
+      "removeApiKeyFailed": "Failed to remove API key. Please try again.",
+      "pullModel": "Pull model",
+      "pullModelPlaceholder": "Enter the model name",
+      "pullModelEmptyError": "Model cannot be empty"
+    },
+    "transcription": {
+      "loading": "Loading...",
+      "modelSize": "Model size",
+      "computeType": "Compute type",
+      "device": "Device",
+      "cudaWarning": "If the GPU is unavailable or fails, transcription will automatically fall back to CPU using <strong>int8</strong> precision"
+    },
+    "summarization": {
+      "template": "Template",
+      "languageModel": "Language Model",
+      "loading": "Loading...",
+      "resetToDefault": "Reset to default",
+      "saveFailed": "Failed to save. Please try again.",
+      "promptTooShort": "Prompt must be at least {{min}} characters."
+    },
+    "chat": {
+      "chatModel": "Chat Model",
+      "retrievalModel": "Retrieval Model"
+    },
+    "models": {
+      "model": "Model",
+      "temperature": "Temperature",
+      "maxTokens": "Max tokens",
+      "selectModel": "Select a model",
+      "loading": "Loading...",
+      "saveFailed": "Failed to save. Please try again."
+    },
+    "buttons": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "delete": "Delete",
+      "saving": "Saving..."
+    }
+  },
+  "meetings": {
+    "title": "Meetings",
+    "loading": "Loading meetings",
+    "noMeetings": "You have not uploaded any meetings yet",
+    "uploadDialog": {
+      "title": "Upload Files",
+      "columns": {
+        "number": "#",
+        "title": "Title",
+        "date": "Date",
+        "file": "File"
+      },
+      "addMeeting": "+ Add meeting",
+      "submit": "Submit",
+      "uploading": "Uploading...",
+      "titlePlaceholder": "Title",
+      "language": "Language",
+      "languageAny": "Any",
+      "speakers": "Speakers",
+      "notifications": {
+        "uploadingOne": "Uploading 1 meeting",
+        "uploadingMany": "Uploading {{count}} meetings",
+        "successOne": "1 meeting has been uploaded",
+        "successMany": "{{count}} meetings have been uploaded",
+        "serverError": "Could not upload meetings",
+        "serverErrorDetail": "Network error or server unavailable"
+      },
+      "validationErrors": {
+        "titleRequired": "Meeting {{number}}: Title is required",
+        "dateRequired": "Meeting {{number}}: Date is required",
+        "audioRequired": "Meeting {{number}}: Audio file is required",
+        "audioNoFilename": "Meeting {{number}}: Audio file must have a filename",
+        "audioUnsupportedFormat": "Meeting {{number}}: Unsupported audio format \"{{ext}}\". Supported formats: {{formats}}",
+        "audioNotAudioFile": "Meeting {{number}}: File must be an audio file",
+        "atLeastOne": "You must add at least one meeting"
+      }
+    },
+    "content": {
+      "summary": "Summary",
+      "transcription": "Transcription",
+      "loadingSummary": "Loading Summary",
+      "loadingTranscription": "Loading transcription",
+      "errorSummary": "Failed to fetch summary",
+      "errorTranscription": "Failed to fetch transcription",
+      "errorPrefix": "Error: "
+    }
+  },
+  "chat": {
+    "messagePlaceholder": "Some message...",
+    "howCanIHelp": "How can I help you?"
+  },
+  "common": {
+    "somethingWentWrong": "Something went wrong",
+    "errorPrefix": "Error "
+  }
+}

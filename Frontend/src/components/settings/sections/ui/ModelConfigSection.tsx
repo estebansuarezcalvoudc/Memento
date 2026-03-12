@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import {
   type AvailableModel,
@@ -37,6 +38,7 @@ export default function ModelConfigSection({
   isError,
   onSave,
 }: ModelConfigSectionProps) {
+  const { t } = useTranslation()
   const [draft, setDraft] = useState<ModelConfig | undefined>(undefined)
 
   const effectiveValue: ModelConfig =
@@ -69,16 +71,16 @@ export default function ModelConfigSection({
       <SubSectionTitle title={title} />
       {isLoading ? (
         <span className="text-base text-stone-500 dark:text-stone-400">
-          Loading...
+          {t('settings.models.loading')}
         </span>
       ) : (
         <>
           <Select
-            label="Model"
+            label={t('settings.models.model')}
             value={effectiveValue.modelName}
             onChange={handleModelChange}
           >
-            <option value="">Select a model</option>
+            <option value="">{t('settings.models.selectModel')}</option>
             {(availableModels ?? []).map(model => (
               <option key={model.id} value={model.id}>
                 {model.provider} — {model.id}
@@ -86,7 +88,7 @@ export default function ModelConfigSection({
             ))}
           </Select>
           <Input
-            label="Temperature"
+            label={t('settings.models.temperature')}
             type="number"
             min={0}
             max={2}
@@ -95,7 +97,7 @@ export default function ModelConfigSection({
             onChange={e => patch({ temperature: parseFloat(e.target.value) })}
           />
           <Input
-            label="Max tokens"
+            label={t('settings.models.maxTokens')}
             type="number"
             min={1}
             step={1}
@@ -109,14 +111,14 @@ export default function ModelConfigSection({
             />
             <ConfirmButton
               type="button"
-              label="Save"
+              label={t('settings.buttons.save')}
               isPending={isPending}
               disabled={!isModified || !isValid}
               onClick={handleSave}
             />
           </div>
           {isError && (
-            <ErrorMessage message="Failed to save. Please try again." />
+            <ErrorMessage message={t('settings.models.saveFailed')} />
           )}
         </>
       )}

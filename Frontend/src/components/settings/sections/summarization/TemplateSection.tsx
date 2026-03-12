@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import {
   useGetDefaultSummarizationPrompt,
@@ -13,39 +14,48 @@ import SubSectionTitle from '../ui/SubSectionTitle'
 const MIN = 50
 const MAX = 5000
 
+type Draft = { kind: 'default' } | { kind: 'custom'; text: string }
+
 export default function TemplateSection() {
+  const { t, i18n } = useTranslation()
   const { data: promptData, isLoading } = useGetSummarizationPrompt()
-  const { data: defaultData } = useGetDefaultSummarizationPrompt()
+  const { data: defaultData } = useGetDefaultSummarizationPrompt(i18n.language)
   const {
     mutate: updatePrompt,
     isPending,
     isError,
   } = useUpdateSummarizationPrompt()
 
-  const [draft, setDraft] = useState<string | undefined>(undefined)
+  const [draft, setDraft] = useState<Draft | undefined>(undefined)
 
-  const value = draft ?? promptData?.systemPrompt ?? ''
+  const value =
+    draft === undefined
+      ? (promptData?.systemPrompt ?? '')
+      : draft.kind === 'default'
+        ? (defaultData?.systemPrompt ?? '')
+        : draft.text
+
   const isModified = draft !== undefined
   const tooShort = value.length < MIN
   const tooLong = value.length > MAX
   const invalid = tooShort || tooLong
 
   function handleSave() {
-    updatePrompt(draft!, { onSuccess: () => setDraft(undefined) })
+    updatePrompt(value, { onSuccess: () => setDraft(undefined) })
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <SubSectionTitle title="Template" />
+      <SubSectionTitle title={t('settings.summarization.template')} />
       {isLoading ? (
         <span className="text-base text-stone-500 dark:text-stone-400">
-          Loading...
+          {t('settings.summarization.loading')}
         </span>
       ) : (
         <>
           <textarea
             value={value}
-            onChange={e => setDraft(e.target.value)}
+            onChange={e => setDraft({ kind: 'custom', text: e.target.value })}
             rows={14}
             className="w-full resize-y rounded-md border border-stone-300 bg-white p-3 font-mono text-base text-stone-800 focus:border-stone-500 focus:outline-none dark:border-stone-600 dark:bg-stone-700 dark:text-stone-100 dark:focus:border-stone-400"
           />
@@ -57,11 +67,11 @@ export default function TemplateSection() {
             </span>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setDraft(defaultData?.systemPrompt)}
+                onClick={() => setDraft({ kind: 'default' })}
                 disabled={isPending || !defaultData}
                 className="font-ubuntu h-8 cursor-pointer rounded-lg px-3 text-base text-stone-800 hover:bg-stone-300 disabled:opacity-50 dark:text-stone-200 dark:hover:bg-stone-700"
               >
-                Reset to default
+                {t('settings.summarization.resetToDefault')}
               </button>
               <SecondaryButton
                 onClick={() => setDraft(undefined)}
@@ -69,7 +79,7 @@ export default function TemplateSection() {
               />
               <ConfirmButton
                 type="button"
-                label="Save"
+                label={t('settings.buttons.save')}
                 isPending={isPending}
                 disabled={invalid || !isModified}
                 onClick={handleSave}
@@ -78,11 +88,11 @@ export default function TemplateSection() {
           </div>
           {tooShort && isModified && (
             <ErrorMessage
-              message={`Prompt must be at least ${MIN} characters.`}
+              message={t('settings.summarization.promptTooShort', { min: MIN })}
             />
           )}
           {isError && (
-            <ErrorMessage message="Failed to save. Please try again." />
+            <ErrorMessage message={t('settings.summarization.saveFailed')} />
           )}
         </>
       )}

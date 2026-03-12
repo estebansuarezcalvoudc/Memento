@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { NavLink, useParams } from 'react-router-dom'
 
 import {
@@ -17,6 +18,7 @@ interface MeetingContentProps {
 }
 
 export default function MeetingContent({ type }: MeetingContentProps) {
+  const { t } = useTranslation()
   const { meetingId } = useParams<{ meetingId: string }>()
 
   const summaryQuery = useGetMeetingSummary(
@@ -28,22 +30,25 @@ export default function MeetingContent({ type }: MeetingContentProps) {
 
   const config = {
     summary: {
-      title: 'Summary',
-      loadingText: 'Loading Summary',
-      errorLabel: 'Failed to fetch summary',
+      title: t('meetings.content.summary'),
+      loadingText: t('meetings.content.loadingSummary'),
+      errorLabel: t('meetings.content.errorSummary'),
       query: summaryQuery,
       otherLink: {
-        text: 'Transcription',
+        text: t('meetings.content.transcription'),
         path: `/meetings/${meetingId}/transcription`,
       },
       renderContent: (content: string) => <MeetingSummary content={content} />,
     },
     transcription: {
-      title: 'Transcription',
-      loadingText: 'Loading transcription',
-      errorLabel: 'Failed to fetch transcription',
+      title: t('meetings.content.transcription'),
+      loadingText: t('meetings.content.loadingTranscription'),
+      errorLabel: t('meetings.content.errorTranscription'),
       query: transcriptionQuery,
-      otherLink: { text: 'Summary', path: `/meetings/${meetingId}/summary` },
+      otherLink: {
+        text: t('meetings.content.summary'),
+        path: `/meetings/${meetingId}/summary`,
+      },
       renderContent: (content: string) => (
         <MeetingTranscription content={content} />
       ),
@@ -64,7 +69,8 @@ export default function MeetingContent({ type }: MeetingContentProps) {
   } else if (query.error) {
     displayContent = (
       <span className="font-ubuntu text-lg text-red-700">
-        Error: {errorLabel}: {query.error.message}
+        {t('meetings.content.errorPrefix')}
+        {errorLabel}: {query.error.message}
       </span>
     )
   } else if (query.data) {

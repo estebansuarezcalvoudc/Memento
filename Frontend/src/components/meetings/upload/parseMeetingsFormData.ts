@@ -18,6 +18,8 @@ interface ParseErr {
 
 export type ParseMeetingsResult = ParseOk | ParseErr
 
+type TFunction = (key: string, options?: Record<string, unknown>) => string
+
 const SUPPORTED_AUDIO_FORMATS = new Set([
   'mp3',
   'mp4',
@@ -30,6 +32,7 @@ const SUPPORTED_AUDIO_FORMATS = new Set([
 
 export function parseMeetingsFromFormData(
   formData: FormData,
+  t: TFunction,
 ): ParseMeetingsResult {
   const audioFiles: File[] = []
   const meetingsMetadata: MeetingMetadata[] = []
@@ -53,14 +56,22 @@ export function parseMeetingsFromFormData(
     const audioFile = audioFileRaw instanceof File ? audioFileRaw : null
 
     if (!title) {
-      errors.push(`Meeting ${meetingIndex + 1}: Title is required`)
+      errors.push(
+        t('meetings.uploadDialog.validationErrors.titleRequired', {
+          number: meetingIndex + 1,
+        }),
+      )
     }
 
     if (!date) {
-      errors.push(`Meeting ${meetingIndex + 1}: Date is required`)
+      errors.push(
+        t('meetings.uploadDialog.validationErrors.dateRequired', {
+          number: meetingIndex + 1,
+        }),
+      )
     }
 
-    const audioError = validateAudioFile(audioFile, meetingIndex)
+    const audioError = validateAudioFile(audioFile, meetingIndex, t)
     if (audioError) {
       errors.push(audioError)
     }
@@ -88,7 +99,7 @@ export function parseMeetingsFromFormData(
   }
 
   if (meetingsMetadata.length === 0) {
-    errors.push('You must add at least one meeting')
+    errors.push(t('meetings.uploadDialog.validationErrors.atLeastOne'))
   }
 
   if (errors.length > 0) {
@@ -101,22 +112,33 @@ export function parseMeetingsFromFormData(
 function validateAudioFile(
   file: File | null,
   meetingIndex: number,
+  t: TFunction,
 ): string | null {
   if (!file || file.size === 0) {
-    return `Meeting ${meetingIndex + 1}: Audio file is required`
+    return t('meetings.uploadDialog.validationErrors.audioRequired', {
+      number: meetingIndex + 1,
+    })
   }
 
   if (!file.name) {
-    return `Meeting ${meetingIndex + 1}: Audio file must have a filename`
+    return t('meetings.uploadDialog.validationErrors.audioNoFilename', {
+      number: meetingIndex + 1,
+    })
   }
 
   const fileExtension = file.name.split('.').pop()?.toLowerCase()
   if (!fileExtension || !SUPPORTED_AUDIO_FORMATS.has(fileExtension)) {
-    return `Meeting ${meetingIndex + 1}: Unsupported audio format "${fileExtension}". Supported formats: ${Array.from(SUPPORTED_AUDIO_FORMATS).sort().join(', ')}`
+    return t('meetings.uploadDialog.validationErrors.audioUnsupportedFormat', {
+      number: meetingIndex + 1,
+      ext: fileExtension,
+      formats: Array.from(SUPPORTED_AUDIO_FORMATS).sort().join(', '),
+    })
   }
 
   if (!file.type || !file.type.startsWith('audio/')) {
-    return `Meeting ${meetingIndex + 1}: File must be an audio file`
+    return t('meetings.uploadDialog.validationErrors.audioNotAudioFile', {
+      number: meetingIndex + 1,
+    })
   }
 
   return null

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import {
   useGetAvailableModels,
   useGetRetrievalModel,
@@ -6,6 +8,7 @@ import {
 import ModelConfigSection from '../ui/ModelConfigSection'
 
 export default function RetrievalModelSection() {
+  const { t } = useTranslation()
   const { data: availableModels, isLoading: modelsLoading } =
     useGetAvailableModels()
   const { data: currentModel, isLoading: configLoading } =
@@ -14,7 +17,7 @@ export default function RetrievalModelSection() {
 
   return (
     <ModelConfigSection
-      title="Retrieval Model"
+      title={t('settings.chat.retrievalModel')}
       availableModels={availableModels}
       currentModel={currentModel}
       isLoading={modelsLoading || configLoading}

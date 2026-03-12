@@ -1,3 +1,5 @@
+import { Trans, useTranslation } from 'react-i18next'
+
 import {
   useGetTranscriptionConfiguration,
   useGetTranscriptionOptions,
@@ -7,6 +9,7 @@ import Select from '../../../common/Select'
 import SubSectionTitle from '../ui/SubSectionTitle'
 
 export default function TranscriptionView() {
+  const { t } = useTranslation()
   const { data: options, isLoading: optionsLoading } =
     useGetTranscriptionOptions()
   const { data: config, isLoading: configLoading } =
@@ -19,13 +22,13 @@ export default function TranscriptionView() {
   return (
     <>
       {isLoading ? (
-        <span>Loading...</span>
+        <span>{t('settings.transcription.loading')}</span>
       ) : (
         <div className="flex flex-col gap-6">
           <div>
             <SubSectionTitle title="WhisperX" />
             <Select
-              label="Model size"
+              label={t('settings.transcription.modelSize')}
               value={config?.modelSize ?? ''}
               onChange={e => updateConfig({ model_size: e.target.value })}
             >
@@ -36,7 +39,7 @@ export default function TranscriptionView() {
               ))}
             </Select>
             <Select
-              label="Compute type"
+              label={t('settings.transcription.computeType')}
               value={config?.computeType ?? ''}
               onChange={e => updateConfig({ compute_type: e.target.value })}
             >
@@ -51,7 +54,7 @@ export default function TranscriptionView() {
               ))}
             </Select>
             <Select
-              label="Device"
+              label={t('settings.transcription.device')}
               value={selectedDevice}
               onChange={e => {
                 const newDevice = e.target.value
@@ -72,9 +75,11 @@ export default function TranscriptionView() {
             </Select>
             {selectedDevice === 'cuda' && (
               <p className="mt-1 text-sm text-yellow-600 dark:text-yellow-400">
-                If the GPU is unavailable or fails, transcription will
-                automatically fall back to CPU using <strong>int8</strong>{' '}
-                precision
+                <Trans i18nKey="settings.transcription.cudaWarning">
+                  If the GPU is unavailable or fails, transcription will
+                  automatically fall back to CPU using <strong>int8</strong>{' '}
+                  precision
+                </Trans>
               </p>
             )}
           </div>

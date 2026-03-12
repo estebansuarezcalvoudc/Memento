@@ -1,4 +1,5 @@
 import { createPortal } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 
 import CloseNotificationButton from './CloseNotificationButton'
 
@@ -7,6 +8,8 @@ export default function ServerErrorNotification({
 }: {
   onClose: () => void
 }) {
+  const { t } = useTranslation()
+
   return createPortal(
     <div
       role="status"
@@ -14,9 +17,9 @@ export default function ServerErrorNotification({
       className="fixed right-6 bottom-6 flex items-center gap-3 rounded-lg bg-red-200 px-4 py-3 text-red-800 shadow-lg"
     >
       <span className="whitespace-pre-line">
-        Could not upload meetings
+        {t('meetings.uploadDialog.notifications.serverError')}
         <br />
-        Network error or server unavailable
+        {t('meetings.uploadDialog.notifications.serverErrorDetail')}
       </span>
       <CloseNotificationButton onClick={onClose} />
     </div>,

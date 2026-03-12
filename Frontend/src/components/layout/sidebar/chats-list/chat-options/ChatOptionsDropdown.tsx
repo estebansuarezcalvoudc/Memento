@@ -1,5 +1,6 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { useEffect, type RefObject } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import {
   useDeleteChat,
@@ -50,6 +51,7 @@ function ChatActionsDropdown({
   open,
   onMenuStateChange,
 }: ChatActionsDropdownProps) {
+  const { t } = useTranslation()
   useEffect(() => onMenuStateChange(open), [open, onMenuStateChange])
 
   const { mutate: deleteChatMutate } = useDeleteChat()
@@ -103,14 +105,14 @@ function ChatActionsDropdown({
         <MenuItem>
           <ChatOptionsButton
             svg={editImage}
-            text="Rename"
+            text={t('chatOptions.rename')}
             onClick={handleRename}
           />
         </MenuItem>
         <MenuItem>
           <ChatOptionsButton
             svg={removeImage}
-            text="Delete"
+            text={t('chatOptions.delete')}
             textColor="text-red-500"
             hoverColor="hover:bg-red-50"
             onClick={handleDelete}

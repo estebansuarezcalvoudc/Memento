@@ -1,4 +1,5 @@
 import { useActionState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, type NavigateFunction } from 'react-router-dom'
 
 import { register } from '../../../api/authAPI'
@@ -15,6 +16,7 @@ interface FormState {
 }
 
 export default function SignUpForm() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const setIsUserAuth = useSetIsUserAuth()
   const [formState, formAction, isPending] = useActionState<
@@ -22,7 +24,7 @@ export default function SignUpForm() {
     FormData
   >(
     (prevState, formData) =>
-      signupAction(prevState, formData, navigate, setIsUserAuth, register),
+      signupAction(prevState, formData, navigate, setIsUserAuth, register, t),
     {
       errors: null,
     },
@@ -31,23 +33,31 @@ export default function SignUpForm() {
   return (
     <form action={formAction}>
       <Input
-        label="email"
+        label={t('auth.fields.email')}
         name="email"
         type="email"
         defaultValue={formState.enteredValues?.email}
       />
 
-      <Input label="password" name="password" type="password" />
+      <Input
+        label={t('auth.fields.password')}
+        name="password"
+        type="password"
+      />
 
       <Input
-        label="confirm password"
+        label={t('auth.fields.confirmPassword')}
         name="confirmedPassword"
         type="password"
       />
 
       <FormErrors errors={formState.errors} />
 
-      <FormButton isPending={isPending} classes="mt-7 w-full" text="Sign up" />
+      <FormButton
+        isPending={isPending}
+        classes="mt-7 w-full"
+        text={t('auth.signup.signUp')}
+      />
     </form>
   )
 }
@@ -61,6 +71,7 @@ async function signupAction(
     email: string,
     password: string,
   ) => Promise<{ accessToken: string; token_type: string }>,
+  t: (key: string) => string,
 ): Promise<FormState> {
   const email = (formData.get('email') ?? '') as string
   const password = (formData.get('password') ?? '') as string
@@ -69,19 +80,19 @@ async function signupAction(
   const errors = []
 
   if (email.trim() === '') {
-    errors.push('You must provide your email')
+    errors.push(t('auth.errors.emailRequired'))
   }
 
   if (password.trim() === '') {
-    errors.push('You must provide your password')
+    errors.push(t('auth.errors.passwordRequired'))
   }
 
   if (confirmedPassword.trim() === '') {
-    errors.push('You must confirm your password')
+    errors.push(t('auth.errors.confirmPasswordRequired'))
   }
 
   if (password !== confirmedPassword) {
-    errors.push('Provided passwords do not match')
+    errors.push(t('auth.errors.passwordsMismatch'))
   }
 
   if (errors.length > 0) {
@@ -91,7 +102,14 @@ async function signupAction(
     }
   }
 
-  return await processSignup(email, password, navigate, setIsUserAuth, register)
+  return await processSignup(
+    email,
+    password,
+    navigate,
+    setIsUserAuth,
+    register,
+    t,
+  )
 }
 
 async function processSignup(
@@ -103,6 +121,7 @@ async function processSignup(
     email: string,
     password: string,
   ) => Promise<{ accessToken: string; token_type: string }>,
+  t: (key: string) => string,
 ): Promise<FormState> {
   try {
     const data = await register(email, password)
@@ -118,7 +137,7 @@ async function processSignup(
     }
   } catch (error) {
     const errorMessage =
-      error instanceof Error ? error.message : 'Could not sign up'
+      error instanceof Error ? error.message : t('auth.errors.signUpFailed')
     return {
       errors: [errorMessage],
       enteredValues: { email },
