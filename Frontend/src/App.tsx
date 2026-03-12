@@ -37,7 +37,7 @@ export default function App() {
     } else {
       setAuthInitialized(true)
     }
-  }, [])
+  }, [setIsUserAuth, setAuthInitialized])
 
   return (
     <BrowserRouter>
@@ -45,8 +45,9 @@ export default function App() {
       {isUserAuth && <Sidebar />}
       <div
         className={`flex min-h-screen flex-col items-center justify-center bg-white dark:bg-stone-900 ${
-          isUserAuth &&
-          `transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-64' : 'ml-16'}`
+          isUserAuth
+            ? `transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-64' : 'ml-16'}`
+            : ''
         }`}
       >
         <Routes>

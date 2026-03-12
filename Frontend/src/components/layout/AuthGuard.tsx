@@ -16,7 +16,7 @@ export default function AuthGuard() {
 
     window.addEventListener('unauthorized', handleUnauthorized)
     return () => window.removeEventListener('unauthorized', handleUnauthorized)
-  }, [])
+  }, [setIsUserAuth, navigate])
 
   return null
 }
