@@ -39,6 +39,9 @@ export default async function fetchBackend<T>(
 
   if (!response.ok) {
     const body = await response.json().catch(() => null)
+    if (response.status === 401) {
+      window.dispatchEvent(new CustomEvent('unauthorized'))
+    }
     throw new HttpError(response.status, body?.detail ?? undefined)
   }
 
