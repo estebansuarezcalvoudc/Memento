@@ -1,0 +1,20 @@
+# Allowlist of relevant models per provider.
+#
+# Only models present in BOTH this list AND the provider's API response will be
+# shown to the user. Providers without an entry here (e.g. Ollama) are not
+# filtered — all locally available models are returned as-is.
+#
+# To add support for a new provider, add a new top-level key matching the
+# provider name used in AVAILABLE_PROVIDERS (providers_config.py) and list
+# the desired model IDs below it.
+#
+# To add a newly released model, simply append its ID to the relevant list.
+# A service restart is required for changes to take effect.
+
+OpenAI:
+  - gpt-5.4
+  - gpt-5.4-pro
+  - gpt-5-mini
+  - gpt-5-nano
+  - gpt-5
+  - gpt-4.1
