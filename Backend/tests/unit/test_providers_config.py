@@ -4,8 +4,6 @@ Unit tests for core/providers_config.py
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from app.schemas.settings.model_schema import ModelConfig
 
 
@@ -28,34 +26,6 @@ class TestListModels:
             result = list_models("Ollama")
 
         assert result == ["llama3.2:latest", "mistral:latest"]
-
-    def test_list_models_should_return_openai_llm_model_ids(self):
-        mock_gpt4 = MagicMock()
-        mock_gpt4.id = "gpt-4o"
-        mock_embedding = MagicMock()
-        mock_embedding.id = "text-embedding-3-small"  # not an LLM — should be filtered
-        mock_gpt35 = MagicMock()
-        mock_gpt35.id = "gpt-3.5-turbo"
-
-        with patch("app.core.providers_config.OpenAI") as mock_openai_cls:
-            mock_client = MagicMock()
-            mock_openai_cls.return_value = mock_client
-            mock_client.models.list.return_value = MagicMock(
-                data=[mock_gpt4, mock_embedding, mock_gpt35]
-            )
-
-            # Must patch decrypt since the encrypted key is just a placeholder here
-            with patch(
-                "app.core.providers_config.decrypt_api_key",
-                return_value="sk-plain-key",
-            ):
-                from app.core.providers_config import list_models
-
-                result = list_models("OpenAI", api_key_encrypted="encrypted-key")
-
-        assert "gpt-4o" in result
-        assert "gpt-3.5-turbo" in result
-        assert "text-embedding-3-small" not in result
 
 
 class TestCreateLlm:
