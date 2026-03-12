@@ -1,0 +1,202 @@
+{
+  "home": {
+    "welcome": "Bienvenido a TFG",
+    "subtitle": "Algo de texto...",
+    "logIn": "Iniciar sesión",
+    "signUp": "Registrarse"
+  },
+  "notFound": {
+    "title": "404 - Página no encontrada",
+    "message": "Lo sentimos, la página que buscas no existe."
+  },
+  "auth": {
+    "login": {
+      "title": "Iniciar sesión en TFG",
+      "footerText": "¿Nuevo en TFG?",
+      "linkText": "Crear una cuenta",
+      "signIn": "Iniciar sesión"
+    },
+    "signup": {
+      "title": "Registrarse en TFG",
+      "footerText": "¿Ya tienes una cuenta?",
+      "linkText": "Iniciar sesión",
+      "signUp": "Registrarse"
+    },
+    "fields": {
+      "email": "correo electrónico",
+      "password": "contraseña",
+      "confirmPassword": "confirmar contraseña"
+    },
+    "errors": {
+      "emailRequired": "Debes proporcionar tu correo electrónico",
+      "passwordRequired": "Debes proporcionar tu contraseña",
+      "confirmPasswordRequired": "Debes confirmar tu contraseña",
+      "passwordsMismatch": "Las contraseñas no coinciden",
+      "invalidCredentials": "Credenciales inválidas",
+      "signUpFailed": "No se pudo registrar"
+    }
+  },
+  "sidebar": {
+    "settings": "Configuración",
+    "newChat": "Nuevo Chat",
+    "myMeetings": "Mis Reuniones",
+    "uploadMeetings": "Subir Reuniones",
+    "chats": "Chats",
+    "loadingConversations": "Cargando conversaciones...",
+    "noConversations": "No hay conversaciones aún",
+    "errorPrefix": "Error: "
+  },
+  "chatOptions": {
+    "rename": "Renombrar",
+    "delete": "Eliminar"
+  },
+  "settings": {
+    "sections": {
+      "general": "General",
+      "provider": "Proveedor",
+      "transcription": "Transcripción",
+      "summarization": "Resumen",
+      "chat": "Chat",
+      "account": "Cuenta"
+    },
+    "general": {
+      "theme": "Tema",
+      "themeSystem": "Sistema",
+      "themeLight": "Claro",
+      "themeDark": "Oscuro",
+      "language": "Idioma",
+      "languageEnglish": "Inglés",
+      "languageSpanish": "Español"
+    },
+    "account": {
+      "email": "Correo",
+      "editEmail": "Editar correo",
+      "changePassword": "Cambiar contraseña",
+      "logOut": "Cerrar sesión",
+      "deleteAccount": "Eliminar cuenta",
+      "updateEmail": {
+        "newEmail": "Nuevo correo",
+        "password": "Contraseña",
+        "newEmailRequired": "El nuevo correo no puede estar vacío",
+        "passwordRequired": "La contraseña no puede estar vacía",
+        "failed": "Error al actualizar el correo"
+      },
+      "updatePassword": {
+        "currentPassword": "Contraseña actual",
+        "newPassword": "Nueva contraseña",
+        "confirmNewPassword": "Confirmar nueva contraseña",
+        "currentPasswordRequired": "La contraseña actual no puede estar vacía",
+        "newPasswordRequired": "La nueva contraseña no puede estar vacía",
+        "passwordsMismatch": "Las nuevas contraseñas no coinciden",
+        "failed": "Error al actualizar la contraseña"
+      },
+      "deleteAccountForm": {
+        "password": "Contraseña",
+        "passwordRequired": "La contraseña no puede estar vacía",
+        "failed": "Error al eliminar la cuenta"
+      }
+    },
+    "providers": {
+      "loading": "Cargando proveedores...",
+      "apiKeyAdded": "Clave API añadida",
+      "removeApiKey": "Eliminar clave API",
+      "addApiKey": "Añadir clave API",
+      "apiKeyPlaceholder": "Introduce tu clave API",
+      "apiKeyEmptyError": "La clave API no puede estar vacía",
+      "invalidApiKey": "Clave API inválida",
+      "removeApiKeyFailed": "Error al eliminar la clave API. Por favor, inténtalo de nuevo.",
+      "pullModel": "Descargar modelo",
+      "pullModelPlaceholder": "Introduce el nombre del modelo",
+      "pullModelEmptyError": "El modelo no puede estar vacío"
+    },
+    "transcription": {
+      "loading": "Cargando...",
+      "modelSize": "Tamaño del modelo",
+      "computeType": "Tipo de cómputo",
+      "device": "Dispositivo",
+      "cudaWarning": "Si la GPU no está disponible o falla, la transcripción usará automáticamente la CPU con precisión <strong>int8</strong>"
+    },
+    "summarization": {
+      "template": "Plantilla",
+      "languageModel": "Modelo de Lenguaje",
+      "loading": "Cargando...",
+      "resetToDefault": "Restaurar por defecto",
+      "saveFailed": "Error al guardar. Por favor, inténtalo de nuevo.",
+      "promptTooShort": "El prompt debe tener al menos {{min}} caracteres."
+    },
+    "chat": {
+      "chatModel": "Modelo de Chat",
+      "retrievalModel": "Modelo de Recuperación"
+    },
+    "models": {
+      "model": "Modelo",
+      "temperature": "Temperatura",
+      "maxTokens": "Tokens máximos",
+      "selectModel": "Selecciona un modelo",
+      "loading": "Cargando...",
+      "saveFailed": "Error al guardar. Por favor, inténtalo de nuevo."
+    },
+    "buttons": {
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar",
+      "delete": "Eliminar",
+      "saving": "Guardando..."
+    }
+  },
+  "meetings": {
+    "title": "Reuniones",
+    "loading": "Cargando reuniones",
+    "noMeetings": "No has subido ninguna reunión aún",
+    "uploadDialog": {
+      "title": "Subir Archivos",
+      "columns": {
+        "number": "#",
+        "title": "Título",
+        "date": "Fecha",
+        "file": "Archivo"
+      },
+      "addMeeting": "+ Añadir reunión",
+      "submit": "Enviar",
+      "uploading": "Subiendo...",
+      "titlePlaceholder": "Título",
+      "language": "Idioma",
+      "languageAny": "Cualquiera",
+      "speakers": "Participantes",
+      "notifications": {
+        "uploadingOne": "Subiendo 1 reunión",
+        "uploadingMany": "Subiendo {{count}} reuniones",
+        "successOne": "1 reunión ha sido subida",
+        "successMany": "{{count}} reuniones han sido subidas",
+        "serverError": "No se pudieron subir las reuniones",
+        "serverErrorDetail": "Error de red o servidor no disponible"
+      },
+      "validationErrors": {
+        "titleRequired": "Reunión {{number}}: El título es obligatorio",
+        "dateRequired": "Reunión {{number}}: La fecha es obligatoria",
+        "audioRequired": "Reunión {{number}}: El archivo de audio es obligatorio",
+        "audioNoFilename": "Reunión {{number}}: El archivo de audio debe tener nombre",
+        "audioUnsupportedFormat": "Reunión {{number}}: Formato de audio no soportado \"{{ext}}\". Formatos soportados: {{formats}}",
+        "audioNotAudioFile": "Reunión {{number}}: El archivo debe ser un audio",
+        "atLeastOne": "Debes añadir al menos una reunión"
+      }
+    },
+    "content": {
+      "summary": "Resumen",
+      "transcription": "Transcripción",
+      "loadingSummary": "Cargando Resumen",
+      "loadingTranscription": "Cargando Transcripción",
+      "errorSummary": "Error al obtener el resumen",
+      "errorTranscription": "Error al obtener la transcripción",
+      "errorPrefix": "Error: "
+    }
+  },
+  "chat": {
+    "messagePlaceholder": "Escribe un mensaje...",
+    "howCanIHelp": "¿En qué puedo ayudarte?"
+  },
+  "common": {
+    "somethingWentWrong": "Algo salió mal",
+    "errorPrefix": "Error "
+  }
+}

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import { useUploadApiKey } from '../../../../../api/queries/settings/useProvidersQueries'
 import { HttpError } from '../../../../../api/utils/fetchBackend'
 import ProviderInlineForm from '../ProviderInlineForm'
@@ -8,6 +10,7 @@ interface ApiKeyFormProps {
 }
 
 export default function ApiKeyForm({ providerName, onClose }: ApiKeyFormProps) {
+  const { t } = useTranslation()
   const { mutateAsync: uploadApiKey } = useUploadApiKey()
 
   async function handleSubmit(apiKey: string) {
@@ -15,7 +18,7 @@ export default function ApiKeyForm({ providerName, onClose }: ApiKeyFormProps) {
       await uploadApiKey({ providerName, apiKey })
     } catch (error) {
       if (error instanceof HttpError && error.status === 401) {
-        throw new Error('Invalid API key')
+        throw new Error(t('settings.providers.invalidApiKey'))
       }
       throw error
     }
@@ -24,8 +27,8 @@ export default function ApiKeyForm({ providerName, onClose }: ApiKeyFormProps) {
   return (
     <ProviderInlineForm
       inputName="apiKey"
-      placeholder="Enter your API key"
-      emptyError="API key cannot be empty"
+      placeholder={t('settings.providers.apiKeyPlaceholder')}
+      emptyError={t('settings.providers.apiKeyEmptyError')}
       onSubmit={handleSubmit}
       onClose={onClose}
     />

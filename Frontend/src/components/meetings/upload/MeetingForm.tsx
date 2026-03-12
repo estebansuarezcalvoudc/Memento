@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { type LanguageOption } from '../../../api/queries/useSettingsQueries'
 import InlineInput from '../../common/InlineInput'
@@ -26,6 +27,7 @@ export default function MeetingForm({
   onRemove,
   languages,
 }: MeetingFormProps) {
+  const { t } = useTranslation()
   const today = new Date().toISOString().split('T')[0]
   const [isExpanded, setIsExpanded] = useState(false)
   const [language, setLanguage] = useState(meeting.language ?? '')
@@ -42,7 +44,7 @@ export default function MeetingForm({
       <InlineInput
         name={`meetings[${index}][title]`}
         type="text"
-        placeholder="Title"
+        placeholder={t('meetings.uploadDialog.titlePlaceholder')}
         aria-label={`Meeting ${index + 1} title`}
         required
         disabled={isPending}

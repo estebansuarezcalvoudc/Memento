@@ -1,4 +1,5 @@
 import { useActionState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useUpdatePassword } from '../../../../api/queries/auth/useAuthQueries'
 import Input from '../../../common/Input'
@@ -17,6 +18,7 @@ interface UpdatePasswordFormProps {
 export default function UpdatePasswordForm({
   onClose,
 }: UpdatePasswordFormProps) {
+  const { t } = useTranslation()
   const { mutateAsync: updatePassword } = useUpdatePassword()
 
   const [formState, formAction, isPending] = useActionState<
@@ -24,23 +26,39 @@ export default function UpdatePasswordForm({
     FormData
   >(
     (prev, formData) =>
-      updatePasswordAction(prev, formData, updatePassword, onClose),
+      updatePasswordAction(prev, formData, updatePassword, onClose, t),
     { errors: null },
   )
 
   return (
     <form action={formAction} className="flex flex-col gap-1">
-      <Input name="currentPassword" type="password" label="Current password" />
-      <Input name="newPassword" type="password" label="New password" />
+      <Input
+        name="currentPassword"
+        type="password"
+        label={t('settings.account.updatePassword.currentPassword')}
+      />
+      <Input
+        name="newPassword"
+        type="password"
+        label={t('settings.account.updatePassword.newPassword')}
+      />
       <Input
         name="confirmPassword"
         type="password"
-        label="Confirm new password"
+        label={t('settings.account.updatePassword.confirmNewPassword')}
       />
       {formState.errors && <ErrorMessage message={formState.errors[0]} />}
       <div className="mt-4 flex justify-center gap-x-2">
-        <SecondaryButton onClick={onClose} disabled={isPending} />
-        <ConfirmButton label="Save" isPending={isPending} />
+        <SecondaryButton
+          onClick={onClose}
+          disabled={isPending}
+          label={t('settings.buttons.cancel')}
+        />
+        <ConfirmButton
+          label={t('settings.buttons.save')}
+          isPending={isPending}
+          pendingLabel={t('settings.buttons.saving')}
+        />
       </div>
     </form>
   )
@@ -54,19 +72,24 @@ async function updatePasswordAction(
     newPassword: string
   }) => Promise<null>,
   onClose: () => void,
+  t: (key: string) => string,
 ): Promise<FormState> {
   const currentPassword = (formData.get('currentPassword') ?? '') as string
   const newPassword = (formData.get('newPassword') ?? '') as string
   const confirmPassword = (formData.get('confirmPassword') ?? '') as string
 
   if (!currentPassword.trim()) {
-    return { errors: ['Current password cannot be empty'] }
+    return {
+      errors: [t('settings.account.updatePassword.currentPasswordRequired')],
+    }
   }
   if (!newPassword.trim()) {
-    return { errors: ['New password cannot be empty'] }
+    return {
+      errors: [t('settings.account.updatePassword.newPasswordRequired')],
+    }
   }
   if (newPassword !== confirmPassword) {
-    return { errors: ['New passwords do not match'] }
+    return { errors: [t('settings.account.updatePassword.passwordsMismatch')] }
   }
 
   try {
@@ -76,7 +99,9 @@ async function updatePasswordAction(
   } catch (error) {
     return {
       errors: [
-        error instanceof Error ? error.message : 'Failed to update password',
+        error instanceof Error
+          ? error.message
+          : t('settings.account.updatePassword.failed'),
       ],
     }
   }

@@ -16,15 +16,16 @@ router = APIRouter(prefix="/templates", tags=["Settings - Templates"])
 
 @router.get("/default-prompt", response_model=SystemPromptResponse)
 def get_default_prompt(
+    lang: str,
     service: Annotated[TemplatesService, Depends(get_templates_service)],
 ) -> SystemPromptResponse:
     """
-    Get the default system prompt from the application
+    Get the default system prompt for the given language
 
-    This is the built-in prompt that users can use as a reference or starting point
-    for their custom prompts. Does not require authentication.
+    The lang query parameter is required. FastAPI returns HTTP 422 if omitted.
+    Falls back to English for any unsupported locale value.
     """
-    return service.get_default_prompt()
+    return service.get_default_prompt(lang)
 
 
 @router.get("/prompt", response_model=SystemPromptResponse)

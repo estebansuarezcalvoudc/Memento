@@ -1,3 +1,6 @@
+import i18n from 'i18next'
+import { useTranslation } from 'react-i18next'
+
 import {
   useSetTheme,
   useTheme,
@@ -6,23 +9,30 @@ import {
 import Select from '../../../common/Select'
 
 export default function GeneralView() {
+  const { t } = useTranslation()
   const theme = useTheme()
   const setTheme = useSetTheme()
+
+  const currentLanguage = i18n.language?.startsWith('es') ? 'es' : 'en'
 
   return (
     <>
       <Select
-        label="Theme"
+        label={t('settings.general.theme')}
         value={theme}
         onChange={e => setTheme(e.target.value as Theme)}
       >
-        <option value="system">System</option>
-        <option value="light">Light</option>
-        <option value="dark">Dark</option>
+        <option value="system">{t('settings.general.themeSystem')}</option>
+        <option value="light">{t('settings.general.themeLight')}</option>
+        <option value="dark">{t('settings.general.themeDark')}</option>
       </Select>
-      <Select label="Language">
-        <option value="English">English</option>
-        <option value="Spanish">Spanish</option>
+      <Select
+        label={t('settings.general.language')}
+        value={currentLanguage}
+        onChange={e => i18n.changeLanguage(e.target.value)}
+      >
+        <option value="en">{t('settings.general.languageEnglish')}</option>
+        <option value="es">{t('settings.general.languageSpanish')}</option>
       </Select>
     </>
   )

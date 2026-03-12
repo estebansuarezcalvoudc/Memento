@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import Dialog, { type DialogHandler } from '../../common/Dialog'
 import UploadMeetingsForm from './UploadMeetingsForm'
 
@@ -10,6 +12,8 @@ export default function UploadMeetingsDialog({
   dialogRef,
   onClose,
 }: UploadMeetingsDialogProps) {
+  const { t } = useTranslation()
+
   return (
     <Dialog dialogRef={dialogRef}>
       <div className="absolute inset-0 flex flex-col pt-5">
@@ -18,7 +22,7 @@ export default function UploadMeetingsDialog({
             id="upload-files-dialog-title"
             className="font-ubuntu text-center text-3xl text-stone-800 dark:text-stone-100"
           >
-            Upload Files
+            {t('meetings.uploadDialog.title')}
           </h2>
           <hr className="mt-4 mb-2 border-t border-stone-500 opacity-100 transition-opacity duration-300 dark:border-stone-600" />
         </div>

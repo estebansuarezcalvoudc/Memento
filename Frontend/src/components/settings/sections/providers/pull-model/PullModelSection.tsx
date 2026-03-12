@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import InlineButton from '../../ui/InlineButton'
 import PullModelForm from './PullModelForm'
@@ -10,6 +11,7 @@ interface PullModelSectionProps {
 export default function PullModelSection({
   providerName,
 }: PullModelSectionProps) {
+  const { t } = useTranslation()
   const [isAdding, setIsAdding] = useState(false)
 
   if (isAdding) {
@@ -22,6 +24,8 @@ export default function PullModelSection({
   }
 
   return (
-    <InlineButton onClick={() => setIsAdding(true)}>Pull model</InlineButton>
+    <InlineButton onClick={() => setIsAdding(true)}>
+      {t('settings.providers.pullModel')}
+    </InlineButton>
   )
 }

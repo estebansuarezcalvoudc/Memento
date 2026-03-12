@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import { useSetIsUserAuth } from '../../../../stores/authStore'
@@ -23,6 +24,7 @@ function getUsernameFromToken(): string {
 }
 
 export default function AccountView() {
+  const { t } = useTranslation()
   const [activeForm, setActiveForm] = useState<ActiveForm>(null)
   const [username, setUsername] = useState(() => getUsernameFromToken())
   const navigate = useNavigate()
@@ -33,15 +35,15 @@ export default function AccountView() {
       <div>
         <div className="flex justify-between">
           <span className="font-ubuntu text-lg text-stone-700 dark:text-stone-300">
-            <strong>Email:</strong> {username}
+            <strong>{t('settings.account.email')}:</strong> {username}
           </span>
           {activeForm === null && (
             <div className="flex gap-x-2">
               <InlineButton onClick={() => setActiveForm('email')}>
-                Edit email
+                {t('settings.account.editEmail')}
               </InlineButton>
               <InlineButton onClick={() => setActiveForm('password')}>
-                Change password
+                {t('settings.account.changePassword')}
               </InlineButton>
               <InlineButton
                 variant="emphasis"
@@ -51,13 +53,13 @@ export default function AccountView() {
                   navigate('/login')
                 }}
               >
-                Log out
+                {t('settings.account.logOut')}
               </InlineButton>
               <InlineButton
                 variant="danger"
                 onClick={() => setActiveForm('delete account')}
               >
-                Delete account
+                {t('settings.account.deleteAccount')}
               </InlineButton>
             </div>
           )}

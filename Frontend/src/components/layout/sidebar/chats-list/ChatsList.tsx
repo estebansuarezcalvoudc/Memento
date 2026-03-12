@@ -1,8 +1,11 @@
+import { useTranslation } from 'react-i18next'
+
 import { useGetChats } from '../../../../api/queries/useChatsQueries'
 import { useIsSidebarOpen } from '../../../../stores/sidebarStore'
 import ChatItem from './ChatItem'
 
 export default function ChatsList() {
+  const { t } = useTranslation()
   const { data: chats, isLoading, error } = useGetChats()
   const isSidebarOpen = useIsSidebarOpen()
 
@@ -11,17 +14,20 @@ export default function ChatsList() {
   if (isLoading) {
     chatContent = (
       <li className="p-4 text-center text-stone-400 dark:text-stone-500">
-        Loading conversations...
+        {t('sidebar.loadingConversations')}
       </li>
     )
   } else if (error) {
     chatContent = (
-      <li className="p-4 text-center text-red-400">Error: {error.message}</li>
+      <li className="p-4 text-center text-red-400">
+        {t('sidebar.errorPrefix')}
+        {error.message}
+      </li>
     )
   } else if (!chats || chats.length === 0) {
     chatContent = (
       <li className="p-4 text-center text-stone-400 dark:text-stone-500">
-        No conversations yet
+        {t('sidebar.noConversations')}
       </li>
     )
   } else {
@@ -43,7 +49,7 @@ export default function ChatsList() {
       } flex h-full flex-col overflow-hidden`}
     >
       <h2 className="font-ubuntu mt-8 mb-2 ml-1.5 flex-shrink-0 truncate text-base text-stone-400 dark:text-stone-500">
-        Chats
+        {t('sidebar.chats')}
       </h2>
       <ul className="custom-scrollbar flex-1 overflow-y-auto">{chatContent}</ul>
     </div>

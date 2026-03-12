@@ -1,4 +1,5 @@
 import { createPortal } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 import { BarLoader } from 'react-spinners'
 
 import CloseNotificationButton from './CloseNotificationButton'
@@ -10,10 +11,14 @@ export default function UploadingNotification({
   numberOfMeetings: number
   onClose: () => void
 }) {
+  const { t } = useTranslation()
+
   const spanText =
-    numberOfMeetings == 1
-      ? 'Uploading 1 meeting'
-      : `Uploading ${numberOfMeetings} meetings`
+    numberOfMeetings === 1
+      ? t('meetings.uploadDialog.notifications.uploadingOne')
+      : t('meetings.uploadDialog.notifications.uploadingMany', {
+          count: numberOfMeetings,
+        })
 
   return createPortal(
     <div

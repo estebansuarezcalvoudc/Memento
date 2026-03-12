@@ -4,7 +4,6 @@ import { type SummarizationPrompt } from '../../../types/settings/summarization'
 import fetchBackend from '../../utils/fetchBackend'
 
 const PROMPT_KEY = ['summarization', 'prompt']
-const DEFAULT_PROMPT_KEY = ['summarization', 'default-prompt']
 
 export function useGetSummarizationPrompt() {
   return useQuery<SummarizationPrompt>({
@@ -13,10 +12,11 @@ export function useGetSummarizationPrompt() {
   })
 }
 
-export function useGetDefaultSummarizationPrompt() {
+export function useGetDefaultSummarizationPrompt(lang: string) {
   return useQuery<SummarizationPrompt>({
-    queryKey: DEFAULT_PROMPT_KEY,
-    queryFn: () => fetchBackend('GET', 'settings/templates/default-prompt'),
+    queryKey: ['summarization', 'default-prompt', lang],
+    queryFn: () =>
+      fetchBackend('GET', `settings/templates/default-prompt?lang=${lang}`),
   })
 }
 

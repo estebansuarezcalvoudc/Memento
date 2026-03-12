@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { settingsImage } from '../../../assets/buttonsImages'
 import { useIsSidebarOpen } from '../../../stores/sidebarStore'
@@ -10,6 +11,7 @@ import { SidebarButton } from './navigation/SidebarButton'
 import SidebarButtons from './navigation/SidebarButtons'
 
 export default function Sidebar() {
+  const { t } = useTranslation()
   const isSidebarOpen = useIsSidebarOpen()
 
   const dialogRef = useRef<DialogHandler>(null)
@@ -33,7 +35,7 @@ export default function Sidebar() {
       <SidebarButton
         type="button"
         svg={settingsImage}
-        text="Settings"
+        text={t('sidebar.settings')}
         onClick={() => dialogRef.current?.open()}
         className="mt-auto mb-2.5"
       />

@@ -1,4 +1,5 @@
 import { useActionState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import InlineInput from '../../../common/InlineInput'
 import ConfirmButton from '../ui/ConfirmButton'
@@ -24,6 +25,7 @@ export default function ProviderInlineForm({
   onSubmit,
   onClose,
 }: ProviderInlineFormProps) {
+  const { t } = useTranslation()
   const [formState, formAction, isPending] = useActionState<
     FormState,
     FormData
@@ -36,6 +38,7 @@ export default function ProviderInlineForm({
         emptyError,
         onSubmit,
         onClose,
+        t,
       ),
     { errors: null },
   )
@@ -49,8 +52,14 @@ export default function ProviderInlineForm({
           placeholder={placeholder}
           className="min-w-48 flex-1"
         />
-        <ConfirmButton isPending={isPending} />
-        <SecondaryButton onClick={onClose} />
+        <ConfirmButton
+          isPending={isPending}
+          pendingLabel={t('settings.buttons.saving')}
+        />
+        <SecondaryButton
+          onClick={onClose}
+          label={t('settings.buttons.cancel')}
+        />
       </div>
       {formState.errors && <ErrorMessage message={formState.errors[0]} />}
     </form>
@@ -64,6 +73,7 @@ async function providerInlineFormAction(
   emptyError: string,
   onSubmit: (value: string) => Promise<void>,
   onClose: () => void,
+  t: (key: string) => string,
 ): Promise<FormState> {
   const value = (formData.get(inputName) ?? '') as string
   if (!value.trim()) {
@@ -75,7 +85,9 @@ async function providerInlineFormAction(
     return { errors: null }
   } catch (error) {
     return {
-      errors: [error instanceof Error ? error.message : 'Something went wrong'],
+      errors: [
+        error instanceof Error ? error.message : t('common.somethingWentWrong'),
+      ],
     }
   }
 }

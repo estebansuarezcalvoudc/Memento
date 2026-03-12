@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import {
   useGetAvailableModels,
   useGetSummaryModel,
@@ -6,6 +8,7 @@ import {
 import ModelConfigSection from '../ui/ModelConfigSection'
 
 export default function ModelSection() {
+  const { t } = useTranslation()
   const { data: availableModels, isLoading: modelsLoading } =
     useGetAvailableModels()
   const { data: currentModel, isLoading: configLoading } = useGetSummaryModel()
@@ -13,7 +16,7 @@ export default function ModelSection() {
 
   return (
     <ModelConfigSection
-      title="Language Model"
+      title={t('settings.summarization.languageModel')}
       availableModels={availableModels}
       currentModel={currentModel}
       isLoading={modelsLoading || configLoading}

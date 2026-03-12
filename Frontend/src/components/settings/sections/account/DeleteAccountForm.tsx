@@ -1,4 +1,5 @@
 import { useActionState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, type NavigateFunction } from 'react-router-dom'
 
 import { useDeleteAccount } from '../../../../api/queries/auth/useAuthQueries'
@@ -20,6 +21,7 @@ interface DeleteAccountFormProps {
 }
 
 export default function DeleteAccountForm({ onClose }: DeleteAccountFormProps) {
+  const { t } = useTranslation()
   const { mutateAsync: deleteAccount } = useDeleteAccount()
   const navigate = useNavigate()
   const setIsUserAuth = useSetIsUserAuth()
@@ -35,17 +37,31 @@ export default function DeleteAccountForm({ onClose }: DeleteAccountFormProps) {
         deleteAccount,
         navigate,
         setIsUserAuth,
+        t,
       ),
     { errors: null },
   )
 
   return (
     <form action={formAction} className="flex flex-col gap-1">
-      <Input name="password" type="password" label="Password" />
+      <Input
+        name="password"
+        type="password"
+        label={t('settings.account.deleteAccountForm.password')}
+      />
       {formState.errors && <ErrorMessage message={formState.errors[0]} />}
       <div className="mt-4 flex justify-center gap-x-2">
-        <SecondaryButton onClick={onClose} disabled={isPending} />
-        <ConfirmButton label="Delete" color="red" isPending={isPending} />
+        <SecondaryButton
+          onClick={onClose}
+          disabled={isPending}
+          label={t('settings.buttons.cancel')}
+        />
+        <ConfirmButton
+          label={t('settings.buttons.delete')}
+          color="red"
+          isPending={isPending}
+          pendingLabel={t('settings.buttons.saving')}
+        />
       </div>
     </form>
   )
@@ -57,11 +73,14 @@ async function deleteAccountAction(
   deleteAccount: (vars: { password: string }) => Promise<null>,
   navigate: NavigateFunction,
   setIsUserAuth: SetIsUserAuth,
+  t: (key: string) => string,
 ): Promise<FormState> {
   const password = (formData.get('password') ?? '') as string
 
   if (!password.trim()) {
-    return { errors: ['Password cannot be empty'] }
+    return {
+      errors: [t('settings.account.deleteAccountForm.passwordRequired')],
+    }
   }
 
   try {
@@ -73,7 +92,9 @@ async function deleteAccountAction(
   } catch (error) {
     return {
       errors: [
-        error instanceof Error ? error.message : 'Failed to delete account',
+        error instanceof Error
+          ? error.message
+          : t('settings.account.deleteAccountForm.failed'),
       ],
     }
   }

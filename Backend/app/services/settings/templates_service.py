@@ -1,6 +1,7 @@
 from ...repositories.interfaces.settings_repo import SettingsRepository
 from ...schemas.settings.templates_schema import (
     DEFAULT_PROMPT,
+    DEFAULT_PROMPTS,
     SystemPromptResponse,
     SystemPromptUpdate,
 )
@@ -45,11 +46,16 @@ class TemplatesService:
 
         return SystemPromptResponse(system_prompt=update.system_prompt)
 
-    def get_default_prompt(self) -> SystemPromptResponse:
+    def get_default_prompt(self, lang: str) -> SystemPromptResponse:
         """
-        Get the default system prompt
+        Get the default system prompt for the given language
+
+        Args:
+            lang: Language code (e.g. "en", "es")
 
         Returns:
-            SystemPromptResponse with default system prompt
+            SystemPromptResponse with the default prompt for the requested language,
+            falling back to English for any unsupported locale
         """
-        return SystemPromptResponse(system_prompt=DEFAULT_PROMPT)
+        prompt = DEFAULT_PROMPTS.get(lang, DEFAULT_PROMPT)
+        return SystemPromptResponse(system_prompt=prompt)

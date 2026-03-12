@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import {
   meetingsImage,
@@ -10,11 +11,12 @@ import UploadMeetingsDialog from '../../../meetings/upload/UploadMeetingsDialog'
 import { SidebarButton } from './SidebarButton'
 
 export default function SidebarButtons() {
+  const { t } = useTranslation()
   const dialogRef = useRef<DialogHandler>(null)
 
   const buttons = [
-    { image: newChatImage, text: 'New Chat', link: 'new-chat' },
-    { image: meetingsImage, text: 'My Meetings', link: 'meetings' },
+    { image: newChatImage, text: t('sidebar.newChat'), link: 'new-chat' },
+    { image: meetingsImage, text: t('sidebar.myMeetings'), link: 'meetings' },
   ]
 
   return (
@@ -34,7 +36,7 @@ export default function SidebarButtons() {
         <SidebarButton
           type="button"
           svg={uploadMeetingsImage}
-          text="Upload Meetings"
+          text={t('sidebar.uploadMeetings')}
           onClick={() => dialogRef.current?.open()}
         />
 
