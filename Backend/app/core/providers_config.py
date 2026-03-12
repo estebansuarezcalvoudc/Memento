@@ -18,6 +18,7 @@ from langchain_core.language_models import BaseChatModel
 from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
+from pydantic import SecretStr
 
 from .encryption import decrypt_api_key
 from .settings import settings
@@ -73,17 +74,6 @@ def _load_models_allowlist() -> dict[str, set[str]]:
 _MODELS_ALLOWLIST: dict[str, set[str]] = _load_models_allowlist()
 
 
-def _apply_allowlist(provider_name: str, models: list[str]) -> list[str]:
-    """Filter a list of model IDs against the allowlist for the given provider.
-
-    If the provider has no allowlist entry, the original list is returned as-is.
-    """
-    allowlist = _MODELS_ALLOWLIST.get(provider_name)
-    if allowlist is None:
-        return models
-    return [m for m in models if m in allowlist]
-
-
 def list_models(
     provider_name: ProviderName, api_key_encrypted: str | None = None
 ) -> list[str]:
@@ -97,10 +87,26 @@ def list_models(
         case "OpenAI":
             api_key = decrypt_api_key(api_key_encrypted or "")
             client = OpenAI(api_key=api_key)
-            return _apply_allowlist("OpenAI", [m.id for m in client.models.list().data])
+            return _apply_allowlist(
+                provider_name, [m.id for m in client.models.list().data]
+            )
         case "Ollama":
             client = ollama.Client(host=settings.ollama_url)
-            return _apply_allowlist("Ollama", [m.model for m in client.list().models])
+            return _apply_allowlist(
+                provider_name,
+                [m.model for m in client.list().models if m.model is not None],
+            )
+
+
+def _apply_allowlist(provider_name: str, models: list[str]) -> list[str]:
+    """Filter a list of model IDs against the allowlist for the given provider.
+
+    If the provider has no allowlist entry, the original list is returned as-is.
+    """
+    allowlist = _MODELS_ALLOWLIST.get(provider_name)
+    if allowlist is None:
+        return models
+    return [m for m in models if m in allowlist]
 
 
 def create_llm(
@@ -109,10 +115,10 @@ def create_llm(
     match config.provider:
         case "OpenAI":
             return ChatOpenAI(
-                api_key=decrypt_api_key(api_key_encrypted or ""),
+                api_key=SecretStr(decrypt_api_key(api_key_encrypted or "")),
                 model=config.model_name,
                 temperature=config.temperature,
-                max_tokens=config.max_tokens,
+                max_completion_tokens=config.max_tokens,
             )
         case "Ollama":
             return ChatOllama(
