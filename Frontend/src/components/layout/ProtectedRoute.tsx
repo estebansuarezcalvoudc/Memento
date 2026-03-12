@@ -9,7 +9,10 @@ export default function ProtectedRoute() {
 
   if (!authInitialized) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div
+        aria-label="Loading"
+        className="flex h-screen items-center justify-center"
+      >
         <ClipLoader />
       </div>
     )

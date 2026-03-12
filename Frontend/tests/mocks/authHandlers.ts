@@ -11,6 +11,12 @@ export const authHandlers = [
   http.post('/api/auth/register', () =>
     HttpResponse.json({ access_token: 'fake-token', token_type: 'bearer' }),
   ),
+  http.get(
+    '/api/auth/me',
+    withAuth(() =>
+      HttpResponse.json({ id: 'user-123', username: 'test@example.com' }),
+    ),
+  ),
   http.patch(
     '/api/auth/username',
     withAuth(() =>
