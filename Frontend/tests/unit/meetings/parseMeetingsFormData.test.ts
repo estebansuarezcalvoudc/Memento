@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { parseMeetingsFromFormData } from '../../../src/components/meetings/upload/parseMeetingsFormData'
+import i18n from '../../../src/i18n'
 
 // Helper to build a minimal valid FormData for one meeting
 function buildValidFormData(overrides: Record<string, string | File> = {}) {
@@ -19,7 +20,7 @@ function buildValidFormData(overrides: Record<string, string | File> = {}) {
 
 describe('parseMeetingsFromFormData – valid input', () => {
   it('returns ok=true with correct metadata for a minimal valid meeting', () => {
-    const result = parseMeetingsFromFormData(buildValidFormData())
+    const result = parseMeetingsFromFormData(buildValidFormData(), i18n.t)
     expect(result.ok).toBe(true)
     if (!result.ok) {
       return
@@ -34,7 +35,7 @@ describe('parseMeetingsFromFormData – valid input', () => {
 
   it('includes language in metadata when provided', () => {
     const fd = buildValidFormData({ 'meetings[0][language]': 'en' })
-    const result = parseMeetingsFromFormData(fd)
+    const result = parseMeetingsFromFormData(fd, i18n.t)
     expect(result.ok).toBe(true)
     if (!result.ok) {
       return
@@ -44,7 +45,7 @@ describe('parseMeetingsFromFormData – valid input', () => {
 
   it('includes number_of_speakers in metadata when a valid integer >= 2 is given', () => {
     const fd = buildValidFormData({ 'meetings[0][speakers]': '3' })
-    const result = parseMeetingsFromFormData(fd)
+    const result = parseMeetingsFromFormData(fd, i18n.t)
     expect(result.ok).toBe(true)
     if (!result.ok) {
       return
@@ -54,7 +55,7 @@ describe('parseMeetingsFromFormData – valid input', () => {
 
   it('omits number_of_speakers when speakers value is less than 2', () => {
     const fd = buildValidFormData({ 'meetings[0][speakers]': '1' })
-    const result = parseMeetingsFromFormData(fd)
+    const result = parseMeetingsFromFormData(fd, i18n.t)
     expect(result.ok).toBe(true)
     if (!result.ok) {
       return
@@ -64,7 +65,7 @@ describe('parseMeetingsFromFormData – valid input', () => {
 
   it('omits number_of_speakers when speakers value is not a number', () => {
     const fd = buildValidFormData({ 'meetings[0][speakers]': 'abc' })
-    const result = parseMeetingsFromFormData(fd)
+    const result = parseMeetingsFromFormData(fd, i18n.t)
     expect(result.ok).toBe(true)
     if (!result.ok) {
       return
@@ -75,7 +76,7 @@ describe('parseMeetingsFromFormData – valid input', () => {
 
 describe('parseMeetingsFromFormData – empty FormData', () => {
   it('returns ok=false with "at least one meeting" error when FormData is empty', () => {
-    const result = parseMeetingsFromFormData(new FormData())
+    const result = parseMeetingsFromFormData(new FormData(), i18n.t)
     expect(result.ok).toBe(false)
     if (result.ok) {
       return
@@ -87,7 +88,7 @@ describe('parseMeetingsFromFormData – empty FormData', () => {
 describe('parseMeetingsFromFormData – missing fields', () => {
   it('returns error when title is missing', () => {
     const fd = buildValidFormData({ 'meetings[0][title]': '' })
-    const result = parseMeetingsFromFormData(fd)
+    const result = parseMeetingsFromFormData(fd, i18n.t)
     expect(result.ok).toBe(false)
     if (result.ok) {
       return
@@ -97,7 +98,7 @@ describe('parseMeetingsFromFormData – missing fields', () => {
 
   it('returns error when date is missing', () => {
     const fd = buildValidFormData({ 'meetings[0][date]': '' })
-    const result = parseMeetingsFromFormData(fd)
+    const result = parseMeetingsFromFormData(fd, i18n.t)
     expect(result.ok).toBe(false)
     if (result.ok) {
       return
@@ -109,7 +110,7 @@ describe('parseMeetingsFromFormData – missing fields', () => {
     const fd = buildValidFormData({
       'meetings[0][file]': new File([], 'empty.mp3', { type: 'audio/mpeg' }),
     })
-    const result = parseMeetingsFromFormData(fd)
+    const result = parseMeetingsFromFormData(fd, i18n.t)
     expect(result.ok).toBe(false)
     if (result.ok) {
       return
@@ -123,7 +124,7 @@ describe('parseMeetingsFromFormData – invalid audio file', () => {
     // A File with an empty name string
     const file = new File(['audio'], '', { type: 'audio/mpeg' })
     const fd = buildValidFormData({ 'meetings[0][file]': file })
-    const result = parseMeetingsFromFormData(fd)
+    const result = parseMeetingsFromFormData(fd, i18n.t)
     expect(result.ok).toBe(false)
     if (result.ok) {
       return
@@ -134,7 +135,7 @@ describe('parseMeetingsFromFormData – invalid audio file', () => {
   it('returns error for an unsupported file extension', () => {
     const file = new File(['data'], 'notes.txt', { type: 'audio/mpeg' })
     const fd = buildValidFormData({ 'meetings[0][file]': file })
-    const result = parseMeetingsFromFormData(fd)
+    const result = parseMeetingsFromFormData(fd, i18n.t)
     expect(result.ok).toBe(false)
     if (result.ok) {
       return
@@ -145,7 +146,7 @@ describe('parseMeetingsFromFormData – invalid audio file', () => {
   it('returns error when MIME type is not audio/', () => {
     const file = new File(['data'], 'clip.mp4', { type: 'video/mp4' })
     const fd = buildValidFormData({ 'meetings[0][file]': file })
-    const result = parseMeetingsFromFormData(fd)
+    const result = parseMeetingsFromFormData(fd, i18n.t)
     expect(result.ok).toBe(false)
     if (result.ok) {
       return
@@ -156,7 +157,7 @@ describe('parseMeetingsFromFormData – invalid audio file', () => {
   it('returns error when MIME type is empty', () => {
     const file = new File(['data'], 'recording.mp3', { type: '' })
     const fd = buildValidFormData({ 'meetings[0][file]': file })
-    const result = parseMeetingsFromFormData(fd)
+    const result = parseMeetingsFromFormData(fd, i18n.t)
     expect(result.ok).toBe(false)
     if (result.ok) {
       return

@@ -41,6 +41,6 @@ describe('Meetings Page', () => {
     setAuthToken()
     renderWithRouter(<Meetings />)
 
-    expect(await screen.findByText(/Error:/i)).toBeInTheDocument()
+    expect(await screen.findByText(/Error/i)).toBeInTheDocument()
   })
 })
