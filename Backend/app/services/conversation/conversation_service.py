@@ -13,6 +13,7 @@ from ...schemas.conversation.conversation_schema import (
     ConversationMetadataRetrieve,
     ConversationUpdateRequest,
     DoneEvent,
+    RetrievingEvent,
     SendMessageRequest,
     TokenEvent,
 )
@@ -83,9 +84,18 @@ class ConversationService:
             full_reply_parts: list[str] = []
             current_date = request.current_datetime.strftime("%Y-%m-%d")
 
-            async for token in self._rag_service.get_reply_stream(
+            yield RetrievingEvent()
+            context = await self._rag_service.retrieve_context(
                 message=request.message,
                 conversation_history=conversation_history,
+                current_date=current_date,
+                user_id=user_id,
+            )
+
+            async for token in self._rag_service.stream_reply(
+                message=request.message,
+                conversation_history=conversation_history,
+                context=context,
                 current_date=current_date,
                 user_id=user_id,
             ):

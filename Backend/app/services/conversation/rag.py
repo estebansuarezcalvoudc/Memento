@@ -72,6 +72,51 @@ class Rag:
             }
         )
 
+    async def retrieve_context(
+        self,
+        message: str,
+        conversation_history: list[dict],
+        current_date: str,
+        user_id: str,
+    ) -> str:
+        """Run the retrieval pipeline and return the formatted context string."""
+        chat_history = self._build_chat_history(conversation_history)
+        retrieval_config = self._settings_repository.get_retrieval_model(user_id)
+        llm_retrieval = self._get_llm(retrieval_config, user_id)
+        retrieval_chain = self._build_retrieval_chain(llm_retrieval, user_id)
+        return await retrieval_chain.ainvoke(
+            {
+                "input": message,
+                "chat_history": chat_history,
+                "current_date": current_date,
+            }
+        )
+
+    async def stream_reply(
+        self,
+        message: str,
+        conversation_history: list[dict],
+        context: str,
+        current_date: str,
+        user_id: str,
+    ) -> AsyncGenerator[str, None]:
+        """Stream LLM tokens given pre-fetched context."""
+        chat_history = self._build_chat_history(conversation_history)
+        chat_config = self._settings_repository.get_chat_model(user_id)
+        llm_chat = self._get_llm(chat_config, user_id)
+
+        qa_chain = QA_PROMPT | llm_chat
+        async for chunk in qa_chain.astream(
+            {
+                "input": message,
+                "chat_history": chat_history,
+                "context": context,
+                "current_date": current_date,
+            }
+        ):
+            if chunk.content:
+                yield chunk.content
+
     async def get_reply_stream(
         self,
         message: str,
@@ -79,35 +124,18 @@ class Rag:
         current_date: str,
         user_id: str,
     ) -> AsyncGenerator[str, None]:
-        chat_history = self._build_chat_history(conversation_history)
+        """Convenience wrapper: retrieve context then stream tokens."""
         chat_config = self._settings_repository.get_chat_model(user_id)
         retrieval_config = self._settings_repository.get_retrieval_model(user_id)
         self._log_model_configs(chat_config, retrieval_config)
 
-        llm_chat = self._get_llm(chat_config, user_id)
-        llm_retrieval = self._get_llm(retrieval_config, user_id)
-
-        # Run the retrieval pipeline (contextualization + vector search) to completion
-        # first, then stream only the final LLM generation step.
-        retrieval_chain = self._build_retrieval_chain(llm_retrieval, user_id)
-        retrieval_input = {
-            "input": message,
-            "chat_history": chat_history,
-            "current_date": current_date,
-        }
-        retrieved_context = await retrieval_chain.ainvoke(retrieval_input)
-
-        qa_chain = QA_PROMPT | llm_chat
-        async for chunk in qa_chain.astream(
-            {
-                "input": message,
-                "chat_history": chat_history,
-                "context": retrieved_context,
-                "current_date": current_date,
-            }
+        context = await self.retrieve_context(
+            message, conversation_history, current_date, user_id
+        )
+        async for token in self.stream_reply(
+            message, conversation_history, context, current_date, user_id
         ):
-            if chunk.content:
-                yield chunk.content
+            yield token
 
     def _get_llm(self, llm_config: ModelConfig, user_id: str):
         """Resolve provider settings and instantiate an LLM for the given config."""

@@ -55,6 +55,9 @@ class TestChatWebSocketCreateConversation:
             assert first["conversation_id"] == VALID_CONV_ID
             assert first["title"] == "New chat"
 
+            second = json.loads(ws.receive_text())
+            assert second["type"] == "retrieving"
+
             messages = []
             while True:
                 msg = json.loads(ws.receive_text())

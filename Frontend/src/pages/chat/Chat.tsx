@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
+import { ClipLoader } from 'react-spinners'
 
 import { useGetChatMessages } from '../../api/queries/useChatsQueries'
 import AssistantMessage from '../../components/chat/AssistantMessage'
@@ -22,10 +23,13 @@ export default function Chat() {
     [navigate],
   )
 
-  const { sendMessage, streamingContent, isStreaming } = useChat(
-    chatId ?? null,
-    onConversationCreated,
-  )
+  const {
+    sendMessage,
+    streamingContent,
+    isStreaming,
+    isRetrieving,
+    hasSentMessage,
+  } = useChat(chatId ?? null, onConversationCreated)
 
   const chatDivRef = useRef<HTMLDivElement | null>(null)
 
@@ -33,9 +37,12 @@ export default function Chat() {
     if (chatDivRef.current) {
       chatDivRef.current.scrollTop = chatDivRef.current.scrollHeight
     }
-  }, [messages, streamingContent])
+  }, [messages, streamingContent, isRetrieving])
 
-  if (!chatId) {
+  // Show the centered "new chat" layout only when there is no conversation yet
+  // AND the user hasn't sent a message yet. Once they submit, switch to the
+  // chat list layout immediately so the retrieving indicator appears inline.
+  if (!chatId && !hasSentMessage) {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center gap-6 px-3">
         <h2 className="font-ubuntu text-4xl text-stone-900 dark:text-stone-100">
@@ -60,6 +67,12 @@ export default function Chat() {
               return <AssistantMessage key={index} content={content} />
             }
           })}
+          {isRetrieving && !streamingContent && (
+            <li className="flex items-center gap-2 px-3 text-stone-500 dark:text-stone-400">
+              <ClipLoader size={14} color="currentColor" />
+              <span className="text-sm">{t('chat.retrievingInfo')}</span>
+            </li>
+          )}
           {isStreaming && streamingContent && (
             <AssistantMessage content={streamingContent} />
           )}

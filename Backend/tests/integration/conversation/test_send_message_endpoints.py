@@ -48,6 +48,9 @@ class TestChatWebSocketSendMessage:
         with client.websocket_connect(f"/conversations/ws?token={token}") as ws:
             ws.send_text(json.dumps(_REQUEST))
 
+            first = json.loads(ws.receive_text())
+            assert first["type"] == "retrieving"
+
             messages = []
             while True:
                 msg = json.loads(ws.receive_text())

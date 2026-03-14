@@ -56,6 +56,10 @@ class ConversationCreatedEvent(BaseModel):
     title: str
 
 
+class RetrievingEvent(BaseModel):
+    type: Literal["retrieving"] = "retrieving"
+
+
 class TokenEvent(BaseModel):
     type: Literal["token"] = "token"
     content: str
@@ -70,4 +74,6 @@ class ErrorEvent(BaseModel):
     content: str
 
 
-ChatEvent = ConversationCreatedEvent | TokenEvent | DoneEvent | ErrorEvent
+ChatEvent = (
+    ConversationCreatedEvent | RetrievingEvent | TokenEvent | DoneEvent | ErrorEvent
+)

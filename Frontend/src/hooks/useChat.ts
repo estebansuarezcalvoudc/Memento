@@ -12,6 +12,10 @@ interface ConversationCreatedEvent {
   title: string
 }
 
+interface RetrievingEvent {
+  type: 'retrieving'
+}
+
 interface TokenEvent {
   type: 'token'
   content: string
@@ -26,12 +30,19 @@ interface ErrorEvent {
   content: string
 }
 
-type ChatEvent = ConversationCreatedEvent | TokenEvent | DoneEvent | ErrorEvent
+type ChatEvent =
+  | ConversationCreatedEvent
+  | RetrievingEvent
+  | TokenEvent
+  | DoneEvent
+  | ErrorEvent
 
 interface UseChatResult {
   sendMessage: (message: string) => void
   streamingContent: string
   isStreaming: boolean
+  isRetrieving: boolean
+  hasSentMessage: boolean
   error: string | null
 }
 
@@ -50,6 +61,8 @@ export function useChat(
   const queryClient = useQueryClient()
   const [streamingContent, setStreamingContent] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
+  const [isRetrieving, setIsRetrieving] = useState(false)
+  const [hasSentMessage, setHasSentMessage] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Keep a ref to the active conversation id so the WS message handler can
@@ -70,7 +83,9 @@ export function useChat(
       )
 
       setIsStreaming(true)
+      setIsRetrieving(false)
       setStreamingContent('')
+      setHasSentMessage(true)
       setError(null)
 
       // Optimistically add the user message to the cache immediately.
@@ -127,7 +142,10 @@ export function useChat(
           )
 
           onConversationCreated?.(event.conversation_id)
+        } else if (event.type === 'retrieving') {
+          setIsRetrieving(true)
         } else if (event.type === 'token') {
+          setIsRetrieving(false)
           accumulatedTokens += event.content
           setStreamingContent(accumulatedTokens)
         } else if (event.type === 'done') {
@@ -142,26 +160,40 @@ export function useChat(
             )
           }
           setStreamingContent('')
+          setIsRetrieving(false)
           setIsStreaming(false)
+          setHasSentMessage(false)
           ws.close()
         } else if (event.type === 'error') {
           setError(event.content)
+          setIsRetrieving(false)
           setIsStreaming(false)
+          setHasSentMessage(false)
           ws.close()
         }
       }
 
       ws.onerror = () => {
         setError('WebSocket connection error')
+        setIsRetrieving(false)
         setIsStreaming(false)
+        setHasSentMessage(false)
       }
 
       ws.onclose = () => {
+        setIsRetrieving(false)
         setIsStreaming(false)
       }
     },
     [conversationId, queryClient, onConversationCreated],
   )
 
-  return { sendMessage, streamingContent, isStreaming, error }
+  return {
+    sendMessage,
+    streamingContent,
+    isStreaming,
+    isRetrieving,
+    hasSentMessage,
+    error,
+  }
 }
