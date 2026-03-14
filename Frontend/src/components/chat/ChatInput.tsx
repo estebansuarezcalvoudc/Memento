@@ -1,17 +1,15 @@
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useSendMessage } from '../../api/queries/useChatsQueries'
 import SendMessageButton from './SendMessageButton'
 
-interface UserChatInputProps {
-  chatId: string
+interface ChatInputProps {
+  onSubmit: (message: string) => Promise<void>
 }
 
-export default function ChatInput({ chatId }: UserChatInputProps) {
+export default function ChatInput({ onSubmit }: ChatInputProps) {
   const { t } = useTranslation()
   const [userMessage, setUserMessage] = useState('')
-  const { mutateAsync: sendMessage } = useSendMessage(chatId)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const handleSubmitMessage = async () => {
@@ -25,7 +23,7 @@ export default function ChatInput({ chatId }: UserChatInputProps) {
       textareaRef.current.style.height = 'auto'
     }
     try {
-      await sendMessage(message)
+      await onSubmit(message)
     } catch {
       setUserMessage(message)
     }
@@ -52,7 +50,7 @@ export default function ChatInput({ chatId }: UserChatInputProps) {
       <textarea
         ref={textareaRef}
         rows={1}
-        className="mr-2 max-h-[20vh] flex-1 resize-none overflow-y-auto bg-transparent py-1.5 text-stone-800 outline-none dark:text-stone-100"
+        className="mr-2 max-h-[20vh] flex-1 resize-none overflow-y-auto bg-transparent py-1.5 text-stone-800 transition-[height] duration-100 ease-out outline-none dark:text-stone-100"
         placeholder={t('chat.messagePlaceholder')}
         value={userMessage}
         onChange={handleChange}
