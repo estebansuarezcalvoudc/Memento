@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
+import { useChat } from '../../api/chat/useChat'
 import { useGetChatMessages } from '../../api/queries/useChatsQueries'
 import ChatConversation from '../../components/chat/ChatConversation'
 import NewChatView from '../../components/chat/NewChatView'
-import { useChat } from '../../hooks/useChat'
 
 export default function Chat() {
   const { chatId } = useParams<{ chatId?: string }>()

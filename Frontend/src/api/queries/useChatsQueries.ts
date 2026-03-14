@@ -1,10 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { type Chat, type Message } from '../../types/chats'
+import { chatKey, CHATS_KEY } from '../chat/chatQueryKeys'
 import fetchBackend from '../utils/fetchBackend'
-
-const CHATS_KEY = ['chats'] as const
-const chatKey = (id: string) => ['chat', id] as const
 
 export function useGetChats() {
   return useQuery<Chat[]>({
