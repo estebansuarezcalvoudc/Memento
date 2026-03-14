@@ -18,6 +18,7 @@ interface SidebarButtonProps extends BaseProps {
 interface SidebarLinkProps extends BaseProps {
   type: 'link'
   to: NavLinkProps['to']
+  end?: boolean
 }
 
 type SidebarItemProps = SidebarButtonProps | SidebarLinkProps
@@ -37,6 +38,7 @@ export function SidebarButton(props: SidebarItemProps) {
   return (
     <NavLink
       to={props.to}
+      end={props.end}
       className={({ isActive }) =>
         `${commonClasses} ${isActive ? 'bg-stone-200 dark:bg-stone-700' : ''}`
       }

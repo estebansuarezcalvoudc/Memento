@@ -15,8 +15,18 @@ export default function SidebarButtons() {
   const dialogRef = useRef<DialogHandler>(null)
 
   const buttons = [
-    { image: newChatImage, text: t('sidebar.newChat'), link: 'chats' },
-    { image: meetingsImage, text: t('sidebar.myMeetings'), link: 'meetings' },
+    {
+      image: newChatImage,
+      text: t('sidebar.newChat'),
+      link: 'chats',
+      end: true,
+    },
+    {
+      image: meetingsImage,
+      text: t('sidebar.myMeetings'),
+      link: 'meetings',
+      end: false,
+    },
   ]
 
   return (
@@ -28,6 +38,7 @@ export default function SidebarButtons() {
             svg={button.image}
             text={button.text}
             to={button.link}
+            end={button.end}
           />
         </li>
       ))}
