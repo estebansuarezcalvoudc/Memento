@@ -10,7 +10,6 @@ import Sidebar from './components/layout/sidebar/Sidebar'
 import LogIn from './pages/auth/LogIn'
 import SignUp from './pages/auth/SignUp'
 import Chat from './pages/chat/Chat'
-import NewChat from './pages/chat/NewChat'
 import Home from './pages/Home'
 import MeetingContent from './pages/meetings/MeetingContent'
 import Meetings from './pages/meetings/Meetings'
@@ -71,8 +70,7 @@ export default function App() {
             <Route path="signup" element={<SignUp />} />
           </Route>
           <Route element={<ProtectedRoute />}>
-            <Route path="chats/:chatId" element={<Chat />} />
-            <Route path="new-chat" element={<NewChat />} />
+            <Route path="chats/:chatId?" element={<Chat />} />
             <Route path="meetings" element={<Meetings />} />
             <Route
               path="meetings/:meetingId/transcription"

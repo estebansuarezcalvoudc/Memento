@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import SendMessageButton from './SendMessageButton'
 
 interface ChatInputProps {
-  onSubmit: (message: string) => Promise<void>
+  onSubmit: (message: string) => void | Promise<void>
 }
 
 export default function ChatInput({ onSubmit }: ChatInputProps) {

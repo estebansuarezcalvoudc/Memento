@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react'
-import { useParams } from 'react-router-dom'
+import { useCallback, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate, useParams } from 'react-router-dom'
 
 import { useGetChatMessages } from '../../api/queries/useChatsQueries'
 import AssistantMessage from '../../components/chat/AssistantMessage'
@@ -8,9 +9,24 @@ import UserMessage from '../../components/chat/UserMessage'
 import { useChat } from '../../hooks/useChat'
 
 export default function Chat() {
-  const { chatId } = useParams<{ chatId: string }>()
+  const { chatId } = useParams<{ chatId?: string }>()
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+
   const { data: messages = [] } = useGetChatMessages(chatId)
-  const { sendMessage, streamingContent, isStreaming } = useChat(chatId ?? null)
+
+  const onConversationCreated = useCallback(
+    (id: string) => {
+      navigate(`/chats/${id}`, { replace: true })
+    },
+    [navigate],
+  )
+
+  const { sendMessage, streamingContent, isStreaming } = useChat(
+    chatId ?? null,
+    onConversationCreated,
+  )
+
   const chatDivRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -18,6 +34,17 @@ export default function Chat() {
       chatDivRef.current.scrollTop = chatDivRef.current.scrollHeight
     }
   }, [messages, streamingContent])
+
+  if (!chatId) {
+    return (
+      <div className="flex h-screen w-full flex-col items-center justify-center gap-6 px-3">
+        <h2 className="font-ubuntu text-4xl text-stone-900 dark:text-stone-100">
+          {t('chat.howCanIHelp')}
+        </h2>
+        <ChatInput onSubmit={sendMessage} />
+      </div>
+    )
+  }
 
   return (
     <div

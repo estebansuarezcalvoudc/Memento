@@ -15,7 +15,7 @@ export default function SidebarButtons() {
   const dialogRef = useRef<DialogHandler>(null)
 
   const buttons = [
-    { image: newChatImage, text: t('sidebar.newChat'), link: 'new-chat' },
+    { image: newChatImage, text: t('sidebar.newChat'), link: 'chats' },
     { image: meetingsImage, text: t('sidebar.myMeetings'), link: 'meetings' },
   ]
 
