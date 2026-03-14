@@ -1,7 +1,10 @@
 import { useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 
-import { useGetChatMessages } from '../../api/queries/useChatsQueries'
+import {
+  useGetChatMessages,
+  useSendMessage,
+} from '../../api/queries/useChatsQueries'
 import AssistantMessage from '../../components/chat/AssistantMessage'
 import ChatInput from '../../components/chat/ChatInput'
 import UserMessage from '../../components/chat/UserMessage'
@@ -9,7 +12,8 @@ import UserMessage from '../../components/chat/UserMessage'
 export default function Chat() {
   const { chatId } = useParams<{ chatId: string }>()
   const { data: messages = [] } = useGetChatMessages(chatId)
-  const chatDivRef = useRef<HTMLUListElement | null>(null)
+  const { mutateAsync: sendMessage } = useSendMessage(chatId!)
+  const chatDivRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     if (chatDivRef.current) {
@@ -18,20 +22,28 @@ export default function Chat() {
   }, [messages])
 
   return (
-    <div className="flex h-screen w-full flex-col px-3">
-      <ul
-        className="my-3 flex-1 flex-col-reverse overflow-y-auto"
-        ref={chatDivRef}
-      >
-        {messages.map(({ role, content }, index) => {
-          if (role === 'user') {
-            return <UserMessage key={index} text={content} />
-          } else {
-            return <AssistantMessage key={index} text={content} />
-          }
-        })}
-      </ul>
-      <ChatInput chatId={chatId!} />
+    <div
+      ref={chatDivRef}
+      className="flex h-screen w-full flex-col overflow-y-scroll"
+    >
+      <div className="mx-auto w-full max-w-3xl flex-1 space-y-4 py-3">
+        <ul className="space-y-4">
+          {messages.map(({ role, content }, index) => {
+            if (role === 'user') {
+              return <UserMessage key={index} content={content} />
+            } else {
+              return <AssistantMessage key={index} content={content} />
+            }
+          })}
+        </ul>
+      </div>
+      <div className="sticky bottom-0 bg-white pt-1.5 dark:bg-stone-800">
+        <ChatInput
+          onSubmit={async message => {
+            await sendMessage(message)
+          }}
+        />
+      </div>
     </div>
   )
 }

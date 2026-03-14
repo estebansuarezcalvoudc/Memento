@@ -9,7 +9,7 @@ export default function SendMessageButton({
 }: SendMessageButtonProps) {
   return (
     <button
-      className="cursor-pointer rounded-4xl p-1.5 text-stone-900 hover:bg-stone-400 disabled:opacity-50 dark:text-stone-100 dark:hover:bg-stone-600"
+      className="cursor-pointer rounded-full p-1.5 text-stone-900 hover:bg-stone-400 disabled:opacity-50 dark:text-stone-100 dark:hover:bg-stone-500"
       onClick={onClick}
       disabled={disabled}
     >
