@@ -79,7 +79,9 @@ export function useChat(
 
       const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
       const ws = new WebSocket(
-        `${wsProtocol}//${window.location.host}/api/conversations/ws?token=${token}`,
+        `${wsProtocol}//${window.location.host}/api/conversations/ws?token=${encodeURIComponent(
+          token,
+        )}`,
       )
 
       setIsStreaming(true)
@@ -88,16 +90,7 @@ export function useChat(
       setHasSentMessage(true)
       setError(null)
 
-      // Optimistically add the user message to the cache immediately.
-      const currentConvId = conversationId
-      if (currentConvId) {
-        queryClient.setQueryData<Message[]>(chatKey(currentConvId), old => [
-          ...(old ?? []),
-          { role: 'user', content: message },
-        ])
-      }
-
-      let resolvedConvId: string | null = currentConvId
+      let resolvedConvId: string | null = conversationId
       let accumulatedTokens = ''
 
       ws.onopen = () => {
@@ -178,11 +171,22 @@ export function useChat(
         setIsRetrieving(false)
         setIsStreaming(false)
         setHasSentMessage(false)
+        ws.close()
       }
 
-      ws.onclose = () => {
+      ws.onclose = (event: CloseEvent) => {
+        // Always clear streaming / retrieving flags when the socket closes.
         setIsRetrieving(false)
         setIsStreaming(false)
+
+        // If the backend closed the connection due to an auth failure,
+        // mirror the global unauthorized handling used by fetchBackend.
+        if (event.code === 4001) {
+          // Clear the stored access token so the app can redirect to login.
+          localStorage.removeItem('access_token')
+          // Notify the rest of the app that the user is unauthorized.
+          window.dispatchEvent(new Event('unauthorized'))
+        }
       }
     },
     [conversationId, queryClient, onConversationCreated],
