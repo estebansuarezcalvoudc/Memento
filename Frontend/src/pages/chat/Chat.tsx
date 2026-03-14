@@ -26,8 +26,8 @@ export default function Chat() {
       ref={chatDivRef}
       className="flex h-screen w-full flex-col overflow-y-scroll"
     >
-      <div className="mx-auto w-full max-w-3xl space-y-4 py-3 flex-1">
-        <ul>
+      <div className="mx-auto w-full max-w-3xl flex-1 space-y-4 py-3">
+        <ul className="space-y-4">
           {messages.map(({ role, content }, index) => {
             if (role === 'user') {
               return <UserMessage key={index} content={content} />
@@ -37,8 +37,12 @@ export default function Chat() {
           })}
         </ul>
       </div>
-      <div className="sticky bottom-0 bg-white dark:bg-stone-800">
-        <ChatInput onSubmit={async message => { await sendMessage(message) }} />
+      <div className="sticky bottom-0 bg-white pt-1.5 dark:bg-stone-800">
+        <ChatInput
+          onSubmit={async message => {
+            await sendMessage(message)
+          }}
+        />
       </div>
     </div>
   )
