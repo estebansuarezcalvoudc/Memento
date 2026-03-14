@@ -19,8 +19,8 @@ export default function Chat() {
 
   return (
     <div className="flex h-screen w-full flex-col">
-      <ul className="my-3 flex-1 overflow-y-auto" ref={chatDivRef}>
-        <div className="mx-auto px-3 md:w-full lg:w-4xl">
+      <ul className="my-2 flex-1 overflow-y-auto" ref={chatDivRef}>
+        <div className="mx-auto w-full max-w-3xl space-y-4">
           {messages.map(({ role, content }, index) => {
             if (role === 'user') {
               return <UserMessage key={index} content={content} />
@@ -30,9 +30,8 @@ export default function Chat() {
           })}
         </div>
       </ul>
-      <div className="mx-auto w-full px-3 pb-3 sm:w-full md:w-3/4 lg:w-1/2">
-        <ChatInput chatId={chatId!} />
-      </div>
+
+      <ChatInput chatId={chatId!} />
     </div>
   )
 }
