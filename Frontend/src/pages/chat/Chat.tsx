@@ -25,9 +25,9 @@ export default function Chat() {
       >
         {messages.map(({ role, content }, index) => {
           if (role === 'user') {
-            return <UserMessage key={index} text={content} />
+            return <UserMessage key={index} content={content} />
           } else {
-            return <AssistantMessage key={index} text={content} />
+            return <AssistantMessage key={index} content={content} />
           }
         })}
       </ul>
