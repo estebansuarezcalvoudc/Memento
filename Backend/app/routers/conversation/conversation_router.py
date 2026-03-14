@@ -1,7 +1,6 @@
 import json
 from typing import Annotated
 
-import jwt
 from fastapi import (
     APIRouter,
     Depends,
@@ -12,10 +11,11 @@ from fastapi import (
 )
 
 from ...core.logging import setup_logger
-from ...core.settings import settings
-from ...dependencies.auth_dependencies import get_current_active_user
+from ...dependencies.auth_dependencies import (
+    get_current_active_user,
+    get_current_ws_user,
+)
 from ...dependencies.service_dependencies import get_conversation_service
-from ...repositories.implementations.mongo.auth_mongo_repo import AuthMongoRepository
 from ...schemas.auth.auth_schema import User
 from ...schemas.conversation.conversation_schema import (
     ChatRequest,
@@ -29,29 +29,10 @@ _logger = setup_logger(__name__)
 router = APIRouter(prefix="/conversations", tags=["Conversations"])
 
 
-def _authenticate_ws_token(token: str) -> User:
-    """Validate a JWT token for a WebSocket connection and return the user."""
-    credentials_exception = WebSocketDisconnect(code=4001)
-    try:
-        payload = jwt.decode(
-            token, settings.secret_key, algorithms=[settings.algorithm]
-        )
-        user_id: str = payload.get("sub")
-        if user_id is None:
-            raise credentials_exception
-    except jwt.InvalidTokenError:
-        raise credentials_exception
-
-    user = AuthMongoRepository().retrieve_user_by_id(user_id=user_id)
-    if user is None:
-        raise credentials_exception
-
-    return User(id=user.id, username=user.username)
-
-
 @router.websocket("/ws")
 async def chat_websocket(
     websocket: WebSocket,
+    current_user: Annotated[User, Depends(get_current_ws_user)],
     conversation_service: Annotated[
         ConversationService, Depends(get_conversation_service)
     ],
@@ -72,17 +53,6 @@ async def chat_websocket(
         { "type": "done" }  — sent when streaming has successfully completed
         { "type": "error", "content": "..." }  — on failure, instead of done
     """
-    token = websocket.query_params.get("token")
-    if not token:
-        await websocket.close(code=4001)
-        return
-
-    try:
-        current_user = _authenticate_ws_token(token)
-    except WebSocketDisconnect:
-        await websocket.close(code=4001)
-        return
-
     await websocket.accept()
 
     try:
