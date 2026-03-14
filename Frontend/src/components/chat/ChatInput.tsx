@@ -46,7 +46,7 @@ export default function ChatInput({ onSubmit }: ChatInputProps) {
   }
 
   return (
-    <div className="font-ubuntu mx-auto mb-2 flex w-full max-w-3xl items-center rounded-2xl bg-stone-200 py-1 pr-1.5 pl-3 text-base dark:bg-stone-700">
+    <div className="font-ubuntu mx-auto mb-2 flex w-full max-w-3xl items-center rounded-2xl border-2 border-stone-300 bg-stone-200 py-1 pr-1.5 pl-3 text-base dark:border-stone-600 dark:bg-stone-700">
       <textarea
         ref={textareaRef}
         rows={1}

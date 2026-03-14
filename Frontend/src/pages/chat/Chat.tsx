@@ -13,7 +13,7 @@ export default function Chat() {
   const { chatId } = useParams<{ chatId: string }>()
   const { data: messages = [] } = useGetChatMessages(chatId)
   const { mutateAsync: sendMessage } = useSendMessage(chatId!)
-  const chatDivRef = useRef<HTMLUListElement | null>(null)
+  const chatDivRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     if (chatDivRef.current) {
@@ -22,8 +22,11 @@ export default function Chat() {
   }, [messages])
 
   return (
-    <div className="flex h-screen w-full flex-col">
-      <ul ref={chatDivRef} className="flex-1 overflow-y-auto">
+    <div
+      ref={chatDivRef}
+      className="flex h-screen w-full flex-col overflow-y-scroll"
+    >
+      <ul className="flex-1">
         <div className="mx-auto w-full max-w-3xl space-y-4 py-3">
           {messages.map(({ role, content }, index) => {
             if (role === 'user') {
@@ -34,7 +37,9 @@ export default function Chat() {
           })}
         </div>
       </ul>
-      <ChatInput onSubmit={message => sendMessage(message)} />
+      <div className="sticky bottom-0 bg-white dark:bg-stone-800">
+        <ChatInput onSubmit={message => sendMessage(message)} />
+      </div>
     </div>
   )
 }
