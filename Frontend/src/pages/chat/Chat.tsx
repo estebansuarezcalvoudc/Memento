@@ -1,17 +1,13 @@
 import { useCallback, useEffect, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ClipLoader } from 'react-spinners'
 
 import { useGetChatMessages } from '../../api/queries/useChatsQueries'
-import AssistantMessage from '../../components/chat/AssistantMessage'
-import ChatInput from '../../components/chat/ChatInput'
-import UserMessage from '../../components/chat/UserMessage'
+import ChatConversation from '../../components/chat/ChatConversation'
+import NewChatView from '../../components/chat/NewChatView'
 import { useChat } from '../../hooks/useChat'
 
 export default function Chat() {
   const { chatId } = useParams<{ chatId?: string }>()
-  const { t } = useTranslation()
   const navigate = useNavigate()
 
   const { data: messages = [] } = useGetChatMessages(chatId)
@@ -39,52 +35,18 @@ export default function Chat() {
     }
   }, [messages, streamingContent, isRetrieving])
 
-  // Show the centered "new chat" layout only when there is no conversation yet
-  // AND the user hasn't sent a message yet. Once they submit, switch to the
-  // chat list layout immediately so the retrieving indicator appears inline.
   if (!chatId && !hasSentMessage) {
-    return (
-      <div className="flex h-screen w-full flex-col items-center justify-center gap-6 px-3">
-        <h2 className="font-ubuntu text-4xl text-stone-900 dark:text-stone-100">
-          {t('chat.howCanIHelp')}
-        </h2>
-        <ChatInput onSubmit={sendMessage} />
-      </div>
-    )
+    return <NewChatView onSubmit={sendMessage} />
   }
 
   return (
-    <div
+    <ChatConversation
       ref={chatDivRef}
-      className="flex h-screen w-full flex-col overflow-y-scroll"
-    >
-      <div className="mx-auto w-full max-w-3xl flex-1 space-y-4 py-3">
-        <ul className="space-y-4">
-          {messages.map(({ role, content }, index) => {
-            if (role === 'user') {
-              return <UserMessage key={index} content={content} />
-            } else {
-              return <AssistantMessage key={index} content={content} />
-            }
-          })}
-          {isRetrieving && !streamingContent && (
-            <li className="flex items-center gap-2 px-3 text-stone-500 dark:text-stone-400">
-              <ClipLoader size={14} color="currentColor" />
-              <span className="text-sm">{t('chat.retrievingInfo')}</span>
-            </li>
-          )}
-          {isStreaming && streamingContent && (
-            <AssistantMessage content={streamingContent} />
-          )}
-        </ul>
-      </div>
-      <div className="sticky bottom-0 bg-white pt-1.5 dark:bg-stone-800">
-        <ChatInput
-          onSubmit={message => {
-            sendMessage(message)
-          }}
-        />
-      </div>
-    </div>
+      messages={messages}
+      streamingContent={streamingContent}
+      isStreaming={isStreaming}
+      isRetrieving={isRetrieving}
+      onSubmit={sendMessage}
+    />
   )
 }
