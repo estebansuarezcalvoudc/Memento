@@ -1,25 +1,23 @@
 import { useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 
-import {
-  useGetChatMessages,
-  useSendMessage,
-} from '../../api/queries/useChatsQueries'
+import { useGetChatMessages } from '../../api/queries/useChatsQueries'
 import AssistantMessage from '../../components/chat/AssistantMessage'
 import ChatInput from '../../components/chat/ChatInput'
 import UserMessage from '../../components/chat/UserMessage'
+import { useChat } from '../../hooks/useChat'
 
 export default function Chat() {
   const { chatId } = useParams<{ chatId: string }>()
   const { data: messages = [] } = useGetChatMessages(chatId)
-  const { mutateAsync: sendMessage } = useSendMessage(chatId!)
+  const { sendMessage, streamingContent, isStreaming } = useChat(chatId ?? null)
   const chatDivRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     if (chatDivRef.current) {
       chatDivRef.current.scrollTop = chatDivRef.current.scrollHeight
     }
-  }, [messages])
+  }, [messages, streamingContent])
 
   return (
     <div
@@ -35,12 +33,15 @@ export default function Chat() {
               return <AssistantMessage key={index} content={content} />
             }
           })}
+          {isStreaming && streamingContent && (
+            <AssistantMessage content={streamingContent} />
+          )}
         </ul>
       </div>
       <div className="sticky bottom-0 bg-white pt-1.5 dark:bg-stone-800">
         <ChatInput
-          onSubmit={async message => {
-            await sendMessage(message)
+          onSubmit={message => {
+            sendMessage(message)
           }}
         />
       </div>

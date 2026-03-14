@@ -1,3 +1,4 @@
+from collections.abc import AsyncGenerator
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -41,4 +42,22 @@ def mock_rag_get_reply():
         new_callable=AsyncMock,
     ) as mock:
         mock.return_value = "AI response"
+        yield mock
+
+
+async def _ai_response_stream() -> AsyncGenerator[str, None]:
+    for token in ["AI", " ", "response"]:
+        yield token
+
+
+@pytest.fixture
+def mock_rag_get_reply_stream():
+    """
+    Mock Rag.get_reply_stream to avoid real LLM and ChromaDB calls.
+    Returns a canned token-by-token stream: "AI", " ", "response".
+    """
+    with patch(
+        "app.services.conversation.rag.Rag.get_reply_stream",
+        return_value=_ai_response_stream(),
+    ) as mock:
         yield mock

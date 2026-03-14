@@ -1,3 +1,4 @@
+from collections.abc import AsyncGenerator
 from datetime import datetime
 
 import dateparser.search
@@ -27,14 +28,8 @@ class Rag:
         self._settings_repository = settings_repository
         self._vector_store = vector_store
 
-    async def get_reply(
-        self,
-        message: str,
-        conversation_history: list[dict],
-        current_date: str,
-        user_id: str,
-    ) -> str:
-        chat_history = [
+    def _build_chat_history(self, conversation_history: list[dict]) -> list:
+        return [
             (
                 HumanMessage(content=m["content"])
                 if m["role"] == "user"
@@ -44,9 +39,9 @@ class Rag:
             if m.get("role") in ("user", "assistant") and m.get("content")
         ]
 
-        chat_config = self._settings_repository.get_chat_model(user_id)
-        retrieval_config = self._settings_repository.get_retrieval_model(user_id)
-
+    def _log_model_configs(
+        self, chat_config: ModelConfig, retrieval_config: ModelConfig
+    ) -> None:
         _logger.info(
             f"Chat model:      provider={chat_config.provider!r}  "
             f"model={chat_config.model_name!r}"
@@ -56,6 +51,18 @@ class Rag:
             f"model={retrieval_config.model_name!r}"
         )
 
+    async def get_reply(
+        self,
+        message: str,
+        conversation_history: list[dict],
+        current_date: str,
+        user_id: str,
+    ) -> str:
+        chat_history = self._build_chat_history(conversation_history)
+        chat_config = self._settings_repository.get_chat_model(user_id)
+        retrieval_config = self._settings_repository.get_retrieval_model(user_id)
+        self._log_model_configs(chat_config, retrieval_config)
+
         rag_chain = self._build_rag_chain(chat_config, retrieval_config, user_id)
         return await rag_chain.ainvoke(
             {
@@ -64,6 +71,43 @@ class Rag:
                 "current_date": current_date,
             }
         )
+
+    async def get_reply_stream(
+        self,
+        message: str,
+        conversation_history: list[dict],
+        current_date: str,
+        user_id: str,
+    ) -> AsyncGenerator[str, None]:
+        chat_history = self._build_chat_history(conversation_history)
+        chat_config = self._settings_repository.get_chat_model(user_id)
+        retrieval_config = self._settings_repository.get_retrieval_model(user_id)
+        self._log_model_configs(chat_config, retrieval_config)
+
+        llm_chat = self._get_llm(chat_config, user_id)
+        llm_retrieval = self._get_llm(retrieval_config, user_id)
+
+        # Run the retrieval pipeline (contextualization + vector search) to completion
+        # first, then stream only the final LLM generation step.
+        retrieval_chain = self._build_retrieval_chain(llm_retrieval, user_id)
+        retrieval_input = {
+            "input": message,
+            "chat_history": chat_history,
+            "current_date": current_date,
+        }
+        retrieved_context = await retrieval_chain.ainvoke(retrieval_input)
+
+        qa_chain = QA_PROMPT | llm_chat
+        async for chunk in qa_chain.astream(
+            {
+                "input": message,
+                "chat_history": chat_history,
+                "context": retrieved_context,
+                "current_date": current_date,
+            }
+        ):
+            if chunk.content:
+                yield chunk.content
 
     def _get_llm(self, llm_config: ModelConfig, user_id: str):
         """Resolve provider settings and instantiate an LLM for the given config."""
@@ -90,15 +134,8 @@ class Rag:
         api_key = provider_settings.api_key_encrypted if provider_settings else ""
         return create_llm(llm_config, api_key or "")
 
-    def _build_rag_chain(
-        self,
-        chat_config: ModelConfig,
-        retrieval_config: ModelConfig,
-        user_id: str,
-    ):
-        llm_chat = self._get_llm(chat_config, user_id)
-        llm_retrieval = self._get_llm(retrieval_config, user_id)
-
+    def _build_retrieval_chain(self, llm_retrieval, user_id: str):
+        """Returns a chain that resolves the query and retrieves formatted context."""
         contextualize_chain = CONTEXTUALIZE_PROMPT | llm_retrieval | StrOutputParser()
 
         def contextualize_if_needed(input: dict) -> dict:
@@ -139,11 +176,23 @@ class Rag:
             )
 
         return (
-            RunnablePassthrough.assign(
-                context=RunnableLambda(contextualize_if_needed)
-                | RunnableLambda(retrieve_with_date_filter)
-                | Rag._format_docs
-            )
+            RunnableLambda(contextualize_if_needed)
+            | RunnableLambda(retrieve_with_date_filter)
+            | Rag._format_docs
+        )
+
+    def _build_rag_chain(
+        self,
+        chat_config: ModelConfig,
+        retrieval_config: ModelConfig,
+        user_id: str,
+    ):
+        llm_chat = self._get_llm(chat_config, user_id)
+        llm_retrieval = self._get_llm(retrieval_config, user_id)
+        retrieval_chain = self._build_retrieval_chain(llm_retrieval, user_id)
+
+        return (
+            RunnablePassthrough.assign(context=retrieval_chain)
             | QA_PROMPT
             | llm_chat
             | StrOutputParser()

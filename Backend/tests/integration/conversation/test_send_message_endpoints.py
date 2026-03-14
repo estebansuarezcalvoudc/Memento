@@ -1,3 +1,6 @@
+import json
+
+import pytest
 from bson import ObjectId
 from fastapi.testclient import TestClient
 
@@ -12,8 +15,8 @@ _USER_DATA = {
 }
 
 _REQUEST = {
+    "conversation_id": VALID_CONV_ID,
     "message": "What was discussed in the last meeting?",
-    "language_model_configuration": {"provider": "OpenAI", "model": "gpt-4o-mini"},
     "current_datetime": "2024-01-15T10:00:00",
 }
 
@@ -27,64 +30,79 @@ def _mongo_side_effect(conversation_data):
     return side_effect
 
 
-class TestSendMessageEndpoint:
-    def test_send_message_should_return_ai_reply_and_persist_messages(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_rag_get_reply
+class TestChatWebSocketSendMessage:
+    def test_send_message_should_stream_ai_reply_and_persist_messages(
+        self,
+        client: TestClient,
+        auth_headers: dict,
+        mock_mongo,
+        mock_rag_get_reply_stream,
     ):
         mock_mongo.find_one.side_effect = _mongo_side_effect(
             conversation_data={
                 "messages": [{"role": "system", "content": "You are an assistant."}]
             }
         )
+        token = auth_headers["Authorization"].split(" ")[1]
 
-        response = client.post(
-            f"/conversations/{VALID_CONV_ID}/chat",
-            headers=auth_headers,
-            json=_REQUEST,
-        )
+        with client.websocket_connect(f"/conversations/ws?token={token}") as ws:
+            ws.send_text(json.dumps(_REQUEST))
 
-        assert response.status_code == 200
-        assert response.json() == "AI response"
-        mock_rag_get_reply.assert_awaited_once()
-        mock_mongo.update_one.assert_called_once()
+            messages = []
+            while True:
+                msg = json.loads(ws.receive_text())
+                messages.append(msg)
+                if msg["type"] in ("done", "error"):
+                    break
 
-    def test_send_message_should_return_404_when_conversation_does_not_exist(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_rag_get_reply
+        token_msgs = [m for m in messages if m["type"] == "token"]
+        assert "".join(m["content"] for m in token_msgs) == "AI response"
+        assert messages[-1]["type"] == "done"
+        # User message persisted + assistant message persisted
+        assert mock_mongo.update_one.call_count == 2
+
+    def test_send_message_should_send_error_when_conversation_does_not_exist(
+        self,
+        client: TestClient,
+        auth_headers: dict,
+        mock_mongo,
+        mock_rag_get_reply_stream,
     ):
         mock_mongo.find_one.side_effect = _mongo_side_effect(conversation_data=None)
+        token = auth_headers["Authorization"].split(" ")[1]
 
-        response = client.post(
-            f"/conversations/{VALID_CONV_ID}/chat",
-            headers=auth_headers,
-            json=_REQUEST,
-        )
+        with client.websocket_connect(f"/conversations/ws?token={token}") as ws:
+            ws.send_text(json.dumps(_REQUEST))
+            msg = json.loads(ws.receive_text())
+            assert msg["type"] == "error"
 
-        assert response.status_code == 404
-        assert "not found" in response.json()["detail"].lower()
-
-    def test_send_message_should_return_422_for_invalid_conversation_id_format(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_rag_get_reply
+    def test_send_message_should_reject_missing_token(
+        self, client: TestClient, mock_mongo
     ):
-        response = client.post(
-            "/conversations/not-a-valid-id/chat",
-            headers=auth_headers,
-            json=_REQUEST,
-        )
+        with pytest.raises(Exception):
+            with client.websocket_connect("/conversations/ws") as ws:
+                ws.receive_text()
 
-        assert response.status_code == 422
-
-    def test_send_message_should_require_authentication(self, client: TestClient):
-        response = client.post(f"/conversations/{VALID_CONV_ID}/chat", json=_REQUEST)
-
-        assert response.status_code == 401
-
-    def test_send_message_should_validate_required_message_field(
-        self, client: TestClient, auth_headers: dict, mock_mongo, mock_rag_get_reply
+    def test_send_message_should_send_error_on_invalid_json(
+        self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        response = client.post(
-            f"/conversations/{VALID_CONV_ID}/chat",
-            headers=auth_headers,
-            json={},
-        )
+        token = auth_headers["Authorization"].split(" ")[1]
 
-        assert response.status_code == 422
+        with client.websocket_connect(f"/conversations/ws?token={token}") as ws:
+            ws.send_text("this is not valid json")
+            msg = json.loads(ws.receive_text())
+            assert msg["type"] == "error"
+
+    def test_send_message_should_send_error_on_missing_message_field(
+        self, client: TestClient, auth_headers: dict, mock_mongo
+    ):
+        token = auth_headers["Authorization"].split(" ")[1]
+        bad_request = {
+            "conversation_id": VALID_CONV_ID,
+            "current_datetime": "2024-01-15T10:00:00",
+        }
+
+        with client.websocket_connect(f"/conversations/ws?token={token}") as ws:
+            ws.send_text(json.dumps(bad_request))
+            msg = json.loads(ws.receive_text())
+            assert msg["type"] == "error"

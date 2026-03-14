@@ -72,5 +72,7 @@ class TestCreateLlm:
         call_kwargs = mock_openai_cls.call_args.kwargs
         assert call_kwargs["model"] == "gpt-4o"
         assert call_kwargs["temperature"] == 0.5
-        assert call_kwargs["max_tokens"] == 1000
-        assert call_kwargs["api_key"] == "sk-plain"
+        from pydantic import SecretStr
+
+        assert call_kwargs["max_completion_tokens"] == 1000
+        assert call_kwargs["api_key"] == SecretStr("sk-plain")
