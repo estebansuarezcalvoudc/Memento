@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { type Meeting } from '../../../types/meetings'
+import Input from '../../common/Input'
 import ColumnHeader from '../ColumnHeader'
 import MeetingItem from './MeetingItem'
 
@@ -10,25 +11,47 @@ interface MeetingsListProps {
 
 export default function MeetingsList({ meetings }: MeetingsListProps) {
   const [query, setQuery] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
 
+  const today = new Date().toISOString().split('T')[0]
   const gridCols = 'grid-cols-[20px_1fr_150px_32px_32px]'
 
-  const filteredMeetings = query
-    ? meetings.filter(m => fuzzyMatch(m.title, query))
-    : meetings
+  const filteredMeetings = meetings.filter(m => {
+    const matchesQuery = !query || fuzzyMatch(m.title, query)
+    const matchesFrom = !dateFrom || m.date >= dateFrom
+    const matchesTo = !dateTo || m.date <= dateTo
+    return matchesQuery && matchesFrom && matchesTo
+  })
 
   return (
     <div className="w-full">
-      <div className="relative mb-3 w-1/2">
-        <span className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-stone-400 dark:text-stone-500">
-          {listSearch}
-        </span>
-        <input
-          type="search"
-          placeholder="Search meetings..."
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          className="font-ubuntu h-9 w-full rounded-lg border border-stone-300 bg-transparent pr-3 pl-9 text-base text-stone-800 outline-none focus:border-stone-500 dark:border-stone-600 dark:text-stone-100 dark:focus:border-stone-400"
+      <div className="mb-3 flex items-end gap-3">
+        <div className="relative w-1/2">
+          <span className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-stone-400 dark:text-stone-500">
+            {listSearch}
+          </span>
+          <input
+            type="search"
+            placeholder="Search meetings..."
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            className="font-ubuntu h-9 w-full rounded-lg border border-stone-300 bg-transparent pr-3 pl-9 text-base text-stone-800 outline-none focus:border-stone-500 dark:border-stone-600 dark:text-stone-100 dark:focus:border-stone-400"
+          />
+        </div>
+        <Input
+          label="From"
+          type="date"
+          value={dateFrom}
+          max={today}
+          onChange={e => setDateFrom(e.target.value)}
+        />
+        <Input
+          label="To"
+          type="date"
+          value={dateTo}
+          max={today}
+          onChange={e => setDateTo(e.target.value)}
         />
       </div>
       <div
