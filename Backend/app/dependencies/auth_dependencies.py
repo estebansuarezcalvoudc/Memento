@@ -1,7 +1,7 @@
 from typing import Annotated
 
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, WebSocket, WebSocketDisconnect, status
 from fastapi.security import OAuth2PasswordBearer
 
 from app.repositories.implementations.mongo.auth_mongo_repo import AuthMongoRepository
@@ -51,3 +51,30 @@ async def get_current_active_user(
     # Add any additional user validation here if needed
     # For example, check if user is active, not banned, etc.
     return current_user
+
+
+async def get_current_ws_user(
+    websocket: WebSocket,
+    users_repo: Annotated[AuthRepository, Depends(_get_auth_repository)],
+) -> User:
+    credentials_exception = WebSocketDisconnect(code=4001)
+
+    token = websocket.query_params.get("token")
+    if not token:
+        raise credentials_exception
+
+    try:
+        payload = jwt.decode(
+            token, settings.secret_key, algorithms=[settings.algorithm]
+        )
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
+    except jwt.InvalidTokenError:
+        raise credentials_exception
+
+    user = users_repo.retrieve_user_by_id(user_id=user_id)
+    if user is None:
+        raise credentials_exception
+
+    return User(id=user.id, username=user.username)

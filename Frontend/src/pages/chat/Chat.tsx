@@ -1,49 +1,60 @@
-import { useEffect, useRef } from 'react'
-import { useParams } from 'react-router-dom'
+import { useCallback, useEffect, useRef } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 
-import {
-  useGetChatMessages,
-  useSendMessage,
-} from '../../api/queries/useChatsQueries'
-import AssistantMessage from '../../components/chat/AssistantMessage'
-import ChatInput from '../../components/chat/ChatInput'
-import UserMessage from '../../components/chat/UserMessage'
+import { useChat } from '../../api/chat/useChat'
+import { useGetChatMessages } from '../../api/queries/useChatsQueries'
+import ChatConversation from '../../components/chat/ChatConversation'
+import NewChatView from '../../components/chat/NewChatView'
 
 export default function Chat() {
-  const { chatId } = useParams<{ chatId: string }>()
+  const { chatId } = useParams<{ chatId?: string }>()
+  const navigate = useNavigate()
+
   const { data: messages = [] } = useGetChatMessages(chatId)
-  const { mutateAsync: sendMessage } = useSendMessage(chatId!)
+
+  const onConversationCreated = useCallback(
+    (id: string) => {
+      navigate(`/chats/${id}`, { replace: true })
+    },
+    [navigate],
+  )
+
+  const {
+    sendMessage,
+    streamingContent,
+    isStreaming,
+    isRetrieving,
+    hasSentMessage,
+    error,
+  } = useChat(chatId ?? null, onConversationCreated)
+
   const chatDivRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     if (chatDivRef.current) {
       chatDivRef.current.scrollTop = chatDivRef.current.scrollHeight
     }
-  }, [messages])
+  }, [messages, streamingContent, isRetrieving])
+
+  if (!chatId && !hasSentMessage && !error) {
+    return <NewChatView onSubmit={sendMessage} />
+  }
 
   return (
-    <div
-      ref={chatDivRef}
-      className="flex h-screen w-full flex-col overflow-y-scroll"
-    >
-      <div className="mx-auto w-full max-w-3xl flex-1 space-y-4 py-3">
-        <ul className="space-y-4">
-          {messages.map(({ role, content }, index) => {
-            if (role === 'user') {
-              return <UserMessage key={index} content={content} />
-            } else {
-              return <AssistantMessage key={index} content={content} />
-            }
-          })}
-        </ul>
-      </div>
-      <div className="sticky bottom-0 bg-white pt-1.5 dark:bg-stone-800">
-        <ChatInput
-          onSubmit={async message => {
-            await sendMessage(message)
-          }}
-        />
-      </div>
-    </div>
+    <>
+      {error && (
+        <div className="mb-2 rounded bg-red-100 px-4 py-3 text-red-800 dark:bg-red-900 dark:text-red-200">
+          {error}
+        </div>
+      )}
+      <ChatConversation
+        ref={chatDivRef}
+        messages={messages}
+        streamingContent={streamingContent}
+        isStreaming={isStreaming}
+        isRetrieving={isRetrieving}
+        onSubmit={sendMessage}
+      />
+    </>
   )
 }

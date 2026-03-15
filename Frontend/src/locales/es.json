@@ -193,7 +193,8 @@
   },
   "chat": {
     "messagePlaceholder": "Escribe un mensaje...",
-    "howCanIHelp": "¿En qué puedo ayudarte?"
+    "howCanIHelp": "¿En qué puedo ayudarte?",
+    "retrievingInfo": "Consultando información de reuniones..."
   },
   "common": {
     "somethingWentWrong": "Algo salió mal",

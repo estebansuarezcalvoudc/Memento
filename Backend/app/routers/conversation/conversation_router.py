@@ -1,18 +1,27 @@
+import json
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+    status,
+)
 
 from ...core.logging import setup_logger
-from ...dependencies.auth_dependencies import get_current_active_user
+from ...dependencies.auth_dependencies import (
+    get_current_active_user,
+    get_current_ws_user,
+)
 from ...dependencies.service_dependencies import get_conversation_service
 from ...schemas.auth.auth_schema import User
 from ...schemas.conversation.conversation_schema import (
-    ConversationCreateRequest,
-    ConversationCreateResponse,
+    ChatRequest,
     ConversationMetadataRetrieve,
     ConversationUpdateRequest,
     Messages,
-    SendMessageRequest,
 )
 from ...services.conversation.conversation_service import ConversationService
 
@@ -20,60 +29,57 @@ _logger = setup_logger(__name__)
 router = APIRouter(prefix="/conversations", tags=["Conversations"])
 
 
-@router.post(
-    "",
-    status_code=status.HTTP_200_OK,
-    summary="Create a new conversation",
-    tags=["Conversations"],
-)
-async def create_conversation(
-    conversation_create_request: ConversationCreateRequest,
-    current_user: Annotated[User, Depends(get_current_active_user)],
+@router.websocket("/ws")
+async def chat_websocket(
+    websocket: WebSocket,
+    current_user: Annotated[User, Depends(get_current_ws_user)],
     conversation_service: Annotated[
         ConversationService, Depends(get_conversation_service)
     ],
-) -> ConversationCreateResponse:
+):
+    """
+    WebSocket endpoint for creating conversations and sending messages with streaming.
+
+    Query params:
+        token (str): JWT bearer token for authentication.
+
+    Client sends:
+        { "conversation_id": null | "<id>", "message": "...", "current_datetime": "..." }
+
+    Server sends (in order):
+        { "type": "conversation_created", "conversation_id": "...", "title": "..." }
+        { "type": "retrieving" }  — indicates the assistant is retrieving context before streaming
+        { "type": "token", "content": "..." }  — repeated for each LLM token
+        { "type": "done" }  — sent when streaming has successfully completed
+        { "type": "error", "content": "..." }  — on failure, instead of done
+    """
+    await websocket.accept()
+
     try:
-        response = await conversation_service.create_conversation(
-            conversation_create_request, current_user.id
-        )
-        return response
-    except Exception as e:
-        _logger.error(f"Error creating conversation: {str(e)}", exc_info=True)
-        _logger.error(f"Exception type: {type(e).__name__}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error while creating conversation",
+        raw = await websocket.receive_text()
+        chat_request = ChatRequest.model_validate_json(raw)
+
+        event_stream = await conversation_service.handle_chat(
+            chat_request, current_user.id
         )
 
+        async for event in event_stream:
+            await websocket.send_text(event.model_dump_json())
 
-@router.post(
-    "/{id}/chat",
-    status_code=status.HTTP_200_OK,
-    summary="Send a message to the chatbot and get a response",
-    tags=["Conversations"],
-)
-async def send_message(
-    id: str,
-    send_message_request: SendMessageRequest,
-    current_user: Annotated[User, Depends(get_current_active_user)],
-    conversation_service: Annotated[
-        ConversationService, Depends(get_conversation_service)
-    ],
-) -> str:
-    try:
-        return await conversation_service.send_message(
-            id, send_message_request, current_user.id
-        )
-    except HTTPException:
-        raise
+    except WebSocketDisconnect:
+        _logger.info(f"WebSocket disconnected for user {current_user.id}")
     except Exception as e:
-        _logger.error(f"Error sending message: {str(e)}")
-        _logger.error(f"Exception type: {type(e).__name__}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error while sending message",
+        _logger.error(
+            f"Error in chat WebSocket for user {current_user.id}: {type(e).__name__}: {e}",
+            exc_info=True,
         )
+        try:
+            await websocket.send_text(
+                json.dumps({"type": "error", "content": "Internal server error"})
+            )
+        except Exception:
+            pass
+        await websocket.close(code=4000)
 
 
 @router.get(

@@ -1,10 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { type Chat, type Message } from '../../types/chats'
+import { chatKey, CHATS_KEY } from '../chat/chatQueryKeys'
 import fetchBackend from '../utils/fetchBackend'
-
-const CHATS_KEY = ['chats'] as const
-const chatKey = (id: string) => ['chat', id] as const
 
 export function useGetChats() {
   return useQuery<Chat[]>({
@@ -18,55 +16,6 @@ export function useGetChatMessages(id: string | undefined) {
     queryKey: chatKey(id!),
     queryFn: () => fetchBackend('GET', `conversations/${id}`),
     enabled: !!id,
-  })
-}
-
-export function useCreateChat() {
-  const queryClient = useQueryClient()
-  return useMutation<Chat, Error, string>({
-    mutationFn: message =>
-      fetchBackend('POST', 'conversations', {
-        message,
-        current_datetime: new Date().toISOString(),
-      }),
-    onSuccess: newChat => {
-      queryClient.setQueryData<Chat[]>(CHATS_KEY, old =>
-        old ? [newChat, ...old] : [newChat],
-      )
-    },
-  })
-}
-
-export function useSendMessage(chatId: string) {
-  const queryClient = useQueryClient()
-  return useMutation<string, Error, string>({
-    mutationFn: message =>
-      fetchBackend('POST', `conversations/${chatId}/chat`, {
-        message,
-        current_datetime: new Date().toISOString(),
-      }),
-    onMutate: async message => {
-      await queryClient.cancelQueries({ queryKey: chatKey(chatId) })
-      const previous = queryClient.getQueryData<Message[]>(chatKey(chatId))
-      queryClient.setQueryData<Message[]>(chatKey(chatId), old => [
-        ...(old ?? []),
-        {
-          role: 'user',
-          content: message,
-          current_datetime: new Date().toISOString(),
-        },
-      ])
-      return { previous }
-    },
-    onSuccess: assistantResponse => {
-      queryClient.setQueryData<Message[]>(chatKey(chatId), old => [
-        ...(old ?? []),
-        { role: 'assistant', content: assistantResponse },
-      ])
-    },
-    onError: (_, __, context) => {
-      queryClient.setQueryData(chatKey(chatId), context?.previous)
-    },
   })
 }
 

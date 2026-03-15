@@ -8,7 +8,7 @@ from tests.conftest import TEST_USER_ID
 class TestTemplatesEndpoints:
 
     def test_get_default_prompt_should_return_system_default(self, client: TestClient):
-        response = client.get("/settings/templates/default-prompt")
+        response = client.get("/settings/templates/default-prompt?lang=en")
 
         assert response.status_code == 200
         data = response.json()

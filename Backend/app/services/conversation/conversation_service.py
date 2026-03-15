@@ -1,14 +1,21 @@
 import asyncio
+from collections.abc import AsyncGenerator
 
 from ...core.logging import setup_logger
 from ...repositories.interfaces.conversation_repo import ConversationRepository
 from ...schemas.conversation.conversation_schema import (
+    ChatEvent,
+    ChatRequest,
+    ConversationCreatedEvent,
     ConversationCreateRequest,
     ConversationCreateResponse,
     ConversationDialogueRetrieve,
     ConversationMetadataRetrieve,
     ConversationUpdateRequest,
+    DoneEvent,
+    RetrievingEvent,
     SendMessageRequest,
+    TokenEvent,
 )
 from .rag import Rag
 
@@ -38,6 +45,73 @@ class ConversationService:
         )
 
         return created_conversation
+
+    async def handle_chat(
+        self,
+        request: ChatRequest,
+        user_id: str,
+    ) -> AsyncGenerator[ChatEvent, None]:
+        """
+        Orchestrates the full chat flow and yields typed events:
+
+        - If request.conversation_id is None, creates a new conversation and
+          yields a ConversationCreatedEvent before streaming tokens.
+        - Persists the user message immediately.
+        - Streams LLM tokens as TokenEvent instances.
+        - Persists the full assistant reply once streaming is complete.
+        - Yields a DoneEvent to signal completion.
+        """
+
+        async def _generate() -> AsyncGenerator[ChatEvent, None]:
+            conversation_id = request.conversation_id
+
+            if conversation_id is None:
+                new_conv = self._repository.store_conversation("New chat", user_id, [])
+                conversation_id = new_conv.id
+                yield ConversationCreatedEvent(
+                    conversation_id=new_conv.id,
+                    title=new_conv.title,
+                )
+
+            dialogue = self._repository.fetch_conversation(conversation_id, user_id)
+            conversation_history = dialogue.messages.copy()
+
+            user_message = {"role": "user", "content": request.message}
+            self._repository.append_new_messages_to_conversation(
+                conversation_id, [user_message], user_id
+            )
+
+            full_reply_parts: list[str] = []
+            current_date = request.current_datetime.strftime("%Y-%m-%d")
+
+            yield RetrievingEvent()
+            context = await self._rag_service.retrieve_context(
+                message=request.message,
+                conversation_history=conversation_history,
+                current_date=current_date,
+                user_id=user_id,
+            )
+
+            async for token in self._rag_service.stream_reply(
+                message=request.message,
+                conversation_history=conversation_history,
+                context=context,
+                current_date=current_date,
+                user_id=user_id,
+            ):
+                full_reply_parts.append(token)
+                yield TokenEvent(content=token)
+
+            full_reply = "".join(full_reply_parts)
+            assistant_message = {"role": "assistant", "content": full_reply}
+            self._repository.append_new_messages_to_conversation(
+                conversation_id, [assistant_message], user_id
+            )
+            _logger.debug("streaming message processed and persisted")
+
+            yield DoneEvent()
+
+        return _generate()
 
     async def send_message(
         self,

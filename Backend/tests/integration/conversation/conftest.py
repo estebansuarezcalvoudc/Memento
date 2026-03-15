@@ -1,3 +1,4 @@
+from collections.abc import AsyncGenerator
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -42,3 +43,26 @@ def mock_rag_get_reply():
     ) as mock:
         mock.return_value = "AI response"
         yield mock
+
+
+async def _ai_response_stream() -> AsyncGenerator[str, None]:
+    for token in ["AI", " ", "response"]:
+        yield token
+
+
+@pytest.fixture
+def mock_rag_get_reply_stream():
+    """
+    Mock Rag.retrieve_context and Rag.stream_reply to avoid real LLM and
+    ChromaDB calls. retrieve_context returns a canned context string;
+    stream_reply yields tokens "AI", " ", "response".
+    """
+    with patch(
+        "app.services.conversation.rag.Rag.retrieve_context",
+        new_callable=AsyncMock,
+    ) as mock_retrieve, patch(
+        "app.services.conversation.rag.Rag.stream_reply",
+        return_value=_ai_response_stream(),
+    ) as mock_stream:
+        mock_retrieve.return_value = "some context"
+        yield mock_retrieve, mock_stream

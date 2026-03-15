@@ -4,16 +4,20 @@ import { useTranslation } from 'react-i18next'
 import SendMessageButton from './SendMessageButton'
 
 interface ChatInputProps {
-  onSubmit: (message: string) => Promise<void>
+  onSubmit: (message: string) => void | Promise<void>
+  disabled?: boolean
 }
 
-export default function ChatInput({ onSubmit }: ChatInputProps) {
+export default function ChatInput({
+  onSubmit,
+  disabled = false,
+}: ChatInputProps) {
   const { t } = useTranslation()
   const [userMessage, setUserMessage] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const handleSubmitMessage = async () => {
-    if (!userMessage.trim()) {
+    if (disabled || !userMessage.trim()) {
       return
     }
 
@@ -50,14 +54,15 @@ export default function ChatInput({ onSubmit }: ChatInputProps) {
       <textarea
         ref={textareaRef}
         rows={1}
-        className="mr-2 max-h-[20vh] flex-1 resize-none overflow-y-auto bg-transparent py-1.5 text-stone-800 transition-[height] duration-100 ease-out outline-none dark:text-stone-100"
+        disabled={disabled}
+        className="mr-2 max-h-[20vh] flex-1 resize-none overflow-y-auto bg-transparent py-1.5 text-stone-800 transition-[height] duration-100 ease-out outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:text-stone-100"
         placeholder={t('chat.messagePlaceholder')}
         value={userMessage}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
       />
       <SendMessageButton
-        disabled={userMessage.trim() === ''}
+        disabled={disabled || userMessage.trim() === ''}
         onClick={handleSubmitMessage}
       />
     </div>
