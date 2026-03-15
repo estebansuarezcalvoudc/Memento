@@ -25,6 +25,7 @@ export default function Chat() {
     isStreaming,
     isRetrieving,
     hasSentMessage,
+    error,
   } = useChat(chatId ?? null, onConversationCreated)
 
   const chatDivRef = useRef<HTMLDivElement | null>(null)
@@ -35,18 +36,25 @@ export default function Chat() {
     }
   }, [messages, streamingContent, isRetrieving])
 
-  if (!chatId && !hasSentMessage) {
+  if (!chatId && !hasSentMessage && !error) {
     return <NewChatView onSubmit={sendMessage} />
   }
 
   return (
-    <ChatConversation
-      ref={chatDivRef}
-      messages={messages}
-      streamingContent={streamingContent}
-      isStreaming={isStreaming}
-      isRetrieving={isRetrieving}
-      onSubmit={sendMessage}
-    />
+    <>
+      {error && (
+        <div className="mb-2 rounded bg-red-100 px-4 py-3 text-red-800 dark:bg-red-900 dark:text-red-200">
+          {error}
+        </div>
+      )}
+      <ChatConversation
+        ref={chatDivRef}
+        messages={messages}
+        streamingContent={streamingContent}
+        isStreaming={isStreaming}
+        isRetrieving={isRetrieving}
+        onSubmit={sendMessage}
+      />
+    </>
   )
 }

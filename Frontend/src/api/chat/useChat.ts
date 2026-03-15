@@ -66,6 +66,11 @@ export function useChat(
       ws.onclose = (event: CloseEvent) => {
         if (event.code === 4001) {
           window.dispatchEvent(new Event('unauthorized'))
+        } else if (!event.wasClean) {
+          dispatch({
+            type: 'ERROR',
+            content: 'WebSocket connection closed unexpectedly',
+          })
         }
       }
     },
