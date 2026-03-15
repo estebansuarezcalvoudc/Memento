@@ -58,3 +58,53 @@ class FakeWebSocket {
 export function createWsMock() {
   return FakeWebSocket
 }
+
+class ManualFakeWebSocket {
+  static CONNECTING = 0
+  static OPEN = 1
+  static CLOSING = 2
+  static CLOSED = 3
+
+  readyState = ManualFakeWebSocket.OPEN
+  onopen: ((ev: Event) => void) | null = null
+  onmessage: ((ev: MessageEvent) => void) | null = null
+  onerror: ((ev: Event) => void) | null = null
+  onclose: ((ev: CloseEvent) => void) | null = null
+
+  constructor(..._args: unknown[]) {
+    setTimeout(() => {
+      if (this.onopen) {
+        this.onopen(new Event('open'))
+      }
+    }, 0)
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  send(_data: string) {}
+
+  close() {
+    this.readyState = ManualFakeWebSocket.CLOSED
+  }
+
+  simulateEvent(data: object) {
+    if (this.onmessage) {
+      this.onmessage({ data: JSON.stringify(data) } as MessageEvent)
+    }
+  }
+}
+
+export function createManualWsMock() {
+  let lastInstance: ManualFakeWebSocket | null = null
+
+  class TrackingWebSocket extends ManualFakeWebSocket {
+    constructor(...args: unknown[]) {
+      super(...args)
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      lastInstance = this
+    }
+  }
+
+  const getLastInstance = () => lastInstance
+
+  return { WsMock: TrackingWebSocket, getLastInstance }
+}

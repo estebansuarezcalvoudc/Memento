@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import ChatInput from '../../../src/components/chat/ChatInput'
 import Chat from '../../../src/pages/chat/Chat'
-import { createWsMock } from '../../mocks/createWsMock'
+import { createManualWsMock, createWsMock } from '../../mocks/createWsMock'
 import { server } from '../../mocks/server'
 import { withAuth } from '../../mocks/withAuth'
 import { renderWithRouter, setAuthToken, setupStoreReset } from '../../utils'
@@ -107,5 +107,91 @@ describe('Chat Page', () => {
 
     // WS mock echoes back the message as the token content
     expect(await screen.findByText('Echo: My new message')).toBeInTheDocument()
+  })
+
+  it('shows the retrieving spinner while context is being fetched', async () => {
+    const user = userEvent.setup()
+    const { WsMock, getLastInstance } = createManualWsMock()
+    vi.stubGlobal('WebSocket', WsMock)
+    setAuthToken()
+    renderWithRouter(
+      <Routes>
+        <Route path="/chats/:chatId" element={<Chat />} />
+      </Routes>,
+      { route: '/chats/chat-1' },
+    )
+
+    await screen.findByText('Hello')
+
+    const input = screen.getByPlaceholderText('Some message...')
+    await user.type(input, 'My new message')
+    await user.click(screen.getByRole('button'))
+
+    const ws = getLastInstance()!
+    ws.simulateEvent({ type: 'retrieving' })
+
+    expect(
+      await screen.findByText('Checking meeting information...'),
+    ).toBeInTheDocument()
+  })
+
+  it('streams the assistant response progressively', async () => {
+    const user = userEvent.setup()
+    const { WsMock, getLastInstance } = createManualWsMock()
+    vi.stubGlobal('WebSocket', WsMock)
+    setAuthToken()
+    renderWithRouter(
+      <Routes>
+        <Route path="/chats/:chatId" element={<Chat />} />
+      </Routes>,
+      { route: '/chats/chat-1' },
+    )
+
+    await screen.findByText('Hello')
+
+    const input = screen.getByPlaceholderText('Some message...')
+    await user.type(input, 'My new message')
+    await user.click(screen.getByRole('button'))
+
+    const ws = getLastInstance()!
+    ws.simulateEvent({ type: 'retrieving' })
+    ws.simulateEvent({ type: 'token', content: 'Hello' })
+    expect(
+      await screen.findByText('Hello', { selector: 'p' }),
+    ).toBeInTheDocument()
+
+    ws.simulateEvent({ type: 'token', content: ' world' })
+    expect(
+      await screen.findByText('Hello world', { selector: 'p' }),
+    ).toBeInTheDocument()
+  })
+
+  it('disables the input while the assistant is responding and re-enables it when done', async () => {
+    const user = userEvent.setup()
+    const { WsMock, getLastInstance } = createManualWsMock()
+    vi.stubGlobal('WebSocket', WsMock)
+    setAuthToken()
+    renderWithRouter(
+      <Routes>
+        <Route path="/chats/:chatId" element={<Chat />} />
+      </Routes>,
+      { route: '/chats/chat-1' },
+    )
+
+    await screen.findByText('Hello')
+
+    const input = screen.getByPlaceholderText('Some message...')
+    await user.type(input, 'My new message')
+    await user.click(screen.getByRole('button'))
+
+    const ws = getLastInstance()!
+    ws.simulateEvent({ type: 'retrieving' })
+    expect(input).toBeDisabled()
+
+    ws.simulateEvent({ type: 'token', content: 'Partial response' })
+    expect(input).toBeDisabled()
+
+    ws.simulateEvent({ type: 'done' })
+    expect(await screen.findByRole('textbox')).toBeEnabled()
   })
 })
