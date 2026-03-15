@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { type Meeting } from '../../../types/meetings'
 import Input from '../../common/Input'
+import Select from '../../common/Select'
 import ColumnHeader from '../ColumnHeader'
 import MeetingItem from './MeetingItem'
 
@@ -9,10 +10,13 @@ interface MeetingsListProps {
   meetings: Meeting[]
 }
 
+type SortOrder = 'date-desc' | 'date-asc' | 'title-asc' | 'title-desc'
+
 export default function MeetingsList({ meetings }: MeetingsListProps) {
   const [query, setQuery] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('date-desc')
 
   const today = new Date().toISOString().split('T')[0]
   const gridCols = 'grid-cols-[20px_1fr_150px_32px_32px]'
@@ -22,6 +26,19 @@ export default function MeetingsList({ meetings }: MeetingsListProps) {
     const matchesFrom = !dateFrom || m.date >= dateFrom
     const matchesTo = !dateTo || m.date <= dateTo
     return matchesQuery && matchesFrom && matchesTo
+  })
+
+  const sortedMeetings = [...filteredMeetings].sort((a, b) => {
+    switch (sortOrder) {
+      case 'date-desc':
+        return b.date.localeCompare(a.date)
+      case 'date-asc':
+        return a.date.localeCompare(b.date)
+      case 'title-asc':
+        return a.title.localeCompare(b.title)
+      case 'title-desc':
+        return b.title.localeCompare(a.title)
+    }
   })
 
   return (
@@ -54,6 +71,18 @@ export default function MeetingsList({ meetings }: MeetingsListProps) {
           onChange={e => setDateTo(e.target.value)}
         />
       </div>
+      <div className="mb-3 w-1/4">
+        <Select
+          label="Sort by"
+          value={sortOrder}
+          onChange={e => setSortOrder(e.target.value as SortOrder)}
+        >
+          <option value="date-desc">Newest first</option>
+          <option value="date-asc">Oldest first</option>
+          <option value="title-asc">A → Z</option>
+          <option value="title-desc">Z → A</option>
+        </Select>
+      </div>
       <div
         className={`grid ${gridCols} gap-6 border-b border-stone-300 px-4 py-3 dark:border-stone-600`}
       >
@@ -65,7 +94,7 @@ export default function MeetingsList({ meetings }: MeetingsListProps) {
       </div>
 
       <div className="flex flex-col">
-        {filteredMeetings.map((meeting, index) => (
+        {sortedMeetings.map((meeting, index) => (
           <MeetingItem
             key={meeting.id}
             meeting={meeting}
