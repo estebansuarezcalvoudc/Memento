@@ -148,6 +148,17 @@
     "title": "Reuniones",
     "loading": "Cargando reuniones",
     "noMeetings": "No has subido ninguna reunión aún",
+    "list": {
+      "searchLabel": "Buscar",
+      "searchPlaceholder": "Buscar reuniones...",
+      "fromLabel": "Desde",
+      "toLabel": "Hasta",
+      "sortLabel": "Ordenar por",
+      "sortNewestFirst": "Más recientes",
+      "sortOldestFirst": "Más antiguas",
+      "sortAZ": "A → Z",
+      "sortZA": "Z → A"
+    },
     "uploadDialog": {
       "title": "Subir Archivos",
       "columns": {

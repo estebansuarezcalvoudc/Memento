@@ -148,6 +148,17 @@
     "title": "Meetings",
     "loading": "Loading meetings",
     "noMeetings": "You have not uploaded any meetings yet",
+    "list": {
+      "searchLabel": "Search",
+      "searchPlaceholder": "Search meetings...",
+      "fromLabel": "From",
+      "toLabel": "To",
+      "sortLabel": "Sort by",
+      "sortNewestFirst": "Newest first",
+      "sortOldestFirst": "Oldest first",
+      "sortAZ": "A → Z",
+      "sortZA": "Z → A"
+    },
     "uploadDialog": {
       "title": "Upload Files",
       "columns": {

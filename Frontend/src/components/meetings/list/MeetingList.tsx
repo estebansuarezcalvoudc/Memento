@@ -1,8 +1,7 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { type Meeting } from '../../../types/meetings'
-import Input from '../../common/Input'
-import Select from '../../common/Select'
 import ColumnHeader from '../ColumnHeader'
 import MeetingItem from './MeetingItem'
 
@@ -12,7 +11,14 @@ interface MeetingsListProps {
 
 type SortOrder = 'date-desc' | 'date-asc' | 'title-asc' | 'title-desc'
 
+const controlClass =
+  'font-ubuntu h-9 rounded-lg border border-stone-300 bg-transparent px-3 text-base text-stone-800 outline-none focus:border-stone-500 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:focus:border-stone-400'
+
+const labelClass =
+  'font-ubuntu mb-1 ml-1 text-base text-stone-600 dark:text-stone-400'
+
 export default function MeetingsList({ meetings }: MeetingsListProps) {
+  const { t } = useTranslation()
   const [query, setQuery] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -44,44 +50,58 @@ export default function MeetingsList({ meetings }: MeetingsListProps) {
   return (
     <div className="w-full">
       <div className="mb-3 flex items-end gap-3">
-        <div className="relative w-1/2">
-          <span className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-stone-400 dark:text-stone-500">
-            {listSearch}
-          </span>
+        <div className="flex flex-1 flex-col">
+          <label className={labelClass}>{t('meetings.list.searchLabel')}</label>
+          <div className="relative">
+            <span className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-stone-400 dark:text-stone-500">
+              {listSearch}
+            </span>
+            <input
+              type="search"
+              placeholder={t('meetings.list.searchPlaceholder')}
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              className={`${controlClass} w-full pr-3 pl-9`}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col">
+          <label className={labelClass}>{t('meetings.list.fromLabel')}</label>
           <input
-            type="search"
-            placeholder="Search meetings..."
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            className="font-ubuntu h-9 w-full rounded-lg border border-stone-300 bg-transparent pr-3 pl-9 text-base text-stone-800 outline-none focus:border-stone-500 dark:border-stone-600 dark:text-stone-100 dark:focus:border-stone-400"
+            type="date"
+            value={dateFrom}
+            max={today}
+            onChange={e => setDateFrom(e.target.value)}
+            className={`${controlClass} w-40`}
           />
         </div>
-        <Input
-          label="From"
-          type="date"
-          value={dateFrom}
-          max={today}
-          onChange={e => setDateFrom(e.target.value)}
-        />
-        <Input
-          label="To"
-          type="date"
-          value={dateTo}
-          max={today}
-          onChange={e => setDateTo(e.target.value)}
-        />
-      </div>
-      <div className="mb-3 w-1/4">
-        <Select
-          label="Sort by"
-          value={sortOrder}
-          onChange={e => setSortOrder(e.target.value as SortOrder)}
-        >
-          <option value="date-desc">Newest first</option>
-          <option value="date-asc">Oldest first</option>
-          <option value="title-asc">A → Z</option>
-          <option value="title-desc">Z → A</option>
-        </Select>
+        <div className="flex flex-col">
+          <label className={labelClass}>{t('meetings.list.toLabel')}</label>
+          <input
+            type="date"
+            value={dateTo}
+            max={today}
+            onChange={e => setDateTo(e.target.value)}
+            className={`${controlClass} w-40`}
+          />
+        </div>
+        <div className="flex flex-col">
+          <label className={labelClass}>{t('meetings.list.sortLabel')}</label>
+          <select
+            value={sortOrder}
+            onChange={e => setSortOrder(e.target.value as SortOrder)}
+            className={`${controlClass} w-34`}
+          >
+            <option value="date-desc">
+              {t('meetings.list.sortNewestFirst')}
+            </option>
+            <option value="date-asc">
+              {t('meetings.list.sortOldestFirst')}
+            </option>
+            <option value="title-asc">{t('meetings.list.sortAZ')}</option>
+            <option value="title-desc">{t('meetings.list.sortZA')}</option>
+          </select>
+        </div>
       </div>
       <div
         className={`grid ${gridCols} gap-6 border-b border-stone-300 px-4 py-3 dark:border-stone-600`}
