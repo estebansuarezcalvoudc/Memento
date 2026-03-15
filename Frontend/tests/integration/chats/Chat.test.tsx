@@ -2,10 +2,11 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { Route, Routes } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import ChatInput from '../../../src/components/chat/ChatInput'
 import Chat from '../../../src/pages/chat/Chat'
+import { createWsMock } from '../../mocks/createWsMock'
 import { server } from '../../mocks/server'
 import { withAuth } from '../../mocks/withAuth'
 import { renderWithRouter, setAuthToken, setupStoreReset } from '../../utils'
@@ -84,11 +85,12 @@ describe('Chat Page', () => {
     await user.type(input, 'My new message')
     await user.click(screen.getByRole('button'))
 
-    expect(screen.getByText('My new message')).toBeInTheDocument()
+    expect(await screen.findByText('My new message')).toBeInTheDocument()
   })
 
   it('sending a message shows the assistant response', async () => {
     const user = userEvent.setup()
+    vi.stubGlobal('WebSocket', createWsMock())
     setAuthToken()
     renderWithRouter(
       <Routes>
@@ -103,9 +105,7 @@ describe('Chat Page', () => {
     await user.type(input, 'My new message')
     await user.click(screen.getByRole('button'))
 
-    // Mock handler returns 'Assistant response here'
-    expect(
-      await screen.findByText('Assistant response here'),
-    ).toBeInTheDocument()
+    // WS mock echoes back the message as the token content
+    expect(await screen.findByText('Echo: My new message')).toBeInTheDocument()
   })
 })

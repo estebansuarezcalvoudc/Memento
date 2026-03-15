@@ -20,6 +20,10 @@ export default tseslint.config([
     rules: {
       curly: ['error', 'all'],
       'brace-style': ['error', '1tbs'],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
     },
   },
 ])
