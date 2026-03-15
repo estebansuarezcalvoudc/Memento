@@ -48,7 +48,10 @@ const ChatConversation = forwardRef<HTMLDivElement, ChatConversationProps>(
           </ul>
         </div>
         <div className="sticky bottom-0 bg-white pt-1.5 dark:bg-stone-800">
-          <ChatInput onSubmit={onSubmit} />
+          <ChatInput
+            onSubmit={onSubmit}
+            disabled={isStreaming || isRetrieving}
+          />
         </div>
       </div>
     )

@@ -1,7 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useReducer, useRef } from 'react'
 
+import type { Message } from '../../types/chats'
 import { buildWebSocketUrl, createMessageHandler } from './chatMessageHandler'
+import { chatKey } from './chatQueryKeys'
 import { chatReducer, IDLE_STATE } from './chatReducer'
 
 export interface UseChatResult {
@@ -32,6 +34,13 @@ export function useChat(
 
       resolvedConvIdRef.current = conversationId
       accumulatedTokensRef.current = ''
+
+      if (conversationId) {
+        queryClient.setQueryData<Message[]>(chatKey(conversationId), old => [
+          ...(old ?? []),
+          { role: 'user', content: message },
+        ])
+      }
 
       dispatch({ type: 'SEND_MESSAGE' })
 
