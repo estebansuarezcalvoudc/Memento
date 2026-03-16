@@ -25,7 +25,7 @@ const ChatConversation = forwardRef<HTMLDivElement, ChatConversationProps>(
     return (
       <div
         ref={ref}
-        className="flex h-screen w-full flex-col overflow-y-scroll"
+        className="flex h-screen w-full flex-col overflow-y-scroll px-4"
       >
         <div className="mx-auto w-full max-w-3xl flex-1 space-y-4 py-3">
           <ul className="space-y-4">
