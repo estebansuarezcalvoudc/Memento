@@ -5,7 +5,7 @@ import {
   useGetRetrievalModel,
   useUpdateRetrievalModel,
 } from '../../../../api/queries/settings/useModelsQueries'
-import ModelConfigSection from '../ui/ModelConfigSection'
+import ModelConfigSection from '../ModelConfigSection'
 
 export default function RetrievalModelSection() {
   const { t } = useTranslation()

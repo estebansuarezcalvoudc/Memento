@@ -6,10 +6,10 @@ import {
   useGetSummarizationPrompt,
   useUpdateSummarizationPrompt,
 } from '../../../../api/queries/settings/useSummarizationQueries'
-import ConfirmButton from '../ui/ConfirmButton'
-import ErrorMessage from '../ui/ErrorMessage'
-import SecondaryButton from '../ui/SecondaryButton'
-import SubSectionTitle from '../ui/SubSectionTitle'
+import ConfirmButton from '../../../ui/buttons/ConfirmButton'
+import SecondaryButton from '../../../ui/buttons/SecondaryButton'
+import ErrorMessage from '../../../ui/feedback/ErrorMessage'
+import SubSectionTitle from '../SubSectionTitle'
 
 const MIN = 50
 const MAX = 5000

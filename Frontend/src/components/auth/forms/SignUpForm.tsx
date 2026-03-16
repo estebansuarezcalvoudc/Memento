@@ -4,9 +4,9 @@ import { useNavigate, type NavigateFunction } from 'react-router-dom'
 
 import { register } from '../../../api/authAPI'
 import { useSetIsUserAuth, type SetIsUserAuth } from '../../../stores/authStore'
-import FormButton from '../../common/FormButton'
-import FormErrors from '../../common/FormErrors'
-import Input from '../../common/Input'
+import FormButton from '../../ui/buttons/FormButton'
+import FormErrors from '../../ui/feedback/FormErrors'
+import Input from '../../ui/inputs/Input'
 
 interface FormState {
   errors: null | string[]

@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
 import { type LanguageOption } from '../../../api/queries/useSettingsQueries'
-import InlineInput from '../../common/InlineInput'
+import InlineInput from '../../ui/inputs/InlineInput'
 
 interface MeetingOptionsRowProps {
   index: number

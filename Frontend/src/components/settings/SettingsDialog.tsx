@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import Dialog, { type DialogHandler } from '../common/Dialog'
+import Dialog, { type DialogHandler } from '../ui/layout/Dialog'
 import AccountView from './sections/account/AccountView'
 import ChatView from './sections/chat/ChatView'
 import GeneralView from './sections/general/GeneralView'

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { type LanguageOption } from '../../../api/queries/useSettingsQueries'
-import InlineInput from '../../common/InlineInput'
+import InlineInput from '../../ui/inputs/InlineInput'
 import ChevronToggleButton from './ChevronToggleButton'
 import MeetingOptionsRow from './MeetingOptionsRow'
 import RemoveButton from './RemoveButton'

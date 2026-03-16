@@ -6,7 +6,7 @@ import {
   useTheme,
   type Theme,
 } from '../../../../stores/themeStore'
-import Select from '../../../common/Select'
+import Select from '../../../ui/inputs/Select'
 
 export default function GeneralView() {
   const { t } = useTranslation()

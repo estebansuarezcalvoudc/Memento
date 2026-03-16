@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useDeleteApiKey } from '../../../../../api/queries/settings/useProvidersQueries'
-import ErrorMessage from '../../ui/ErrorMessage'
-import InlineButton from '../../ui/InlineButton'
+import InlineButton from '../../../../ui/buttons/InlineButton'
+import ErrorMessage from '../../../../ui/feedback/ErrorMessage'
 import ApiKeyForm from './ApiKeyForm'
 
 interface ApiKeySectionProps {

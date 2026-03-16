@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import InlineButton from '../../ui/InlineButton'
+import InlineButton from '../../../../ui/buttons/InlineButton'
 import PullModelForm from './PullModelForm'
 
 interface PullModelSectionProps {

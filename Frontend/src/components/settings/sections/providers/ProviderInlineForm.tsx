@@ -1,10 +1,10 @@
 import { useActionState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import InlineInput from '../../../common/InlineInput'
-import ConfirmButton from '../ui/ConfirmButton'
-import ErrorMessage from '../ui/ErrorMessage'
-import SecondaryButton from '../ui/SecondaryButton'
+import ConfirmButton from '../../../ui/buttons/ConfirmButton'
+import SecondaryButton from '../../../ui/buttons/SecondaryButton'
+import ErrorMessage from '../../../ui/feedback/ErrorMessage'
+import InlineInput from '../../../ui/inputs/InlineInput'
 
 interface FormState {
   errors: null | string[]

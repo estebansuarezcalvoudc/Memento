@@ -5,8 +5,8 @@ import {
   useGetTranscriptionOptions,
   useUpdateTranscriptionConfiguration,
 } from '../../../../api/queries/settings/useTranscriptionQueries'
-import Select from '../../../common/Select'
-import SubSectionTitle from '../ui/SubSectionTitle'
+import Select from '../../../ui/inputs/Select'
+import SubSectionTitle from '../SubSectionTitle'
 
 export default function TranscriptionView() {
   const { t } = useTranslation()
