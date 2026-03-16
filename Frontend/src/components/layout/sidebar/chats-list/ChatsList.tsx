@@ -8,25 +8,31 @@ export default function ChatsList() {
   const { t } = useTranslation()
   const { data: chats, isLoading, error } = useGetChats()
   const isSidebarOpen = useIsSidebarOpen()
+  const delayedMessageClass =
+    'opacity-0 animate-[fadeIn_300ms_ease-out_150ms_forwards]'
 
   let chatContent
 
   if (isLoading) {
     chatContent = (
-      <li className="p-4 text-center text-stone-400 dark:text-stone-500">
+      <li
+        className={`p-4 text-center text-stone-400 dark:text-stone-500 ${delayedMessageClass}`}
+      >
         {t('sidebar.loadingConversations')}
       </li>
     )
   } else if (error) {
     chatContent = (
-      <li className="p-4 text-center text-red-400">
+      <li className={`p-4 text-center text-red-400 ${delayedMessageClass}`}>
         {t('sidebar.errorPrefix')}
         {error.message}
       </li>
     )
   } else if (!chats || chats.length === 0) {
     chatContent = (
-      <li className="p-4 text-center text-stone-400 dark:text-stone-500">
+      <li
+        className={`p-4 text-center text-stone-400 dark:text-stone-500 ${delayedMessageClass}`}
+      >
         {t('sidebar.noConversations')}
       </li>
     )
