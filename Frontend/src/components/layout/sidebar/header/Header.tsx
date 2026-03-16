@@ -10,7 +10,11 @@ export default function Header() {
   const titleRef = useDelayedDisplay<HTMLSpanElement>(isSidebarOpen, 'block')
 
   return (
-    <div className="mt-5 mb-5 flex h-8 flex-shrink-0 items-center justify-between">
+    <div
+      className={`mt-5 mb-5 flex h-8 flex-shrink-0 items-center ${
+        isSidebarOpen ? 'justify-between' : 'justify-center'
+      }`}
+    >
       {isSidebarOpen && (
         <span
           ref={titleRef}

@@ -44,7 +44,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`fixed flex h-full ${isSidebarOpen ? 'w-64' : 'w-16'} flex-col border-r-1 border-stone-300 bg-stone-100 px-3 text-stone-50 transition-all duration-300 ease-in-out dark:border-stone-700 dark:bg-stone-900`}
+      className={`fixed flex h-full ${isSidebarOpen ? 'w-64' : 'w-[54px]'} flex-col border-r-1 border-stone-300 bg-stone-100 px-2 text-stone-50 transition-all duration-300 ease-in-out dark:border-stone-700 dark:bg-stone-900`}
     >
       <Header />
       <SidebarButtons />

@@ -59,7 +59,7 @@ export default function App() {
       <div
         className={`flex min-h-screen flex-col items-center justify-center bg-white dark:bg-stone-800 ${
           isUserAuth
-            ? `transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-64' : 'ml-16'}`
+            ? `transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-64' : 'ml-14'}`
             : ''
         }`}
       >
