@@ -45,9 +45,9 @@ export default function App() {
     return (
       <div
         aria-label="Loading"
-        className="flex h-screen items-center justify-center"
+        className="flex h-screen items-center justify-center text-stone-700 dark:text-stone-300"
       >
-        <ClipLoader />
+        <ClipLoader color="currentColor" />
       </div>
     )
   }
