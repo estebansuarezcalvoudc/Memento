@@ -4,6 +4,57 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      html {
+        background-color: #ffffff;
+        color-scheme: light;
+      }
+
+      html.dark {
+        background-color: #292524;
+        color-scheme: dark;
+      }
+
+      body {
+        margin: 0;
+        background-color: inherit;
+      }
+    </style>
+    <script>
+      ;(() => {
+        const root = document.documentElement
+        const storageKey = 'theme-storage'
+        const systemPrefersDark = window.matchMedia(
+          '(prefers-color-scheme: dark)',
+        ).matches
+
+        let theme = 'system'
+
+        try {
+          const storedValue = localStorage.getItem(storageKey)
+
+          if (storedValue) {
+            const parsedValue = JSON.parse(storedValue)
+            const persistedTheme = parsedValue?.state?.theme
+
+            if (
+              persistedTheme === 'light' ||
+              persistedTheme === 'dark' ||
+              persistedTheme === 'system'
+            ) {
+              theme = persistedTheme
+            }
+          }
+        } catch {
+          theme = 'system'
+        }
+
+        const shouldUseDark =
+          theme === 'dark' || (theme === 'system' && systemPrefersDark)
+
+        root.classList.toggle('dark', shouldUseDark)
+      })()
+    </script>
     <title>TFG</title>
   </head>
   <body>
