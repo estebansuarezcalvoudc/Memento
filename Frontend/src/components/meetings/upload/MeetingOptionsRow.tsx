@@ -40,8 +40,8 @@ export default function MeetingOptionsRow({
       />
 
       {isExpanded && (
-        <div className="flex items-center justify-center gap-6 pb-3">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pb-3">
+          <div className="flex w-full items-center justify-center gap-2 sm:w-auto">
             <label className="font-ubuntu shrink-0 text-xs text-stone-400 dark:text-stone-500">
               {t('meetings.uploadDialog.language')}
             </label>
@@ -61,7 +61,7 @@ export default function MeetingOptionsRow({
             </select>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex w-full items-center justify-center gap-2 sm:w-auto">
             <label className="font-ubuntu shrink-0 text-xs text-stone-400 dark:text-stone-500">
               {t('meetings.uploadDialog.speakers')}
             </label>
