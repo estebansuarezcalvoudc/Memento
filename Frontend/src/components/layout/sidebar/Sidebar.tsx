@@ -1,8 +1,11 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { settingsImage } from '../../../assets/buttonsImages'
-import { useIsSidebarOpen } from '../../../stores/sidebarStore'
+import {
+  useIsSidebarOpen,
+  useSetSidebarOpen,
+} from '../../../stores/sidebarStore'
 import SettingsDialog from '../../settings/SettingsDialog'
 import type { DialogHandler } from '../../ui/layout/Dialog'
 import ChatsList from './chats-list/ChatsList'
@@ -13,8 +16,31 @@ import SidebarButtons from './navigation/SidebarButtons'
 export default function Sidebar() {
   const { t } = useTranslation()
   const isSidebarOpen = useIsSidebarOpen()
+  const setSidebarOpen = useSetSidebarOpen()
 
   const dialogRef = useRef<DialogHandler>(null)
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 800px)')
+
+    const collapseIfNarrow = (matches: boolean) => {
+      if (matches) {
+        setSidebarOpen(false)
+      }
+    }
+
+    collapseIfNarrow(mediaQuery.matches)
+
+    const handleChange = (event: MediaQueryListEvent) => {
+      collapseIfNarrow(event.matches)
+    }
+
+    mediaQuery.addEventListener('change', handleChange)
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange)
+    }
+  }, [setSidebarOpen])
 
   return (
     <aside
