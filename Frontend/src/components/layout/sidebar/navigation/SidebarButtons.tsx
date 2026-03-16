@@ -6,8 +6,8 @@ import {
   newChatImage,
   uploadMeetingsImage,
 } from '../../../../assets/buttonsImages'
-import type { DialogHandler } from '../../../common/Dialog'
 import UploadMeetingsDialog from '../../../meetings/upload/UploadMeetingsDialog'
+import type { DialogHandler } from '../../../ui/layout/Dialog'
 import { SidebarButton } from './SidebarButton'
 
 export default function SidebarButtons() {

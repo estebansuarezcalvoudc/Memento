@@ -1,7 +1,7 @@
 import { useImperativeHandle, useRef } from 'react'
 import { createPortal } from 'react-dom'
 
-import { closeImage } from '../../assets/buttonsImages'
+import { closeImage } from '../../../assets/buttonsImages'
 
 export interface DialogHandler {
   open: () => void

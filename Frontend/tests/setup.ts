@@ -22,7 +22,9 @@ HTMLDialogElement.prototype.close = function () {
   this.removeAttribute('open')
 }
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: 'error' })
+})
 afterEach(() => {
   server.resetHandlers()
   localStorage.clear()

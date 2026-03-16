@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
-import Dialog, { type DialogHandler } from '../../common/Dialog'
+import Dialog, { type DialogHandler } from '../../ui/layout/Dialog'
 import UploadMeetingsForm from './UploadMeetingsForm'
 
 interface UploadMeetingsDialogProps {

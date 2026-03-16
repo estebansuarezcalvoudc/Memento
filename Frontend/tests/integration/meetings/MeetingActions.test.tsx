@@ -7,8 +7,6 @@ import { renderWithRouter, setAuthToken, setupStoreReset } from '../../utils'
 
 setupStoreReset()
 
-// The edit and delete buttons in MeetingItem are rendered as SVG icon buttons.
-// We find them by their position relative to the meeting row.
 async function waitForMeetingsLoaded() {
   return screen.findByText('Team Meeting')
 }
@@ -20,14 +18,11 @@ describe('Meeting Edit', () => {
     renderWithRouter(<Meetings />)
     await waitForMeetingsLoaded()
 
-    // There are two edit buttons (one per meeting); click the first one
-    const editButtons = screen.getAllByRole('button')
-    // Edit buttons come before delete buttons in the row: indices 0, 2 are edit; 1, 3 are delete
+    const editButtons = screen.getAllByRole('button', { name: 'Edit' })
     await user.click(editButtons[0])
 
-    // In edit mode, text inputs appear for title and date
-    expect(screen.getByDisplayValue('Team Meeting')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('2024-01-15')).toBeInTheDocument()
+    expect(await screen.findByDisplayValue('Team Meeting')).toBeInTheDocument()
+    expect(await screen.findByDisplayValue('2024-01-22')).toBeInTheDocument()
   })
 
   it('saving changes updates the meeting title in the list', async () => {
@@ -36,16 +31,14 @@ describe('Meeting Edit', () => {
     renderWithRouter(<Meetings />)
     await waitForMeetingsLoaded()
 
-    const editButtons = screen.getAllByRole('button')
+    const editButtons = screen.getAllByRole('button', { name: 'Edit' })
     await user.click(editButtons[0])
 
-    const titleInput = screen.getByDisplayValue('Team Meeting')
+    const titleInput = await screen.findByDisplayValue('Team Meeting')
     await user.clear(titleInput)
     await user.type(titleInput, 'Updated Meeting')
 
-    // Click confirm (first button after entering edit mode)
-    const confirmButton = screen.getAllByRole('button')[0]
-    await user.click(confirmButton)
+    await user.click(screen.getByRole('button', { name: 'Confirm' }))
 
     expect(await screen.findByText('Updated Meeting')).toBeInTheDocument()
   })
@@ -56,16 +49,14 @@ describe('Meeting Edit', () => {
     renderWithRouter(<Meetings />)
     await waitForMeetingsLoaded()
 
-    const editButtons = screen.getAllByRole('button')
+    const editButtons = screen.getAllByRole('button', { name: 'Edit' })
     await user.click(editButtons[0])
 
-    const titleInput = screen.getByDisplayValue('Team Meeting')
+    const titleInput = await screen.findByDisplayValue('Team Meeting')
     await user.clear(titleInput)
     await user.type(titleInput, 'Changed Title')
 
-    // Click cancel (second button in edit mode)
-    const cancelButton = screen.getAllByRole('button')[1]
-    await user.click(cancelButton)
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
 
     expect(screen.getByText('Team Meeting')).toBeInTheDocument()
     expect(screen.queryByDisplayValue('Changed Title')).not.toBeInTheDocument()
@@ -86,16 +77,14 @@ describe('Meeting Edit', () => {
     renderWithRouter(<Meetings />)
     await waitForMeetingsLoaded()
 
-    const editButtons = screen.getAllByRole('button')
+    const editButtons = screen.getAllByRole('button', { name: 'Edit' })
     await user.click(editButtons[0])
 
-    const dateInput = screen.getByDisplayValue('2024-01-15')
+    const dateInput = await screen.findByDisplayValue('2024-01-22')
     await user.clear(dateInput)
     await user.type(dateInput, '2024-06-01')
 
-    // Click confirm
-    const confirmButton = screen.getAllByRole('button')[0]
-    await user.click(confirmButton)
+    await user.click(screen.getByRole('button', { name: 'Confirm' }))
 
     await waitFor(() => expect(patchedUpdates).toEqual({ date: '2024-06-01' }))
   })
@@ -115,14 +104,11 @@ describe('Meeting Edit', () => {
     renderWithRouter(<Meetings />)
     await waitForMeetingsLoaded()
 
-    const editButtons = screen.getAllByRole('button')
+    const editButtons = screen.getAllByRole('button', { name: 'Edit' })
     await user.click(editButtons[0])
 
-    // Click confirm immediately without changing anything
-    const confirmButton = screen.getAllByRole('button')[0]
-    await user.click(confirmButton)
+    await user.click(screen.getByRole('button', { name: 'Confirm' }))
 
-    // Edit mode should be gone (inputs disappear) and API was not called
     expect(screen.queryByDisplayValue('Team Meeting')).not.toBeInTheDocument()
     expect(screen.getByText('Team Meeting')).toBeInTheDocument()
     expect(patchCalled).toBe(false)
@@ -136,14 +122,12 @@ describe('Meeting Delete', () => {
     renderWithRouter(<Meetings />)
     await waitForMeetingsLoaded()
 
-    // Delete buttons are the second button in each row: indices 1, 3
-    const deleteButton = screen.getAllByRole('button')[1]
-    await user.click(deleteButton)
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' })
+    await user.click(deleteButtons[0])
 
     await waitFor(() => {
       expect(screen.queryByText('Team Meeting')).not.toBeInTheDocument()
     })
-    // The other meeting should still be there
     expect(screen.getByText('Sprint Planning')).toBeInTheDocument()
   })
 })

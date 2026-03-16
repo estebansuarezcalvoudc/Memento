@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import ModelConfigSection from '../../../../src/components/settings/sections/ui/ModelConfigSection'
+import ModelConfigSection from '../../../../src/components/settings/sections/ModelConfigSection'
 
 const AVAILABLE_MODELS = [
   { id: 'llama3.2:latest', provider: 'Ollama' },

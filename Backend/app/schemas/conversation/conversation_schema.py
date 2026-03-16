@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import AwareDatetime, BaseModel, Field
 
 
 class ConversationDialogueRetrieve(BaseModel):
@@ -16,7 +16,7 @@ class ConversationMetadataRetrieve(BaseModel):
 
 class SendMessageRequest(BaseModel):
     message: str
-    current_datetime: datetime = Field(
+    current_datetime: AwareDatetime = Field(
         description="Current date and time of the user (with timezone offset). Used for resolving relative time references like 'today'.",
     )
 
@@ -45,7 +45,7 @@ class ChatRequest(BaseModel):
         description="ID of an existing conversation. Pass null to create a new one.",
     )
     message: str
-    current_datetime: datetime = Field(
+    current_datetime: AwareDatetime = Field(
         description="Current date and time of the user. Used for resolving relative time references.",
     )
 

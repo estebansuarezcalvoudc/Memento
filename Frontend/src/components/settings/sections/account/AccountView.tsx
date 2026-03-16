@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import { useSetIsUserAuth } from '../../../../stores/authStore'
-import InlineButton from '../ui/InlineButton'
+import InlineButton from '../../../ui/buttons/InlineButton'
 import DeleteAccountForm from './DeleteAccountForm'
 import UpdateEmailForm from './UpdateEmailForm'
 import UpdatePasswordForm from './UpdatePasswordForm'

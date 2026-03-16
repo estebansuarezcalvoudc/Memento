@@ -5,7 +5,7 @@ import {
   useGetChatModel,
   useUpdateChatModel,
 } from '../../../../api/queries/settings/useModelsQueries'
-import ModelConfigSection from '../ui/ModelConfigSection'
+import ModelConfigSection from '../ModelConfigSection'
 
 export default function ChatModelSection() {
   const { t } = useTranslation()

@@ -1,9 +1,9 @@
 import { NavLink } from 'react-router-dom'
 
-import { useDeleteMeeting } from '../../../api/queries/useMeetingsQueries'
-import { editImage, removeImage } from '../../../assets/buttonsImages'
-import { type Meeting } from '../../../types/meetings'
-import MeetingButton from '../MeetingButton'
+import { useDeleteMeeting } from '../../../../api/queries/useMeetingsQueries'
+import { editImage, removeImage } from '../../../../assets/buttonsImages'
+import { type Meeting } from '../../../../types/meetings'
+import MeetingButton from '../../MeetingButton'
 import type { EditState } from './MeetingItem'
 
 interface MeetingItemViewProps {
@@ -51,6 +51,7 @@ export default function MeetingItemView({
         bgColor="hover:bg-blue-200"
         textColor="hover:text-blue-700"
         disabled={isPending}
+        ariaLabel="Edit"
       />
       <MeetingButton
         image={removeImage}
@@ -58,6 +59,7 @@ export default function MeetingItemView({
         bgColor="hover:bg-red-200"
         textColor="hover:text-red-700"
         disabled={isPending}
+        ariaLabel="Delete"
       />
     </>
   )

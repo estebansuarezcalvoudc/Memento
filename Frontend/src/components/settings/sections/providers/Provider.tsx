@@ -1,5 +1,5 @@
 import { type Provider } from '../../../../types/settings/providers'
-import SubSectionTitle from '../ui/SubSectionTitle'
+import SubSectionTitle from '../SubSectionTitle'
 import ApiKeySection from './api-key/ApiKeySection'
 import PullModelSection from './pull-model/PullModelSection'
 

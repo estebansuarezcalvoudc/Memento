@@ -1,10 +1,11 @@
-import { useUpdateMeeting } from '../../../api/queries/useMeetingsQueries'
+import { useUpdateMeeting } from '../../../../api/queries/useMeetingsQueries'
 import {
   cancelEditImage,
   confirmEditImage,
-} from '../../../assets/buttonsImages'
-import { type Meeting } from '../../../types/meetings'
-import MeetingButton from '../MeetingButton'
+} from '../../../../assets/buttonsImages'
+import { type Meeting } from '../../../../types/meetings'
+import { localDateString } from '../../../../utils/date'
+import MeetingButton from '../../MeetingButton'
 import { type EditState } from './MeetingItem'
 
 interface MeetingItemEditProps {
@@ -20,7 +21,7 @@ export default function MeetingItemEdit({
   editState,
   setEditState,
 }: MeetingItemEditProps) {
-  const today = new Date().toISOString().split('T')[0]
+  const today = localDateString()
 
   const { mutate: updateMeeting, isPending } = useUpdateMeeting()
 
@@ -87,6 +88,7 @@ export default function MeetingItemEdit({
         bgColor="hover:bg-green-200"
         textColor="hover:text-green-700"
         disabled={isPending}
+        ariaLabel="Confirm"
       />
       <MeetingButton
         image={cancelEditImage}
@@ -94,6 +96,7 @@ export default function MeetingItemEdit({
         bgColor="hover:bg-red-200"
         textColor="hover:text-red-700"
         disabled={isPending}
+        ariaLabel="Cancel"
       />
     </>
   )

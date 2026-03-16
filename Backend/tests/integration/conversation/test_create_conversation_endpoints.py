@@ -17,7 +17,7 @@ _USER_DATA = {
 _REQUEST = {
     "conversation_id": None,
     "message": "Hello, summarize my last meeting",
-    "current_datetime": "2024-01-15T10:00:00",
+    "current_datetime": "2024-01-15T10:00:00+00:00",
 }
 
 

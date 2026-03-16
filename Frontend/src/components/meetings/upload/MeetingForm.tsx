@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { type LanguageOption } from '../../../api/queries/useSettingsQueries'
-import InlineInput from '../../common/InlineInput'
+import { localDateString } from '../../../utils/date'
+import InlineInput from '../../ui/inputs/InlineInput'
 import ChevronToggleButton from './ChevronToggleButton'
 import MeetingOptionsRow from './MeetingOptionsRow'
 import RemoveButton from './RemoveButton'
@@ -28,7 +29,7 @@ export default function MeetingForm({
   languages,
 }: MeetingFormProps) {
   const { t } = useTranslation()
-  const today = new Date().toISOString().split('T')[0]
+  const today = localDateString()
   const [isExpanded, setIsExpanded] = useState(false)
   const [language, setLanguage] = useState(meeting.language ?? '')
   const [speakers, setSpeakers] = useState(meeting.speakers ?? '')

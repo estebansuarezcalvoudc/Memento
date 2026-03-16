@@ -3,16 +3,22 @@ import { useId, type ReactNode, type SelectHTMLAttributes } from 'react'
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label: string
   children: ReactNode
+  containerClassName?: string
 }
 
-export default function Select({ label, children, ...props }: SelectProps) {
+export default function Select({
+  label,
+  children,
+  containerClassName,
+  ...props
+}: SelectProps) {
   const id = useId()
 
   return (
-    <div className="mt-3 flex flex-col align-middle">
+    <div className={`flex flex-col ${containerClassName ?? 'mt-3'}`}>
       <label
         htmlFor={id}
-        className="font-ubuntu mb-1 ml-1 items-center justify-center text-base text-stone-600 dark:text-stone-400"
+        className="font-ubuntu mb-1 ml-1 items-center justify-center text-sm text-stone-600 dark:text-stone-400"
       >
         {label}
       </label>

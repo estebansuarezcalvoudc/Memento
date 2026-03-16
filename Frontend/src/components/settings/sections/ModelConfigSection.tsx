@@ -4,12 +4,12 @@ import { useTranslation } from 'react-i18next'
 import {
   type AvailableModel,
   type ModelConfig,
-} from '../../../../types/settings/models'
-import Input from '../../../common/Input'
-import Select from '../../../common/Select'
-import ConfirmButton from './ConfirmButton'
-import ErrorMessage from './ErrorMessage'
-import SecondaryButton from './SecondaryButton'
+} from '../../../types/settings/models'
+import ConfirmButton from '../../ui/buttons/ConfirmButton'
+import SecondaryButton from '../../ui/buttons/SecondaryButton'
+import ErrorMessage from '../../ui/feedback/ErrorMessage'
+import Input from '../../ui/inputs/Input'
+import Select from '../../ui/inputs/Select'
 import SubSectionTitle from './SubSectionTitle'
 
 const DEFAULT_MODEL_CONFIG: ModelConfig = {
