@@ -66,7 +66,8 @@
       "themeDark": "Oscuro",
       "language": "Idioma",
       "languageEnglish": "Inglés",
-      "languageSpanish": "Español"
+      "languageSpanish": "Español",
+      "meetingsPerPage": "Reuniones por página"
     },
     "account": {
       "email": "Correo",
@@ -159,7 +160,9 @@
       "sortAZ": "A → Z",
       "sortZA": "Z → A",
       "dateFilterToggle": "Filtrar por fecha",
-      "clearDates": "Limpiar"
+      "clearDates": "Limpiar",
+      "paginationPrev": "Ant",
+      "paginationNext": "Sig"
     },
     "uploadDialog": {
       "title": "Subir Archivos",

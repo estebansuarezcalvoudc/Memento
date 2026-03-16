@@ -2,6 +2,7 @@ import { useMeetingListFilters } from '../../../hooks/useMeetingListFilters'
 import { type Meeting } from '../../../types/meetings'
 import ColumnHeader from '../ColumnHeader'
 import MeetingItem from './meeting-item/MeetingItem'
+import MeetingListPagination from './MeetingListPagination'
 import MeetingDateFilters from './toolbar/MeetingDateFilters'
 import MeetingListToolbar from './toolbar/MeetingListToolbar'
 
@@ -12,7 +13,7 @@ interface MeetingsListProps {
 const gridCols = 'grid-cols-[20px_1fr_150px_32px_32px]'
 
 export default function MeetingsList({ meetings }: MeetingsListProps) {
-  const { sortedMeetings } = useMeetingListFilters(meetings)
+  const { pagedMeetings, totalPages } = useMeetingListFilters(meetings)
 
   return (
     <div className="w-full">
@@ -32,7 +33,7 @@ export default function MeetingsList({ meetings }: MeetingsListProps) {
       </div>
 
       <div className="flex flex-col">
-        {sortedMeetings.map((meeting, index) => (
+        {pagedMeetings.map((meeting, index) => (
           <MeetingItem
             key={meeting.id}
             meeting={meeting}
@@ -41,6 +42,7 @@ export default function MeetingsList({ meetings }: MeetingsListProps) {
           />
         ))}
       </div>
+      <MeetingListPagination totalPages={totalPages} />
     </div>
   )
 }

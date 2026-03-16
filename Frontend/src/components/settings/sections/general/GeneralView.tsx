@@ -2,6 +2,10 @@ import i18n from 'i18next'
 import { useTranslation } from 'react-i18next'
 
 import {
+  useMeetingListPageSize,
+  useSetMeetingListPageSize,
+} from '../../../../stores/meetingListStore'
+import {
   useSetTheme,
   useTheme,
   type Theme,
@@ -12,6 +16,8 @@ export default function GeneralView() {
   const { t } = useTranslation()
   const theme = useTheme()
   const setTheme = useSetTheme()
+  const pageSize = useMeetingListPageSize()
+  const setPageSize = useSetMeetingListPageSize()
 
   const currentLanguage = i18n.language?.startsWith('es') ? 'es' : 'en'
 
@@ -33,6 +39,17 @@ export default function GeneralView() {
       >
         <option value="en">{t('settings.general.languageEnglish')}</option>
         <option value="es">{t('settings.general.languageSpanish')}</option>
+      </Select>
+      <Select
+        label={t('settings.general.meetingsPerPage')}
+        value={pageSize}
+        onChange={e => setPageSize(Number(e.target.value))}
+      >
+        <option value="10">10</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
       </Select>
     </>
   )

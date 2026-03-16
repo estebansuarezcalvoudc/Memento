@@ -1,8 +1,13 @@
+import { useEffect } from 'react'
+
 import {
   useMeetingListDateFrom,
   useMeetingListDateTo,
+  useMeetingListPage,
+  useMeetingListPageSize,
   useMeetingListQuery,
   useMeetingListSortOrder,
+  useSetMeetingListPage,
 } from '../stores/meetingListStore'
 import { type Meeting } from '../types/meetings'
 
@@ -24,8 +29,11 @@ export function useMeetingListFilters(meetings: Meeting[]) {
   const dateFrom = useMeetingListDateFrom()
   const dateTo = useMeetingListDateTo()
   const sortOrder = useMeetingListSortOrder()
+  const page = useMeetingListPage()
+  const pageSize = useMeetingListPageSize()
+  const setPage = useSetMeetingListPage()
 
-  const sortedMeetings = meetings
+  const filteredAndSorted = meetings
     .filter(m => {
       const matchesQuery = !query || fuzzyMatch(m.title, query)
       const matchesFrom = !dateFrom || m.date >= dateFrom
@@ -45,5 +53,21 @@ export function useMeetingListFilters(meetings: Meeting[]) {
       }
     })
 
-  return { sortedMeetings }
+  const totalCount = filteredAndSorted.length
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
+
+  // Reset a página 1 cuando los filtros cambian y la página actual queda fuera de rango
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(1)
+    }
+  }, [query, dateFrom, dateTo, sortOrder, totalCount, pageSize, page, setPage])
+
+  const safePage = Math.min(page, totalPages)
+  const pagedMeetings = filteredAndSorted.slice(
+    (safePage - 1) * pageSize,
+    safePage * pageSize,
+  )
+
+  return { pagedMeetings, totalPages, currentPage: safePage, totalCount }
 }
