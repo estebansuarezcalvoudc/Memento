@@ -33,12 +33,12 @@ export default function AccountView() {
   return (
     <>
       <div>
-        <div className="flex justify-between">
+        <div className="flex flex-wrap justify-between gap-y-2">
           <span className="font-ubuntu text-lg text-stone-700 dark:text-stone-300">
             <strong>{t('settings.account.email')}:</strong> {username}
           </span>
           {activeForm === null && (
-            <div className="flex gap-x-2">
+            <div className="flex flex-wrap gap-2">
               <InlineButton onClick={() => setActiveForm('email')}>
                 {t('settings.account.editEmail')}
               </InlineButton>
