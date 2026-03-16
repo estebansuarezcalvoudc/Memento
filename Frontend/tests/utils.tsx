@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, vi } from 'vitest'
 
 import { _resetAuthStore } from '../src/stores/authStore'
+import { _resetMeetingListStore } from '../src/stores/meetingListStore'
 
 export { _resetAuthStore }
 
@@ -41,6 +42,7 @@ export function setupStoreReset() {
   beforeEach(() => {
     vi.restoreAllMocks()
     _resetAuthStore()
+    _resetMeetingListStore()
   })
   afterEach(() => {
     cleanup()

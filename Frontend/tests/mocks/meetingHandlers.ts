@@ -3,8 +3,8 @@ import { http, HttpResponse } from 'msw'
 import { withAuth } from './withAuth'
 
 export const mockMeetings = [
-  { id: 'meeting-1', title: 'Team Meeting', date: '2024-01-15' },
-  { id: 'meeting-2', title: 'Sprint Planning', date: '2024-01-22' },
+  { id: 'meeting-1', title: 'Team Meeting', date: '2024-01-22' },
+  { id: 'meeting-2', title: 'Sprint Planning', date: '2024-01-15' },
 ]
 
 export const meetingHandlers = [
@@ -26,7 +26,7 @@ export const meetingHandlers = [
       HttpResponse.json({
         summary: '## Summary\nContent here',
         title: 'Team Meeting',
-        date: '2024-01-15',
+        date: '2024-01-22',
       }),
     ),
   ),
@@ -36,7 +36,7 @@ export const meetingHandlers = [
       HttpResponse.json({
         transcription: 'Speaker 1: Hello everyone',
         title: 'Team Meeting',
-        date: '2024-01-15',
+        date: '2024-01-22',
       }),
     ),
   ),

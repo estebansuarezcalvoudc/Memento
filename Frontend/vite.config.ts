@@ -8,8 +8,13 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: './tests/setup.ts',
+    setupFiles: ['./tests/preSetup.ts', './tests/setup.ts'],
     css: false,
+    environmentOptions: {
+      jsdom: {
+        url: 'http://localhost',
+      },
+    },
   },
   server: {
     host: true,
