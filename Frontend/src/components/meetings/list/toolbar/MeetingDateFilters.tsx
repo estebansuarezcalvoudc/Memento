@@ -6,8 +6,6 @@ import {
   useMeetingListDateTo,
   useMeetingListHasDateFilter,
   useMeetingListShowDates,
-  useSetMeetingListDateFrom,
-  useSetMeetingListDateTo,
 } from '../../../../stores/meetingListStore'
 import DangerButton from '../../../ui/buttons/DangerButton'
 import Input from '../../../ui/inputs/Input'
@@ -18,12 +16,10 @@ export default function MeetingDateFilters() {
   const { t } = useTranslation()
 
   const showDateFilters = useMeetingListShowDates()
-  const dateFrom = useMeetingListDateFrom()
-  const dateTo = useMeetingListDateTo()
+  const [dateFrom, setDateFrom] = useMeetingListDateFrom()
+  const [dateTo, setDateTo] = useMeetingListDateTo()
   const hasDateFilter = useMeetingListHasDateFilter()
 
-  const setDateFrom = useSetMeetingListDateFrom()
-  const setDateTo = useSetMeetingListDateTo()
   const clearDates = useClearMeetingListDates()
 
   if (!showDateFilters) {

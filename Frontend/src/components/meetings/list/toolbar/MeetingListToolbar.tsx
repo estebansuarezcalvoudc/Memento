@@ -2,15 +2,9 @@ import { useTranslation } from 'react-i18next'
 
 import { listSearchImage } from '../../../../assets/buttonsImages'
 import {
-  useClearMeetingListDates,
-  useMeetingListHasDateFilter,
   useMeetingListQuery,
   useMeetingListSortOrder,
-  useSetMeetingListQuery,
-  useSetMeetingListSortOrder,
-  type SortOrder,
 } from '../../../../stores/meetingListStore'
-import DangerButton from '../../../ui/buttons/DangerButton'
 import Input from '../../../ui/inputs/Input'
 import Select from '../../../ui/inputs/Select'
 import DateFilterToggle from './DateFilterToggle'
@@ -18,13 +12,8 @@ import DateFilterToggle from './DateFilterToggle'
 export default function MeetingListToolbar() {
   const { t } = useTranslation()
 
-  const query = useMeetingListQuery()
-  const sortOrder = useMeetingListSortOrder()
-  const hasDateFilter = useMeetingListHasDateFilter()
-
-  const setQuery = useSetMeetingListQuery()
-  const setSortOrder = useSetMeetingListSortOrder()
-  const clearDates = useClearMeetingListDates()
+  const [query, setQuery] = useMeetingListQuery()
+  const [sortOrder, setSortOrder] = useMeetingListSortOrder()
 
   return (
     <div className="flex items-end gap-3">
@@ -39,11 +28,6 @@ export default function MeetingListToolbar() {
         className="pr-3 pl-9"
       />
       <DateFilterToggle />
-      {hasDateFilter && (
-        <DangerButton onClick={clearDates}>
-          {t('meetings.list.clearDates')}
-        </DangerButton>
-      )}
       <Select
         label={t('meetings.list.sortLabel')}
         value={sortOrder}

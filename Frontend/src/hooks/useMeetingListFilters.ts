@@ -7,7 +7,6 @@ import {
   useMeetingListPageSize,
   useMeetingListQuery,
   useMeetingListSortOrder,
-  useSetMeetingListPage,
 } from '../stores/meetingListStore'
 import { type Meeting } from '../types/meetings'
 
@@ -25,13 +24,12 @@ function fuzzyMatch(title: string, query: string): boolean {
 }
 
 export function useMeetingListFilters(meetings: Meeting[]) {
-  const query = useMeetingListQuery()
-  const dateFrom = useMeetingListDateFrom()
-  const dateTo = useMeetingListDateTo()
-  const sortOrder = useMeetingListSortOrder()
-  const page = useMeetingListPage()
-  const pageSize = useMeetingListPageSize()
-  const setPage = useSetMeetingListPage()
+  const [query, _setQuery] = useMeetingListQuery()
+  const [dateFrom, _setDateFrom] = useMeetingListDateFrom()
+  const [dateTo, _setDateTo] = useMeetingListDateTo()
+  const [sortOrder, _setSortOrder] = useMeetingListSortOrder()
+  const [page, setPage] = useMeetingListPage()
+  const [pageSize, _setPageSize] = useMeetingListPageSize()
 
   const filteredAndSorted = meetings
     .filter(m => {
@@ -56,7 +54,7 @@ export function useMeetingListFilters(meetings: Meeting[]) {
   const totalCount = filteredAndSorted.length
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
 
-  // Reset a página 1 cuando los filtros cambian y la página actual queda fuera de rango
+  // Reset to page 1 when filters change and current page is out of range
   useEffect(() => {
     if (page > totalPages) {
       setPage(1)

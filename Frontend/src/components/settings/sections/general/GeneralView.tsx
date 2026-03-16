@@ -1,10 +1,7 @@
 import i18n from 'i18next'
 import { useTranslation } from 'react-i18next'
 
-import {
-  useMeetingListPageSize,
-  useSetMeetingListPageSize,
-} from '../../../../stores/meetingListStore'
+import { useMeetingListPageSize } from '../../../../stores/meetingListStore'
 import {
   useSetTheme,
   useTheme,
@@ -16,8 +13,7 @@ export default function GeneralView() {
   const { t } = useTranslation()
   const theme = useTheme()
   const setTheme = useSetTheme()
-  const pageSize = useMeetingListPageSize()
-  const setPageSize = useSetMeetingListPageSize()
+  const [pageSize, setPageSize] = useMeetingListPageSize()
 
   const currentLanguage = i18n.language?.startsWith('es') ? 'es' : 'en'
 

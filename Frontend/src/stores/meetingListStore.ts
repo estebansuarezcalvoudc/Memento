@@ -57,37 +57,50 @@ const useMeetingListStore = create<MeetingListStore>()(
 )
 
 export const useMeetingListQuery = () =>
-  useMeetingListStore(state => state.query)
+  [
+    useMeetingListStore(state => state.query),
+    useMeetingListStore(state => state.setQuery),
+  ] as const
+
 export const useMeetingListDateFrom = () =>
-  useMeetingListStore(state => state.dateFrom)
+  [
+    useMeetingListStore(state => state.dateFrom),
+    useMeetingListStore(state => state.setDateFrom),
+  ] as const
+
 export const useMeetingListDateTo = () =>
-  useMeetingListStore(state => state.dateTo)
+  [
+    useMeetingListStore(state => state.dateTo),
+    useMeetingListStore(state => state.setDateTo),
+  ] as const
+
 export const useMeetingListSortOrder = () =>
-  useMeetingListStore(state => state.sortOrder)
+  [
+    useMeetingListStore(state => state.sortOrder),
+    useMeetingListStore(state => state.setSortOrder),
+  ] as const
+
+export const useMeetingListPage = () =>
+  [
+    useMeetingListStore(state => state.page),
+    useMeetingListStore(state => state.setPage),
+  ] as const
+
+export const useMeetingListPageSize = () =>
+  [
+    useMeetingListStore(state => state.pageSize),
+    useMeetingListStore(state => state.setPageSize),
+  ] as const
+
 export const useMeetingListShowDates = () =>
   useMeetingListStore(state => state.showDateFilters)
 export const useMeetingListHasDateFilter = () =>
   useMeetingListStore(state => state.dateFrom !== '' || state.dateTo !== '')
 
-export const useSetMeetingListQuery = () =>
-  useMeetingListStore(state => state.setQuery)
-export const useSetMeetingListDateFrom = () =>
-  useMeetingListStore(state => state.setDateFrom)
-export const useSetMeetingListDateTo = () =>
-  useMeetingListStore(state => state.setDateTo)
-export const useSetMeetingListSortOrder = () =>
-  useMeetingListStore(state => state.setSortOrder)
 export const useToggleMeetingListDates = () =>
   useMeetingListStore(state => state.toggleDateFilters)
 export const useClearMeetingListDates = () =>
   useMeetingListStore(state => state.clearDates)
-export const useMeetingListPage = () => useMeetingListStore(state => state.page)
-export const useSetMeetingListPage = () =>
-  useMeetingListStore(state => state.setPage)
-export const useMeetingListPageSize = () =>
-  useMeetingListStore(state => state.pageSize)
-export const useSetMeetingListPageSize = () =>
-  useMeetingListStore(state => state.setPageSize)
 
 export const _resetMeetingListStore = () =>
   useMeetingListStore.setState({

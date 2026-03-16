@@ -1,46 +1,17 @@
 import { useTranslation } from 'react-i18next'
 
-import {
-  useMeetingListPage,
-  useSetMeetingListPage,
-} from '../../../stores/meetingListStore'
+import { useMeetingListPage } from '../../../stores/meetingListStore'
 import PaginationButton from '../../ui/buttons/PaginationButton'
 
 interface MeetingListPaginationProps {
   totalPages: number
 }
 
-function getPageNumbers(current: number, total: number): (number | '…')[] {
-  if (total <= 7) {
-    return Array.from({ length: total }, (_, i) => i + 1)
-  }
-
-  const pages: (number | '…')[] = [1]
-
-  if (current > 3) {
-    pages.push('…')
-  }
-
-  const start = Math.max(2, current - 1)
-  const end = Math.min(total - 1, current + 1)
-  for (let i = start; i <= end; i++) {
-    pages.push(i)
-  }
-
-  if (current < total - 2) {
-    pages.push('…')
-  }
-
-  pages.push(total)
-  return pages
-}
-
 export default function MeetingListPagination({
   totalPages,
 }: MeetingListPaginationProps) {
   const { t } = useTranslation()
-  const currentPage = useMeetingListPage()
-  const setPage = useSetMeetingListPage()
+  const [currentPage, setPage] = useMeetingListPage()
 
   if (totalPages <= 1) {
     return null
@@ -84,4 +55,29 @@ export default function MeetingListPagination({
       </PaginationButton>
     </div>
   )
+}
+
+function getPageNumbers(current: number, total: number): (number | '…')[] {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1)
+  }
+
+  const pages: (number | '…')[] = [1]
+
+  if (current > 3) {
+    pages.push('…')
+  }
+
+  const start = Math.max(2, current - 1)
+  const end = Math.min(total - 1, current + 1)
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
+  }
+
+  if (current < total - 2) {
+    pages.push('…')
+  }
+
+  pages.push(total)
+  return pages
 }
