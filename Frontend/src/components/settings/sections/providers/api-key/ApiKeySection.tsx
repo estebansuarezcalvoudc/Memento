@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useDeleteApiKey } from '../../../../../api/queries/settings/useProvidersQueries'
-import InlineButton from '../../../../ui/buttons/InlineButton'
+import DangerButton from '../../../../ui/buttons/DangerButton'
 import ErrorMessage from '../../../../ui/feedback/ErrorMessage'
 import ApiKeyForm from './ApiKeyForm'
 
@@ -36,12 +36,9 @@ export default function ApiKeySection({
           <span className="font-ubuntu text-base text-green-600 dark:text-green-400">
             {t('settings.providers.apiKeyAdded')}
           </span>
-          <button
-            onClick={handleDelete}
-            className="font-ubuntu cursor-pointer rounded-lg px-2 py-1 text-base text-red-500 hover:bg-red-300 hover:text-red-700"
-          >
+          <DangerButton onClick={handleDelete}>
             {t('settings.providers.removeApiKey')}
-          </button>
+          </DangerButton>
         </div>
         {deleteError && <ErrorMessage message={deleteError} />}
       </div>

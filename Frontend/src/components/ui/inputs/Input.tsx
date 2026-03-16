@@ -16,12 +16,10 @@ export default function Input({
   const id = useId()
 
   return (
-    <div
-      className={`flex flex-col align-middle ${containerClassName ?? 'mt-3'}`}
-    >
+    <div className={`flex flex-col ${containerClassName ?? 'mt-3'}`}>
       <label
         htmlFor={id}
-        className="font-ubuntu mb-1 ml-1 items-center justify-center text-base text-stone-600 dark:text-stone-400"
+        className="font-ubuntu mb-1 ml-1 items-center justify-center text-sm text-stone-600 dark:text-stone-400"
       >
         {label}
       </label>

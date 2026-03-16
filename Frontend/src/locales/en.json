@@ -157,7 +157,9 @@
       "sortNewestFirst": "Newest first",
       "sortOldestFirst": "Oldest first",
       "sortAZ": "A → Z",
-      "sortZA": "Z → A"
+      "sortZA": "Z → A",
+      "dateFilterToggle": "Filter by date",
+      "clearDates": "Clear"
     },
     "uploadDialog": {
       "title": "Upload Files",
