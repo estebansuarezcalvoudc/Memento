@@ -28,7 +28,7 @@ export default function MeetingDateFilters() {
   }
 
   return (
-    <div className="flex items-end gap-3">
+    <div className="flex flex-wrap items-end gap-3">
       <Input
         label={t('meetings.list.fromLabel')}
         type="date"
