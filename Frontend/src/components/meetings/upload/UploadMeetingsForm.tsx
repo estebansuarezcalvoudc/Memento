@@ -128,7 +128,7 @@ export default function UploadMeetingsForm({
   return (
     <form onSubmit={handleSubmit}>
       <div
-        className={`grid ${meetingFormGridCols} gap-4 border-b border-stone-300 py-2 dark:border-stone-600`}
+        className={`grid ${meetingFormGridCols} justify-center gap-4 border-b border-stone-300 py-2 dark:border-stone-600`}
       >
         <ColumnHeader size="xs">
           {t('meetings.uploadDialog.columns.number')}
