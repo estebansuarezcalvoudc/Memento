@@ -1,10 +1,10 @@
-import { useUpdateMeeting } from '../../../api/queries/useMeetingsQueries'
+import { useUpdateMeeting } from '../../../../api/queries/useMeetingsQueries'
 import {
   cancelEditImage,
   confirmEditImage,
-} from '../../../assets/buttonsImages'
-import { type Meeting } from '../../../types/meetings'
-import MeetingButton from '../MeetingButton'
+} from '../../../../assets/buttonsImages'
+import { type Meeting } from '../../../../types/meetings'
+import MeetingButton from '../../MeetingButton'
 import { type EditState } from './MeetingItem'
 
 interface MeetingItemEditProps {

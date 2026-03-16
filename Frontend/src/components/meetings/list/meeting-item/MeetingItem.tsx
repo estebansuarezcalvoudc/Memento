@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { type Meeting } from '../../../types/meetings'
+import { type Meeting } from '../../../../types/meetings'
 import MeetingItemEdit from './MeetingItemEdit'
 import MeetingItemView from './MeetingItemView'
 
