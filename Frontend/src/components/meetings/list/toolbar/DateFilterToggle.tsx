@@ -19,7 +19,7 @@ export default function DateFilterToggle() {
       type="button"
       title={t('meetings.list.dateFilterToggle')}
       onClick={toggleDateFilters}
-      className={`flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border px-3 text-sm transition-colors ${
+      className={`flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border px-3 text-base transition-colors ${
         hasDateFilter || showDateFilters
           ? 'border-stone-500 bg-stone-200 text-stone-800 dark:border-stone-400 dark:bg-stone-700 dark:text-stone-100'
           : 'border-stone-300 text-stone-500 hover:border-stone-400 hover:text-stone-700 dark:border-stone-600 dark:text-stone-400 dark:hover:border-stone-500 dark:hover:text-stone-200'

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useDeleteApiKey } from '../../../../../api/queries/settings/useProvidersQueries'
 import DangerButton from '../../../../ui/buttons/DangerButton'
+import InlineButton from '../../../../ui/buttons/InlineButton'
 import ErrorMessage from '../../../../ui/feedback/ErrorMessage'
 import ApiKeyForm from './ApiKeyForm'
 

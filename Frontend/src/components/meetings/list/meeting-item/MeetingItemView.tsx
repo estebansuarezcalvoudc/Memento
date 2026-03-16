@@ -51,6 +51,7 @@ export default function MeetingItemView({
         bgColor="hover:bg-blue-200"
         textColor="hover:text-blue-700"
         disabled={isPending}
+        ariaLabel="Edit"
       />
       <MeetingButton
         image={removeImage}
@@ -58,6 +59,7 @@ export default function MeetingItemView({
         bgColor="hover:bg-red-200"
         textColor="hover:text-red-700"
         disabled={isPending}
+        ariaLabel="Delete"
       />
     </>
   )

@@ -1,32 +1,18 @@
 import { useTranslation } from 'react-i18next'
 
-import { listSearchImage } from '../../../../assets/buttonsImages'
-import {
-  useMeetingListQuery,
-  useMeetingListSortOrder,
-} from '../../../../stores/meetingListStore'
-import Input from '../../../ui/inputs/Input'
+import { useMeetingListSortOrder } from '../../../../stores/meetingListStore'
 import Select from '../../../ui/inputs/Select'
 import DateFilterToggle from './DateFilterToggle'
+import MeetingSearchInput from './MeetingSearchInput'
 
 export default function MeetingListToolbar() {
   const { t } = useTranslation()
 
-  const [query, setQuery] = useMeetingListQuery()
   const [sortOrder, setSortOrder] = useMeetingListSortOrder()
 
   return (
     <div className="flex items-end gap-3">
-      <Input
-        label={t('meetings.list.searchLabel')}
-        type="search"
-        placeholder={t('meetings.list.searchPlaceholder')}
-        value={query}
-        onChange={e => setQuery(e.target.value)}
-        containerClassName="flex flex-1 flex-col"
-        startIcon={listSearchImage}
-        className="pr-3 pl-9"
-      />
+      <MeetingSearchInput />
       <DateFilterToggle />
       <Select
         label={t('meetings.list.sortLabel')}
