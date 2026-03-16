@@ -48,16 +48,16 @@ export default function MeetingItemView({
       <MeetingButton
         image={editImage}
         onClick={handleEdit}
-        bgColor="hover:bg-blue-200"
-        textColor="hover:text-blue-700"
+        bgColor="hover:bg-blue-300"
+        textColor="hover:text-blue-800"
         disabled={isPending}
         ariaLabel="Edit"
       />
       <MeetingButton
         image={removeImage}
         onClick={handleDelete}
-        bgColor="hover:bg-red-200"
-        textColor="hover:text-red-700"
+        bgColor="hover:bg-red-300"
+        textColor="hover:text-red-800"
         disabled={isPending}
         ariaLabel="Delete"
       />

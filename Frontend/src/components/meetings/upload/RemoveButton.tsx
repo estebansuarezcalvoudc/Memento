@@ -11,8 +11,8 @@ export default function RemoveButton({ onClick, disabled }: RemoveButtonProps) {
     <MeetingButton
       image={removeImage}
       onClick={onClick}
-      bgColor="hover:bg-red-100"
-      textColor="hover:text-red-600 text-stone-500"
+      bgColor="hover:bg-red-300"
+      textColor="hover:text-red-800 text-stone-500"
       disabled={disabled}
     />
   )
