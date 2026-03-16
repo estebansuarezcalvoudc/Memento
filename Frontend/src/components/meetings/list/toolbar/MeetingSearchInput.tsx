@@ -23,6 +23,7 @@ export default function MeetingSearchInput() {
         id={id}
         type="text"
         placeholder={t('meetings.list.searchPlaceholder')}
+        aria-label={t('meetings.list.searchLabel')}
         className="font-ubuntu h-8 w-full rounded-lg border border-stone-300 bg-transparent pr-9 pl-9 text-base text-stone-800 outline-none focus:border-stone-500 dark:border-stone-600 dark:text-stone-100 dark:focus:border-stone-400"
         value={query}
         onChange={e => setQuery(e.target.value)}
@@ -31,6 +32,7 @@ export default function MeetingSearchInput() {
       <button
         type="button"
         className="absolute top-1/2 right-2 -translate-y-1/2 text-stone-400 transition-all hover:text-stone-600 disabled:hidden dark:hover:text-stone-200"
+        aria-label={t('meetings.list.clearSearch')}
         disabled={query === ''}
         onClick={() => setQuery('')}
       >

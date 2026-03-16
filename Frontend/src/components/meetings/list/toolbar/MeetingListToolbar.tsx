@@ -1,6 +1,9 @@
 import { useTranslation } from 'react-i18next'
 
-import { useMeetingListSortOrder } from '../../../../stores/meetingListStore'
+import {
+  useMeetingListSortOrder,
+  type SortOrder,
+} from '../../../../stores/meetingListStore'
 import Select from '../../../ui/inputs/Select'
 import DateFilterToggle from './DateFilterToggle'
 import MeetingSearchInput from './MeetingSearchInput'

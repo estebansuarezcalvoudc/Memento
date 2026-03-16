@@ -4,6 +4,7 @@ import {
   confirmEditImage,
 } from '../../../../assets/buttonsImages'
 import { type Meeting } from '../../../../types/meetings'
+import { localDateString } from '../../../../utils/date'
 import MeetingButton from '../../MeetingButton'
 import { type EditState } from './MeetingItem'
 
@@ -20,7 +21,7 @@ export default function MeetingItemEdit({
   editState,
   setEditState,
 }: MeetingItemEditProps) {
-  const today = new Date().toISOString().split('T')[0]
+  const today = localDateString()
 
   const { mutate: updateMeeting, isPending } = useUpdateMeeting()
 

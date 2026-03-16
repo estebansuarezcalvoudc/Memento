@@ -7,10 +7,11 @@ import {
   useMeetingListHasDateFilter,
   useMeetingListShowDates,
 } from '../../../../stores/meetingListStore'
+import { localDateString } from '../../../../utils/date'
 import DangerButton from '../../../ui/buttons/DangerButton'
 import Input from '../../../ui/inputs/Input'
 
-const today = new Date().toISOString().split('T')[0]
+const today = localDateString()
 
 export default function MeetingDateFilters() {
   const { t } = useTranslation()

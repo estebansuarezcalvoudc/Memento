@@ -160,6 +160,7 @@
       "sortAZ": "A → Z",
       "sortZA": "Z → A",
       "dateFilterToggle": "Filtrar por fecha",
+      "clearSearch": "Limpiar búsqueda",
       "clearDates": "Limpiar",
       "paginationPrev": "Ant",
       "paginationNext": "Sig"

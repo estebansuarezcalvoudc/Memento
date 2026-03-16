@@ -17,7 +17,7 @@ _USER_DATA = {
 _REQUEST = {
     "conversation_id": VALID_CONV_ID,
     "message": "What was discussed in the last meeting?",
-    "current_datetime": "2024-01-15T10:00:00",
+    "current_datetime": "2024-01-15T10:00:00+00:00",
 }
 
 
@@ -102,7 +102,7 @@ class TestChatWebSocketSendMessage:
         token = auth_headers["Authorization"].split(" ")[1]
         bad_request = {
             "conversation_id": VALID_CONV_ID,
-            "current_datetime": "2024-01-15T10:00:00",
+            "current_datetime": "2024-01-15T10:00:00+00:00",
         }
 
         with client.websocket_connect(f"/conversations/ws?token={token}") as ws:
