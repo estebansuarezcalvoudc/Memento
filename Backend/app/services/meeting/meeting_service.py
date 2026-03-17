@@ -1,7 +1,17 @@
-from fastapi import HTTPException, status
+from typing import AsyncIterable
+
 from langchain_core.documents import Document
 from langchain_core.vectorstores import VectorStore
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+from app.schemas.meeting.meeting_events import (
+    JobFinished,
+    JobStarted,
+    MeetingProcessingFailed,
+    MeetingProcessingStarted,
+    MeetingProcessingSucceeded,
+    MeetingUploadEvent,
+)
 
 from ...core.logging import setup_logger
 from ...repositories.interfaces.meeting_repo import MeetingRepository
@@ -36,28 +46,40 @@ class MeetingService(metaclass=SingletonMeta):
         self._transcription_service = transcription_service
         self._vector_store = vector_store
 
-    def process_meetings(
+    async def process_meetings(
         self,
         batch_request: CreateMeetingsBatchRequest,
         audio_bytes_list: list[bytes],
         user_id: str,
-    ) -> list[MeetingMetadataResponse]:
-        if len(batch_request.meetings_metadata) != len(audio_bytes_list):
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-                detail="The number of metadata objects must match the number of audio files",
-            )
+    ) -> AsyncIterable[MeetingUploadEvent]:
+        yield JobStarted(total_meetings=len(batch_request.meetings_metadata))
 
-        created_meetings = []
-        for metadata, audio_bytes in zip(
-            batch_request.meetings_metadata, audio_bytes_list
-        ):
-            created_meeting = self._process_single_meeting(
-                metadata, audio_bytes, batch_request.processing_configuration, user_id
-            )
-            created_meetings.append(created_meeting)
+        meetings = zip(batch_request.meetings_metadata, audio_bytes_list)
 
-        return created_meetings
+        succeeded = 0
+        failed = 0
+
+        for i, (metadata, audio_bytes) in enumerate(meetings):
+            yield MeetingProcessingStarted(index=i, title=metadata.title)
+
+            try:
+                created_meeting = self._process_single_meeting(
+                    metadata,
+                    audio_bytes,
+                    batch_request.processing_configuration,
+                    user_id,
+                )
+                succeeded += 1
+                yield MeetingProcessingSucceeded(
+                    index=i, title=metadata.title, meeting_id=created_meeting.id
+                )
+            except Exception as e:
+                failed += 1
+                yield MeetingProcessingFailed(
+                    index=i, title=metadata.title, error=str(e)
+                )
+
+        yield JobFinished(meetings_succeeded=succeeded, meetings_failed=failed)
 
     def _process_single_meeting(
         self,
