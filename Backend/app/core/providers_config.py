@@ -1,19 +1,9 @@
-"""
-Shared provider configuration, default user settings, and provider operations.
-
-This module is the single source of truth for which providers exist,
-whether they require an API key, what the default settings are for
-a newly registered user, and how to interact with each provider
-(listing available models).
-
-LLM instantiation has been moved to core/llm_factory.py.
-"""
-
 from __future__ import annotations
 
 from pathlib import Path
 from typing import Literal
 
+import anthropic
 import ollama
 import yaml
 from openai import OpenAI
@@ -21,11 +11,12 @@ from openai import OpenAI
 from .encryption import decrypt_api_key
 from .settings import settings
 
-ProviderName = Literal["OpenAI", "Ollama"]
+ProviderName = Literal["OpenAI", "Anthropic", "Ollama"]
 
 AVAILABLE_PROVIDERS: dict[str, dict] = {
-    "OpenAI": {"requires_api_key": True},
     "Ollama": {"requires_api_key": False},
+    "OpenAI": {"requires_api_key": True},
+    "Anthropic": {"requires_api_key": True},
 }
 
 DEFAULT_USER_SETTINGS: dict = {
@@ -85,6 +76,13 @@ def list_models(
             return _apply_allowlist(
                 provider_name, [m.id for m in client.models.list().data]
             )
+        case "Anthropic":
+            api_key = decrypt_api_key(api_key_encrypted or "")
+            client = anthropic.Anthropic(api_key=api_key)
+
+            return _apply_allowlist(
+                provider_name, [m.id for m in client.models.list().data]
+            )
         case "Ollama":
             client = ollama.Client(host=settings.ollama_url)
             return _apply_allowlist(
@@ -95,6 +93,8 @@ def list_models(
                     if m.model is not None and m.model != "nomic-embed-text:latest"
                 ],
             )
+        case _:
+            return []
 
 
 def _apply_allowlist(provider_name: str, models: list[str]) -> list[str]:

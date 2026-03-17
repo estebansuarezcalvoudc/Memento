@@ -1,3 +1,6 @@
+from collections.abc import Callable
+
+from anthropic import Anthropic
 from fastapi import HTTPException, status
 from openai import OpenAI
 
@@ -139,50 +142,35 @@ class ProvidersService:
                 )
 
     def _validate_api_key(self, provider_name: str, api_key: str) -> None:
-        """
-        Validate API key by testing connection to provider
+        """Validate an API key by attempting a live models.list() call.
 
-        Args:
-            provider_name: Provider name
-            api_key: API key to validate
+        Each provider entry maps to a callable that accepts the key and
+        performs a minimal authenticated request. Ollama has no entry because
+        it never requires a key.
 
         Raises:
-            HTTPException: If validation fails
+            HTTPException 400: Unknown provider.
+            HTTPException 401: The key was rejected or the request failed.
         """
+        _validators: dict[str, Callable[[str], object]] = {
+            "OpenAI": lambda k: OpenAI(api_key=k).models.list(),
+            "Anthropic": lambda k: Anthropic(api_key=k).models.list(),
+        }
+
+        if provider_name == "Ollama":
+            return  # no key required, nothing to validate
+
+        if provider_name not in _validators:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unknown provider: {provider_name}",
+            )
+
         try:
-            if provider_name == "OpenAI":
-                self._validate_openai_key(api_key)
-            elif provider_name == "Ollama":
-                # Ollama doesn't require validation since it doesn't use API keys
-                pass
-            else:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Unknown provider: {provider_name}",
-                )
-        except HTTPException:
-            raise
+            _validators[provider_name](api_key)
         except Exception as e:
             _logger.error(f"API key validation failed for {provider_name}: {e}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=f"Invalid API key for {provider_name}: {str(e)}",
+                detail=f"Invalid API key for {provider_name}",
             )
-
-    def _validate_openai_key(self, api_key: str) -> None:
-        """
-        Validate OpenAI API key by making a test request
-
-        Args:
-            api_key: OpenAI API key
-
-        Raises:
-            Exception: If validation fails
-        """
-        try:
-            client = OpenAI(api_key=api_key)
-            # Make a minimal request to validate the key
-            client.models.list()
-        except Exception as e:
-            _logger.error(f"OpenAI API key validation failed: {e}")
-            raise Exception(f"Failed to validate OpenAI API key: {str(e)}")
