@@ -60,7 +60,9 @@ class ConversationService:
         - Persists the user message immediately.
         - Streams LLM tokens as TokenEvent instances.
         - Persists the full assistant reply once streaming is complete.
-        - Yields a DoneEvent to signal completion.
+        - On the first exchange of a conversation (no prior messages), auto-
+          generates a title and yields a TitleEvent before the final DoneEvent.
+        - Yields a DoneEvent to signal completion of the stream.
         """
 
         async def _generate() -> AsyncGenerator[ChatEvent, None]:
