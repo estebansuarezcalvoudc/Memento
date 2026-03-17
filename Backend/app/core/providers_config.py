@@ -94,7 +94,11 @@ def list_models(
             client = ollama.Client(host=settings.ollama_url)
             return _apply_allowlist(
                 provider_name,
-                [m.model for m in client.list().models if m.model is not None],
+                [
+                    m.model
+                    for m in client.list().models
+                    if m.model is not None and m.model != "nomic-embed-text:latest"
+                ],
             )
 
 
