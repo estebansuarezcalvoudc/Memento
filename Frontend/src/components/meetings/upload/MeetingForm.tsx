@@ -20,7 +20,7 @@ export interface MeetingFormProps {
 }
 
 export const meetingFormGridCols =
-  'grid-cols-[20px_minmax(180px,240px)_170px_minmax(180px,240px)_32px_32px]'
+  'min-[800px]:grid-cols-[20px_minmax(180px,240px)_170px_minmax(180px,240px)_32px_32px]'
 
 const resetPlacementClass = 'min-[800px]:col-auto min-[800px]:row-auto'
 
@@ -39,7 +39,7 @@ export default function MeetingForm({
   const [speakers, setSpeakers] = useState(meeting.speakers ?? '')
 
   return (
-    <div className="grid grid-cols-[20px_minmax(0,1fr)_32px_32px] items-center gap-x-3 gap-y-2 border-b border-stone-200 py-3 min-[800px]:grid-cols-[20px_minmax(180px,240px)_170px_minmax(180px,240px)_32px_32px] min-[800px]:justify-center min-[800px]:gap-x-4 min-[800px]:gap-y-0 min-[800px]:py-1 dark:border-stone-700">
+    <div className={`grid grid-cols-[20px_minmax(0,1fr)_32px_32px] items-center gap-x-3 gap-y-2 border-b border-stone-200 py-3 ${meetingFormGridCols} min-[800px]:justify-center min-[800px]:gap-x-4 min-[800px]:gap-y-0 min-[800px]:py-1 dark:border-stone-700`}>
       <span className="font-ubuntu row-span-2 py-1 text-sm text-stone-500 min-[800px]:row-span-1 min-[800px]:py-3 dark:text-stone-400">
         {index + 1}
       </span>

@@ -25,7 +25,7 @@ export default function SettingsSidebar({
 
   return (
     <aside className="flex h-full w-38 flex-col bg-stone-100 px-2 pt-4 text-stone-800 dark:bg-stone-900 dark:text-stone-200">
-      {Object.values(Section).map(s => (
+      {(Object.values(Section) as Section[]).map(s => (
         <SettingsSectionButton
           key={s}
           label={t(sectionLabelKeys[s])}
