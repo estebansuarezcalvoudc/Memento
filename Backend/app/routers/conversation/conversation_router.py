@@ -50,8 +50,8 @@ async def chat_websocket(
         { "type": "conversation_created", "conversation_id": "...", "title": "..." }
         { "type": "retrieving" }  — indicates the assistant is retrieving context before streaming
         { "type": "token", "content": "..." }  — repeated for each LLM token
+        { "type": "title", "title": "..." }  — sent before done on first message only
         { "type": "done" }  — sent when streaming has successfully completed
-        { "type": "title", "title": "..." }  — sent after done on first message only
         { "type": "error", "content": "..." }  — on failure, instead of done
     """
     await websocket.accept()
