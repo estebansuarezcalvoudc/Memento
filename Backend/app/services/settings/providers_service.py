@@ -172,5 +172,5 @@ class ProvidersService:
             _logger.error(f"API key validation failed for {provider_name}: {e}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=f"Invalid API key for {provider_name}: {str(e)}",
+                detail=f"Invalid API key for {provider_name}",
             )

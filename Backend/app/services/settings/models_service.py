@@ -1,8 +1,6 @@
 import ollama
 from fastapi import HTTPException, status
 
-from app.core.logging import setup_logger
-
 from ...core.providers_config import list_models
 from ...repositories.interfaces.settings_repo import SettingsRepository
 from ...schemas.settings.model_schema import (

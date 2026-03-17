@@ -37,7 +37,6 @@ def create_llm(
                 anthropic_api_key=SecretStr(decrypt_api_key(api_key_encrypted or "")),
                 temperature=config.temperature,
                 max_tokens=config.max_tokens,
-                timeout=None,
                 stop=None,
             )
         case "Ollama":
