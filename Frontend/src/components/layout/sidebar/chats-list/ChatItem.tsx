@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 
 import ChatOptionsDropdown from './chat-options/ChatOptionsDropdown'
@@ -11,7 +11,12 @@ interface ChatItemProps {
 export default function ChatItem({ chatId, chatTitle }: ChatItemProps) {
   const [isDivHovered, setDivIsHovered] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [localTitle, setLocalTitle] = useState(chatTitle)
   const { pathname } = useLocation()
+
+  useEffect(() => {
+    setLocalTitle(chatTitle)
+  }, [chatTitle])
 
   const shouldShowOptions = isDivHovered || isMenuOpen
   const isActive = pathname === `/chats/${chatId}`
@@ -32,7 +37,8 @@ export default function ChatItem({ chatId, chatTitle }: ChatItemProps) {
           <input
             ref={inputRef}
             className="font-ubuntu pointer-events-none ml-1.5 w-full truncate border-0 bg-transparent text-base text-stone-700 caret-stone-700 shadow-none ring-0 outline-none focus:border-0 focus:shadow-none focus:ring-0 focus:outline-none enabled:underline enabled:decoration-stone-600 enabled:decoration-2 enabled:underline-offset-3 dark:text-stone-300 dark:caret-stone-300 dark:enabled:decoration-stone-300"
-            defaultValue={chatTitle}
+            value={localTitle}
+            onChange={e => setLocalTitle(e.target.value)}
             disabled
           />
         </NavLink>

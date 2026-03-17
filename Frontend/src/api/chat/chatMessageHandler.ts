@@ -23,6 +23,11 @@ interface DoneEvent {
   type: 'done'
 }
 
+interface TitleEvent {
+  type: 'title'
+  title: string
+}
+
 interface ErrorEvent {
   type: 'error'
   content: string
@@ -33,13 +38,13 @@ type ChatEvent =
   | RetrievingEvent
   | TokenEvent
   | DoneEvent
+  | TitleEvent
   | ErrorEvent
 
 interface MessageHandlerDeps {
   dispatch: React.Dispatch<ChatAction>
   queryClient: ReturnType<typeof useQueryClient>
   message: string
-  conversationId: string | null
   resolvedConvIdRef: React.RefObject<string | null>
   accumulatedTokensRef: React.RefObject<string>
   onConversationCreated?: (id: string) => void
@@ -97,6 +102,9 @@ export function createMessageHandler(
       }
       dispatch({ type: 'DONE' })
       ws.close()
+    } else if (event.type === 'title') {
+      // Invalidate so useGetChats refetches and the sidebar updates automatically
+      void queryClient.invalidateQueries({ queryKey: CHATS_KEY })
     } else if (event.type === 'error') {
       dispatch({ type: 'ERROR', content: event.content })
       ws.close()

@@ -69,11 +69,21 @@ class DoneEvent(BaseModel):
     type: Literal["done"] = "done"
 
 
+class TitleEvent(BaseModel):
+    type: Literal["title"] = "title"
+    title: str
+
+
 class ErrorEvent(BaseModel):
     type: Literal["error"] = "error"
     content: str
 
 
 ChatEvent = (
-    ConversationCreatedEvent | RetrievingEvent | TokenEvent | DoneEvent | ErrorEvent
+    ConversationCreatedEvent
+    | RetrievingEvent
+    | TokenEvent
+    | DoneEvent
+    | TitleEvent
+    | ErrorEvent
 )

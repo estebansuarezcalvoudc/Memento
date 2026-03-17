@@ -51,6 +51,7 @@ async def chat_websocket(
         { "type": "retrieving" }  — indicates the assistant is retrieving context before streaming
         { "type": "token", "content": "..." }  — repeated for each LLM token
         { "type": "done" }  — sent when streaming has successfully completed
+        { "type": "title", "title": "..." }  — sent after done on first message only
         { "type": "error", "content": "..." }  — on failure, instead of done
     """
     await websocket.accept()
@@ -65,6 +66,8 @@ async def chat_websocket(
 
         async for event in event_stream:
             await websocket.send_text(event.model_dump_json())
+
+        await websocket.close()
 
     except WebSocketDisconnect:
         _logger.info(f"WebSocket disconnected for user {current_user.id}")

@@ -117,6 +117,34 @@ class Rag:
             if chunk.content:
                 yield chunk.content
 
+    async def generate_title(self, message: str, user_id: str) -> str:
+        """Generate a short chat title from the first user message.
+
+        Uses the user's configured chat model with a minimal prompt.
+        Returns 'New chat' silently if generation fails for any reason.
+        """
+        try:
+            chat_config = self._settings_repository.get_chat_model(user_id)
+            llm = self._get_llm(chat_config, user_id)
+            prompt = (
+                "Generate a concise chat title (3 to 6 words) for a conversation "
+                "that starts with the following message. Reply with only the title, "
+                "no quotes, no punctuation at the end.\n\n"
+                f"Message: {message}"
+            )
+            result = await llm.ainvoke(prompt)
+            title = (
+                result.content.strip()
+                if hasattr(result, "content")
+                else str(result).strip()
+            )
+            return title if title else "New chat"
+        except Exception:
+            _logger.warning(
+                "Title generation failed, keeping default title", exc_info=True
+            )
+            return "New chat"
+
     async def get_reply_stream(
         self,
         message: str,
