@@ -15,6 +15,7 @@ from ...schemas.conversation.conversation_schema import (
     DoneEvent,
     RetrievingEvent,
     SendMessageRequest,
+    TitleEvent,
     TokenEvent,
 )
 from .rag import Rag
@@ -59,7 +60,9 @@ class ConversationService:
         - Persists the user message immediately.
         - Streams LLM tokens as TokenEvent instances.
         - Persists the full assistant reply once streaming is complete.
-        - Yields a DoneEvent to signal completion.
+        - On the first exchange of a conversation (no prior messages), auto-
+          generates a title and yields a TitleEvent before the final DoneEvent.
+        - Yields a DoneEvent to signal completion of the stream.
         """
 
         async def _generate() -> AsyncGenerator[ChatEvent, None]:
@@ -108,6 +111,19 @@ class ConversationService:
                 conversation_id, [assistant_message], user_id
             )
             _logger.debug("streaming message processed and persisted")
+
+            # Auto-generate a title on the first exchange, before DoneEvent so
+            # the TitleEvent is sent while the WebSocket is still open.
+            if len(conversation_history) == 0:
+                generated_title = await self._rag_service.generate_title(
+                    request.message, user_id
+                )
+                self._repository.update_conversation_metadata(
+                    conversation_id,
+                    ConversationUpdateRequest(title=generated_title),
+                    user_id,
+                )
+                yield TitleEvent(title=generated_title)
 
             yield DoneEvent()
 

@@ -5,13 +5,16 @@ Unit tests for services/meeting/meeting_processing/summarization.py
 from unittest.mock import MagicMock, patch
 
 import pytest
+from fastapi import HTTPException
 
 from app.schemas.meeting.meeting_schema import ProcessingConfiguration
 
 _PATCH_SETTINGS_REPO = (
     "app.services.meeting.meeting_processing.summarization.SettingsMongoRepository"
 )
-_PATCH_CREATE_LLM = "app.services.meeting.meeting_processing.summarization.create_llm"
+_PATCH_CREATE_LLM = (
+    "app.services.meeting.meeting_processing.summarization.get_llm_for_user"
+)
 
 
 def _make_llm_config(provider: str = "Ollama", model: str = "llama3.2:latest"):
@@ -34,12 +37,14 @@ class TestGetMeetingSummary:
                 get_meeting_summary,
             )
 
-            with pytest.raises(RuntimeError, match="API key not configured"):
+            with pytest.raises(HTTPException) as exc_info:
                 get_meeting_summary(
                     diarized_dialogue="Speaker 1: Hello.",
                     processing_config=_make_processing_config(),
                     username="user@example.com",
                 )
+            assert exc_info.value.status_code == 400
+            assert "API key not configured" in exc_info.value.detail
 
     def test_get_meeting_summary_should_return_llm_output_for_ollama(self):
         """Ollama does not require an API key — the chain should be invoked and its
@@ -92,9 +97,11 @@ class TestGetMeetingSummary:
                 get_meeting_summary,
             )
 
-            with pytest.raises(RuntimeError, match="API key not configured"):
+            with pytest.raises(HTTPException) as exc_info:
                 get_meeting_summary(
                     diarized_dialogue="Speaker 1: Hello.",
                     processing_config=_make_processing_config(),
                     username="user@example.com",
                 )
+            assert exc_info.value.status_code == 400
+            assert "API key not configured" in exc_info.value.detail

@@ -3,8 +3,8 @@ import { http, HttpResponse } from 'msw'
 import { withAuth } from './withAuth'
 
 export const mockChats = [
-  { id: 'chat-1', title: 'First Chat', started_at: '2024-01-01T00:00:00Z' },
-  { id: 'chat-2', title: 'Second Chat', started_at: '2024-01-02T00:00:00Z' },
+  { id: 'chat-1', title: 'First Chat', updated_at: '2024-01-01T00:00:00Z' },
+  { id: 'chat-2', title: 'Second Chat', updated_at: '2024-01-02T00:00:00Z' },
 ]
 
 export const conversationHandlers = [
@@ -18,7 +18,7 @@ export const conversationHandlers = [
       HttpResponse.json({
         id: 'new-chat-1',
         title: 'New Chat',
-        started_at: '2024-01-03T00:00:00Z',
+        updated_at: '2024-01-03T00:00:00Z',
       }),
     ),
   ),

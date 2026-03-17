@@ -4,27 +4,22 @@ Shared provider configuration, default user settings, and provider operations.
 This module is the single source of truth for which providers exist,
 whether they require an API key, what the default settings are for
 a newly registered user, and how to interact with each provider
-(listing available models and creating LangChain LLM instances).
+(listing available models).
+
+LLM instantiation has been moved to core/llm_factory.py.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
 import ollama
 import yaml
-from langchain_core.language_models import BaseChatModel
-from langchain_ollama import ChatOllama
-from langchain_openai import ChatOpenAI
 from openai import OpenAI
-from pydantic import SecretStr
 
 from .encryption import decrypt_api_key
 from .settings import settings
-
-if TYPE_CHECKING:
-    from app.schemas.settings.model_schema import ModelConfig
 
 ProviderName = Literal["OpenAI", "Ollama"]
 
@@ -111,23 +106,3 @@ def _apply_allowlist(provider_name: str, models: list[str]) -> list[str]:
     if allowlist is None:
         return models
     return [m for m in models if m in allowlist]
-
-
-def create_llm(
-    config: "ModelConfig", api_key_encrypted: str | None = None
-) -> BaseChatModel:
-    match config.provider:
-        case "OpenAI":
-            return ChatOpenAI(
-                api_key=SecretStr(decrypt_api_key(api_key_encrypted or "")),
-                model=config.model_name,
-                temperature=config.temperature,
-                max_completion_tokens=config.max_tokens,
-            )
-        case "Ollama":
-            return ChatOllama(
-                base_url=settings.ollama_url,
-                model=config.model_name,
-                temperature=config.temperature,
-                num_predict=config.max_tokens,
-            )

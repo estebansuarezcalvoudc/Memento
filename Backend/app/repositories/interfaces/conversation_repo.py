@@ -54,13 +54,15 @@ class ConversationRepository(ABC):
         self, user_id: str
     ) -> list[ConversationMetadataRetrieve]:
         """
-        Retrieve metadata for all conversations of a user
+        Retrieve metadata for all conversations of a user.
 
         Args:
             user_id: User ID to retrieve conversations for
 
         Returns:
-            List of ConversationMetadataRetrieve objects
+            List of ConversationMetadataRetrieve objects ordered by updated_at
+            descending (most recently active conversation first). Implementations
+            must preserve this ordering.
         """
         pass
 

@@ -31,7 +31,7 @@ class TestRetrieveAllConversationsEndpoint:
             {
                 "_id": ObjectId(VALID_CONV_ID),
                 "title": "New chat",
-                "started_at": datetime(2024, 1, 15, 10, 0, 0),
+                "updated_at": datetime(2024, 1, 15, 10, 0, 0),
             }
         ]
 

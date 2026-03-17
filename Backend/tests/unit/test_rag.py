@@ -9,6 +9,7 @@ import pytest
 from fastapi import HTTPException
 from langchain_core.documents import Document
 
+from app.core.llm_factory import get_llm_for_user
 from app.schemas.settings.model_schema import ModelConfig
 from app.schemas.settings.provider_schema import ProviderSettings
 from app.services.conversation.rag import Rag
@@ -44,7 +45,7 @@ class TestBuildRagChain:
             max_tokens=1000,
         )
 
-        with patch("app.services.conversation.rag.create_llm") as mock_factory:
+        with patch("app.services.conversation.rag.get_llm_for_user") as mock_factory:
             mock_factory.return_value = MagicMock()
 
             rag._build_rag_chain(chat_config, retrieval_config, "test@example.com")
@@ -73,7 +74,7 @@ class TestGetLlm:
         )
 
         with pytest.raises(HTTPException) as exc_info:
-            rag._get_llm(config, "user123")
+            get_llm_for_user(config, rag._settings_repository, "user123")
 
         assert exc_info.value.status_code == 400
         assert "API key not configured" in exc_info.value.detail
@@ -91,11 +92,11 @@ class TestGetLlm:
             max_tokens=2000,
         )
 
-        with patch("app.services.conversation.rag.create_llm") as mock_factory:
-            mock_factory.return_value = MagicMock()
-            result = rag._get_llm(config, "user123")
+        with patch("app.core.llm_factory.ChatOllama") as mock_ollama_cls:
+            mock_ollama_cls.return_value = MagicMock()
+            result = get_llm_for_user(config, rag._settings_repository, "user123")
 
-        mock_factory.assert_called_once()
+        mock_ollama_cls.assert_called_once()
         assert result is not None
 
 

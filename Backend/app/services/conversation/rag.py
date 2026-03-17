@@ -2,14 +2,13 @@ from collections.abc import AsyncGenerator
 from datetime import datetime
 
 import dateparser.search
-from fastapi import HTTPException, status
 from langchain_core.documents import Document
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_core.vectorstores import VectorStore
 
-from app.core.providers_config import AVAILABLE_PROVIDERS, create_llm
+from app.core.llm_factory import get_llm_for_user
 
 from ...core.logging import setup_logger
 from ...repositories.interfaces.settings_repo import SettingsRepository
@@ -82,7 +81,9 @@ class Rag:
         """Run the retrieval pipeline and return the formatted context string."""
         chat_history = self._build_chat_history(conversation_history)
         retrieval_config = self._settings_repository.get_retrieval_model(user_id)
-        llm_retrieval = self._get_llm(retrieval_config, user_id)
+        llm_retrieval = get_llm_for_user(
+            retrieval_config, self._settings_repository, user_id
+        )
         retrieval_chain = self._build_retrieval_chain(llm_retrieval, user_id)
         return await retrieval_chain.ainvoke(
             {
@@ -103,7 +104,7 @@ class Rag:
         """Stream LLM tokens given pre-fetched context."""
         chat_history = self._build_chat_history(conversation_history)
         chat_config = self._settings_repository.get_chat_model(user_id)
-        llm_chat = self._get_llm(chat_config, user_id)
+        llm_chat = get_llm_for_user(chat_config, self._settings_repository, user_id)
 
         qa_chain = QA_PROMPT | llm_chat
         async for chunk in qa_chain.astream(
@@ -116,6 +117,34 @@ class Rag:
         ):
             if chunk.content:
                 yield chunk.content
+
+    async def generate_title(self, message: str, user_id: str) -> str:
+        """Generate a short chat title from the first user message.
+
+        Uses the user's configured chat model with a minimal prompt.
+        Returns 'New chat' silently if generation fails for any reason.
+        """
+        try:
+            chat_config = self._settings_repository.get_chat_model(user_id)
+            llm = get_llm_for_user(chat_config, self._settings_repository, user_id)
+            prompt = (
+                "Generate a concise chat title (3 to 6 words) for a conversation "
+                "that starts with the following message. Reply with only the title, "
+                "no quotes, no punctuation at the end.\n\n"
+                f"Message: {message}"
+            )
+            result = await llm.ainvoke(prompt)
+            title = (
+                result.content.strip()
+                if hasattr(result, "content")
+                else str(result).strip()
+            )
+            return title if title else "New chat"
+        except Exception:
+            _logger.warning(
+                "Title generation failed, keeping default title", exc_info=True
+            )
+            return "New chat"
 
     async def get_reply_stream(
         self,
@@ -136,31 +165,6 @@ class Rag:
             message, conversation_history, context, current_date, user_id
         ):
             yield token
-
-    def _get_llm(self, llm_config: ModelConfig, user_id: str):
-        """Resolve provider settings and instantiate an LLM for the given config."""
-        provider_settings = self._settings_repository.get_provider_settings(
-            user_id, llm_config.provider
-        )
-
-        _logger.debug(
-            f"_get_llm: provider={llm_config.provider!r} "
-            f"provider_settings={provider_settings!r}"
-        )
-
-        requires_api_key = AVAILABLE_PROVIDERS.get(llm_config.provider, {}).get(
-            "requires_api_key", True
-        )
-        if requires_api_key and (
-            provider_settings is None or not provider_settings.api_key_encrypted
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"API key not configured for user_id={user_id}",
-            )
-
-        api_key = provider_settings.api_key_encrypted if provider_settings else ""
-        return create_llm(llm_config, api_key or "")
 
     def _build_retrieval_chain(self, llm_retrieval, user_id: str):
         """Returns a chain that resolves the query and retrieves formatted context."""
@@ -215,8 +219,10 @@ class Rag:
         retrieval_config: ModelConfig,
         user_id: str,
     ):
-        llm_chat = self._get_llm(chat_config, user_id)
-        llm_retrieval = self._get_llm(retrieval_config, user_id)
+        llm_chat = get_llm_for_user(chat_config, self._settings_repository, user_id)
+        llm_retrieval = get_llm_for_user(
+            retrieval_config, self._settings_repository, user_id
+        )
         retrieval_chain = self._build_retrieval_chain(llm_retrieval, user_id)
 
         return (

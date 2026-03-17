@@ -23,7 +23,10 @@ class ConversationMongoRepository(AbstractConversationRepository):
         myclient = pymongo.MongoClient(settings.mongo_url)
         mydb = myclient["tfg_db"]
         self._collection = mydb["conversations"]
-        self._collection.create_index("user_id", background=True)
+        self._collection.create_index(
+            [("user_id", pymongo.ASCENDING), ("updated_at", pymongo.DESCENDING)],
+            background=True,
+        )
 
     def store_conversation(
         self,
@@ -34,13 +37,13 @@ class ConversationMongoRepository(AbstractConversationRepository):
         if initial_messages is None:
             initial_messages = []
 
-        started_at = datetime.today()
+        updated_at = datetime.utcnow()
 
         result = self._collection.insert_one(
             {
                 "user_id": user_id,
                 "title": conversation_title,
-                "started_at": started_at,
+                "updated_at": updated_at,
                 "messages": initial_messages,
             }
         )
@@ -48,7 +51,7 @@ class ConversationMongoRepository(AbstractConversationRepository):
         return ConversationCreateResponse(
             id=str(result.inserted_id),
             title=conversation_title,
-            started_at=started_at,
+            updated_at=updated_at,
         )
 
     @handle_invalid_id
@@ -60,7 +63,10 @@ class ConversationMongoRepository(AbstractConversationRepository):
     ) -> None:
         self._collection.update_one(
             {"user_id": user_id, "_id": ObjectId(conversation_id)},
-            {"$push": {"messages": {"$each": new_messages}}},
+            {
+                "$push": {"messages": {"$each": new_messages}},
+                "$set": {"updated_at": datetime.utcnow()},
+            },
         )
 
     def retrieve_all_conversations_metadata(
@@ -72,7 +78,7 @@ class ConversationMongoRepository(AbstractConversationRepository):
             ConversationMetadataRetrieve(
                 id=str(conversation["_id"]),
                 title=conversation["title"],
-                started_at=conversation["started_at"],
+                updated_at=conversation["updated_at"],
             )
             for conversation in result
         ]
