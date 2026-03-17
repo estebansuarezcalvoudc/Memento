@@ -1,7 +1,5 @@
-import { Section } from './sections/Section'
-
 interface SettingsSectionButtonProps {
-  label: Section
+  label: string
   isSelected: boolean
   onClick: () => void
 }

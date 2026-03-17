@@ -1,7 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
-interface ChatOptionsButtonProps
-  extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ChatOptionsButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   svg: ReactNode
   text: string
   textColor?: string
@@ -17,11 +16,11 @@ export default function ChatOptionsButton({
 }: ChatOptionsButtonProps) {
   return (
     <button
-      className={`${textColor} ${hoverColor} m-1 flex w-24 cursor-pointer items-center rounded-xl px-1.5 py-2`}
+      className={`${textColor} ${hoverColor} flex w-full cursor-pointer items-center gap-1.5 rounded-xl px-2 py-2 whitespace-nowrap`}
       {...props}
     >
-      {svg}
-      <span className="font-ubuntu ml-1.5 text-left text-base">{text}</span>
+      <span className="shrink-0">{svg}</span>
+      <span className="font-ubuntu text-left text-base">{text}</span>
     </button>
   )
 }

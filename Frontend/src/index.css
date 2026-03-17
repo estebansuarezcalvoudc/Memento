@@ -12,6 +12,31 @@
   --font-ubuntu: 'Ubuntu', sans-serif;
 }
 
+html {
+  min-height: 100%;
+  background-color: #ffffff;
+  color-scheme: light;
+}
+
+body,
+#root {
+  min-height: 100vh;
+}
+
+body {
+  margin: 0;
+  background-color: #ffffff;
+}
+
+html.dark {
+  background-color: #292524;
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #292524;
+}
+
 /* Custom scrollbar styles */
 .custom-scrollbar {
   scrollbar-width: thin;

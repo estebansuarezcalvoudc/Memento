@@ -85,16 +85,16 @@ export default function MeetingItemEdit({
       <MeetingButton
         image={confirmEditImage}
         onClick={handleConfirm}
-        bgColor="hover:bg-green-200"
-        textColor="hover:text-green-700"
+        bgColor="hover:bg-green-300"
+        textColor="hover:text-green-800"
         disabled={isPending}
         ariaLabel="Confirm"
       />
       <MeetingButton
         image={cancelEditImage}
         onClick={handleCancel}
-        bgColor="hover:bg-red-200"
-        textColor="hover:text-red-700"
+        bgColor="hover:bg-red-300"
+        textColor="hover:text-red-800"
         disabled={isPending}
         ariaLabel="Cancel"
       />

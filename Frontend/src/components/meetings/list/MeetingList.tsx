@@ -22,25 +22,29 @@ export default function MeetingsList({ meetings }: MeetingsListProps) {
         <MeetingDateFilters />
       </div>
 
-      <div
-        className={`grid ${gridCols} gap-6 border-b border-stone-300 px-4 py-3 dark:border-stone-600`}
-      >
-        <ColumnHeader>#</ColumnHeader>
-        <ColumnHeader>Title</ColumnHeader>
-        <ColumnHeader>Date</ColumnHeader>
-        <div />
-        <div />
-      </div>
+      <div className="overflow-x-auto">
+        <div className="min-w-[500px]">
+          <div
+            className={`grid ${gridCols} gap-6 border-b border-stone-300 px-4 py-3 dark:border-stone-600`}
+          >
+            <ColumnHeader>#</ColumnHeader>
+            <ColumnHeader>Title</ColumnHeader>
+            <ColumnHeader>Date</ColumnHeader>
+            <div />
+            <div />
+          </div>
 
-      <div className="flex flex-col">
-        {pagedMeetings.map((meeting, index) => (
-          <MeetingItem
-            key={meeting.id}
-            meeting={meeting}
-            index={index + 1}
-            gridCols={gridCols}
-          />
-        ))}
+          <div className="flex flex-col">
+            {pagedMeetings.map((meeting, index) => (
+              <MeetingItem
+                key={meeting.id}
+                meeting={meeting}
+                index={index + 1}
+                gridCols={gridCols}
+              />
+            ))}
+          </div>
+        </div>
       </div>
       <MeetingListPagination totalPages={totalPages} />
     </div>

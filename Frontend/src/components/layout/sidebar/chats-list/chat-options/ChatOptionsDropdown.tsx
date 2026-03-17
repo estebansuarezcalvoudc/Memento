@@ -63,6 +63,8 @@ function ChatActionsDropdown({
       return
     }
 
+    const previousTitle = input.value
+
     input.disabled = false
 
     requestAnimationFrame(() => {
@@ -74,8 +76,22 @@ function ChatActionsDropdown({
       if (!input) {
         return
       }
+
+      const nextTitle = input.value.trim()
       input.disabled = true
-      updateTitle({ id: chatId, title: input.value })
+
+      if (!nextTitle) {
+        input.value = previousTitle
+        return
+      }
+
+      input.value = nextTitle
+
+      if (nextTitle === previousTitle) {
+        return
+      }
+
+      updateTitle({ id: chatId, title: nextTitle })
     }
 
     input.onblur = saveChanges
@@ -92,7 +108,7 @@ function ChatActionsDropdown({
 
   return (
     <div>
-      <MenuButton className="inline-flex cursor-pointer items-center justify-center rounded-r-2xl p-2 focus:ring-0 focus:outline-none">
+      <MenuButton className="inline-flex cursor-pointer items-center justify-center rounded-r-2xl p-2 text-stone-700 focus:ring-0 focus:outline-none dark:text-stone-300">
         {optionsImage}
       </MenuButton>
 
@@ -100,7 +116,7 @@ function ChatActionsDropdown({
         portal
         transition
         anchor="bottom end"
-        className="rounded-md bg-white shadow-lg outline-1 outline-stone-300 transition data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-200 data-enter:ease-out data-leave:duration-150 data-leave:ease-in dark:bg-stone-800 dark:outline-stone-600"
+        className="inline-grid grid-cols-1 gap-1 rounded-xl bg-white p-1 shadow-lg outline-1 outline-stone-300 transition data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-200 data-enter:ease-out data-leave:duration-150 data-leave:ease-in dark:bg-stone-800 dark:outline-stone-600"
       >
         <MenuItem>
           <ChatOptionsButton
@@ -113,8 +129,8 @@ function ChatActionsDropdown({
           <ChatOptionsButton
             svg={removeImage}
             text={t('chatOptions.delete')}
-            textColor="text-red-500"
-            hoverColor="hover:bg-red-50"
+            textColor="hover:text-red-800 text-red-500"
+            hoverColor="hover:bg-red-300"
             onClick={handleDelete}
           />
         </MenuItem>

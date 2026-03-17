@@ -14,7 +14,7 @@ export default function MeetingListToolbar() {
   const [sortOrder, setSortOrder] = useMeetingListSortOrder()
 
   return (
-    <div className="flex items-end gap-3">
+    <div className="flex flex-wrap items-end gap-3">
       <MeetingSearchInput />
       <DateFilterToggle />
       <Select

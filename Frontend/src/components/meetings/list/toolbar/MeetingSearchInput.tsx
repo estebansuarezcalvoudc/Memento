@@ -14,7 +14,7 @@ export default function MeetingSearchInput() {
   const { t } = useTranslation()
 
   return (
-    <div className="group relative flex-1">
+    <div className="group relative min-w-48 flex-1">
       <span className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-stone-400 dark:text-stone-500">
         <span className="scale-90">{listSearchImage}</span>
       </span>
