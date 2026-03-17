@@ -80,7 +80,6 @@ export default function ModelConfigSection({
             value={effectiveValue.modelName}
             onChange={handleModelChange}
           >
-            <option value="">{t('settings.models.selectModel')}</option>
             {(availableModels ?? []).map(model => (
               <option key={model.id} value={model.id}>
                 {model.provider} — {model.id}
