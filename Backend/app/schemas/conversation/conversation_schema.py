@@ -11,7 +11,7 @@ class ConversationDialogueRetrieve(BaseModel):
 class ConversationMetadataRetrieve(BaseModel):
     id: str
     title: str
-    started_at: datetime
+    updated_at: datetime
 
 
 class SendMessageRequest(BaseModel):
