@@ -23,7 +23,10 @@ class ConversationMongoRepository(AbstractConversationRepository):
         myclient = pymongo.MongoClient(settings.mongo_url)
         mydb = myclient["tfg_db"]
         self._collection = mydb["conversations"]
-        self._collection.create_index("user_id", background=True)
+        self._collection.create_index(
+            [("user_id", pymongo.ASCENDING), ("updated_at", pymongo.DESCENDING)],
+            background=True,
+        )
 
     def store_conversation(
         self,
@@ -69,9 +72,7 @@ class ConversationMongoRepository(AbstractConversationRepository):
     def retrieve_all_conversations_metadata(
         self, user_id: str
     ) -> list[ConversationMetadataRetrieve]:
-        result = self._collection.find({"user_id": user_id}, {"messages": False}).sort(
-            "updated_at", -1
-        )
+        result = self._collection.find({"user_id": user_id}, {"messages": False})
 
         return [
             ConversationMetadataRetrieve(

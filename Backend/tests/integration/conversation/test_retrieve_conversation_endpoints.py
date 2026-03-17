@@ -1,5 +1,4 @@
 from datetime import datetime
-from unittest.mock import MagicMock
 
 from bson import ObjectId
 from fastapi.testclient import TestClient
@@ -28,15 +27,13 @@ class TestRetrieveAllConversationsEndpoint:
     def test_retrieve_all_conversations_should_return_list_of_user_conversations(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        mock_cursor = MagicMock()
-        mock_cursor.sort.return_value = [
+        mock_mongo.find.return_value = [
             {
                 "_id": ObjectId(VALID_CONV_ID),
                 "title": "New chat",
                 "updated_at": datetime(2024, 1, 15, 10, 0, 0),
             }
         ]
-        mock_mongo.find.return_value = mock_cursor
 
         response = client.get("/conversations", headers=auth_headers)
 
@@ -51,9 +48,7 @@ class TestRetrieveAllConversationsEndpoint:
     def test_retrieve_all_conversations_should_return_empty_list_when_user_has_no_conversations(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        mock_cursor = MagicMock()
-        mock_cursor.sort.return_value = []
-        mock_mongo.find.return_value = mock_cursor
+        mock_mongo.find.return_value = []
 
         response = client.get("/conversations", headers=auth_headers)
 
