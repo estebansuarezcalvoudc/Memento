@@ -1,13 +1,5 @@
-"""
-LLM factory functions.
-
-- create_llm: pure factory — builds a LangChain chat model from a ModelConfig
-  and an already-resolved (encrypted) API key.
-- get_llm_for_user: convenience wrapper — fetches and validates the API key
-  from the settings repository for a given user, then delegates to create_llm.
-"""
-
 from fastapi import HTTPException, status
+from langchain_anthropic import ChatAnthropic
 from langchain_core.language_models import BaseChatModel
 from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI
@@ -37,7 +29,16 @@ def create_llm(
                 api_key=SecretStr(decrypt_api_key(api_key_encrypted or "")),
                 model=config.model_name,
                 temperature=config.temperature,
-                max_completion_tokens=config.max_tokens,
+                max_tokens=config.max_tokens,
+            )
+        case "Anthropic":
+            return ChatAnthropic(
+                model=config.model_name,
+                anthropic_api_key=SecretStr(decrypt_api_key(api_key_encrypted or "")),
+                temperature=config.temperature,
+                max_tokens=config.max_tokens,
+                timeout=None,
+                stop=None,
             )
         case "Ollama":
             return ChatOllama(
@@ -45,6 +46,11 @@ def create_llm(
                 model=config.model_name,
                 temperature=config.temperature,
                 num_predict=config.max_tokens,
+            )
+        case _:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unsupported provider: {config.provider}",
             )
 
 
