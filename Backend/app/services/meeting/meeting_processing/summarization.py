@@ -1,8 +1,8 @@
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
+from ....core.llm_factory import get_llm_for_user
 from ....core.logging import log_execution_time, setup_logger
-from ....core.providers_config import AVAILABLE_PROVIDERS, create_llm
 from ....repositories.implementations.mongo.settings_repo import SettingsMongoRepository
 from ....schemas.meeting.meeting_schema import ProcessingConfiguration
 
@@ -20,23 +20,7 @@ def get_meeting_summary(
     llm_config = settings_repo.get_summary_model(username)
 
     _logger.debug(f"LLM config: {llm_config}")
-    provider_settings = settings_repo.get_provider_settings(
-        username, llm_config.provider
-    )
-
-    requires_api_key = AVAILABLE_PROVIDERS.get(llm_config.provider, {}).get(
-        "requires_api_key", True
-    )
-    if requires_api_key and (
-        provider_settings is None or not provider_settings.api_key_encrypted
-    ):
-        _logger.debug(f"Provider settings: {provider_settings}")
-        raise RuntimeError(
-            f"{llm_config.provider} API key not configured for user {username}"
-        )
-
-    api_key = provider_settings.api_key_encrypted if provider_settings else ""
-    llm = create_llm(llm_config, api_key or "")
+    llm = get_llm_for_user(llm_config, settings_repo, username)
 
     prompt = ChatPromptTemplate.from_messages(
         [

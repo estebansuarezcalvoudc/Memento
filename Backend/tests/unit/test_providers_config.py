@@ -1,5 +1,5 @@
 """
-Unit tests for core/providers_config.py
+Unit tests for core/providers_config.py and core/llm_factory.py
 """
 
 from unittest.mock import MagicMock, patch
@@ -37,10 +37,10 @@ class TestCreateLlm:
             max_tokens=2000,
         )
 
-        with patch("app.core.providers_config.ChatOllama") as mock_ollama_cls:
+        with patch("app.core.llm_factory.ChatOllama") as mock_ollama_cls:
             mock_ollama_cls.return_value = MagicMock()
 
-            from app.core.providers_config import create_llm
+            from app.core.llm_factory import create_llm
 
             result = create_llm(config)
 
@@ -58,13 +58,11 @@ class TestCreateLlm:
             max_tokens=1000,
         )
 
-        with patch(
-            "app.core.providers_config.decrypt_api_key", return_value="sk-plain"
-        ):
-            with patch("app.core.providers_config.ChatOpenAI") as mock_openai_cls:
+        with patch("app.core.llm_factory.decrypt_api_key", return_value="sk-plain"):
+            with patch("app.core.llm_factory.ChatOpenAI") as mock_openai_cls:
                 mock_openai_cls.return_value = MagicMock()
 
-                from app.core.providers_config import create_llm
+                from app.core.llm_factory import create_llm
 
                 result = create_llm(config, api_key_encrypted="encrypted-key")
 
