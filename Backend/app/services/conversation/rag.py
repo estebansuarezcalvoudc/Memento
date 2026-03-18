@@ -1,3 +1,4 @@
+import re
 from collections.abc import AsyncGenerator
 from datetime import datetime
 
@@ -134,17 +135,25 @@ class Rag:
                 f"Message: {message}"
             )
             result = await llm.ainvoke(prompt)
-            title = (
+            raw_title = (
                 result.content.strip()
                 if hasattr(result, "content")
                 else str(result).strip()
             )
-            return title if title else "New chat"
+            return Rag._clean_generated_title(raw_title)
         except Exception:
             _logger.warning(
                 "Title generation failed, keeping default title", exc_info=True
             )
             return "New chat"
+
+    @staticmethod
+    def _clean_generated_title(raw_title: str) -> str:
+        """Remove reasoning tags from generated title and normalize whitespace."""
+        cleaned = re.sub(r"(?is)<think>.*?</think>", "", raw_title)
+        cleaned = re.sub(r"(?is)<think>.*$", "", cleaned)
+        cleaned = " ".join(cleaned.split())
+        return cleaned if cleaned else "New chat"
 
     async def get_reply_stream(
         self,

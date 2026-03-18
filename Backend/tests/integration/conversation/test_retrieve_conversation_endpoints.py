@@ -1,4 +1,5 @@
 from datetime import datetime
+from unittest.mock import MagicMock
 
 from bson import ObjectId
 from fastapi.testclient import TestClient
@@ -27,13 +28,15 @@ class TestRetrieveAllConversationsEndpoint:
     def test_retrieve_all_conversations_should_return_list_of_user_conversations(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        mock_mongo.find.return_value = [
+        cursor = MagicMock()
+        cursor.sort.return_value = [
             {
                 "_id": ObjectId(VALID_CONV_ID),
                 "title": "New chat",
                 "updated_at": datetime(2024, 1, 15, 10, 0, 0),
             }
         ]
+        mock_mongo.find.return_value = cursor
 
         response = client.get("/conversations", headers=auth_headers)
 
@@ -45,10 +48,24 @@ class TestRetrieveAllConversationsEndpoint:
         assert data[0]["title"] == "New chat"
         mock_mongo.find.assert_called_once()
 
+    def test_retrieve_all_conversations_should_sort_by_updated_at_desc(
+        self, client: TestClient, auth_headers: dict, mock_mongo
+    ):
+        cursor = MagicMock()
+        cursor.sort.return_value = []
+        mock_mongo.find.return_value = cursor
+
+        response = client.get("/conversations", headers=auth_headers)
+
+        assert response.status_code == 200
+        cursor.sort.assert_called_once_with([("updated_at", -1), ("_id", -1)])
+
     def test_retrieve_all_conversations_should_return_empty_list_when_user_has_no_conversations(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
-        mock_mongo.find.return_value = []
+        cursor = MagicMock()
+        cursor.sort.return_value = []
+        mock_mongo.find.return_value = cursor
 
         response = client.get("/conversations", headers=auth_headers)
 
