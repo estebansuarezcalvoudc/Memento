@@ -41,11 +41,77 @@ export function meetingsPostHandler(count = 1, delayMs = 0) {
     if (delayMs > 0) {
       await new Promise(resolve => setTimeout(resolve, delayMs))
     }
-    const meetings = Array.from({ length: count }, (_, i) => ({
-      id: `new-meeting-${i + 1}`,
-      title: `New Meeting ${i + 1}`,
-      date: '2024-03-01',
-    }))
-    return HttpResponse.json(meetings)
+
+    const blocks = [
+      `data: ${JSON.stringify({ type: 'JobStarted', total_meetings: count })}`,
+      ...Array.from({ length: count }, (_, i) => {
+        const index = i
+        const title = `Meeting ${i + 1}`
+        return [
+          `data: ${JSON.stringify({ type: 'MeetingProcessingStarted', index, title })}`,
+          `data: ${JSON.stringify({
+            type: 'MeetingProcessingSucceeded',
+            index,
+            title,
+            meeting_id: `new-meeting-${i + 1}`,
+          })}`,
+        ]
+      }).flat(),
+      `data: ${JSON.stringify({
+        type: 'JobFinished',
+        meetings_succeeded: count,
+        meetings_failed: 0,
+      })}`,
+    ]
+
+    return new HttpResponse(`${blocks.join('\n\n')}\n\n`, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+      },
+    })
+  })
+}
+
+export function meetingsPartialFailurePostHandler(
+  count = 4,
+  failedIndexes: number[] = [1, 3],
+  delayMs = 0,
+) {
+  return http.post('/api/meetings', async () => {
+    if (delayMs > 0) {
+      await new Promise(resolve => setTimeout(resolve, delayMs))
+    }
+
+    const failedSet = new Set(failedIndexes)
+    const succeeded = count - failedSet.size
+
+    const blocks = [
+      `data: ${JSON.stringify({ type: 'JobStarted', total_meetings: count })}`,
+      ...Array.from({ length: count }, (_, i) => {
+        const index = i
+        const title = `Meeting ${i + 1}`
+
+        const started = `data: ${JSON.stringify({ type: 'MeetingProcessingStarted', index, title })}`
+
+        if (failedSet.has(index)) {
+          const failed = `data: ${JSON.stringify({ type: 'MeetingProcessingFailed', index, title, error: 'forced failure' })}`
+          return [started, failed]
+        }
+
+        const success = `data: ${JSON.stringify({ type: 'MeetingProcessingSucceeded', index, title, meeting_id: `new-meeting-${i + 1}` })}`
+        return [started, success]
+      }).flat(),
+      `data: ${JSON.stringify({
+        type: 'JobFinished',
+        meetings_succeeded: succeeded,
+        meetings_failed: failedSet.size,
+      })}`,
+    ]
+
+    return new HttpResponse(`${blocks.join('\n\n')}\n\n`, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+      },
+    })
   })
 }

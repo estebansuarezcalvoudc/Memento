@@ -3,16 +3,12 @@ import { useTranslation } from 'react-i18next'
 
 import { type MeetingProcessingStatus } from '../../../api/meetings/useUploadMeetings'
 import { type LanguageOption } from '../../../api/queries/useSettingsQueries'
-import {
-  check,
-  clockPause,
-  faceError,
-} from '../../../assets/meetingUploadProgress'
 import { localDateString } from '../../../utils/date'
 import FilePickerInput from '../../ui/inputs/FilePickerInput'
 import InlineInput from '../../ui/inputs/InlineInput'
 import ChevronToggleButton from './ChevronToggleButton'
 import MeetingOptionsRow from './MeetingOptionsRow'
+import MeetingStatusIcon from './MeetingStatusIcon'
 import RemoveButton from './RemoveButton'
 import { type MeetingFormData } from './UploadMeetingsForm'
 
@@ -124,38 +120,5 @@ export default function MeetingForm({
         isExpanded={isExpanded}
       />
     </div>
-  )
-}
-
-function MeetingStatusIcon({
-  status,
-}: {
-  status: MeetingProcessingStatus | null
-}) {
-  if (!status) {
-    return <span className="text-stone-400 dark:text-stone-500">-</span>
-  }
-
-  if (status === 'processing') {
-    return (
-      <div
-        className="h-4 w-4 animate-spin rounded-full border-2 border-stone-300 border-t-blue-500"
-        aria-hidden="true"
-      />
-    )
-  }
-
-  if (status === 'succeeded') {
-    return (
-      <span className="text-emerald-600 dark:text-emerald-400">{check}</span>
-    )
-  }
-
-  if (status === 'failed') {
-    return <span className="text-red-600 dark:text-red-400">{faceError}</span>
-  }
-
-  return (
-    <span className="text-stone-400 dark:text-stone-500">{clockPause}</span>
   )
 }

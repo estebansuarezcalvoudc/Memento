@@ -7,6 +7,7 @@ import UploadMeetingsForm from '../../../src/components/meetings/upload/UploadMe
 import { server } from '../../mocks/server'
 import { renderWithRouter, setAuthToken, setupStoreReset } from '../../utils'
 import {
+  meetingsPartialFailurePostHandler,
   meetingsPostHandler,
   spyValidParsing,
   submitForm,
@@ -40,6 +41,7 @@ describe('Upload Meeting Form', () => {
 
   it('successfully uploads a meeting and calls handleCloseDialog', async () => {
     spyValidParsing()
+    server.use(meetingsPostHandler(1))
     setAuthToken()
     const handleClose = vi.fn()
     renderWithRouter(<UploadMeetingsForm handleCloseDialog={handleClose} />)
@@ -53,6 +55,7 @@ describe('Upload Meeting Form', () => {
 
   it('clears the form fields after a successful upload', async () => {
     spyValidParsing()
+    server.use(meetingsPostHandler(1))
     setAuthToken()
     const user = userEvent.setup()
     renderWithRouter(<UploadMeetingsForm handleCloseDialog={vi.fn()} />)
@@ -63,8 +66,9 @@ describe('Upload Meeting Form', () => {
     )
 
     submitForm()
-
-    await screen.findByText('1 meeting has been uploaded')
+    await waitFor(() => {
+      expect(screen.getByLabelText('Meeting 1 title')).toHaveValue('')
+    })
 
     // A new MeetingForm is mounted with an empty title after reset
     expect(screen.getByLabelText('Meeting 1 title')).toHaveValue('')
@@ -81,11 +85,66 @@ describe('Upload Meeting Form', () => {
     expect(screen.getAllByLabelText(/Meeting \d+ title/)).toHaveLength(2)
 
     submitForm()
-
-    await screen.findByText('2 meetings have been uploaded')
+    await waitFor(() => {
+      expect(screen.getAllByLabelText(/Meeting \d+ title/)).toHaveLength(1)
+    })
 
     expect(screen.getAllByLabelText(/Meeting \d+ title/)).toHaveLength(1)
     expect(screen.getByLabelText('Meeting 1 title')).toHaveValue('')
+  })
+
+  it('keeps only failed meetings after partial errors and preserves failed status', async () => {
+    spyValidParsing(4)
+    server.use(meetingsPartialFailurePostHandler(4, [1, 3]))
+    setAuthToken()
+    const user = userEvent.setup()
+    renderWithRouter(<UploadMeetingsForm handleCloseDialog={vi.fn()} />)
+
+    await user.click(screen.getByRole('button', { name: /\+ add meeting/i }))
+    await user.click(screen.getByRole('button', { name: /\+ add meeting/i }))
+    await user.click(screen.getByRole('button', { name: /\+ add meeting/i }))
+
+    submitForm()
+
+    await waitFor(() => {
+      expect(screen.getAllByLabelText(/Meeting \d+ title/)).toHaveLength(2)
+    })
+
+    expect(
+      screen.getByLabelText('Meeting 1 status: failed'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByLabelText('Meeting 2 status: failed'),
+    ).toBeInTheDocument()
+  })
+
+  it('lets user add new meetings after partial failure while failed ones stay marked', async () => {
+    spyValidParsing(4)
+    server.use(meetingsPartialFailurePostHandler(4, [1, 3]))
+    setAuthToken()
+    const user = userEvent.setup()
+    renderWithRouter(<UploadMeetingsForm handleCloseDialog={vi.fn()} />)
+
+    await user.click(screen.getByRole('button', { name: /\+ add meeting/i }))
+    await user.click(screen.getByRole('button', { name: /\+ add meeting/i }))
+    await user.click(screen.getByRole('button', { name: /\+ add meeting/i }))
+
+    submitForm()
+
+    await waitFor(() => {
+      expect(screen.getAllByLabelText(/Meeting \d+ title/)).toHaveLength(2)
+    })
+
+    await user.click(screen.getByRole('button', { name: /\+ add meeting/i }))
+
+    expect(screen.getAllByLabelText(/Meeting \d+ title/)).toHaveLength(3)
+    expect(
+      screen.getByLabelText('Meeting 1 status: failed'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByLabelText('Meeting 2 status: failed'),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Meeting 3 status: null')).toBeInTheDocument()
   })
 })
 
