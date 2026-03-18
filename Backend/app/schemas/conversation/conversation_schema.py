@@ -65,6 +65,14 @@ class TokenEvent(BaseModel):
     content: str
 
 
+class ThinkingStartEvent(BaseModel):
+    type: Literal["thinking_start"] = "thinking_start"
+
+
+class ThinkingEndEvent(BaseModel):
+    type: Literal["thinking_end"] = "thinking_end"
+
+
 class DoneEvent(BaseModel):
     type: Literal["done"] = "done"
 
@@ -82,6 +90,8 @@ class ErrorEvent(BaseModel):
 ChatEvent = (
     ConversationCreatedEvent
     | RetrievingEvent
+    | ThinkingStartEvent
+    | ThinkingEndEvent
     | TokenEvent
     | DoneEvent
     | TitleEvent

@@ -12,12 +12,20 @@ interface ChatConversationProps {
   streamingContent: string
   isStreaming: boolean
   isRetrieving: boolean
+  isThinking: boolean
   onSubmit: (message: string) => void
 }
 
 const ChatConversation = forwardRef<HTMLDivElement, ChatConversationProps>(
   (
-    { messages, streamingContent, isStreaming, isRetrieving, onSubmit },
+    {
+      messages,
+      streamingContent,
+      isStreaming,
+      isRetrieving,
+      isThinking,
+      onSubmit,
+    },
     ref,
   ) => {
     const { t } = useTranslation()
@@ -40,6 +48,12 @@ const ChatConversation = forwardRef<HTMLDivElement, ChatConversationProps>(
               <li className="flex items-center gap-2 px-3 text-stone-500 dark:text-stone-400">
                 <ClipLoader size={14} color="currentColor" />
                 <span className="text-sm">{t('chat.retrievingInfo')}</span>
+              </li>
+            )}
+            {isThinking && !streamingContent && (
+              <li className="flex items-center gap-2 px-3 text-stone-500 dark:text-stone-400">
+                <ClipLoader size={14} color="currentColor" />
+                <span className="text-sm">{t('chat.thinking')}</span>
               </li>
             )}
             {isStreaming && streamingContent && (

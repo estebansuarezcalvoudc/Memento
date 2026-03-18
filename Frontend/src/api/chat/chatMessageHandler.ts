@@ -14,6 +14,14 @@ interface RetrievingEvent {
   type: 'retrieving'
 }
 
+interface ThinkingStartEvent {
+  type: 'thinking_start'
+}
+
+interface ThinkingEndEvent {
+  type: 'thinking_end'
+}
+
 interface TokenEvent {
   type: 'token'
   content: string
@@ -36,6 +44,8 @@ interface ErrorEvent {
 type ChatEvent =
   | ConversationCreatedEvent
   | RetrievingEvent
+  | ThinkingStartEvent
+  | ThinkingEndEvent
   | TokenEvent
   | DoneEvent
   | TitleEvent
@@ -89,6 +99,10 @@ export function createMessageHandler(
       onConversationCreated?.(event.conversation_id)
     } else if (event.type === 'retrieving') {
       dispatch({ type: 'RETRIEVING' })
+    } else if (event.type === 'thinking_start') {
+      dispatch({ type: 'THINKING_START' })
+    } else if (event.type === 'thinking_end') {
+      dispatch({ type: 'THINKING_END' })
     } else if (event.type === 'token') {
       accumulatedTokensRef.current += event.content
       dispatch({ type: 'TOKEN', content: accumulatedTokensRef.current })

@@ -213,7 +213,8 @@
   "chat": {
     "messagePlaceholder": "Some message...",
     "howCanIHelp": "How can I help you?",
-    "retrievingInfo": "Checking meeting information..."
+    "retrievingInfo": "Checking meeting information...",
+    "thinking": "Thinking..."
   },
   "common": {
     "somethingWentWrong": "Something went wrong",

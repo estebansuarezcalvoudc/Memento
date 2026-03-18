@@ -24,6 +24,7 @@ export default function Chat() {
     streamingContent,
     isStreaming,
     isRetrieving,
+    isThinking,
     hasSentMessage,
     error,
   } = useChat(chatId ?? null, onConversationCreated)
@@ -53,6 +54,7 @@ export default function Chat() {
         streamingContent={streamingContent}
         isStreaming={isStreaming}
         isRetrieving={isRetrieving}
+        isThinking={isThinking}
         onSubmit={sendMessage}
       />
     </>
