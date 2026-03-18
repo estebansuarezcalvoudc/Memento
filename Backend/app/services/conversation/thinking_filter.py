@@ -2,8 +2,6 @@ from dataclasses import dataclass, field
 
 _OPEN_TAGS = ("<think>", "<thinking>")
 _CLOSE_TAGS = ("</think>", "</thinking>")
-_MAX_OPEN_TAG_LEN = max(len(tag) for tag in _OPEN_TAGS)
-_MAX_CLOSE_TAG_LEN = max(len(tag) for tag in _CLOSE_TAGS)
 
 
 def _find_earliest_tag(text: str, tags: tuple[str, ...]) -> tuple[int, str] | None:
