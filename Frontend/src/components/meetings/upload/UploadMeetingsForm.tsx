@@ -14,7 +14,6 @@ import {
   type MeetingMetadata,
 } from './parseMeetingsFormData'
 import UploadMeetingsHeaderRow from './UploadMeetingsHeaderRow'
-import UploadProgressSummary from './UploadProgressSummary'
 
 export interface MeetingFormData {
   id: string
@@ -22,6 +21,7 @@ export interface MeetingFormData {
   date?: string
   language?: string
   speakers?: string
+  fromPreviousFailure?: boolean
 }
 
 interface FormState {
@@ -44,7 +44,6 @@ export default function UploadMeetingsForm({
   const {
     state: uploadState,
     startUpload,
-    progressPercent,
     isPending,
     reset,
   } = useUploadMeetings()
@@ -53,11 +52,6 @@ export default function UploadMeetingsForm({
   const [formState, setFormState] = useState<FormState>({
     validationErrors: null,
   })
-
-  const showProgress =
-    uploadState.phase === 'uploading' ||
-    uploadState.phase === 'completedWithErrors' ||
-    uploadState.phase === 'failed'
 
   useEffect(() => {
     if (uploadState.phase === 'completed') {
@@ -71,7 +65,8 @@ export default function UploadMeetingsForm({
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
 
-    setMeetings(getMeetingsFromFormData(meetings, formData))
+    const submittedMeetings = getMeetingsFromFormData(meetings, formData)
+    setMeetings(submittedMeetings)
 
     const parsed = parseMeetingsFromFormData(formData, t)
     if (!parsed.ok) {
@@ -81,11 +76,21 @@ export default function UploadMeetingsForm({
 
     setFormState({ validationErrors: null })
 
-    await processUploadMeetings(
+    const uploadResult = await processUploadMeetings(
       parsed.meetingsMetadata,
       parsed.audioFiles,
       startUpload,
     )
+
+    if (
+      uploadResult.phase === 'completedWithErrors' &&
+      uploadResult.errors.length
+    ) {
+      setMeetings(
+        getFailedMeetingsForRetry(submittedMeetings, uploadResult.errors),
+      )
+      reset()
+    }
   }
 
   const addMeeting = () => setMeetings(prev => [...prev, createMeeting()])
@@ -109,7 +114,9 @@ export default function UploadMeetingsForm({
           isPending={isPending}
           status={
             uploadState.phase === 'idle'
-              ? null
+              ? meeting.fromPreviousFailure
+                ? 'failed'
+                : null
               : (uploadState.meetingStatuses[index] ?? 'waiting')
           }
           onRemove={removeMeeting}
@@ -118,17 +125,6 @@ export default function UploadMeetingsForm({
       ))}
 
       {!isPending && <FormErrors errors={formState.validationErrors} />}
-
-      {showProgress && (
-        <UploadProgressSummary
-          processed={uploadState.processed}
-          total={uploadState.total}
-          succeeded={uploadState.succeeded}
-          failed={uploadState.failed}
-          progressPercent={progressPercent}
-          phase={uploadState.phase}
-        />
-      )}
 
       <div className="mt-5 mb-4 flex justify-center gap-4">
         <SecondaryButton
@@ -153,7 +149,7 @@ async function processUploadMeetings(
     formData: FormData,
     meetingsCount: number,
   ) => Promise<UploadMeetingsState>,
-): Promise<void> {
+): Promise<UploadMeetingsState> {
   try {
     const backendFormData = new FormData()
     backendFormData.append(
@@ -163,10 +159,35 @@ async function processUploadMeetings(
 
     audioFiles.forEach(file => backendFormData.append('audios', file))
 
-    await startUpload(backendFormData, meetingsMetadata.length)
+    return await startUpload(backendFormData, meetingsMetadata.length)
   } catch {
-    return
+    return {
+      phase: 'failed',
+      total: meetingsMetadata.length,
+      processed: 0,
+      succeeded: 0,
+      failed: 0,
+      currentTitle: null,
+      errors: [],
+      meetingStatuses: [],
+      lastEvent: null,
+      errorMessage: null,
+    }
   }
+}
+
+function getFailedMeetingsForRetry(
+  meetings: MeetingFormData[],
+  errors: UploadMeetingsState['errors'],
+): MeetingFormData[] {
+  const failedIndexes = new Set(errors.map(error => error.index))
+
+  return meetings
+    .filter((_, index) => failedIndexes.has(index))
+    .map(meeting => ({
+      ...meeting,
+      fromPreviousFailure: true,
+    }))
 }
 
 function getMeetingsFromFormData(
@@ -186,6 +207,7 @@ function getMeetingsFromFormData(
       speakers:
         (formData.get(`meetings[${index}][speakers]`) as string) ||
         meeting.speakers,
+      fromPreviousFailure: meeting.fromPreviousFailure,
     }
   })
 }

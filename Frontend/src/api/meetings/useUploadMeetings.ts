@@ -88,7 +88,6 @@ export default function useUploadMeetings() {
           formData,
           signal: controller.signal,
           onEvent: event => {
-            console.debug('[uploadMeetings SSE event]', event)
             finalState = uploadMeetingsReducer(finalState, {
               type: 'event',
               payload: event,
@@ -232,7 +231,10 @@ function uploadMeetingsReducer(
       }
     }
 
-    if (event.type === 'MeetingProcessingError') {
+    if (
+      event.type === 'MeetingProcessingError' ||
+      event.type === 'MeetingProcessingFailed'
+    ) {
       return {
         ...state,
         processed: state.processed + 1,

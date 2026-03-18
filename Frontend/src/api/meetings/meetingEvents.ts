@@ -16,6 +16,13 @@ export interface MeetingProcessingSucceededEvent {
   meetingId: string
 }
 
+export interface MeetingProcessingFailedEvent {
+  type: 'MeetingProcessingFailed'
+  index: number
+  title: string
+  error: string
+}
+
 export interface MeetingProcessingErrorEvent {
   type: 'MeetingProcessingError'
   index: number
@@ -33,5 +40,6 @@ export type MeetingUploadEvent =
   | JobStartedEvent
   | MeetingProcessingStartedEvent
   | MeetingProcessingSucceededEvent
+  | MeetingProcessingFailedEvent
   | MeetingProcessingErrorEvent
   | JobFinishedEvent
