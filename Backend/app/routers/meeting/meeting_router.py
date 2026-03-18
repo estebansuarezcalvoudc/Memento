@@ -2,6 +2,7 @@ import json
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from sse_starlette.sse import EventSourceResponse
 
 from ...core.logging import setup_logger
 from ...dependencies.auth_dependencies import get_current_active_user
@@ -42,8 +43,7 @@ def _parse_meetings_batch_request(
 
 @router.post(
     "",
-    status_code=status.HTTP_201_CREATED,
-    summary="Create meetings and process them",
+    summary="Create meetings and process them with SSE",
     openapi_extra=create_meetings_docs.openapi_extra,
 )
 async def create_meetings(
@@ -53,25 +53,54 @@ async def create_meetings(
     audios: list[UploadFile] = File(
         ..., description=create_meetings_docs.audios_file_description
     ),
-) -> list[MeetingMetadataResponse]:
+):
+    """
+    Upload and process meetings with real-time Server-Sent Events progress.
+
+    Returns:
+        EventSourceResponse: Stream of events tracking the upload progress
+    """
     _validate_audio_files(audios)
 
-    try:
-        audio_bytes_list = [await audio.read() for audio in audios]
+    audio_bytes_list = [await audio.read() for audio in audios]
 
-        created_meetings = meeting_service.process_meetings(
-            batch_request, audio_bytes_list, current_user.id
-        )
-        return created_meetings
-    except HTTPException:
-        raise
-    except Exception as e:
-        _logger.error(f"Error creating meetings: {str(e)}", exc_info=True)
-        _logger.error(f"Exception type: {type(e).__name__}")
+    if len(batch_request.meetings_metadata) != len(audio_bytes_list):
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error while creating meetings",
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="The number of metadata objects must match the number of audio files",
         )
+
+    async def event_generator():
+        """
+        Generate SSE events from the service stream.
+
+        Converts Pydantic models from the service to SSE format.
+        """
+        try:
+            async for event in meeting_service.process_meetings(
+                batch_request, audio_bytes_list, current_user.id
+            ):
+                yield {
+                    "event": "message",
+                    "data": event.model_dump_json(),
+                }
+        except HTTPException as e:
+            _logger.error(f"HTTP error in meeting upload: {e.detail}", exc_info=True)
+            yield {
+                "event": "error",
+                "data": json.dumps({"error": str(e.detail)}),
+            }
+        except Exception as e:
+            _logger.error(f"Error in meeting upload stream: {str(e)}", exc_info=True)
+            yield {
+                "event": "error",
+                "data": json.dumps({"error": "Internal server error"}),
+            }
+
+    return EventSourceResponse(
+        event_generator(),
+        headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"},
+    )
 
 
 def _validate_audio_files(audio_files: list[UploadFile]) -> None:

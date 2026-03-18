@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { parseMeetingsFromFormData } from '../../../src/components/meetings/upload/parseMeetingsFormData'
+import { parseMeetingsFromFormData } from '../../../src/components/meetings/upload/utils/parseMeetingsFormData'
 import i18n from '../../../src/i18n'
 
 // Helper to build a minimal valid FormData for one meeting

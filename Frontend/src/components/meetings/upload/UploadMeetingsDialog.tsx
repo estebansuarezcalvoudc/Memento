@@ -6,12 +6,10 @@ import UploadMeetingsForm from './UploadMeetingsForm'
 
 interface UploadMeetingsDialogProps {
   dialogRef: React.Ref<DialogHandler>
-  onClose: () => void
 }
 
 export default function UploadMeetingsDialog({
   dialogRef,
-  onClose,
 }: UploadMeetingsDialogProps) {
   const { t } = useTranslation()
 
@@ -26,7 +24,7 @@ export default function UploadMeetingsDialog({
           />
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-3 sm:px-5 lg:px-8">
-          <UploadMeetingsForm handleCloseDialog={onClose} />
+          <UploadMeetingsForm />
         </div>
       </div>
     </Dialog>

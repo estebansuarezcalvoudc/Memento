@@ -79,7 +79,7 @@ export function useUpdateMeeting() {
   })
 }
 
-export function useUploadMeetings() {
+export function useUploadMeetingsMutation() {
   const queryClient = useQueryClient()
   return useMutation<Meeting[], Error, FormData>({
     mutationFn: formData => fetchBackend('POST', 'meetings', formData),

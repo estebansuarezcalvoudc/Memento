@@ -2,11 +2,12 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import * as parseFormDataModule from '../../../src/components/meetings/upload/parseMeetingsFormData'
 import UploadMeetingsForm from '../../../src/components/meetings/upload/UploadMeetingsForm'
+import * as parseFormDataModule from '../../../src/components/meetings/upload/utils/parseMeetingsFormData'
 import { server } from '../../mocks/server'
 import { renderWithRouter, setAuthToken, setupStoreReset } from '../../utils'
 import {
+  meetingsPartialFailurePostHandler,
   meetingsPostHandler,
   spyValidParsing,
   submitForm,
@@ -17,7 +18,7 @@ setupStoreReset()
 describe('Upload Meeting Form', () => {
   it('renders the form with required inputs and a submit button', () => {
     setAuthToken()
-    renderWithRouter(<UploadMeetingsForm handleCloseDialog={vi.fn()} />)
+    renderWithRouter(<UploadMeetingsForm />)
 
     expect(screen.getByLabelText('Meeting 1 title')).toBeInTheDocument()
     expect(screen.getByLabelText('Meeting 1 date')).toBeInTheDocument()
@@ -27,7 +28,7 @@ describe('Upload Meeting Form', () => {
 
   it('shows validation errors when submitting with empty fields', async () => {
     setAuthToken()
-    renderWithRouter(<UploadMeetingsForm handleCloseDialog={vi.fn()} />)
+    renderWithRouter(<UploadMeetingsForm />)
 
     submitForm()
 
@@ -38,24 +39,32 @@ describe('Upload Meeting Form', () => {
     })
   })
 
-  it('successfully uploads a meeting and calls handleCloseDialog', async () => {
+  it('successfully uploads a meeting and resets the form', async () => {
     spyValidParsing()
+    server.use(meetingsPostHandler(1))
     setAuthToken()
-    const handleClose = vi.fn()
-    renderWithRouter(<UploadMeetingsForm handleCloseDialog={handleClose} />)
+    renderWithRouter(<UploadMeetingsForm />)
+
+    await userEvent.type(screen.getByLabelText('Meeting 1 title'), 'Will reset')
 
     submitForm()
 
-    await waitFor(() => expect(handleClose).toHaveBeenCalled(), {
-      timeout: 3000,
-    })
+    await waitFor(
+      () => {
+        expect(screen.getByLabelText('Meeting 1 title')).toHaveValue('')
+      },
+      {
+        timeout: 3000,
+      },
+    )
   })
 
-  it('clears the form fields after a successful upload', async () => {
+  it('clears form fields after a successful upload', async () => {
     spyValidParsing()
+    server.use(meetingsPostHandler(1))
     setAuthToken()
     const user = userEvent.setup()
-    renderWithRouter(<UploadMeetingsForm handleCloseDialog={vi.fn()} />)
+    renderWithRouter(<UploadMeetingsForm />)
 
     await user.type(screen.getByLabelText('Meeting 1 title'), 'My Test Meeting')
     expect(screen.getByLabelText('Meeting 1 title')).toHaveValue(
@@ -63,36 +72,125 @@ describe('Upload Meeting Form', () => {
     )
 
     submitForm()
+    await waitFor(() => {
+      expect(screen.getByLabelText('Meeting 1 title')).toHaveValue('')
+    })
 
-    await screen.findByText('1 meeting has been uploaded')
-
-    // A new MeetingForm is mounted with an empty title after reset
-    expect(screen.getByLabelText('Meeting 1 title')).toHaveValue('')
+    expect(screen.getByLabelText('Meeting 1 status: null')).toBeInTheDocument()
   })
 
-  it('resets to a single empty entry after uploading multiple meetings', async () => {
+  it('resets to a single empty row after uploading multiple meetings successfully', async () => {
     spyValidParsing(2)
     server.use(meetingsPostHandler(2))
     setAuthToken()
     const user = userEvent.setup()
-    renderWithRouter(<UploadMeetingsForm handleCloseDialog={vi.fn()} />)
+    renderWithRouter(<UploadMeetingsForm />)
 
     await user.click(screen.getByRole('button', { name: /\+ add meeting/i }))
     expect(screen.getAllByLabelText(/Meeting \d+ title/)).toHaveLength(2)
 
     submitForm()
+    await waitFor(() => {
+      expect(screen.getAllByLabelText(/Meeting \d+ title/)).toHaveLength(1)
+    })
 
-    await screen.findByText('2 meetings have been uploaded')
-
-    expect(screen.getAllByLabelText(/Meeting \d+ title/)).toHaveLength(1)
     expect(screen.getByLabelText('Meeting 1 title')).toHaveValue('')
+  })
+
+  it('clears failed carry-over status after a later successful retry', async () => {
+    spyValidParsing(4)
+    setAuthToken()
+    const user = userEvent.setup()
+
+    server.use(meetingsPartialFailurePostHandler(4, [1, 3]))
+    renderWithRouter(<UploadMeetingsForm />)
+
+    await user.click(screen.getByRole('button', { name: /\+ add meeting/i }))
+    await user.click(screen.getByRole('button', { name: /\+ add meeting/i }))
+    await user.click(screen.getByRole('button', { name: /\+ add meeting/i }))
+
+    submitForm()
+
+    await waitFor(() => {
+      expect(screen.getAllByLabelText(/Meeting \d+ title/)).toHaveLength(2)
+    })
+
+    expect(
+      screen.getByLabelText('Meeting 1 status: failed'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByLabelText('Meeting 2 status: failed'),
+    ).toBeInTheDocument()
+
+    server.use(meetingsPostHandler(2))
+    submitForm()
+
+    await waitFor(() => {
+      expect(screen.getAllByLabelText(/Meeting \d+ title/)).toHaveLength(1)
+    })
+
+    expect(screen.getByLabelText('Meeting 1 status: null')).toBeInTheDocument()
+  })
+
+  it('keeps only failed meetings after partial errors and preserves failed status', async () => {
+    spyValidParsing(4)
+    server.use(meetingsPartialFailurePostHandler(4, [1, 3]))
+    setAuthToken()
+    const user = userEvent.setup()
+    renderWithRouter(<UploadMeetingsForm />)
+
+    await user.click(screen.getByRole('button', { name: /\+ add meeting/i }))
+    await user.click(screen.getByRole('button', { name: /\+ add meeting/i }))
+    await user.click(screen.getByRole('button', { name: /\+ add meeting/i }))
+
+    submitForm()
+
+    await waitFor(() => {
+      expect(screen.getAllByLabelText(/Meeting \d+ title/)).toHaveLength(2)
+    })
+
+    expect(
+      screen.getByLabelText('Meeting 1 status: failed'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByLabelText('Meeting 2 status: failed'),
+    ).toBeInTheDocument()
+  })
+
+  it('lets user add new meetings after partial failure while failed ones stay marked', async () => {
+    spyValidParsing(4)
+    server.use(meetingsPartialFailurePostHandler(4, [1, 3]))
+    setAuthToken()
+    const user = userEvent.setup()
+    renderWithRouter(<UploadMeetingsForm />)
+
+    await user.click(screen.getByRole('button', { name: /\+ add meeting/i }))
+    await user.click(screen.getByRole('button', { name: /\+ add meeting/i }))
+    await user.click(screen.getByRole('button', { name: /\+ add meeting/i }))
+
+    submitForm()
+
+    await waitFor(() => {
+      expect(screen.getAllByLabelText(/Meeting \d+ title/)).toHaveLength(2)
+    })
+
+    await user.click(screen.getByRole('button', { name: /\+ add meeting/i }))
+
+    expect(screen.getAllByLabelText(/Meeting \d+ title/)).toHaveLength(3)
+    expect(
+      screen.getByLabelText('Meeting 1 status: failed'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByLabelText('Meeting 2 status: failed'),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Meeting 3 status: null')).toBeInTheDocument()
   })
 })
 
 describe('MeetingForm – optional inputs toggle', () => {
   it('optional inputs (language, speakers) are hidden by default', () => {
     setAuthToken()
-    renderWithRouter(<UploadMeetingsForm handleCloseDialog={vi.fn()} />)
+    renderWithRouter(<UploadMeetingsForm />)
 
     expect(
       screen.queryByLabelText('Meeting 1 language'),
@@ -104,7 +202,7 @@ describe('MeetingForm – optional inputs toggle', () => {
 
   it('toggle button starts with aria-expanded="false"', () => {
     setAuthToken()
-    renderWithRouter(<UploadMeetingsForm handleCloseDialog={vi.fn()} />)
+    renderWithRouter(<UploadMeetingsForm />)
 
     expect(
       screen.getByRole('button', { name: 'toggle options' }),
@@ -114,7 +212,7 @@ describe('MeetingForm – optional inputs toggle', () => {
   it('clicking the toggle reveals the language and speakers inputs', async () => {
     const user = userEvent.setup()
     setAuthToken()
-    renderWithRouter(<UploadMeetingsForm handleCloseDialog={vi.fn()} />)
+    renderWithRouter(<UploadMeetingsForm />)
 
     await user.click(screen.getByRole('button', { name: 'toggle options' }))
 
@@ -130,7 +228,7 @@ describe('MeetingForm – optional inputs toggle', () => {
   it('clicking the toggle a second time hides the optional inputs again', async () => {
     const user = userEvent.setup()
     setAuthToken()
-    renderWithRouter(<UploadMeetingsForm handleCloseDialog={vi.fn()} />)
+    renderWithRouter(<UploadMeetingsForm />)
 
     const toggleBtn = screen.getByRole('button', { name: 'toggle options' })
     await user.click(toggleBtn)
@@ -148,7 +246,7 @@ describe('MeetingForm – optional inputs toggle', () => {
   it('language select shows the options returned by the API', async () => {
     const user = userEvent.setup()
     setAuthToken()
-    renderWithRouter(<UploadMeetingsForm handleCloseDialog={vi.fn()} />)
+    renderWithRouter(<UploadMeetingsForm />)
 
     await user.click(screen.getByRole('button', { name: 'toggle options' }))
 
@@ -163,7 +261,7 @@ describe('MeetingForm – optional inputs toggle', () => {
   it('each meeting row has its own independent toggle', async () => {
     const user = userEvent.setup()
     setAuthToken()
-    renderWithRouter(<UploadMeetingsForm handleCloseDialog={vi.fn()} />)
+    renderWithRouter(<UploadMeetingsForm />)
 
     await user.click(screen.getByRole('button', { name: /\+ add meeting/i }))
 
@@ -201,7 +299,7 @@ describe('MeetingForm – optional inputs toggle', () => {
       }
     })
 
-    renderWithRouter(<UploadMeetingsForm handleCloseDialog={vi.fn()} />)
+    renderWithRouter(<UploadMeetingsForm />)
 
     // Expand options and select English
     await user.click(screen.getByRole('button', { name: 'toggle options' }))
@@ -234,7 +332,7 @@ describe('MeetingForm – optional inputs toggle', () => {
       }
     })
 
-    renderWithRouter(<UploadMeetingsForm handleCloseDialog={vi.fn()} />)
+    renderWithRouter(<UploadMeetingsForm />)
 
     // Expand options and type a speakers value
     await user.click(screen.getByRole('button', { name: 'toggle options' }))

@@ -1,5 +1,5 @@
-import { removeImage } from '../../../assets/buttonsImages'
-import MeetingButton from '../MeetingButton'
+import { removeImage } from '../../../../assets/buttonsImages'
+import MeetingButton from '../../MeetingButton'
 
 interface RemoveButtonProps {
   onClick: () => void
