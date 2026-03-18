@@ -150,8 +150,12 @@ class Rag:
     @staticmethod
     def _clean_generated_title(raw_title: str) -> str:
         """Remove reasoning tags from generated title and normalize whitespace."""
-        cleaned = re.sub(r"(?is)<think>.*?</think>", "", raw_title)
-        cleaned = re.sub(r"(?is)<think>.*$", "", cleaned)
+        cleaned = re.sub(
+            r"(?is)<think(?:ing)?>.*?</think(?:ing)?>",
+            "",
+            raw_title,
+        )
+        cleaned = re.sub(r"(?is)<think(?:ing)?>.*$", "", cleaned)
         cleaned = " ".join(cleaned.split())
         return cleaned if cleaned else "New chat"
 

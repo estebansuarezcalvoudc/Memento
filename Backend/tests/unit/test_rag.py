@@ -200,3 +200,27 @@ class TestGenerateTitle:
             title = await rag.generate_title("hello", "user123")
 
         assert title == "New chat"
+
+    @pytest.mark.asyncio
+    async def test_generate_title_should_strip_thinking_block_from_model_response(
+        self,
+    ):
+        mock_repo = MagicMock()
+        mock_repo.get_chat_model.return_value = ModelConfig(
+            provider="Ollama",
+            model_name="qwen3.5",
+            temperature=0.1,
+            max_tokens=50,
+        )
+
+        rag = Rag(settings_repository=mock_repo, vector_store=MagicMock())
+
+        llm = MagicMock()
+        llm.ainvoke = AsyncMock(
+            return_value=MagicMock(content="<thinking>hidden</thinking>Title")
+        )
+
+        with patch("app.services.conversation.rag.get_llm_for_user", return_value=llm):
+            title = await rag.generate_title("hello", "user123")
+
+        assert title == "Title"
