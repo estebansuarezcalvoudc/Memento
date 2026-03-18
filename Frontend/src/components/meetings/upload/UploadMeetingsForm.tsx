@@ -1,28 +1,20 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import useUploadMeetings, {
-  type UploadMeetingsState,
-} from '../../../api/meetings/useUploadMeetings'
+import useUploadMeetings from '../../../api/meetings/useUploadMeetings'
 import { useGetSupportedLanguages } from '../../../api/queries/useSettingsQueries'
 import ConfirmButton from '../../ui/buttons/ConfirmButton'
 import SecondaryButton from '../../ui/buttons/SecondaryButton'
 import FormErrors from '../../ui/feedback/FormErrors'
-import MeetingForm, { meetingFormGridCols } from './MeetingForm'
+import MeetingForm, { meetingFormGridCols } from './components/MeetingForm'
+import UploadMeetingsHeaderRow from './components/UploadMeetingsHeaderRow'
+import { type MeetingFormData } from './types'
+import { parseMeetingsFromFormData } from './utils/parseMeetingsFormData'
 import {
-  parseMeetingsFromFormData,
-  type MeetingMetadata,
-} from './parseMeetingsFormData'
-import UploadMeetingsHeaderRow from './UploadMeetingsHeaderRow'
-
-export interface MeetingFormData {
-  id: string
-  title: string
-  date?: string
-  language?: string
-  speakers?: string
-  fromPreviousFailure?: boolean
-}
+  getFailedMeetingsForRetry,
+  getMeetingsFromFormData,
+  processUploadMeetings,
+} from './utils/uploadMeetingsForm.helpers'
 
 interface FormState {
   validationErrors: null | string[]
@@ -140,74 +132,4 @@ export default function UploadMeetingsForm({
       </div>
     </form>
   )
-}
-
-async function processUploadMeetings(
-  meetingsMetadata: MeetingMetadata[],
-  audioFiles: File[],
-  startUpload: (
-    formData: FormData,
-    meetingsCount: number,
-  ) => Promise<UploadMeetingsState>,
-): Promise<UploadMeetingsState> {
-  try {
-    const backendFormData = new FormData()
-    backendFormData.append(
-      'meetings_data',
-      JSON.stringify({ meetings_metadata: meetingsMetadata }),
-    )
-
-    audioFiles.forEach(file => backendFormData.append('audios', file))
-
-    return await startUpload(backendFormData, meetingsMetadata.length)
-  } catch {
-    return {
-      phase: 'failed',
-      total: meetingsMetadata.length,
-      processed: 0,
-      succeeded: 0,
-      failed: 0,
-      currentTitle: null,
-      errors: [],
-      meetingStatuses: [],
-      lastEvent: null,
-      errorMessage: null,
-    }
-  }
-}
-
-function getFailedMeetingsForRetry(
-  meetings: MeetingFormData[],
-  errors: UploadMeetingsState['errors'],
-): MeetingFormData[] {
-  const failedIndexes = new Set(errors.map(error => error.index))
-
-  return meetings
-    .filter((_, index) => failedIndexes.has(index))
-    .map(meeting => ({
-      ...meeting,
-      fromPreviousFailure: true,
-    }))
-}
-
-function getMeetingsFromFormData(
-  meetings: MeetingFormData[],
-  formData: FormData,
-): MeetingFormData[] {
-  return meetings.map((meeting, index) => {
-    const language = formData.get(`meetings[${index}][language]`) as string
-
-    return {
-      ...meeting,
-      title:
-        (formData.get(`meetings[${index}][title]`) as string) || meeting.title,
-      date:
-        (formData.get(`meetings[${index}][date]`) as string) || meeting.date,
-      language: language || meeting.language,
-      speakers:
-        (formData.get(`meetings[${index}][speakers]`) as string) ||
-        meeting.speakers,
-      fromPreviousFailure: meeting.fromPreviousFailure,
-    }
-  })
 }

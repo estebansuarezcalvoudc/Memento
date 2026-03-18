@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
-import ColumnHeader from '../ColumnHeader'
+import ColumnHeader from '../../ColumnHeader'
 
 interface UploadMeetingsHeaderRowProps {
   gridClassName: string

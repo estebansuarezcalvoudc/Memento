@@ -2,8 +2,8 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import * as parseFormDataModule from '../../../src/components/meetings/upload/parseMeetingsFormData'
 import UploadMeetingsForm from '../../../src/components/meetings/upload/UploadMeetingsForm'
+import * as parseFormDataModule from '../../../src/components/meetings/upload/utils/parseMeetingsFormData'
 import { server } from '../../mocks/server'
 import { renderWithRouter, setAuthToken, setupStoreReset } from '../../utils'
 import {

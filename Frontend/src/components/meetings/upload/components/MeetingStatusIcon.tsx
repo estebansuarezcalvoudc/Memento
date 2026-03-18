@@ -1,9 +1,9 @@
-import { type MeetingProcessingStatus } from '../../../api/meetings/useUploadMeetings'
+import { type MeetingProcessingStatus } from '../../../../api/meetings/useUploadMeetings'
 import {
   check,
   clockPause,
   faceError,
-} from '../../../assets/meetingUploadProgress'
+} from '../../../../assets/meetingUploadProgress'
 
 interface MeetingStatusIconProps {
   status: MeetingProcessingStatus | null

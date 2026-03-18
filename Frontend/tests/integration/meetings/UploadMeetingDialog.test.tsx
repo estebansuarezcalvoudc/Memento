@@ -77,7 +77,19 @@ describe('Upload Meeting Dialog (Sidebar)', () => {
     server.use(
       http.post('/api/meetings', () => {
         uploaded = true
-        return HttpResponse.json([newMeeting])
+
+        const blocks = [
+          `data: ${JSON.stringify({ type: 'JobStarted', total_meetings: 1 })}`,
+          `data: ${JSON.stringify({ type: 'MeetingProcessingStarted', index: 0, title: newMeeting.title })}`,
+          `data: ${JSON.stringify({ type: 'MeetingProcessingSucceeded', index: 0, title: newMeeting.title, meeting_id: newMeeting.id })}`,
+          `data: ${JSON.stringify({ type: 'JobFinished', meetings_succeeded: 1, meetings_failed: 0 })}`,
+        ]
+
+        return new HttpResponse(`${blocks.join('\n\n')}\n\n`, {
+          headers: {
+            'Content-Type': 'text/event-stream',
+          },
+        })
       }),
       http.get('/api/meetings', () =>
         HttpResponse.json(
