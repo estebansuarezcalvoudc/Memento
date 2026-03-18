@@ -72,7 +72,9 @@ class ConversationMongoRepository(AbstractConversationRepository):
     def retrieve_all_conversations_metadata(
         self, user_id: str
     ) -> list[ConversationMetadataRetrieve]:
-        result = self._collection.find({"user_id": user_id}, {"messages": False})
+        result = self._collection.find({"user_id": user_id}, {"messages": False}).sort(
+            [("updated_at", pymongo.DESCENDING), ("_id", pymongo.DESCENDING)]
+        )
 
         return [
             ConversationMetadataRetrieve(

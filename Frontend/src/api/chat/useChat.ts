@@ -12,6 +12,7 @@ export interface UseChatResult {
   streamingContent: string
   isStreaming: boolean
   isRetrieving: boolean
+  isThinking: boolean
   hasSentMessage: boolean
   error: string | null
 }
@@ -61,7 +62,6 @@ export function useChat(
         dispatch,
         queryClient,
         message,
-        conversationId,
         resolvedConvIdRef,
         accumulatedTokensRef,
         onConversationCreated,

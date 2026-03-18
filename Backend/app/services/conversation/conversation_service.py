@@ -15,10 +15,13 @@ from ...schemas.conversation.conversation_schema import (
     DoneEvent,
     RetrievingEvent,
     SendMessageRequest,
+    ThinkingEndEvent,
+    ThinkingStartEvent,
     TitleEvent,
     TokenEvent,
 )
 from .rag import Rag
+from .thinking_filter import ThinkingStreamFilter
 
 _logger = setup_logger(__name__)
 
@@ -85,6 +88,7 @@ class ConversationService:
             )
 
             full_reply_parts: list[str] = []
+            thinking_filter = ThinkingStreamFilter()
             current_date = request.current_datetime.strftime("%Y-%m-%d")
 
             yield RetrievingEvent()
@@ -102,8 +106,24 @@ class ConversationService:
                 current_date=current_date,
                 user_id=user_id,
             ):
-                full_reply_parts.append(token)
-                yield TokenEvent(content=token)
+                filtered = thinking_filter.consume(token)
+
+                if filtered.thinking_started:
+                    yield ThinkingStartEvent()
+
+                for visible_chunk in filtered.visible_tokens:
+                    full_reply_parts.append(visible_chunk)
+                    yield TokenEvent(content=visible_chunk)
+
+                if filtered.thinking_ended:
+                    yield ThinkingEndEvent()
+
+            final_filtered = thinking_filter.finalize()
+            if final_filtered.thinking_ended:
+                yield ThinkingEndEvent()
+            for visible_chunk in final_filtered.visible_tokens:
+                full_reply_parts.append(visible_chunk)
+                yield TokenEvent(content=visible_chunk)
 
             full_reply = "".join(full_reply_parts)
             assistant_message = {"role": "assistant", "content": full_reply}

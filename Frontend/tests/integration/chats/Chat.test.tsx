@@ -135,6 +135,37 @@ describe('Chat Page', () => {
     ).toBeInTheDocument()
   })
 
+  it('shows thinking spinner when model sends thinking events', async () => {
+    const user = userEvent.setup()
+    const { WsMock, getLastInstance } = createManualWsMock()
+    vi.stubGlobal('WebSocket', WsMock)
+    setAuthToken()
+    renderWithRouter(
+      <Routes>
+        <Route path="/chats/:chatId" element={<Chat />} />
+      </Routes>,
+      { route: '/chats/chat-1' },
+    )
+
+    await screen.findByText('Hello')
+
+    const input = screen.getByPlaceholderText('Some message...')
+    await user.type(input, 'My new message')
+    await user.click(screen.getByRole('button'))
+
+    const ws = getLastInstance()!
+    ws.simulateEvent({ type: 'thinking_start' })
+
+    expect(await screen.findByText('Thinking...')).toBeInTheDocument()
+
+    ws.simulateEvent({ type: 'thinking_end' })
+    ws.simulateEvent({ type: 'token', content: 'Final answer' })
+
+    expect(
+      await screen.findByText('Final answer', { selector: 'p' }),
+    ).toBeInTheDocument()
+  })
+
   it('streams the assistant response progressively', async () => {
     const user = userEvent.setup()
     const { WsMock, getLastInstance } = createManualWsMock()

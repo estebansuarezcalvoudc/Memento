@@ -213,7 +213,8 @@
   "chat": {
     "messagePlaceholder": "Escribe un mensaje...",
     "howCanIHelp": "¿En qué puedo ayudarte?",
-    "retrievingInfo": "Consultando información de reuniones..."
+    "retrievingInfo": "Consultando información de reuniones...",
+    "thinking": "Pensando..."
   },
   "common": {
     "somethingWentWrong": "Algo salió mal",

@@ -62,7 +62,9 @@ class ConversationRepository(ABC):
         Returns:
             List of ConversationMetadataRetrieve objects ordered by updated_at
             descending (most recently active conversation first). Implementations
-            must preserve this ordering.
+            must preserve this ordering. If two conversations share the same
+            updated_at, implementations must apply a deterministic secondary
+            ordering (for example id descending).
         """
         pass
 
