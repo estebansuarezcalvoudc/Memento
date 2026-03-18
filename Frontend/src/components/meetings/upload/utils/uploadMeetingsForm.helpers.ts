@@ -20,7 +20,7 @@ export async function processUploadMeetings(
     audioFiles.forEach(file => backendFormData.append('audios', file))
 
     return await startUpload(backendFormData, meetingsMetadata.length)
-  } catch {
+  } catch (error) {
     return {
       phase: 'failed',
       total: meetingsMetadata.length,
@@ -31,7 +31,8 @@ export async function processUploadMeetings(
       errors: [],
       meetingStatuses: [],
       lastEvent: null,
-      errorMessage: null,
+      errorMessage:
+        error instanceof Error ? error.message : String(error),
     }
   }
 }

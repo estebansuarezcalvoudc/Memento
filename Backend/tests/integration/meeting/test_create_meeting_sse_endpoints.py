@@ -160,7 +160,7 @@ class TestCreateMeetingsSSEEndpoint:
             "MeetingProcessingStarted",
             "MeetingProcessingSucceeded",
             "MeetingProcessingStarted",
-            "MeetingProcessingError",
+            "MeetingProcessingFailed",
             "JobFinished",
         ]
 

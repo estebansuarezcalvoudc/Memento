@@ -23,13 +23,6 @@ export interface MeetingProcessingFailedEvent {
   error: string
 }
 
-export interface MeetingProcessingErrorEvent {
-  type: 'MeetingProcessingError'
-  index: number
-  title: string
-  error: string
-}
-
 export interface JobFinishedEvent {
   type: 'JobFinished'
   meetingsSucceeded: number
@@ -41,5 +34,4 @@ export type MeetingUploadEvent =
   | MeetingProcessingStartedEvent
   | MeetingProcessingSucceededEvent
   | MeetingProcessingFailedEvent
-  | MeetingProcessingErrorEvent
   | JobFinishedEvent

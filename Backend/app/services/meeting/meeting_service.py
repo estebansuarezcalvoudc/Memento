@@ -80,16 +80,18 @@ class MeetingService(metaclass=SingletonMeta):
                     index=i, title=metadata.title, meeting_id=created_meeting.id
                 )
                 _logger.info(
-                    f"Meeting processing suceeded - meeting {i} - {metadata.title}"
+                    f"Meeting processing succeeded - meeting {i} - {metadata.title}"
                 )
-            except Exception as e:
+            except Exception:
                 failed += 1
                 yield MeetingProcessingFailed(
-                    index=i, title=metadata.title, error=str(e)
+                    index=i,
+                    title=metadata.title,
+                    error="An unexpected error occurred while processing this meeting.",
                 )
 
-                _logger.info(
-                    f"Meeting processing failed - meeting {i} - {metadata.title}"
+                _logger.exception(
+                    "Meeting processing failed - meeting %s - %s", i, metadata.title
                 )
 
         yield JobFinished(meetings_succeeded=succeeded, meetings_failed=failed)

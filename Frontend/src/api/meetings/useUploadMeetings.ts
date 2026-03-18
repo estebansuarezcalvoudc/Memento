@@ -231,10 +231,7 @@ function uploadMeetingsReducer(
       }
     }
 
-    if (
-      event.type === 'MeetingProcessingError' ||
-      event.type === 'MeetingProcessingFailed'
-    ) {
+    if (event.type === 'MeetingProcessingFailed') {
       return {
         ...state,
         processed: state.processed + 1,
