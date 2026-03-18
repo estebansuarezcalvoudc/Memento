@@ -1,3 +1,4 @@
+import asyncio
 from typing import AsyncIterable
 
 from langchain_core.documents import Document
@@ -52,7 +53,10 @@ class MeetingService(metaclass=SingletonMeta):
         audio_bytes_list: list[bytes],
         user_id: str,
     ) -> AsyncIterable[MeetingUploadEvent]:
-        yield JobStarted(total_meetings=len(batch_request.meetings_metadata))
+        number_of_meetings = len(batch_request.meetings_metadata)
+
+        yield JobStarted(total_meetings=number_of_meetings)
+        _logger.info(f"JobStarted - {number_of_meetings} meetings")
 
         meetings = zip(batch_request.meetings_metadata, audio_bytes_list)
 
@@ -61,9 +65,11 @@ class MeetingService(metaclass=SingletonMeta):
 
         for i, (metadata, audio_bytes) in enumerate(meetings):
             yield MeetingProcessingStarted(index=i, title=metadata.title)
+            _logger.info(f"Meeting processing started - meeting {i} - {metadata.title}")
 
             try:
-                created_meeting = self._process_single_meeting(
+                created_meeting = await asyncio.to_thread(
+                    self._process_single_meeting,
                     metadata,
                     audio_bytes,
                     batch_request.processing_configuration,
@@ -73,13 +79,21 @@ class MeetingService(metaclass=SingletonMeta):
                 yield MeetingProcessingSucceeded(
                     index=i, title=metadata.title, meeting_id=created_meeting.id
                 )
+                _logger.info(
+                    f"Meeting processing suceeded - meeting {i} - {metadata.title}"
+                )
             except Exception as e:
                 failed += 1
                 yield MeetingProcessingFailed(
                     index=i, title=metadata.title, error=str(e)
                 )
 
+                _logger.info(
+                    f"Meeting processing failed - meeting {i} - {metadata.title}"
+                )
+
         yield JobFinished(meetings_succeeded=succeeded, meetings_failed=failed)
+        _logger.info(f"Job finished - {number_of_meetings} meetings")
 
     def _process_single_meeting(
         self,

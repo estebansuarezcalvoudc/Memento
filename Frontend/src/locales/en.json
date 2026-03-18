@@ -169,6 +169,7 @@
       "title": "Upload Files",
       "columns": {
         "number": "#",
+        "status": "Status",
         "title": "Title",
         "date": "Date",
         "file": "File"

@@ -1,17 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useUploadMeetings } from '../../../api/queries/useMeetingsQueries'
+import useUploadMeetings, {
+  type UploadMeetingsState,
+} from '../../../api/meetings/useUploadMeetings'
 import { useGetSupportedLanguages } from '../../../api/queries/useSettingsQueries'
-import { type Meeting } from '../../../types/meetings'
 import ConfirmButton from '../../ui/buttons/ConfirmButton'
 import SecondaryButton from '../../ui/buttons/SecondaryButton'
 import FormErrors from '../../ui/feedback/FormErrors'
 import ColumnHeader from '../ColumnHeader'
 import MeetingForm, { meetingFormGridCols } from './MeetingForm'
-import ServerErrorNotification from './notifications/ServerErrorNotification'
-import SuccessNotification from './notifications/SuccessNotification'
-import UploadingNotification from './notifications/UploadingNotification'
 import {
   parseMeetingsFromFormData,
   type MeetingMetadata,
@@ -27,12 +25,7 @@ export interface MeetingFormData {
 
 interface FormState {
   validationErrors: null | string[]
-  serverError?: boolean
-  uploadedMeetingsCount?: number
-  success?: boolean
 }
-
-type Notification = 'none' | 'uploading' | 'success' | 'serverError'
 
 function createMeeting(): MeetingFormData {
   return {
@@ -47,32 +40,26 @@ export default function UploadMeetingsForm({
   handleCloseDialog: () => void
 }) {
   const { t } = useTranslation()
-  const { mutateAsync: uploadMeetings } = useUploadMeetings()
+  const {
+    state: uploadState,
+    startUpload,
+    progressPercent,
+    isPending,
+    reset,
+  } = useUploadMeetings()
   const { data: languages = [] } = useGetSupportedLanguages()
   const [meetings, setMeetings] = useState<MeetingFormData[]>([createMeeting()])
-  const [isPending, setIsPending] = useState(false)
   const [formState, setFormState] = useState<FormState>({
     validationErrors: null,
   })
 
-  const [notification, setNotification] = useState<Notification>('none')
-
   useEffect(() => {
-    if (formState.validationErrors) {
-      setNotification('none')
-      return
-    }
-
-    if (isPending) {
-      setNotification('uploading')
-    } else if (formState.success) {
-      setNotification('success')
+    if (uploadState.phase === 'completed') {
       setMeetings([createMeeting()])
+      reset()
       handleCloseDialog()
-    } else if (formState.serverError) {
-      setNotification('serverError')
     }
-  }, [isPending, formState, handleCloseDialog])
+  }, [uploadState.phase, handleCloseDialog, reset])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -95,22 +82,20 @@ export default function UploadMeetingsForm({
     })
 
     setMeetings(updatedMeetings)
-    setIsPending(true)
 
     const parsed = parseMeetingsFromFormData(formData, t)
     if (!parsed.ok) {
       setFormState({ validationErrors: parsed.errors })
-      setIsPending(false)
       return
     }
 
-    const nextState = await processUploadMeetings(
+    setFormState({ validationErrors: null })
+
+    await processUploadMeetings(
       parsed.meetingsMetadata,
       parsed.audioFiles,
-      uploadMeetings,
+      startUpload,
     )
-    setFormState(nextState)
-    setIsPending(false)
   }
 
   const addMeeting = () => setMeetings(prev => [...prev, createMeeting()])
@@ -121,17 +106,29 @@ export default function UploadMeetingsForm({
     )
   }
 
-  const closeNotification = () => {
-    setNotification('none')
-  }
-
   return (
     <form onSubmit={handleSubmit}>
+      {(uploadState.phase === 'uploading' ||
+        uploadState.phase === 'completedWithErrors' ||
+        uploadState.phase === 'failed') && (
+        <UploadProgressSummary
+          processed={uploadState.processed}
+          total={uploadState.total}
+          succeeded={uploadState.succeeded}
+          failed={uploadState.failed}
+          progressPercent={progressPercent}
+          phase={uploadState.phase}
+        />
+      )}
+
       <div
-        className={`hidden ${meetingFormGridCols} justify-center gap-4 border-b border-stone-300 py-2 min-[800px]:grid dark:border-stone-600`}
+        className={`hidden ${meetingFormGridCols} items-center gap-x-2 border-b border-stone-300 py-2 min-[800px]:grid min-[800px]:justify-center dark:border-stone-600`}
       >
         <ColumnHeader size="xs">
           {t('meetings.uploadDialog.columns.number')}
+        </ColumnHeader>
+        <ColumnHeader size="xs">
+          {t('meetings.uploadDialog.columns.status')}
         </ColumnHeader>
         <ColumnHeader size="xs">
           {t('meetings.uploadDialog.columns.title')}
@@ -153,30 +150,17 @@ export default function UploadMeetingsForm({
           index={index}
           meetingsCount={meetings.length}
           isPending={isPending}
+          status={
+            uploadState.phase === 'idle'
+              ? null
+              : (uploadState.meetingStatuses[index] ?? 'waiting')
+          }
           onRemove={removeMeeting}
           languages={languages}
         />
       ))}
 
       {!isPending && <FormErrors errors={formState.validationErrors} />}
-
-      {notification === 'uploading' && (
-        <UploadingNotification
-          numberOfMeetings={meetings.length}
-          onClose={closeNotification}
-        />
-      )}
-
-      {notification === 'success' && (
-        <SuccessNotification
-          numberOfMeetings={formState.uploadedMeetingsCount as number}
-          onClose={closeNotification}
-        />
-      )}
-
-      {notification === 'serverError' && (
-        <ServerErrorNotification onClose={closeNotification} />
-      )}
 
       <div className="mt-5 mb-4 flex justify-center gap-4">
         <SecondaryButton
@@ -197,8 +181,11 @@ export default function UploadMeetingsForm({
 async function processUploadMeetings(
   meetingsMetadata: MeetingMetadata[],
   audioFiles: File[],
-  uploadMeetings: (formData: FormData) => Promise<Meeting[]>,
-): Promise<FormState> {
+  startUpload: (
+    formData: FormData,
+    meetingsCount: number,
+  ) => Promise<UploadMeetingsState>,
+): Promise<void> {
   try {
     const backendFormData = new FormData()
     backendFormData.append(
@@ -208,14 +195,51 @@ async function processUploadMeetings(
 
     audioFiles.forEach(file => backendFormData.append('audios', file))
 
-    await uploadMeetings(backendFormData)
-
-    return {
-      success: true,
-      validationErrors: null,
-      uploadedMeetingsCount: meetingsMetadata.length,
-    }
+    await startUpload(backendFormData, meetingsMetadata.length)
   } catch {
-    return { validationErrors: null, serverError: true, success: false }
+    return
   }
+}
+
+function UploadProgressSummary({
+  processed,
+  total,
+  succeeded,
+  failed,
+  progressPercent,
+  phase,
+}: {
+  processed: number
+  total: number
+  succeeded: number
+  failed: number
+  progressPercent: number
+  phase: UploadMeetingsState['phase']
+}) {
+  const totalSafe = total > 0 ? total : 0
+  const textColor =
+    phase === 'failed'
+      ? 'text-red-700 dark:text-red-400'
+      : 'text-stone-700 dark:text-stone-300'
+
+  return (
+    <div
+      className={`mb-3 rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm ${textColor} dark:border-stone-700 dark:bg-stone-800`}
+    >
+      <div className="font-ubuntu flex items-center justify-between">
+        <span>
+          {processed}/{totalSafe} · {progressPercent}%
+        </span>
+        <span>
+          OK: {succeeded} · ERR: {failed}
+        </span>
+      </div>
+      <div className="mt-2 h-2 w-full overflow-hidden rounded bg-stone-200 dark:bg-stone-700">
+        <div
+          className="h-full bg-blue-500 transition-all"
+          style={{ width: `${progressPercent}%` }}
+        />
+      </div>
+    </div>
+  )
 }

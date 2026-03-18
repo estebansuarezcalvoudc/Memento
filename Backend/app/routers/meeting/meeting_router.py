@@ -62,11 +62,8 @@ async def create_meetings(
     """
     _validate_audio_files(audios)
 
-    # Read audio bytes before starting the stream
-    # (UploadFile objects can't be read after the response starts streaming)
     audio_bytes_list = [await audio.read() for audio in audios]
 
-    # Validate count
     if len(batch_request.meetings_metadata) != len(audio_bytes_list):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
@@ -83,7 +80,6 @@ async def create_meetings(
             async for event in meeting_service.process_meetings(
                 batch_request, audio_bytes_list, current_user.id
             ):
-                # Convert each Pydantic event to SSE format
                 yield {
                     "event": "message",
                     "data": event.model_dump_json(),
@@ -101,7 +97,10 @@ async def create_meetings(
                 "data": json.dumps({"error": "Internal server error"}),
             }
 
-    return EventSourceResponse(event_generator())
+    return EventSourceResponse(
+        event_generator(),
+        headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"},
+    )
 
 
 def _validate_audio_files(audio_files: list[UploadFile]) -> None:

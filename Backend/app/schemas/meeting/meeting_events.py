@@ -22,7 +22,7 @@ class MeetingProcessingSucceeded(BaseModel):
 
 
 class MeetingProcessingFailed(BaseModel):
-    type: Literal["MeetingProcessingError"] = "MeetingProcessingError"
+    type: Literal["MeetingProcessingFailed"] = "MeetingProcessingFailed"
     index: int
     title: str
     error: str
