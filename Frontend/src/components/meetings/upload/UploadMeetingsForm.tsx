@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import useUploadMeetings from '../../../api/meetings/useUploadMeetings'
@@ -27,11 +27,7 @@ function createMeeting(): MeetingFormData {
   }
 }
 
-export default function UploadMeetingsForm({
-  handleCloseDialog,
-}: {
-  handleCloseDialog: () => void
-}) {
+export default function UploadMeetingsForm() {
   const { t } = useTranslation()
   const {
     state: uploadState,
@@ -44,14 +40,6 @@ export default function UploadMeetingsForm({
   const [formState, setFormState] = useState<FormState>({
     validationErrors: null,
   })
-
-  useEffect(() => {
-    if (uploadState.phase === 'completed') {
-      setMeetings([createMeeting()])
-      reset()
-      handleCloseDialog()
-    }
-  }, [uploadState.phase, handleCloseDialog, reset])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -73,6 +61,13 @@ export default function UploadMeetingsForm({
       parsed.audioFiles,
       startUpload,
     )
+
+    if (uploadResult.phase === 'completed') {
+      setMeetings([createMeeting()])
+      setFormState({ validationErrors: null })
+      reset()
+      return
+    }
 
     if (
       uploadResult.phase === 'completedWithErrors' &&
