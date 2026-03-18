@@ -8,12 +8,13 @@ import { useGetSupportedLanguages } from '../../../api/queries/useSettingsQuerie
 import ConfirmButton from '../../ui/buttons/ConfirmButton'
 import SecondaryButton from '../../ui/buttons/SecondaryButton'
 import FormErrors from '../../ui/feedback/FormErrors'
-import ColumnHeader from '../ColumnHeader'
 import MeetingForm, { meetingFormGridCols } from './MeetingForm'
 import {
   parseMeetingsFromFormData,
   type MeetingMetadata,
 } from './parseMeetingsFormData'
+import UploadMeetingsHeaderRow from './UploadMeetingsHeaderRow'
+import UploadProgressSummary from './UploadProgressSummary'
 
 export interface MeetingFormData {
   id: string
@@ -53,6 +54,11 @@ export default function UploadMeetingsForm({
     validationErrors: null,
   })
 
+  const showProgress =
+    uploadState.phase === 'uploading' ||
+    uploadState.phase === 'completedWithErrors' ||
+    uploadState.phase === 'failed'
+
   useEffect(() => {
     if (uploadState.phase === 'completed') {
       setMeetings([createMeeting()])
@@ -65,23 +71,7 @@ export default function UploadMeetingsForm({
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
 
-    const updatedMeetings = meetings.map((meeting, index) => {
-      const language = formData.get(`meetings[${index}][language]`) as string
-      return {
-        ...meeting,
-        title:
-          (formData.get(`meetings[${index}][title]`) as string) ||
-          meeting.title,
-        date:
-          (formData.get(`meetings[${index}][date]`) as string) || meeting.date,
-        language: language || meeting.language,
-        speakers:
-          (formData.get(`meetings[${index}][speakers]`) as string) ||
-          meeting.speakers,
-      }
-    })
-
-    setMeetings(updatedMeetings)
+    setMeetings(getMeetingsFromFormData(meetings, formData))
 
     const parsed = parseMeetingsFromFormData(formData, t)
     if (!parsed.ok) {
@@ -108,40 +98,7 @@ export default function UploadMeetingsForm({
 
   return (
     <form onSubmit={handleSubmit}>
-      {(uploadState.phase === 'uploading' ||
-        uploadState.phase === 'completedWithErrors' ||
-        uploadState.phase === 'failed') && (
-        <UploadProgressSummary
-          processed={uploadState.processed}
-          total={uploadState.total}
-          succeeded={uploadState.succeeded}
-          failed={uploadState.failed}
-          progressPercent={progressPercent}
-          phase={uploadState.phase}
-        />
-      )}
-
-      <div
-        className={`hidden ${meetingFormGridCols} items-center gap-x-2 border-b border-stone-300 py-2 min-[800px]:grid min-[800px]:justify-center dark:border-stone-600`}
-      >
-        <ColumnHeader size="xs">
-          {t('meetings.uploadDialog.columns.number')}
-        </ColumnHeader>
-        <ColumnHeader size="xs">
-          {t('meetings.uploadDialog.columns.status')}
-        </ColumnHeader>
-        <ColumnHeader size="xs">
-          {t('meetings.uploadDialog.columns.title')}
-        </ColumnHeader>
-        <ColumnHeader size="xs">
-          {t('meetings.uploadDialog.columns.date')}
-        </ColumnHeader>
-        <ColumnHeader size="xs">
-          {t('meetings.uploadDialog.columns.file')}
-        </ColumnHeader>
-        <div />
-        <div />
-      </div>
+      <UploadMeetingsHeaderRow gridClassName={meetingFormGridCols} />
 
       {meetings.map((meeting, index) => (
         <MeetingForm
@@ -161,6 +118,17 @@ export default function UploadMeetingsForm({
       ))}
 
       {!isPending && <FormErrors errors={formState.validationErrors} />}
+
+      {showProgress && (
+        <UploadProgressSummary
+          processed={uploadState.processed}
+          total={uploadState.total}
+          succeeded={uploadState.succeeded}
+          failed={uploadState.failed}
+          progressPercent={progressPercent}
+          phase={uploadState.phase}
+        />
+      )}
 
       <div className="mt-5 mb-4 flex justify-center gap-4">
         <SecondaryButton
@@ -201,45 +169,23 @@ async function processUploadMeetings(
   }
 }
 
-function UploadProgressSummary({
-  processed,
-  total,
-  succeeded,
-  failed,
-  progressPercent,
-  phase,
-}: {
-  processed: number
-  total: number
-  succeeded: number
-  failed: number
-  progressPercent: number
-  phase: UploadMeetingsState['phase']
-}) {
-  const totalSafe = total > 0 ? total : 0
-  const textColor =
-    phase === 'failed'
-      ? 'text-red-700 dark:text-red-400'
-      : 'text-stone-700 dark:text-stone-300'
+function getMeetingsFromFormData(
+  meetings: MeetingFormData[],
+  formData: FormData,
+): MeetingFormData[] {
+  return meetings.map((meeting, index) => {
+    const language = formData.get(`meetings[${index}][language]`) as string
 
-  return (
-    <div
-      className={`mb-3 rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm ${textColor} dark:border-stone-700 dark:bg-stone-800`}
-    >
-      <div className="font-ubuntu flex items-center justify-between">
-        <span>
-          {processed}/{totalSafe} · {progressPercent}%
-        </span>
-        <span>
-          OK: {succeeded} · ERR: {failed}
-        </span>
-      </div>
-      <div className="mt-2 h-2 w-full overflow-hidden rounded bg-stone-200 dark:bg-stone-700">
-        <div
-          className="h-full bg-blue-500 transition-all"
-          style={{ width: `${progressPercent}%` }}
-        />
-      </div>
-    </div>
-  )
+    return {
+      ...meeting,
+      title:
+        (formData.get(`meetings[${index}][title]`) as string) || meeting.title,
+      date:
+        (formData.get(`meetings[${index}][date]`) as string) || meeting.date,
+      language: language || meeting.language,
+      speakers:
+        (formData.get(`meetings[${index}][speakers]`) as string) ||
+        meeting.speakers,
+    }
+  })
 }
