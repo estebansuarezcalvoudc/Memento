@@ -151,7 +151,7 @@ async def pull_model(
     pull_model_request: PullModelRequest,
     current_user: Annotated[User, Depends(get_current_active_user)],
     service: Annotated[ModelsService, Depends(get_models_service)],
-) -> None:
+) -> Response:
     _ = current_user
     try:
         service.pull_model(pull_model_request)

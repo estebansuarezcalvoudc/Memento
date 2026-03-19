@@ -17,7 +17,6 @@ from ...schemas.meeting.meeting_schema import (
     UpdateMeetingMetadata,
 )
 from ...services.meeting.meeting_service import MeetingService
-from ..docs.meeting_docs_loader import create_meetings_docs
 
 _logger = setup_logger(__name__)
 router = APIRouter(prefix="/meetings", tags=["Meeting"])
@@ -26,10 +25,7 @@ router = APIRouter(prefix="/meetings", tags=["Meeting"])
 def _parse_meetings_batch_request(
     meetings_data: Annotated[
         str,
-        Form(
-            description=create_meetings_docs.meetings_batch_description,
-            examples=[create_meetings_docs.meetings_batch_example],
-        ),
+        Form(),
     ],
 ) -> list[MeetingMetadata]:
     try:
@@ -47,15 +43,12 @@ def _parse_meetings_batch_request(
 @router.post(
     "",
     summary="Create meetings and process them with SSE",
-    openapi_extra=create_meetings_docs.openapi_extra,
 )
 async def create_meetings(
     current_user: Annotated[User, Depends(get_current_active_user)],
     meeting_service: Annotated[MeetingService, Depends(get_meeting_service)],
     batch_request: list[MeetingMetadata] = Depends(_parse_meetings_batch_request),
-    audios: list[UploadFile] = File(
-        ..., description=create_meetings_docs.audios_file_description
-    ),
+    audios: list[UploadFile] = File(...),
 ):
     """
     Upload and process meetings with real-time Server-Sent Events progress.
