@@ -17,14 +17,14 @@ def get_meeting_summary(
     user_id: str,
 ) -> str:
     llm_config = settings_repo.get_summary_model(user_id)
-    prompt = settings_repo.get_system_prompt(user_id) or DEFAULT_PROMPT
+    summarization_prompt = settings_repo.get_system_prompt(user_id) or DEFAULT_PROMPT
 
     _logger.debug(f"LLM config: {llm_config}")
     llm = get_llm_for_user(llm_config, settings_repo, user_id)
 
     prompt = ChatPromptTemplate.from_messages(
         [
-            ("system", prompt),
+            ("system", summarization_prompt),
             ("human", "{dialogue}"),
         ]
     )

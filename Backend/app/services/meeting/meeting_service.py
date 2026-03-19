@@ -5,7 +5,6 @@ from langchain_core.documents import Document
 from langchain_core.vectorstores import VectorStore
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from app.repositories.interfaces import settings_repo
 from app.repositories.interfaces.settings_repo import SettingsRepository
 from app.schemas.meeting.meeting_events import (
     JobFinished,

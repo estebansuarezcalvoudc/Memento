@@ -7,11 +7,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi import HTTPException
 
-from app.schemas.meeting.meeting_schema import ProcessingConfiguration
-
-_PATCH_SETTINGS_REPO = (
-    "app.services.meeting.meeting_processing.summarization.SettingsMongoRepository"
-)
 _PATCH_CREATE_LLM = (
     "app.services.meeting.meeting_processing.summarization.get_llm_for_user"
 )
@@ -21,44 +16,53 @@ def _make_llm_config(provider: str = "Ollama", model: str = "llama3.2:latest"):
     return MagicMock(provider=provider, model_name=model)
 
 
-def _make_processing_config(prompt: str = "Summarize the following meeting:"):
-    return ProcessingConfiguration(system_prompt=prompt)
+def _make_settings_repo(
+    provider: str = "Ollama",
+    prompt: str = "Summarize the following meeting:",
+):
+    repo = MagicMock()
+    repo.get_summary_model.return_value = _make_llm_config(provider=provider)
+    repo.get_system_prompt.return_value = prompt
+    return repo
 
 
 class TestGetMeetingSummary:
     def test_get_meeting_summary_should_raise_runtime_error_when_api_key_missing(self):
         """Provider requires API key but none is configured → RuntimeError."""
-        mock_repo = MagicMock()
-        mock_repo.get_summary_model.return_value = _make_llm_config(provider="OpenAI")
-        mock_repo.get_provider_settings.return_value = None  # no settings = no key
+        mock_repo = _make_settings_repo(provider="OpenAI")
 
-        with patch(_PATCH_SETTINGS_REPO, return_value=mock_repo):
+        with (
+            patch(_PATCH_CREATE_LLM) as mock_get_llm_for_user,
+            pytest.raises(HTTPException) as exc_info,
+        ):
+            mock_get_llm_for_user.side_effect = HTTPException(
+                status_code=400,
+                detail="API key not configured for user_id=user@example.com",
+            )
+
             from app.services.meeting.meeting_processing.summarization import (
                 get_meeting_summary,
             )
 
-            with pytest.raises(HTTPException) as exc_info:
-                get_meeting_summary(
-                    diarized_dialogue="Speaker 1: Hello.",
-                    processing_config=_make_processing_config(),
-                    username="user@example.com",
-                )
-            assert exc_info.value.status_code == 400
-            assert "API key not configured" in exc_info.value.detail
+            get_meeting_summary(
+                diarized_dialogue="Speaker 1: Hello.",
+                settings_repo=mock_repo,
+                user_id="user@example.com",
+            )
+
+        assert exc_info.value.status_code == 400
+        assert "API key not configured" in exc_info.value.detail
 
     def test_get_meeting_summary_should_return_llm_output_for_ollama(self):
         """Ollama does not require an API key — the chain should be invoked and its
         result returned."""
-        mock_repo = MagicMock()
-        mock_repo.get_summary_model.return_value = _make_llm_config(provider="Ollama")
-        mock_repo.get_provider_settings.return_value = None  # Ollama has no DB entry
+        mock_repo = _make_settings_repo(provider="Ollama")
 
         mock_llm = MagicMock()
         mock_chain = MagicMock()
         mock_chain.invoke.return_value = "The team discussed Q1 goals."
 
         with (
-            patch(_PATCH_SETTINGS_REPO, return_value=mock_repo),
             patch(_PATCH_CREATE_LLM, return_value=mock_llm),
             patch(
                 "app.services.meeting.meeting_processing.summarization.ChatPromptTemplate"
@@ -76,8 +80,8 @@ class TestGetMeetingSummary:
 
             result = get_meeting_summary(
                 diarized_dialogue="Speaker 1: Hello.",
-                processing_config=_make_processing_config(),
-                username="user@example.com",
+                settings_repo=mock_repo,
+                user_id="user@example.com",
             )
 
         assert result == "The team discussed Q1 goals."
@@ -86,22 +90,26 @@ class TestGetMeetingSummary:
         self,
     ):
         """Provider settings exist but api_key_encrypted is falsy → RuntimeError."""
-        mock_repo = MagicMock()
-        mock_repo.get_summary_model.return_value = _make_llm_config(provider="OpenAI")
-        mock_provider_settings = MagicMock()
-        mock_provider_settings.api_key_encrypted = ""  # empty key
-        mock_repo.get_provider_settings.return_value = mock_provider_settings
+        mock_repo = _make_settings_repo(provider="OpenAI")
 
-        with patch(_PATCH_SETTINGS_REPO, return_value=mock_repo):
+        with (
+            patch(_PATCH_CREATE_LLM) as mock_get_llm_for_user,
+            pytest.raises(HTTPException) as exc_info,
+        ):
+            mock_get_llm_for_user.side_effect = HTTPException(
+                status_code=400,
+                detail="API key not configured for user_id=user@example.com",
+            )
+
             from app.services.meeting.meeting_processing.summarization import (
                 get_meeting_summary,
             )
 
-            with pytest.raises(HTTPException) as exc_info:
-                get_meeting_summary(
-                    diarized_dialogue="Speaker 1: Hello.",
-                    processing_config=_make_processing_config(),
-                    username="user@example.com",
-                )
-            assert exc_info.value.status_code == 400
-            assert "API key not configured" in exc_info.value.detail
+            get_meeting_summary(
+                diarized_dialogue="Speaker 1: Hello.",
+                settings_repo=mock_repo,
+                user_id="user@example.com",
+            )
+
+        assert exc_info.value.status_code == 400
+        assert "API key not configured" in exc_info.value.detail
