@@ -1,4 +1,4 @@
-import { useEffect, useImperativeHandle, useRef } from 'react'
+import { useCallback, useEffect, useImperativeHandle, useRef } from 'react'
 import { createPortal } from 'react-dom'
 
 import { closeImage } from '../../../assets/buttonsImages'
@@ -28,14 +28,14 @@ export default function Dialog({ dialogRef, children }: DialogProps) {
     isBodyScrollLockedRef.current = true
   }
 
-  const unlockBodyScroll = () => {
+  const unlockBodyScroll = useCallback(() => {
     if (!isBodyScrollLockedRef.current) {
       return
     }
 
     document.body.style.overflow = previousBodyOverflowRef.current
     isBodyScrollLockedRef.current = false
-  }
+  }, [])
 
   const openDialog = () => {
     innerRef.current?.showModal()
@@ -52,7 +52,11 @@ export default function Dialog({ dialogRef, children }: DialogProps) {
     close: closeDialog,
   }))
 
-  useEffect(() => () => unlockBodyScroll(), [])
+  useEffect(() => {
+    return () => {
+      unlockBodyScroll()
+    }
+  }, [unlockBodyScroll])
 
   return createPortal(
     <dialog
