@@ -1,4 +1,4 @@
-import { useImperativeHandle, useRef } from 'react'
+import { useCallback, useEffect, useImperativeHandle, useRef } from 'react'
 import { createPortal } from 'react-dom'
 
 import { closeImage } from '../../../assets/buttonsImages'
@@ -15,27 +15,65 @@ interface DialogProps {
 
 export default function Dialog({ dialogRef, children }: DialogProps) {
   const innerRef = useRef<HTMLDialogElement>(null)
+  const previousBodyOverflowRef = useRef('')
+  const isBodyScrollLockedRef = useRef(false)
+
+  const lockBodyScroll = () => {
+    if (isBodyScrollLockedRef.current) {
+      return
+    }
+
+    previousBodyOverflowRef.current = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    isBodyScrollLockedRef.current = true
+  }
+
+  const unlockBodyScroll = useCallback(() => {
+    if (!isBodyScrollLockedRef.current) {
+      return
+    }
+
+    document.body.style.overflow = previousBodyOverflowRef.current
+    isBodyScrollLockedRef.current = false
+  }, [])
+
+  const openDialog = () => {
+    innerRef.current?.showModal()
+    lockBodyScroll()
+  }
+
+  const closeDialog = () => {
+    innerRef.current?.close()
+    unlockBodyScroll()
+  }
 
   useImperativeHandle(dialogRef, () => ({
-    open: () => innerRef.current?.showModal(),
-    close: () => innerRef.current?.close(),
+    open: openDialog,
+    close: closeDialog,
   }))
+
+  useEffect(() => {
+    return () => {
+      unlockBodyScroll()
+    }
+  }, [unlockBodyScroll])
 
   return createPortal(
     <dialog
       ref={innerRef}
       aria-modal="true"
       className="fixed top-1/2 left-1/2 z-[9990] h-[80vh] max-h-[90vh] w-[90vw] max-w-4xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl bg-white p-0 backdrop-blur-xl backdrop:backdrop-blur-[1px] dark:bg-stone-800"
+      onClose={unlockBodyScroll}
       onKeyDown={e => {
         if (e.key === 'Escape') {
           e.preventDefault()
-          innerRef.current?.close()
+          closeDialog()
         }
       }}
     >
       <button
         className="absolute top-4 right-4 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-2xl p-1 text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700"
-        onClick={() => innerRef.current?.close()}
+        onClick={closeDialog}
         aria-label="close-dialog"
       >
         {closeImage}
