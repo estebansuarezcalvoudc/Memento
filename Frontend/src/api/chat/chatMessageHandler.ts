@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query'
+import type { QueryClient } from '@tanstack/react-query'
 
 import type { Chat, Message } from '../../types/chats'
 import { chatKey, CHATS_KEY } from './chatQueryKeys'
@@ -53,12 +53,12 @@ type ChatEvent =
 
 interface MessageHandlerDeps {
   dispatch: React.Dispatch<ChatAction>
-  queryClient: ReturnType<typeof useQueryClient>
+  queryClient: Pick<QueryClient, 'setQueryData' | 'invalidateQueries'>
   message: string
   resolvedConvIdRef: React.RefObject<string | null>
   accumulatedTokensRef: React.RefObject<string>
   onConversationCreated?: (id: string) => void
-  ws: WebSocket
+  ws: Pick<WebSocket, 'close'>
 }
 
 export function createMessageHandler(

@@ -31,14 +31,6 @@ def _mongo_side_effect(conversation_data):
     return side_effect
 
 
-def _find_title_update_call(mock_mongo):
-    for call in mock_mongo.update_one.call_args_list:
-        update_doc = call[0][1]
-        if "$set" in update_doc and update_doc["$set"].get("title"):
-            return call
-    return None
-
-
 class TestChatWebSocketSendMessage:
     def test_send_message_should_stream_ai_reply_and_persist_messages(
         self,
@@ -125,6 +117,7 @@ class TestChatWebSocketSendMessage:
         auth_headers: dict,
         mock_mongo,
         mock_rag_get_reply_stream,
+        find_title_update_call,
     ):
         mock_mongo.find_one.side_effect = _mongo_side_effect(
             conversation_data={"messages": []}
@@ -156,6 +149,6 @@ class TestChatWebSocketSendMessage:
         title_events = [m for m in messages if m["type"] == "title"]
         assert title_events[-1]["title"] == "First message title"
 
-        title_update_call = _find_title_update_call(mock_mongo)
+        title_update_call = find_title_update_call(mock_mongo)
         assert title_update_call is not None
         assert title_update_call[0][1]["$set"]["title"] == "First message title"

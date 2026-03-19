@@ -66,3 +66,15 @@ def mock_rag_get_reply_stream():
     ) as mock_stream:
         mock_retrieve.return_value = "some context"
         yield mock_retrieve, mock_stream
+
+
+@pytest.fixture
+def find_title_update_call():
+    def _find_title_update_call(mock_mongo):
+        for call in mock_mongo.update_one.call_args_list:
+            update_doc = call[0][1]
+            if "title" in update_doc.get("$set", {}):
+                return call
+        return None
+
+    return _find_title_update_call

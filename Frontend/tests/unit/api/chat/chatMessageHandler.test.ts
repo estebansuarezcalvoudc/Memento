@@ -1,3 +1,4 @@
+import type { QueryClient } from '@tanstack/react-query'
 import { describe, expect, it, vi } from 'vitest'
 
 import { createMessageHandler } from '../../../../src/api/chat/chatMessageHandler'
@@ -6,19 +7,20 @@ import { CHATS_KEY } from '../../../../src/api/chat/chatQueryKeys'
 describe('chatMessageHandler', () => {
   it('invalidates chats query when title event arrives', () => {
     const dispatch = vi.fn()
-    const queryClient = {
-      setQueryData: vi.fn(),
-      invalidateQueries: vi.fn(),
-    }
-    const ws = { close: vi.fn() }
+    const queryClient: Pick<QueryClient, 'setQueryData' | 'invalidateQueries'> =
+      {
+        setQueryData: vi.fn(),
+        invalidateQueries: vi.fn().mockResolvedValue(undefined),
+      }
+    const ws: Pick<WebSocket, 'close'> = { close: vi.fn() }
 
     const handler = createMessageHandler({
       dispatch,
-      queryClient: queryClient as never,
+      queryClient,
       message: 'hello',
       resolvedConvIdRef: { current: null },
       accumulatedTokensRef: { current: '' },
-      ws: ws as never,
+      ws,
     })
 
     handler({
