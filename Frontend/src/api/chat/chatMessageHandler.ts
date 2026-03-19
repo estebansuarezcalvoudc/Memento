@@ -84,6 +84,10 @@ export function createMessageHandler(
 
     if (event.type === 'conversation_created') {
       resolvedConvIdRef.current = event.conversation_id
+      dispatch({
+        type: 'SET_ACTIVE_CONVERSATION',
+        conversationId: event.conversation_id,
+      })
 
       queryClient.setQueryData<Message[]>(
         chatKey(event.conversation_id),

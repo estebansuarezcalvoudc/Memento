@@ -25,9 +25,20 @@ export default function Chat() {
     isStreaming,
     isRetrieving,
     isThinking,
-    hasSentMessage,
+    activeConversationId,
+    isCreatingConversationFromNewChat,
     error,
   } = useChat(chatId ?? null, onConversationCreated)
+
+  const uiState = getChatUiState({
+    chatId,
+    activeConversationId,
+    isCreatingConversationFromNewChat,
+    isStreaming,
+    isRetrieving,
+    isThinking,
+    error,
+  })
 
   const chatDivRef = useRef<HTMLDivElement | null>(null)
 
@@ -37,8 +48,13 @@ export default function Chat() {
     }
   }, [messages, streamingContent, isRetrieving])
 
-  if (!chatId && !hasSentMessage && !error) {
-    return <NewChatView onSubmit={sendMessage} />
+  if (uiState.showNewChatView) {
+    return (
+      <NewChatView
+        onSubmit={sendMessage}
+        isInputDisabled={uiState.isInputDisabled}
+      />
+    )
   }
 
   return (
@@ -51,12 +67,52 @@ export default function Chat() {
       <ChatConversation
         ref={chatDivRef}
         messages={messages}
-        streamingContent={streamingContent}
-        isStreaming={isStreaming}
-        isRetrieving={isRetrieving}
-        isThinking={isThinking}
+        streamingContent={uiState.showTransientState ? streamingContent : ''}
+        isStreaming={uiState.showTransientState ? isStreaming : false}
+        isRetrieving={uiState.showTransientState ? isRetrieving : false}
+        isThinking={uiState.showTransientState ? isThinking : false}
+        isInputDisabled={uiState.isInputDisabled}
         onSubmit={sendMessage}
       />
     </>
   )
+}
+
+interface ChatUiState {
+  showNewChatView: boolean
+  showTransientState: boolean
+  isInputDisabled: boolean
+}
+
+interface ChatUiStateParams {
+  chatId?: string
+  activeConversationId: string | null
+  isCreatingConversationFromNewChat: boolean
+  isStreaming: boolean
+  isRetrieving: boolean
+  isThinking: boolean
+  error: string | null
+}
+
+function getChatUiState({
+  chatId,
+  activeConversationId,
+  isCreatingConversationFromNewChat,
+  isStreaming,
+  isRetrieving,
+  isThinking,
+  error,
+}: ChatUiStateParams): ChatUiState {
+  const isInputDisabled = isStreaming || isRetrieving || isThinking
+  const showNewChatView =
+    !chatId && !isCreatingConversationFromNewChat && !error
+  const showTransientState = chatId
+    ? activeConversationId === chatId
+    : isCreatingConversationFromNewChat
+
+  return {
+    showNewChatView,
+    showTransientState,
+    isInputDisabled,
+  }
 }
