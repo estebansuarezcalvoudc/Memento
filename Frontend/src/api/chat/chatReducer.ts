@@ -4,6 +4,7 @@ export interface ChatState {
   isRetrieving: boolean
   isThinking: boolean
   activeConversationId: string | null
+  isCreatingConversationFromNewChat: boolean
   hasSentMessage: boolean
   error: string | null
 }
@@ -14,6 +15,7 @@ export const IDLE_STATE: ChatState = {
   isRetrieving: false,
   isThinking: false,
   activeConversationId: null,
+  isCreatingConversationFromNewChat: false,
   hasSentMessage: false,
   error: null,
 }
@@ -24,6 +26,7 @@ export type ChatAction =
   | { type: 'THINKING_START' }
   | { type: 'THINKING_END' }
   | { type: 'SET_ACTIVE_CONVERSATION'; conversationId: string }
+  | { type: 'CLEAR_NEW_CHAT_CREATION' }
   | { type: 'TOKEN'; content: string }
   | { type: 'DONE' }
   | { type: 'ERROR'; content: string }
@@ -37,6 +40,7 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
         isStreaming: true,
         hasSentMessage: true,
         activeConversationId: action.conversationId,
+        isCreatingConversationFromNewChat: action.conversationId === null,
       }
     case 'RETRIEVING':
       return { ...state, isRetrieving: true }
@@ -46,6 +50,8 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
       return { ...state, isThinking: false }
     case 'SET_ACTIVE_CONVERSATION':
       return { ...state, activeConversationId: action.conversationId }
+    case 'CLEAR_NEW_CHAT_CREATION':
+      return { ...state, isCreatingConversationFromNewChat: false }
     case 'TOKEN':
       return {
         ...state,

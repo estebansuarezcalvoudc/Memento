@@ -26,14 +26,14 @@ export default function Chat() {
     isRetrieving,
     isThinking,
     activeConversationId,
-    hasSentMessage,
+    isCreatingConversationFromNewChat,
     error,
   } = useChat(chatId ?? null, onConversationCreated)
 
   const uiState = getChatUiState({
     chatId,
     activeConversationId,
-    hasSentMessage,
+    isCreatingConversationFromNewChat,
     isStreaming,
     isRetrieving,
     isThinking,
@@ -87,7 +87,7 @@ interface ChatUiState {
 interface ChatUiStateParams {
   chatId?: string
   activeConversationId: string | null
-  hasSentMessage: boolean
+  isCreatingConversationFromNewChat: boolean
   isStreaming: boolean
   isRetrieving: boolean
   isThinking: boolean
@@ -97,19 +97,18 @@ interface ChatUiStateParams {
 function getChatUiState({
   chatId,
   activeConversationId,
-  hasSentMessage,
+  isCreatingConversationFromNewChat,
   isStreaming,
   isRetrieving,
   isThinking,
   error,
 }: ChatUiStateParams): ChatUiState {
   const isInputDisabled = isStreaming || isRetrieving || isThinking
-  const isNewChatStreaming =
-    !chatId && hasSentMessage && activeConversationId === null
-  const showNewChatView = !chatId && !isNewChatStreaming && !error
+  const showNewChatView =
+    !chatId && !isCreatingConversationFromNewChat && !error
   const showTransientState = chatId
     ? activeConversationId === chatId
-    : hasSentMessage && activeConversationId === null
+    : isCreatingConversationFromNewChat
 
   return {
     showNewChatView,

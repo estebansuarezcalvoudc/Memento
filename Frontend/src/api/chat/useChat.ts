@@ -14,6 +14,7 @@ export interface UseChatResult {
   isRetrieving: boolean
   isThinking: boolean
   activeConversationId: string | null
+  isCreatingConversationFromNewChat: boolean
   hasSentMessage: boolean
   error: string | null
 }
@@ -35,6 +36,12 @@ export function useChat(
     },
     [],
   )
+
+  useEffect(() => {
+    if (conversationId) {
+      dispatch({ type: 'CLEAR_NEW_CHAT_CREATION' })
+    }
+  }, [conversationId])
 
   const sendMessage = useCallback(
     (message: string) => {
