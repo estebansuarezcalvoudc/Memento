@@ -2,6 +2,7 @@ import json
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from pydantic import ValidationError
 from sse_starlette.sse import EventSourceResponse
 
 from ...core.logging import setup_logger
@@ -9,7 +10,7 @@ from ...dependencies.auth_dependencies import get_current_active_user
 from ...dependencies.service_dependencies import get_meeting_service
 from ...schemas.auth.auth_schema import User
 from ...schemas.meeting.meeting_schema import (
-    CreateMeetingsBatchRequest,
+    MeetingMetadata,
     MeetingMetadataResponse,
     MeetingSummaryResponse,
     MeetingTranscriptionResponse,
@@ -30,11 +31,13 @@ def _parse_meetings_batch_request(
             examples=[create_meetings_docs.meetings_batch_example],
         ),
     ],
-) -> CreateMeetingsBatchRequest:
+) -> list[MeetingMetadata]:
     try:
         batch_data = json.loads(meetings_data)
-        return CreateMeetingsBatchRequest(**batch_data)
-    except (json.JSONDecodeError, ValueError) as e:
+        if not isinstance(batch_data, list):
+            raise ValueError("Expected a JSON array of meeting metadata")
+        return [MeetingMetadata(**item) for item in batch_data]
+    except (json.JSONDecodeError, ValidationError, ValueError, TypeError) as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid JSON format: {str(e)}",
@@ -49,7 +52,7 @@ def _parse_meetings_batch_request(
 async def create_meetings(
     current_user: Annotated[User, Depends(get_current_active_user)],
     meeting_service: Annotated[MeetingService, Depends(get_meeting_service)],
-    batch_request: CreateMeetingsBatchRequest = Depends(_parse_meetings_batch_request),
+    batch_request: list[MeetingMetadata] = Depends(_parse_meetings_batch_request),
     audios: list[UploadFile] = File(
         ..., description=create_meetings_docs.audios_file_description
     ),
@@ -64,7 +67,7 @@ async def create_meetings(
 
     audio_bytes_list = [await audio.read() for audio in audios]
 
-    if len(batch_request.meetings_metadata) != len(audio_bytes_list):
+    if len(batch_request) != len(audio_bytes_list):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="The number of metadata objects must match the number of audio files",

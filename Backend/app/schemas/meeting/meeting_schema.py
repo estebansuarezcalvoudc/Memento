@@ -3,7 +3,6 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from ..settings.templates_schema import DEFAULT_PROMPT
 from ..settings.whisperx_schema import SUPPORTED_LANGUAGES
 
 
@@ -24,25 +23,6 @@ class MeetingMetadata(BaseModel):
                 f"Supported languages: {SUPPORTED_LANGUAGES}"
             )
         return language
-
-
-class ProcessingConfiguration(BaseModel):
-    """Configuration for meeting processing (transcription and summarization)."""
-
-    system_prompt: str = Field(
-        default=DEFAULT_PROMPT,
-        description="System prompt for meeting summarization",
-    )
-
-
-class CreateMeetingsBatchRequest(BaseModel):
-    """Request for creating multiple meetings with shared processing configuration."""
-
-    meetings_metadata: list[MeetingMetadata]
-    processing_configuration: ProcessingConfiguration = Field(
-        default_factory=ProcessingConfiguration,
-        description="Configuration for processing all meetings in this batch",
-    )
 
 
 class UpdateMeetingMetadata(BaseModel):

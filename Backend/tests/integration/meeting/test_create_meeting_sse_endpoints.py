@@ -20,7 +20,7 @@ def _audio_file(filename: str, content_type: str = "audio/wav"):
 
 
 def _meetings_data(meetings: list[dict[str, str]]) -> str:
-    return json.dumps({"meetings_metadata": meetings})
+    return json.dumps(meetings)
 
 
 def _collect_sse_payloads(response) -> list[dict]:

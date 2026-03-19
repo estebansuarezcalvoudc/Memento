@@ -12,11 +12,9 @@ def _meetings_data(
     title: str = "Q1 Planning", date_str: str = "2024-01-15", language: str = "en"
 ) -> str:
     return json.dumps(
-        {
-            "meetings_metadata": [
-                {"title": title, "date": date_str, "language": language}
-            ]
-        }
+        [
+            {"title": title, "date": date_str, "language": language},
+        ]
     )
 
 
@@ -74,12 +72,10 @@ class TestCreateMeetingsEndpoint:
     ):
         # Arrange: two metadata entries but only one audio file
         meetings_data = json.dumps(
-            {
-                "meetings_metadata": [
-                    {"title": "Meeting 1", "date": "2024-01-15"},
-                    {"title": "Meeting 2", "date": "2024-01-16"},
-                ]
-            }
+            [
+                {"title": "Meeting 1", "date": "2024-01-15"},
+                {"title": "Meeting 2", "date": "2024-01-16"},
+            ]
         )
 
         response = client.post(

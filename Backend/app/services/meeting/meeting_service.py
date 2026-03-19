@@ -17,12 +17,10 @@ from app.schemas.meeting.meeting_events import (
 from ...core.logging import setup_logger
 from ...repositories.interfaces.meeting_repo import MeetingRepository
 from ...schemas.meeting.meeting_schema import (
-    CreateMeetingsBatchRequest,
     MeetingMetadata,
     MeetingMetadataResponse,
     MeetingSummaryResponse,
     MeetingTranscriptionResponse,
-    ProcessingConfiguration,
     UpdateMeetingMetadata,
 )
 from ...services.transcription.interfaces.transcription_service import (
@@ -49,16 +47,16 @@ class MeetingService(metaclass=SingletonMeta):
 
     async def process_meetings(
         self,
-        batch_request: CreateMeetingsBatchRequest,
+        meetings_metadata: list[MeetingMetadata],
         audio_bytes_list: list[bytes],
         user_id: str,
     ) -> AsyncIterable[MeetingUploadEvent]:
-        number_of_meetings = len(batch_request.meetings_metadata)
+        number_of_meetings = len(meetings_metadata)
 
         yield JobStarted(total_meetings=number_of_meetings)
         _logger.info(f"JobStarted - {number_of_meetings} meetings")
 
-        meetings = zip(batch_request.meetings_metadata, audio_bytes_list)
+        meetings = zip(meetings_metadata, audio_bytes_list)
 
         succeeded = 0
         failed = 0
@@ -72,7 +70,6 @@ class MeetingService(metaclass=SingletonMeta):
                     self._process_single_meeting,
                     metadata,
                     audio_bytes,
-                    batch_request.processing_configuration,
                     user_id,
                 )
                 succeeded += 1
@@ -101,7 +98,6 @@ class MeetingService(metaclass=SingletonMeta):
         self,
         meeting_metadata: MeetingMetadata,
         audio_bytes: bytes,
-        processing_config: ProcessingConfiguration,
         user_id: str,
     ) -> MeetingMetadataResponse:
         result = self._transcription_service.transcribe(
@@ -109,7 +105,7 @@ class MeetingService(metaclass=SingletonMeta):
         )
         meeting_metadata.language = result.language
 
-        summary = get_meeting_summary(result.text, processing_config, user_id)
+        summary = get_meeting_summary(result.text, self._repository, user_id)
 
         created_meeting = self._repository.store_meeting(
             meeting_metadata, summary, result.text, user_id
