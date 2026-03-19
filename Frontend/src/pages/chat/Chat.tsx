@@ -25,9 +25,18 @@ export default function Chat() {
     isStreaming,
     isRetrieving,
     isThinking,
+    activeConversationId,
     hasSentMessage,
     error,
   } = useChat(chatId ?? null, onConversationCreated)
+
+  const isInputDisabled = isStreaming || isRetrieving || isThinking
+  const isNewChatStreaming =
+    !chatId && hasSentMessage && activeConversationId === null
+
+  const shouldShowTransientState = chatId
+    ? activeConversationId === chatId
+    : hasSentMessage && activeConversationId === null
 
   const chatDivRef = useRef<HTMLDivElement | null>(null)
 
@@ -37,8 +46,10 @@ export default function Chat() {
     }
   }, [messages, streamingContent, isRetrieving])
 
-  if (!chatId && !hasSentMessage && !error) {
-    return <NewChatView onSubmit={sendMessage} />
+  if (!chatId && !isNewChatStreaming && !error) {
+    return (
+      <NewChatView onSubmit={sendMessage} isInputDisabled={isInputDisabled} />
+    )
   }
 
   return (
@@ -51,10 +62,11 @@ export default function Chat() {
       <ChatConversation
         ref={chatDivRef}
         messages={messages}
-        streamingContent={streamingContent}
-        isStreaming={isStreaming}
-        isRetrieving={isRetrieving}
-        isThinking={isThinking}
+        streamingContent={shouldShowTransientState ? streamingContent : ''}
+        isStreaming={shouldShowTransientState ? isStreaming : false}
+        isRetrieving={shouldShowTransientState ? isRetrieving : false}
+        isThinking={shouldShowTransientState ? isThinking : false}
+        isInputDisabled={isInputDisabled}
         onSubmit={sendMessage}
       />
     </>

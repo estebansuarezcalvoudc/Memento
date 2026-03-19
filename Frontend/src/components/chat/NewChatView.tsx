@@ -4,9 +4,13 @@ import ChatInput from './ChatInput'
 
 interface NewChatViewProps {
   onSubmit: (message: string) => void
+  isInputDisabled: boolean
 }
 
-export default function NewChatView({ onSubmit }: NewChatViewProps) {
+export default function NewChatView({
+  onSubmit,
+  isInputDisabled,
+}: NewChatViewProps) {
   const { t } = useTranslation()
 
   return (
@@ -14,7 +18,7 @@ export default function NewChatView({ onSubmit }: NewChatViewProps) {
       <h2 className="font-ubuntu text-4xl text-stone-900 dark:text-stone-100">
         {t('chat.howCanIHelp')}
       </h2>
-      <ChatInput onSubmit={onSubmit} />
+      <ChatInput onSubmit={onSubmit} disabled={isInputDisabled} />
     </div>
   )
 }

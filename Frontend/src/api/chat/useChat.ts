@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useCallback, useReducer, useRef } from 'react'
+import { useCallback, useEffect, useReducer, useRef } from 'react'
 
 import type { Message } from '../../types/chats'
 import { localISOString } from '../../utils/date'
@@ -13,6 +13,7 @@ export interface UseChatResult {
   isStreaming: boolean
   isRetrieving: boolean
   isThinking: boolean
+  activeConversationId: string | null
   hasSentMessage: boolean
   error: string | null
 }
@@ -25,6 +26,15 @@ export function useChat(
   const [state, dispatch] = useReducer(chatReducer, IDLE_STATE)
   const resolvedConvIdRef = useRef<string | null>(conversationId)
   const accumulatedTokensRef = useRef<string>('')
+  const wsRef = useRef<WebSocket | null>(null)
+
+  useEffect(
+    () => () => {
+      wsRef.current?.close()
+      wsRef.current = null
+    },
+    [],
+  )
 
   const sendMessage = useCallback(
     (message: string) => {
@@ -44,9 +54,12 @@ export function useChat(
         ])
       }
 
-      dispatch({ type: 'SEND_MESSAGE' })
+      dispatch({ type: 'SEND_MESSAGE', conversationId })
+
+      wsRef.current?.close()
 
       const ws = new WebSocket(buildWebSocketUrl(token))
+      wsRef.current = ws
 
       ws.onopen = () => {
         ws.send(
@@ -74,6 +87,9 @@ export function useChat(
       }
 
       ws.onclose = (event: CloseEvent) => {
+        if (wsRef.current === ws) {
+          wsRef.current = null
+        }
         if (event.code === 4001) {
           window.dispatchEvent(new Event('unauthorized'))
         } else if (!event.wasClean) {

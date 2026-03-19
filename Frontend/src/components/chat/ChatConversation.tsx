@@ -13,6 +13,7 @@ interface ChatConversationProps {
   isStreaming: boolean
   isRetrieving: boolean
   isThinking: boolean
+  isInputDisabled: boolean
   onSubmit: (message: string) => void
 }
 
@@ -24,6 +25,7 @@ const ChatConversation = forwardRef<HTMLDivElement, ChatConversationProps>(
       isStreaming,
       isRetrieving,
       isThinking,
+      isInputDisabled,
       onSubmit,
     },
     ref,
@@ -62,10 +64,7 @@ const ChatConversation = forwardRef<HTMLDivElement, ChatConversationProps>(
           </ul>
         </div>
         <div className="sticky bottom-0 bg-white pt-1.5 dark:bg-stone-800">
-          <ChatInput
-            onSubmit={onSubmit}
-            disabled={isStreaming || isRetrieving}
-          />
+          <ChatInput onSubmit={onSubmit} disabled={isInputDisabled} />
         </div>
       </div>
     )
