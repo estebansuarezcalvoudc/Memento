@@ -1,4 +1,5 @@
 import json
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from bson import ObjectId
@@ -33,6 +34,14 @@ def _mongo_side_effect_new_conv(conversation_id: str):
         return _USER_DATA
 
     return side_effect
+
+
+def _find_title_update_call(mock_mongo):
+    for call in mock_mongo.update_one.call_args_list:
+        update_doc = call[0][1]
+        if "$set" in update_doc and update_doc["$set"].get("title"):
+            return call
+    return None
 
 
 class TestChatWebSocketCreateConversation:
@@ -83,3 +92,46 @@ class TestChatWebSocketCreateConversation:
                 "/conversations/ws?token=invalid.token.here"
             ) as ws:
                 ws.receive_text()
+
+    def test_create_conversation_should_emit_title_event_and_persist_generated_title(
+        self,
+        client: TestClient,
+        auth_headers: dict,
+        mock_mongo,
+        mock_rag_get_reply_stream,
+    ):
+        mock_mongo.insert_one.return_value.inserted_id = ObjectId(VALID_CONV_ID)
+        mock_mongo.find_one.side_effect = _mongo_side_effect_new_conv(VALID_CONV_ID)
+        token = auth_headers["Authorization"].split(" ")[1]
+
+        with patch(
+            "app.services.conversation.rag.Rag.generate_title",
+            new_callable=AsyncMock,
+            return_value="Auto generated title",
+        ):
+            with client.websocket_connect(f"/conversations/ws?token={token}") as ws:
+                ws.send_text(json.dumps(_REQUEST))
+
+                first = json.loads(ws.receive_text())
+                assert first["type"] == "conversation_created"
+
+                second = json.loads(ws.receive_text())
+                assert second["type"] == "retrieving"
+
+                messages = []
+                while True:
+                    msg = json.loads(ws.receive_text())
+                    messages.append(msg)
+                    if msg["type"] in ("done", "error"):
+                        break
+
+        event_types = [m["type"] for m in messages]
+        assert "title" in event_types
+        assert event_types.index("title") < event_types.index("done")
+
+        title_events = [m for m in messages if m["type"] == "title"]
+        assert title_events[-1]["title"] == "Auto generated title"
+
+        title_update_call = _find_title_update_call(mock_mongo)
+        assert title_update_call is not None
+        assert title_update_call[0][1]["$set"]["title"] == "Auto generated title"

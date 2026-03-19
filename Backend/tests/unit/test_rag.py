@@ -157,7 +157,7 @@ class TestFormatDocs:
 
 
 class TestGenerateTitle:
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_generate_title_should_strip_think_block_from_model_response(self):
         mock_repo = MagicMock()
         mock_repo.get_chat_model.return_value = ModelConfig(
@@ -179,7 +179,7 @@ class TestGenerateTitle:
 
         assert title == "My Title"
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_generate_title_should_fallback_to_new_chat_when_only_unclosed_think(
         self,
     ):
@@ -201,7 +201,7 @@ class TestGenerateTitle:
 
         assert title == "New chat"
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_generate_title_should_strip_thinking_block_from_model_response(
         self,
     ):

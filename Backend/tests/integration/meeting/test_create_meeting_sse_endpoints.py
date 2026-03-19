@@ -166,6 +166,9 @@ class TestCreateMeetingsSSEEndpoint:
 
         assert events[4]["index"] == 1
         assert events[4]["title"] == "Retro"
-        assert "transcription failure" in events[4]["error"]
+        assert (
+            "An unexpected error occurred while processing this meeting."
+            in events[4]["error"]
+        )
         assert events[5]["meetings_succeeded"] == 1
         assert events[5]["meetings_failed"] == 1

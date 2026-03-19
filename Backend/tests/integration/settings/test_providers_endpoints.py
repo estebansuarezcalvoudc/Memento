@@ -19,7 +19,7 @@ class TestProvidersEndpoints:
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
-        assert len(data) == 2
+        assert len(data) == 3
 
         openai = next(p for p in data if p["name"] == "OpenAI")
         assert openai["requires_api_key"] is True
@@ -28,6 +28,10 @@ class TestProvidersEndpoints:
         ollama = next(p for p in data if p["name"] == "Ollama")
         assert ollama["requires_api_key"] is False
         assert ollama["has_api_key"] is None
+
+        anthropic = next(p for p in data if p["name"] == "Anthropic")
+        assert anthropic["requires_api_key"] is True
+        assert anthropic["has_api_key"] is False
 
     def test_get_providers_should_indicate_when_api_key_exists(
         self, client: TestClient, auth_headers: dict, mock_mongo
