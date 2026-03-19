@@ -5,6 +5,7 @@ from langchain_core.documents import Document
 from langchain_core.vectorstores import VectorStore
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+from app.repositories.interfaces.settings_repo import SettingsRepository
 from app.schemas.meeting.meeting_events import (
     JobFinished,
     JobStarted,
@@ -17,12 +18,10 @@ from app.schemas.meeting.meeting_events import (
 from ...core.logging import setup_logger
 from ...repositories.interfaces.meeting_repo import MeetingRepository
 from ...schemas.meeting.meeting_schema import (
-    CreateMeetingsBatchRequest,
     MeetingMetadata,
     MeetingMetadataResponse,
     MeetingSummaryResponse,
     MeetingTranscriptionResponse,
-    ProcessingConfiguration,
     UpdateMeetingMetadata,
 )
 from ...services.transcription.interfaces.transcription_service import (
@@ -39,26 +38,28 @@ _TEXT_SPLITTER = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=2
 class MeetingService(metaclass=SingletonMeta):
     def __init__(
         self,
-        repository: MeetingRepository,
+        meetings_repository: MeetingRepository,
+        settings_repository: SettingsRepository,
         transcription_service: TranscriptionService,
         vector_store: VectorStore,
     ) -> None:
-        self._repository: MeetingRepository = repository
+        self._meeting_repository: MeetingRepository = meetings_repository
+        self._settings_repository: SettingsRepository = settings_repository
         self._transcription_service = transcription_service
         self._vector_store = vector_store
 
     async def process_meetings(
         self,
-        batch_request: CreateMeetingsBatchRequest,
+        meetings_metadata: list[MeetingMetadata],
         audio_bytes_list: list[bytes],
         user_id: str,
     ) -> AsyncIterable[MeetingUploadEvent]:
-        number_of_meetings = len(batch_request.meetings_metadata)
+        number_of_meetings = len(meetings_metadata)
 
         yield JobStarted(total_meetings=number_of_meetings)
         _logger.info(f"JobStarted - {number_of_meetings} meetings")
 
-        meetings = zip(batch_request.meetings_metadata, audio_bytes_list)
+        meetings = zip(meetings_metadata, audio_bytes_list)
 
         succeeded = 0
         failed = 0
@@ -72,7 +73,6 @@ class MeetingService(metaclass=SingletonMeta):
                     self._process_single_meeting,
                     metadata,
                     audio_bytes,
-                    batch_request.processing_configuration,
                     user_id,
                 )
                 succeeded += 1
@@ -101,7 +101,6 @@ class MeetingService(metaclass=SingletonMeta):
         self,
         meeting_metadata: MeetingMetadata,
         audio_bytes: bytes,
-        processing_config: ProcessingConfiguration,
         user_id: str,
     ) -> MeetingMetadataResponse:
         result = self._transcription_service.transcribe(
@@ -109,9 +108,9 @@ class MeetingService(metaclass=SingletonMeta):
         )
         meeting_metadata.language = result.language
 
-        summary = get_meeting_summary(result.text, processing_config, user_id)
+        summary = get_meeting_summary(result.text, self._settings_repository, user_id)
 
-        created_meeting = self._repository.store_meeting(
+        created_meeting = self._meeting_repository.store_meeting(
             meeting_metadata, summary, result.text, user_id
         )
 
@@ -152,20 +151,20 @@ class MeetingService(metaclass=SingletonMeta):
     def retrieve_all_meetings_metadata(
         self, user_id: str
     ) -> list[MeetingMetadataResponse]:
-        return self._repository.retrieve_all_meetings_metadata(user_id)
+        return self._meeting_repository.retrieve_all_meetings_metadata(user_id)
 
     def retrieve_meeting_summary(self, id: str, user_id: str) -> MeetingSummaryResponse:
-        return self._repository.retrieve_meeting_summary(id, user_id)
+        return self._meeting_repository.retrieve_meeting_summary(id, user_id)
 
     def retrieve_meeting_transcription(
         self, id: str, user_id: str
     ) -> MeetingTranscriptionResponse:
-        return self._repository.retrieve_meeting_transcription(id, user_id)
+        return self._meeting_repository.retrieve_meeting_transcription(id, user_id)
 
     def update_meeting(
         self, id: str, meeting_data: UpdateMeetingMetadata, user_id: str
     ) -> None:
-        self._repository.update_meeting_metadata(id, meeting_data, user_id)
+        self._meeting_repository.update_meeting_metadata(id, meeting_data, user_id)
         self._update_vector_store_metadata(id, meeting_data)
 
     def _update_vector_store_metadata(
@@ -190,5 +189,5 @@ class MeetingService(metaclass=SingletonMeta):
         )
 
     def delete_meeting(self, meeting_id: str, user_id: str) -> None:
-        self._repository.delete_meeting(meeting_id, user_id)
+        self._meeting_repository.delete_meeting(meeting_id, user_id)
         self._vector_store.delete(where={"meeting_id": meeting_id})

@@ -12,10 +12,7 @@ export async function processUploadMeetings(
 ): Promise<UploadMeetingsState> {
   try {
     const backendFormData = new FormData()
-    backendFormData.append(
-      'meetings_data',
-      JSON.stringify({ meetings_metadata: meetingsMetadata }),
-    )
+    backendFormData.append('meetings_data', JSON.stringify(meetingsMetadata))
 
     audioFiles.forEach(file => backendFormData.append('audios', file))
 
@@ -31,8 +28,7 @@ export async function processUploadMeetings(
       errors: [],
       meetingStatuses: [],
       lastEvent: null,
-      errorMessage:
-        error instanceof Error ? error.message : String(error),
+      errorMessage: error instanceof Error ? error.message : String(error),
     }
   }
 }
