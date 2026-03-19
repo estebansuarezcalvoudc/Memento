@@ -14,7 +14,9 @@ from ..repositories.implementations.mongo.conversation_mongo_repo import (
 from ..repositories.implementations.mongo.meeting_mongo_repo import (
     MeetingMongoRepository,
 )
-from ..repositories.implementations.mongo.settings_repo import SettingsMongoRepository
+from ..repositories.implementations.mongo.settings_mongo_repo import (
+    SettingsMongoRepository,
+)
 from ..services.auth.auth_service import AuthService
 from ..services.conversation.conversation_service import ConversationService
 from ..services.conversation.rag import Rag
@@ -85,7 +87,10 @@ def get_conversation_service() -> ConversationService:
 
 def get_meeting_service() -> MeetingService:
     return MeetingService(
-        MeetingMongoRepository(), get_transcription_service(), get_vector_store()
+        MeetingMongoRepository(),
+        SettingsMongoRepository(),
+        get_transcription_service(),
+        get_vector_store(),
     )
 
 

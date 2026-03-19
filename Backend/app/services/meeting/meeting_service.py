@@ -5,6 +5,8 @@ from langchain_core.documents import Document
 from langchain_core.vectorstores import VectorStore
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+from app.repositories.interfaces import settings_repo
+from app.repositories.interfaces.settings_repo import SettingsRepository
 from app.schemas.meeting.meeting_events import (
     JobFinished,
     JobStarted,
@@ -37,11 +39,13 @@ _TEXT_SPLITTER = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=2
 class MeetingService(metaclass=SingletonMeta):
     def __init__(
         self,
-        repository: MeetingRepository,
+        meetings_repository: MeetingRepository,
+        settings_repository: SettingsRepository,
         transcription_service: TranscriptionService,
         vector_store: VectorStore,
     ) -> None:
-        self._repository: MeetingRepository = repository
+        self._meeting_repository: MeetingRepository = meetings_repository
+        self._settings_repository: SettingsRepository = settings_repository
         self._transcription_service = transcription_service
         self._vector_store = vector_store
 
@@ -105,9 +109,9 @@ class MeetingService(metaclass=SingletonMeta):
         )
         meeting_metadata.language = result.language
 
-        summary = get_meeting_summary(result.text, self._repository, user_id)
+        summary = get_meeting_summary(result.text, self._settings_repository, user_id)
 
-        created_meeting = self._repository.store_meeting(
+        created_meeting = self._meeting_repository.store_meeting(
             meeting_metadata, summary, result.text, user_id
         )
 
@@ -148,20 +152,20 @@ class MeetingService(metaclass=SingletonMeta):
     def retrieve_all_meetings_metadata(
         self, user_id: str
     ) -> list[MeetingMetadataResponse]:
-        return self._repository.retrieve_all_meetings_metadata(user_id)
+        return self._meeting_repository.retrieve_all_meetings_metadata(user_id)
 
     def retrieve_meeting_summary(self, id: str, user_id: str) -> MeetingSummaryResponse:
-        return self._repository.retrieve_meeting_summary(id, user_id)
+        return self._meeting_repository.retrieve_meeting_summary(id, user_id)
 
     def retrieve_meeting_transcription(
         self, id: str, user_id: str
     ) -> MeetingTranscriptionResponse:
-        return self._repository.retrieve_meeting_transcription(id, user_id)
+        return self._meeting_repository.retrieve_meeting_transcription(id, user_id)
 
     def update_meeting(
         self, id: str, meeting_data: UpdateMeetingMetadata, user_id: str
     ) -> None:
-        self._repository.update_meeting_metadata(id, meeting_data, user_id)
+        self._meeting_repository.update_meeting_metadata(id, meeting_data, user_id)
         self._update_vector_store_metadata(id, meeting_data)
 
     def _update_vector_store_metadata(
@@ -186,5 +190,5 @@ class MeetingService(metaclass=SingletonMeta):
         )
 
     def delete_meeting(self, meeting_id: str, user_id: str) -> None:
-        self._repository.delete_meeting(meeting_id, user_id)
+        self._meeting_repository.delete_meeting(meeting_id, user_id)
         self._vector_store.delete(where={"meeting_id": meeting_id})
