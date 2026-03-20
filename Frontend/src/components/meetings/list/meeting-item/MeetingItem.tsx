@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { type Meeting } from '../../../../types/meetings'
 import MeetingItemEdit from './MeetingItemEdit'
@@ -26,6 +26,25 @@ export default function MeetingItem({
     title: meeting.title,
     date: meeting.date,
   })
+  const [isDeleteOnCooldown, setIsDeleteOnCooldown] = useState(false)
+  const wasEditingRef = useRef(editState.isEditing)
+
+  useEffect(() => {
+    const wasEditing = wasEditingRef.current
+    wasEditingRef.current = editState.isEditing
+
+    if (wasEditing && !editState.isEditing) {
+      setIsDeleteOnCooldown(true)
+
+      const timeoutId = window.setTimeout(() => {
+        setIsDeleteOnCooldown(false)
+      }, 2000)
+
+      return () => {
+        window.clearTimeout(timeoutId)
+      }
+    }
+  }, [editState.isEditing])
 
   return (
     <div
@@ -43,6 +62,7 @@ export default function MeetingItem({
           meeting={meeting}
           index={index}
           setEditState={setEditState}
+          isDeleteOnCooldown={isDeleteOnCooldown}
         />
       )}
     </div>

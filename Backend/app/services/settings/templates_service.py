@@ -1,3 +1,5 @@
+from app.core.logging import setup_logger
+
 from ...repositories.interfaces.settings_repo import SettingsRepository
 from ...schemas.settings.templates_schema import (
     DEFAULT_PROMPT,
@@ -13,7 +15,15 @@ class TemplatesService:
     def __init__(self, settings_repo: SettingsRepository):
         self.settings_repo = settings_repo
 
-    def get_user_prompt(self, user_id: str) -> SystemPromptResponse:
+    @staticmethod
+    def _normalize_prompt(prompt: str) -> str:
+        return prompt.replace("\r\n", "\n").strip()
+
+    @staticmethod
+    def _normalize_lang(lang: str) -> str:
+        return (lang or "en").split("-")[0].lower()
+
+    def get_user_prompt(self, user_id: str, lang: str) -> SystemPromptResponse:
         """
         Get user's system prompt (returns default if not set)
 
@@ -23,9 +33,22 @@ class TemplatesService:
         Returns:
             SystemPromptResponse with user's prompt or default
         """
-        custom_prompt = self.settings_repo.get_system_prompt(user_id)
+        normalized_lang = self._normalize_lang(lang)
+        prompt = self.settings_repo.get_system_prompt(user_id)
 
-        prompt = custom_prompt if custom_prompt else DEFAULT_PROMPT
+        default_prompts_normalized = {
+            self._normalize_prompt(default_prompt)
+            for default_prompt in DEFAULT_PROMPTS.values()
+        }
+
+        prompt = prompt
+        is_default_prompt = (
+            prompt is not None
+            and self._normalize_prompt(prompt) in default_prompts_normalized
+        )
+
+        if prompt is None or is_default_prompt:
+            prompt = DEFAULT_PROMPTS.get(normalized_lang, DEFAULT_PROMPT)
 
         return SystemPromptResponse(system_prompt=prompt)
 
@@ -57,5 +80,6 @@ class TemplatesService:
             SystemPromptResponse with the default prompt for the requested language,
             falling back to English for any unsupported locale
         """
-        prompt = DEFAULT_PROMPTS.get(lang, DEFAULT_PROMPT)
+        normalized_lang = self._normalize_lang(lang)
+        prompt = DEFAULT_PROMPTS.get(normalized_lang, DEFAULT_PROMPT)
         return SystemPromptResponse(system_prompt=prompt)

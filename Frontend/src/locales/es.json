@@ -166,7 +166,7 @@
       "paginationNext": "Sig"
     },
     "uploadDialog": {
-      "title": "Subir Archivos",
+      "title": "Subir Reuniones",
       "columns": {
         "number": "#",
         "status": "Estado",

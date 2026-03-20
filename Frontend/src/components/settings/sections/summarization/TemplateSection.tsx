@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -18,15 +18,22 @@ type Draft = { kind: 'default' } | { kind: 'custom'; text: string }
 
 export default function TemplateSection() {
   const { t, i18n } = useTranslation()
-  const { data: promptData, isLoading } = useGetSummarizationPrompt()
-  const { data: defaultData } = useGetDefaultSummarizationPrompt(i18n.language)
+  const currentLanguage = i18n.language?.startsWith('es') ? 'es' : 'en'
+  const { data: promptData, isLoading } =
+    useGetSummarizationPrompt(currentLanguage)
+  const { data: defaultData } =
+    useGetDefaultSummarizationPrompt(currentLanguage)
   const {
-    mutate: updatePrompt,
+    mutateAsync: updatePrompt,
     isPending,
     isError,
-  } = useUpdateSummarizationPrompt()
+  } = useUpdateSummarizationPrompt(currentLanguage)
 
   const [draft, setDraft] = useState<Draft | undefined>(undefined)
+
+  useEffect(() => {
+    setDraft(undefined)
+  }, [currentLanguage])
 
   const value =
     draft === undefined
@@ -40,8 +47,9 @@ export default function TemplateSection() {
   const tooLong = value.length > MAX
   const invalid = tooShort || tooLong
 
-  function handleSave() {
-    updatePrompt(value, { onSuccess: () => setDraft(undefined) })
+  async function handleSave() {
+    await updatePrompt(value)
+    setDraft(undefined)
   }
 
   return (

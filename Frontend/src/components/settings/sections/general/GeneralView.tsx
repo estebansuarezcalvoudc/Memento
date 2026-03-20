@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import i18n from 'i18next'
 import { useTranslation } from 'react-i18next'
 
@@ -11,6 +12,7 @@ import Select from '../../../ui/inputs/Select'
 
 export default function GeneralView() {
   const { t } = useTranslation()
+  const queryClient = useQueryClient()
   const theme = useTheme()
   const setTheme = useSetTheme()
   const [pageSize, setPageSize] = useMeetingListPageSize()
@@ -31,7 +33,13 @@ export default function GeneralView() {
       <Select
         label={t('settings.general.language')}
         value={currentLanguage}
-        onChange={e => i18n.changeLanguage(e.target.value)}
+        onChange={e => {
+          const language = e.target.value
+          i18n.changeLanguage(language)
+          queryClient.removeQueries({
+            predicate: query => query.options.meta?.dependsOnLanguage === true,
+          })
+        }}
       >
         <option value="en">{t('settings.general.languageEnglish')}</option>
         <option value="es">{t('settings.general.languageSpanish')}</option>
