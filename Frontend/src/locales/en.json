@@ -166,7 +166,7 @@
       "paginationNext": "Next"
     },
     "uploadDialog": {
-      "title": "Upload Files",
+      "title": "Upload Meetings",
       "columns": {
         "number": "#",
         "status": "Status",
