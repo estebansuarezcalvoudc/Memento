@@ -1,3 +1,5 @@
+import { ClipLoader } from 'react-spinners'
+
 import { type MeetingProcessingStatus } from '../../../../api/meetings/useUploadMeetings'
 import {
   check,
@@ -23,11 +25,8 @@ export default function MeetingStatusIcon({ status }: MeetingStatusIconProps) {
       )
     case 'processing':
       return (
-        <span role="img" aria-label="Processing">
-          <span
-            className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-stone-300 border-t-blue-500"
-            aria-hidden="true"
-          />
+        <span role="img" aria-label="Processing" className="text-blue-500">
+          <ClipLoader size={14} color="currentColor" />
         </span>
       )
     case 'succeeded':
