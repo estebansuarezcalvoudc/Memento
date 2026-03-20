@@ -26,7 +26,7 @@ export default function ChatItem({ chatId, chatTitle }: ChatItemProps) {
   return (
     <li>
       <div
-        className={`flex w-full items-center rounded-xl hover:bg-stone-300 dark:hover:bg-stone-700 ${isActive ? 'bg-stone-200 dark:bg-stone-700' : ''}`}
+        className={`flex w-full items-center rounded-xl hover:bg-stone-200 dark:hover:bg-stone-700 ${isActive ? 'bg-stone-200 dark:bg-stone-700' : ''}`}
         onMouseEnter={() => setDivIsHovered(true)}
         onMouseLeave={() => setDivIsHovered(false)}
       >
