@@ -25,7 +25,7 @@ export interface MeetingFormProps {
 const meetingFormBaseGridCols = 'grid-cols-[14px_18px_minmax(0,1fr)_32px_32px]'
 
 export const meetingFormGridCols =
-  'min-[800px]:grid-cols-[14px_48px_minmax(210px,300px)_140px_minmax(132px,180px)_28px_28px]'
+  'min-[800px]:grid-cols-[22px_62px_minmax(210px,300px)_140px_minmax(132px,180px)_28px_28px]'
 
 const resetPlacementClass = 'min-[800px]:col-auto min-[800px]:row-auto'
 
