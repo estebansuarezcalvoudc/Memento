@@ -10,12 +10,14 @@ interface MeetingItemViewProps {
   meeting: Meeting
   index: number
   setEditState: (state: EditState) => void
+  isDeleteOnCooldown: boolean
 }
 
 export default function MeetingItemView({
   meeting,
   index,
   setEditState,
+  isDeleteOnCooldown,
 }: MeetingItemViewProps) {
   const { mutate: deleteMeeting, isPending } = useDeleteMeeting()
 
@@ -58,7 +60,7 @@ export default function MeetingItemView({
         onClick={handleDelete}
         bgColor="hover:bg-red-300"
         textColor="hover:text-red-800"
-        disabled={isPending}
+        disabled={isPending || isDeleteOnCooldown}
         ariaLabel="Delete"
       />
     </>
