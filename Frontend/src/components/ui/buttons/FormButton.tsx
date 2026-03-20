@@ -12,7 +12,7 @@ export default function FormButton({
   return (
     <button
       disabled={isPending}
-      className={`font-ubuntu h-10 cursor-pointer rounded-lg bg-lime-400 px-4 py-2 text-lg text-stone-800 hover:bg-lime-500 disabled:opacity-50 ${classes ?? ''}`}
+      className={`font-ubuntu mt-7 h-10 w-full cursor-pointer rounded-lg bg-lime-400 text-lg text-stone-800 hover:bg-lime-500 disabled:opacity-50 ${classes ?? ''}`}
     >
       {text}
     </button>
