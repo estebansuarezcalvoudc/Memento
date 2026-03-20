@@ -24,7 +24,9 @@ class TestTemplatesEndpoints:
             "password": "$2b$12$test_hashed_password",
         }
 
-        response = client.get("/settings/templates/prompt", headers=auth_headers)
+        response = client.get(
+            "/settings/templates/prompt?lang=en", headers=auth_headers
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -41,7 +43,9 @@ class TestTemplatesEndpoints:
             "settings": {"templates": {"system_prompt": custom_prompt}},
         }
 
-        response = client.get("/settings/templates/prompt", headers=auth_headers)
+        response = client.get(
+            "/settings/templates/prompt?lang=en", headers=auth_headers
+        )
 
         assert response.status_code == 200
         data = response.json()

@@ -30,6 +30,7 @@ def get_default_prompt(
 
 @router.get("/prompt", response_model=SystemPromptResponse)
 def get_user_prompt(
+    lang: str,
     user: Annotated[User, Depends(get_current_active_user)],
     service: Annotated[TemplatesService, Depends(get_templates_service)],
 ) -> SystemPromptResponse:
@@ -39,7 +40,7 @@ def get_user_prompt(
     Returns the user's custom prompt if configured, otherwise returns the default
     system prompt.
     """
-    return service.get_user_prompt(user.id)
+    return service.get_user_prompt(user.id, lang)
 
 
 @router.put("/prompt", response_model=SystemPromptResponse)
