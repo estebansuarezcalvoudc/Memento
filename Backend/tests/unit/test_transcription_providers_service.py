@@ -115,3 +115,15 @@ class TestTranscriptionProvidersService:
             service.get_transcription_service_for_user("user123")
 
         create_service.assert_called_once_with("whisperx", repo)
+
+    def test_delete_provider_api_key_should_fallback_to_whisperx_when_active(self):
+        service, repo = _make_service(active_provider="aai", has_aai_key=True)
+
+        service.delete_provider_api_key("user123", "aai")
+
+        repo.delete_transcription_provider_api_key.assert_called_once_with(
+            "user123", "aai"
+        )
+        repo.set_transcription_active_provider.assert_called_once_with(
+            "user123", "whisperx"
+        )

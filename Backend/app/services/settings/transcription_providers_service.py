@@ -91,6 +91,13 @@ class TranscriptionProvidersService:
         self._validate_provider(provider_name)
         self._repository.delete_transcription_provider_api_key(user_id, provider_name)
 
+        active_provider = self._get_active_provider(user_id).provider
+        if (
+            provider_name == active_provider
+            and AVAILABLE_TRANSCRIPTION_PROVIDERS[provider_name]["requires_api_key"]
+        ):
+            self._repository.set_transcription_active_provider(user_id, "whisperx")
+
     def _validate_provider(self, provider_name: str) -> None:
         if provider_name not in AVAILABLE_TRANSCRIPTION_PROVIDERS:
             raise HTTPException(

@@ -160,18 +160,30 @@ class TestTranscriptionProvidersEndpoints:
     def test_delete_aai_api_key_should_remove_key(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
+        mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
+            "username": "test@example.com",
+            "password": "$2b$12$test_hashed_password",
+            "settings": {
+                "transcription": {
+                    "active_provider": "aai",
+                    "providers": {
+                        "aai": {"api_key_encrypted": "encrypted_key_here"},
+                    },
+                }
+            },
+        }
+
         response = client.delete(
             "/settings/transcription/providers/aai/api-key",
             headers=auth_headers,
         )
 
         assert response.status_code == 204
-        mock_mongo.update_one.assert_called_once()
-        call_args = mock_mongo.update_one.call_args
-        assert "$unset" in str(call_args)
-        assert "settings.transcription.providers.aai.api_key_encrypted" in str(
-            call_args
-        )
+        calls = str(mock_mongo.update_one.call_args_list)
+        assert "$unset" in calls
+        assert "settings.transcription.providers.aai.api_key_encrypted" in calls
+        assert "settings.transcription.active_provider" in calls
 
     def test_transcription_provider_endpoints_should_require_authentication(
         self, client: TestClient, mock_mongo
