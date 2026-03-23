@@ -1,25 +1,7 @@
-import os
 from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import HTTPException
-
-os.environ.setdefault("ENCRYPTION_KEY", "obiWVK9qLu_vz-2Kr540yaKuxxa2exJprn2THT2u6U0=")
-os.environ.setdefault("MONGO_USER", "test_user")
-os.environ.setdefault("MONGO_PASSWORD", "test_password")
-os.environ.setdefault("MONGO_HOST", "localhost")
-os.environ.setdefault("MONGO_PORT", "27017")
-os.environ.setdefault("SECRET_KEY", "test_secret_key_for_jwt_tokens")
-os.environ.setdefault("ALGORITHM", "HS256")
-os.environ.setdefault("ACCESS_TOKEN_EXPIRE_MINUTES", "30")
-os.environ.setdefault("OPENAI_KEY", "sk-test-key")
-os.environ.setdefault("HF_TOKEN", "test-hf-token")
-os.environ.setdefault("OLLAMA_HOST", "localhost")
-os.environ.setdefault("OLLAMA_PORT", "11434")
-os.environ.setdefault("CHROMA_HOST", "localhost")
-os.environ.setdefault("CHROMA_PORT", "8000")
-os.environ.setdefault("RAG_EMBEDDING_MODEL", "nomic-embed-text")
-os.environ.setdefault("RAG_COLLECTION_NAME", "meetings")
 
 from app.core.encryption import encrypt_api_key
 from app.services.settings.transcription_providers_service import (

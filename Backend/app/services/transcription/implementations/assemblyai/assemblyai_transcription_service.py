@@ -29,7 +29,8 @@ class AssemblyaiTranscriptionService(TranscriptionService):
         self, audio_bytes: bytes, language: str | None, user_id: str
     ) -> TranscriptionResult:
         api_key = self._get_user_api_key(user_id)
-        aai.settings.api_key = api_key
+        client = aai.client.Client(settings=aai.types.Settings(api_key=api_key))
+        transcriber = aai.Transcriber(client=client)
         user_config = self._get_user_config(user_id)
 
         config_kwargs: dict = {
@@ -44,7 +45,7 @@ class AssemblyaiTranscriptionService(TranscriptionService):
 
         config = aai.TranscriptionConfig(**config_kwargs)
 
-        transcript = aai.Transcriber().transcribe(BytesIO(audio_bytes), config=config)
+        transcript = transcriber.transcribe(BytesIO(audio_bytes), config=config)
 
         if transcript.status == aai.TranscriptStatus.error:
             self._logger.error(f"Transcription failed: {transcript.error}")
@@ -53,9 +54,12 @@ class AssemblyaiTranscriptionService(TranscriptionService):
                 detail="Error transcribing conversation",
             )
 
-        text = ""
-        for utt in transcript.utterances or []:
-            text += f"<p><strong>Speaker {utt.speaker}:</strong> {utt.text}</p>"
+        if transcript.utterances is None:
+            text = transcript.text or ""
+        else:
+            text = ""
+            for utt in transcript.utterances or []:
+                text += f"<p><strong>Speaker {utt.speaker}:</strong> {utt.text}</p>"
 
         return TranscriptionResult(text=text, language=str(transcript.language_code))
 
@@ -68,7 +72,7 @@ class AssemblyaiTranscriptionService(TranscriptionService):
         if not encrypted_api_key:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Provider aai requires API key configuration",
+                detail="AssemblyAI requires API key configuration",
             )
         return decrypt_api_key(encrypted_api_key)
 
@@ -121,13 +125,27 @@ class AssemblyaiTranscriptionService(TranscriptionService):
 
     def validate_api_key(self, api_key: str) -> None:
         try:
-            aai.settings.api_key = api_key
-            aai.Transcriber().transcribe(
-                "https://assembly.ai/wildfires.mp3",
-                config=aai.TranscriptionConfig(speech_model=aai.SpeechModel.nano),
+            client = aai.client.Client(
+                settings=aai.types.Settings(api_key=api_key, http_timeout=15.0)
             )
+            aai.Transcriber(client=client).list_transcripts(
+                params=aai.types.ListTranscriptParameters(limit=1)
+            )
+        except aai.AssemblyAIError as e:
+            if e.status_code in {
+                status.HTTP_401_UNAUTHORIZED,
+                status.HTTP_403_FORBIDDEN,
+            }:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid API key for aai",
+                ) from e
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Could not validate API key right now. Please try again.",
+            ) from e
         except Exception as e:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid API key for aai",
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Could not validate API key right now. Please try again.",
             ) from e

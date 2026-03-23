@@ -19,6 +19,6 @@ export type TranscriptionProviderName = 'whisperx' | 'aai'
 export interface TranscriptionProvider {
   name: TranscriptionProviderName
   requiresApiKey: boolean
-  hasApiKey?: boolean
+  hasApiKey: boolean | null
   isActive: boolean
 }

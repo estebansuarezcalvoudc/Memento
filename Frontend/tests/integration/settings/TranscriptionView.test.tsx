@@ -17,6 +17,20 @@ describe('TranscriptionView', () => {
     expect(screen.getByText('Loading...')).toBeInTheDocument()
   })
 
+  it('shows error state when a transcription query fails', async () => {
+    server.use(
+      http.get(
+        '/api/settings/transcription/providers',
+        withAuth(() => new HttpResponse(null, { status: 500 })),
+      ),
+    )
+
+    setAuthToken()
+    renderWithRouter(<TranscriptionView />)
+
+    expect(await screen.findByText('Something went wrong')).toBeInTheDocument()
+  })
+
   it('renders WhisperX and AssemblyAI sections after initial load', async () => {
     setAuthToken()
     renderWithRouter(<TranscriptionView />)

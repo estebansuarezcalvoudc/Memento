@@ -17,13 +17,19 @@ import WhisperXTranscriptionSection from './WhisperXTranscriptionSection'
 
 export default function TranscriptionView() {
   const { t } = useTranslation()
-  const { data: options } = useGetTranscriptionOptions()
-  const { data: config } = useGetTranscriptionConfiguration()
-  const { data: providers } = useGetTranscriptionProviders()
+  const optionsQuery = useGetTranscriptionOptions()
+  const configQuery = useGetTranscriptionConfiguration()
+  const providersQuery = useGetTranscriptionProviders()
+  const { data: options } = optionsQuery
+  const { data: config } = configQuery
+  const { data: providers } = providersQuery
   const { mutate: updateConfig } = useUpdateTranscriptionConfiguration()
   const { mutate: setActiveProvider } = useSetActiveTranscriptionProvider()
 
-  const isInitialLoading = !options || !config || !providers
+  const isInitialLoading =
+    optionsQuery.isLoading || configQuery.isLoading || providersQuery.isLoading
+  const hasError =
+    optionsQuery.isError || configQuery.isError || providersQuery.isError
   const whisperProvider = providers?.find(p => p.name === 'whisperx')
   const assemblyProvider = providers?.find(p => p.name === 'aai')
   const [lastWhisperOptions, setLastWhisperOptions] =
@@ -79,6 +85,8 @@ export default function TranscriptionView() {
     <>
       {isInitialLoading ? (
         <span>{t('settings.transcription.loading')}</span>
+      ) : hasError ? (
+        <span>{t('common.somethingWentWrong')}</span>
       ) : (
         <div className="flex flex-col gap-6">
           <WhisperXTranscriptionSection

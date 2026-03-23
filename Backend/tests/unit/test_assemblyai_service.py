@@ -7,23 +7,6 @@ import assemblyai as aai
 import pytest
 from fastapi import HTTPException
 
-os.environ.setdefault("ENCRYPTION_KEY", "obiWVK9qLu_vz-2Kr540yaKuxxa2exJprn2THT2u6U0=")
-os.environ.setdefault("MONGO_USER", "test_user")
-os.environ.setdefault("MONGO_PASSWORD", "test_password")
-os.environ.setdefault("MONGO_HOST", "localhost")
-os.environ.setdefault("MONGO_PORT", "27017")
-os.environ.setdefault("SECRET_KEY", "test_secret_key_for_jwt_tokens")
-os.environ.setdefault("ALGORITHM", "HS256")
-os.environ.setdefault("ACCESS_TOKEN_EXPIRE_MINUTES", "30")
-os.environ.setdefault("OPENAI_KEY", "sk-test-key")
-os.environ.setdefault("HF_TOKEN", "test-hf-token")
-os.environ.setdefault("OLLAMA_HOST", "localhost")
-os.environ.setdefault("OLLAMA_PORT", "11434")
-os.environ.setdefault("CHROMA_HOST", "localhost")
-os.environ.setdefault("CHROMA_PORT", "8000")
-os.environ.setdefault("RAG_EMBEDDING_MODEL", "nomic-embed-text")
-os.environ.setdefault("RAG_COLLECTION_NAME", "meetings")
-
 from app.services.transcription.implementations.assemblyai.assemblyai_transcription_service import (
     AssemblyaiTranscriptionService,
 )
@@ -45,22 +28,37 @@ class TestAssemblyAITranscriptionService:
         service, _repo = _make_service()
 
         with patch("assemblyai.Transcriber") as transcriber_cls:
-            transcriber_cls.return_value.transcribe.return_value = MagicMock()
+            transcriber_cls.return_value.list_transcripts.return_value = MagicMock()
 
             service.validate_api_key("aai-valid-key")
 
-        transcriber_cls.return_value.transcribe.assert_called_once()
+        transcriber_cls.return_value.list_transcripts.assert_called_once()
 
     def test_validate_api_key_should_raise_401_for_invalid_key(self):
         service, _repo = _make_service()
 
         with patch("assemblyai.Transcriber") as transcriber_cls:
-            transcriber_cls.return_value.transcribe.side_effect = Exception("invalid")
+            transcriber_cls.return_value.list_transcripts.side_effect = (
+                aai.AssemblyAIError("invalid", status_code=401)
+            )
 
             with pytest.raises(HTTPException) as exc_info:
                 service.validate_api_key("aai-invalid-key")
 
         assert exc_info.value.status_code == 401
+
+    def test_validate_api_key_should_raise_503_for_timeout_or_network_error(self):
+        service, _repo = _make_service()
+
+        with patch("assemblyai.Transcriber") as transcriber_cls:
+            transcriber_cls.return_value.list_transcripts.side_effect = Exception(
+                "timeout"
+            )
+
+            with pytest.raises(HTTPException) as exc_info:
+                service.validate_api_key("aai-key")
+
+        assert exc_info.value.status_code == 503
 
     def test_get_supported_languages_should_return_language_options_with_name(self):
         service, _repo = _make_service()
@@ -124,6 +122,7 @@ class TestAssemblyAITranscriptionService:
             status=aai.TranscriptStatus.completed,
             error=None,
             utterances=None,
+            text=None,
             language_code="en",
         )
 
