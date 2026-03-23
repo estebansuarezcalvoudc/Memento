@@ -17,71 +17,123 @@ describe('TranscriptionView', () => {
     expect(screen.getByText('Loading...')).toBeInTheDocument()
   })
 
-  it('renders the model size select with the configured value', async () => {
+  it('renders WhisperX and AssemblyAI sections after initial load', async () => {
     setAuthToken()
     renderWithRouter(<TranscriptionView />)
+
+    expect(await screen.findByText('WhisperX')).toBeInTheDocument()
+    expect(screen.getByText('AssemblyAI')).toBeInTheDocument()
+    expect(screen.getByLabelText('Model size')).toHaveValue('base')
+  })
+
+  it('keeps AssemblyAI selector disabled when API key is missing', async () => {
+    setAuthToken()
+    renderWithRouter(<TranscriptionView />)
+
+    const aaiRadio = await screen.findByRole('radio', { name: 'AssemblyAI' })
+    expect(aaiRadio).toBeDisabled()
+  })
+
+  it('enables AssemblyAI selector after adding API key', async () => {
+    const user = userEvent.setup()
+    setAuthToken()
+    renderWithRouter(<TranscriptionView />)
+
+    await user.click(await screen.findByRole('button', { name: 'Add API key' }))
+    await user.type(
+      screen.getByPlaceholderText('Enter your API key'),
+      'aai-valid',
+    )
+    await user.click(screen.getByRole('button', { name: 'Confirm' }))
+
     await waitFor(() =>
-      expect(screen.getByLabelText('Model size')).toHaveValue('base'),
+      expect(screen.getByRole('radio', { name: 'AssemblyAI' })).toBeEnabled(),
     )
   })
 
-  it('renders the compute type select with the configured value', async () => {
+  it('shows invalid API key error when adding a bad AssemblyAI key', async () => {
+    const user = userEvent.setup()
     setAuthToken()
     renderWithRouter(<TranscriptionView />)
-    await waitFor(() =>
-      expect(screen.getByLabelText('Compute type')).toHaveValue('float16'),
+
+    await user.click(await screen.findByRole('button', { name: 'Add API key' }))
+    await user.type(
+      screen.getByPlaceholderText('Enter your API key'),
+      'bad-key',
     )
+    await user.click(screen.getByRole('button', { name: 'Confirm' }))
+
+    expect(await screen.findByText('Invalid API key')).toBeInTheDocument()
   })
 
-  it('renders the device select with the configured value', async () => {
-    setAuthToken()
-    renderWithRouter(<TranscriptionView />)
-    await waitFor(() =>
-      expect(screen.getByLabelText('Device')).toHaveValue('cuda'),
-    )
-  })
+  it('changes active provider and sends PATCH /active-provider', async () => {
+    const user = userEvent.setup()
+    let patchPayload: unknown
 
-  it('shows available model size options', async () => {
-    setAuthToken()
-    renderWithRouter(<TranscriptionView />)
-    await screen.findByLabelText('Model size')
-    expect(screen.getByRole('option', { name: 'tiny' })).toBeInTheDocument()
-    expect(screen.getByRole('option', { name: 'large-v3' })).toBeInTheDocument()
-  })
-
-  it('shows the CUDA fallback warning when device is cuda', async () => {
-    setAuthToken()
-    renderWithRouter(<TranscriptionView />)
-    await screen.findByLabelText('Device')
-    expect(
-      screen.getByText(/transcription will automatically fall back to CPU/i),
-    ).toBeInTheDocument()
-  })
-
-  it('does not show the CUDA warning when device is cpu', async () => {
     server.use(
-      http.get(
-        '/api/settings/transcription/configuration',
-        withAuth(() =>
-          HttpResponse.json({
-            model_size: 'base',
-            compute_type: 'float16',
-            device: 'cpu',
-          }),
-        ),
+      http.patch(
+        '/api/settings/transcription/active-provider',
+        withAuth(async ({ request }) => {
+          patchPayload = await request.json()
+          return new HttpResponse(null, { status: 204 })
+        }),
       ),
     )
+
     setAuthToken()
     renderWithRouter(<TranscriptionView />)
-    await screen.findByLabelText('Device')
-    expect(
-      screen.queryByText(/transcription will automatically fall back to CPU/i),
-    ).not.toBeInTheDocument()
+
+    await user.click(await screen.findByRole('button', { name: 'Add API key' }))
+    await user.type(
+      screen.getByPlaceholderText('Enter your API key'),
+      'aai-valid',
+    )
+    await user.click(screen.getByRole('button', { name: 'Confirm' }))
+
+    const aaiRadio = screen.getByRole('radio', { name: 'AssemblyAI' })
+    await waitFor(() => expect(aaiRadio).toBeEnabled())
+    await user.click(aaiRadio)
+
+    await waitFor(() => expect(patchPayload).toEqual({ provider: 'aai' }))
   })
 
-  it('changing model size calls the PATCH endpoint', async () => {
+  it('applies provider switch optimistically and does not show initial loader again', async () => {
+    const user = userEvent.setup()
+
+    server.use(
+      http.patch(
+        '/api/settings/transcription/active-provider',
+        withAuth(async () => {
+          await new Promise(resolve => setTimeout(resolve, 150))
+          return new HttpResponse(null, { status: 204 })
+        }),
+      ),
+    )
+
+    setAuthToken()
+    renderWithRouter(<TranscriptionView />)
+
+    await user.click(await screen.findByRole('button', { name: 'Add API key' }))
+    await user.type(
+      screen.getByPlaceholderText('Enter your API key'),
+      'aai-valid',
+    )
+    await user.click(screen.getByRole('button', { name: 'Confirm' }))
+
+    const aaiRadio = screen.getByRole('radio', { name: 'AssemblyAI' })
+    await waitFor(() => expect(aaiRadio).toBeEnabled())
+    await user.click(aaiRadio)
+
+    expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
+    expect(screen.getByText('WhisperX')).toBeInTheDocument()
+    expect(screen.getByText('AssemblyAI')).toBeInTheDocument()
+    await waitFor(() => expect(aaiRadio).toBeChecked())
+  })
+
+  it('changing model size calls the configuration PATCH endpoint', async () => {
     const user = userEvent.setup()
     let patchedBody: unknown
+
     server.use(
       http.patch(
         '/api/settings/transcription/configuration',
@@ -95,58 +147,13 @@ describe('TranscriptionView', () => {
         }),
       ),
     )
+
     setAuthToken()
     renderWithRouter(<TranscriptionView />)
-    await screen.findByLabelText('Model size')
+    await waitFor(() =>
+      expect(screen.getByLabelText('Model size')).toHaveValue('base'),
+    )
     await user.selectOptions(screen.getByLabelText('Model size'), 'small')
     await waitFor(() => expect(patchedBody).toEqual({ model_size: 'small' }))
-  })
-
-  it('changing compute type calls the PATCH endpoint', async () => {
-    const user = userEvent.setup()
-    let patchedBody: unknown
-    server.use(
-      http.patch(
-        '/api/settings/transcription/configuration',
-        withAuth(async ({ request }) => {
-          patchedBody = await request.json()
-          return HttpResponse.json({
-            model_size: 'base',
-            compute_type: 'int8',
-            device: 'cuda',
-          })
-        }),
-      ),
-    )
-    setAuthToken()
-    renderWithRouter(<TranscriptionView />)
-    await screen.findByLabelText('Compute type')
-    await user.selectOptions(screen.getByLabelText('Compute type'), 'int8')
-    await waitFor(() => expect(patchedBody).toEqual({ compute_type: 'int8' }))
-  })
-
-  it('changing device calls the PATCH endpoint', async () => {
-    const user = userEvent.setup()
-    let patchedBody: unknown
-    server.use(
-      http.patch(
-        '/api/settings/transcription/configuration',
-        withAuth(async ({ request }) => {
-          patchedBody = await request.json()
-          return HttpResponse.json({
-            model_size: 'base',
-            compute_type: 'float16',
-            device: 'cpu',
-          })
-        }),
-      ),
-    )
-    setAuthToken()
-    renderWithRouter(<TranscriptionView />)
-    await screen.findByLabelText('Device')
-    await user.selectOptions(screen.getByLabelText('Device'), 'cpu')
-    await waitFor(() =>
-      expect(patchedBody).toEqual({ device: 'cpu', compute_type: 'int8' }),
-    )
   })
 })

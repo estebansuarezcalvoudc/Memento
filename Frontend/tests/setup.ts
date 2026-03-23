@@ -4,6 +4,7 @@ import '../src/i18n'
 import { afterAll, afterEach, beforeAll } from 'vitest'
 
 import { server } from './mocks/server'
+import { resetTranscriptionMockState } from './mocks/settings/transcriptionHandlers'
 
 // jsdom does not implement ResizeObserver (used by @headlessui/react)
 /* eslint-disable @typescript-eslint/no-empty-function */
@@ -27,6 +28,7 @@ beforeAll(() => {
 })
 afterEach(() => {
   server.resetHandlers()
+  resetTranscriptionMockState()
   localStorage.clear()
 })
 afterAll(() => server.close())
