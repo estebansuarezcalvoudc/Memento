@@ -21,7 +21,7 @@ import pytest
 def _make_service(settings_dict=None):
     """Return a WhisperXTranscriptionService with a mocked repo and no real GPU init."""
     mock_repo = MagicMock()
-    mock_repo.get_transcription_settings.return_value = settings_dict
+    mock_repo.get_transcription_provider_settings.return_value = settings_dict
 
     with patch(
         "app.services.transcription.implementations.whisperx"
@@ -164,8 +164,8 @@ class TestUpdateUserConfiguration:
     def test_update_user_configuration_should_persist_valid_data(self):
         service, mock_repo = _make_service()
         service.update_user_configuration("user123", {"model_size": "small"})
-        mock_repo.update_transcription_settings.assert_called_once_with(
-            "user123", {"model_size": "small"}
+        mock_repo.update_transcription_provider_settings.assert_called_once_with(
+            "user123", "whisperx", {"model_size": "small"}
         )
 
     def test_update_user_configuration_should_raise_422_for_invalid_device(self):
@@ -175,9 +175,9 @@ class TestUpdateUserConfiguration:
         with pytest.raises(HTTPException) as exc_info:
             service.update_user_configuration("user123", {"device": "tpu"})
         assert exc_info.value.status_code == 422
-        mock_repo.update_transcription_settings.assert_not_called()
+        mock_repo.update_transcription_provider_settings.assert_not_called()
 
     def test_update_user_configuration_should_not_call_repo_when_payload_is_empty(self):
         service, mock_repo = _make_service()
         service.update_user_configuration("user123", {})
-        mock_repo.update_transcription_settings.assert_not_called()
+        mock_repo.update_transcription_provider_settings.assert_not_called()

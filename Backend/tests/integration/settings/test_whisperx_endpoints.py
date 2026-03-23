@@ -93,9 +93,14 @@ class TestWhisperXEndpoints:
             "password": "$2b$12$test_hashed_password",
             "settings": {
                 "transcription": {
-                    "model_size": "medium",
-                    "compute_type": "float16",
-                    "device": "cuda",
+                    "active_provider": "whisperx",
+                    "providers": {
+                        "whisperx": {
+                            "model_size": "medium",
+                            "compute_type": "float16",
+                            "device": "cuda",
+                        }
+                    },
                 }
             },
         }
@@ -127,9 +132,14 @@ class TestWhisperXEndpoints:
                 "password": "$2b$12$test_hashed_password",
                 "settings": {
                     "transcription": {
-                        "model_size": "large",
-                        "compute_type": "float32",
-                        "device": "cuda",
+                        "active_provider": "whisperx",
+                        "providers": {
+                            "whisperx": {
+                                "model_size": "large",
+                                "compute_type": "float32",
+                                "device": "cuda",
+                            }
+                        },
                     }
                 },
             }
@@ -156,9 +166,11 @@ class TestWhisperXEndpoints:
 
         mock_mongo.update_one.assert_called_once()
         call_args = mock_mongo.update_one.call_args
-        assert "settings.transcription.model_size" in str(call_args)
-        assert "settings.transcription.compute_type" in str(call_args)
-        assert "settings.transcription.device" in str(call_args)
+        assert "settings.transcription.providers.whisperx.model_size" in str(call_args)
+        assert "settings.transcription.providers.whisperx.compute_type" in str(
+            call_args
+        )
+        assert "settings.transcription.providers.whisperx.device" in str(call_args)
 
     def test_update_whisperx_configuration_should_allow_partial_update(
         self, client: TestClient, auth_headers: dict, mock_mongo
@@ -178,8 +190,13 @@ class TestWhisperXEndpoints:
                 "password": "$2b$12$test_hashed_password",
                 "settings": {
                     "transcription": {
-                        "model_size": "large",  # Updated value
-                        "compute_type": "int8",  # Original value (not updated)
+                        "active_provider": "whisperx",
+                        "providers": {
+                            "whisperx": {
+                                "model_size": "large",  # Updated value
+                                "compute_type": "int8",  # Original value (not updated)
+                            }
+                        },
                     }
                 },
             }
@@ -200,8 +217,10 @@ class TestWhisperXEndpoints:
         mock_mongo.update_one.assert_called_once()
         call_args = mock_mongo.update_one.call_args
         update_dict = call_args[0][1]["$set"]
-        assert "settings.transcription.model_size" in update_dict
-        assert "settings.transcription.compute_type" not in update_dict  # Not updated
+        assert "settings.transcription.providers.whisperx.model_size" in update_dict
+        assert (
+            "settings.transcription.providers.whisperx.compute_type" not in update_dict
+        )  # Not updated
 
     def test_update_whisperx_configuration_should_save_device(
         self, client: TestClient, auth_headers: dict, mock_mongo
@@ -217,7 +236,12 @@ class TestWhisperXEndpoints:
                 "_id": ObjectId(TEST_USER_ID),
                 "username": "test@example.com",
                 "password": "$2b$12$test_hashed_password",
-                "settings": {"transcription": {"device": "cpu"}},
+                "settings": {
+                    "transcription": {
+                        "active_provider": "whisperx",
+                        "providers": {"whisperx": {"device": "cpu"}},
+                    }
+                },
             }
 
         mock_mongo.find_one.side_effect = mongo_side_effect
@@ -233,7 +257,7 @@ class TestWhisperXEndpoints:
         assert data["device"] == "cpu"
 
         call_args = mock_mongo.update_one.call_args
-        assert "settings.transcription.device" in str(call_args)
+        assert "settings.transcription.providers.whisperx.device" in str(call_args)
 
     def test_update_whisperx_configuration_should_reject_invalid_device(
         self, client: TestClient, auth_headers: dict, mock_mongo
@@ -265,9 +289,14 @@ class TestWhisperXEndpoints:
                 "password": "$2b$12$test_hashed_password",
                 "settings": {
                     "transcription": {
-                        "model_size": "small",
-                        "compute_type": "int8",
-                        "device": "cuda",
+                        "active_provider": "whisperx",
+                        "providers": {
+                            "whisperx": {
+                                "model_size": "small",
+                                "compute_type": "int8",
+                                "device": "cuda",
+                            }
+                        },
                     }
                 },
             }
@@ -286,7 +315,7 @@ class TestWhisperXEndpoints:
 
         call_args = mock_mongo.update_one.call_args
         update_dict = call_args[0][1]["$set"]
-        assert "settings.transcription.device" not in update_dict
+        assert "settings.transcription.providers.whisperx.device" not in update_dict
 
     def test_update_whisperx_configuration_should_reject_invalid_model_size(
         self, client: TestClient, auth_headers: dict, mock_mongo
@@ -338,8 +367,13 @@ class TestWhisperXEndpoints:
             "password": "$2b$12$test_hashed_password",
             "settings": {
                 "transcription": {
-                    "model_size": "base",
-                    "compute_type": "float16",
+                    "active_provider": "whisperx",
+                    "providers": {
+                        "whisperx": {
+                            "model_size": "base",
+                            "compute_type": "float16",
+                        }
+                    },
                 }
             },
         }
