@@ -40,10 +40,11 @@ export default function WhisperXTranscriptionSection({
         onSelect={() => onSelectProvider()}
       />
 
-      <div className={''}>
+      <div className={isActive ? '' : 'opacity-60'}>
         <Select
           label={t('settings.transcription.modelSize')}
           value={modelSize ?? ''}
+          disabled={!isActive}
           onChange={e => onUpdateConfiguration({ model_size: e.target.value })}
         >
           {(options?.models ?? []).map(m => (
@@ -56,6 +57,7 @@ export default function WhisperXTranscriptionSection({
         <Select
           label={t('settings.transcription.computeType')}
           value={computeType ?? ''}
+          disabled={!isActive}
           onChange={e =>
             onUpdateConfiguration({ compute_type: e.target.value })
           }
@@ -74,6 +76,7 @@ export default function WhisperXTranscriptionSection({
         <Select
           label={t('settings.transcription.device')}
           value={selectedDevice}
+          disabled={!isActive}
           onChange={e => {
             const newDevice = e.target.value
             const update: { device: string; compute_type?: string } = {
