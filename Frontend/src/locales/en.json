@@ -115,6 +115,9 @@
       "modelSize": "Model size",
       "computeType": "Compute type",
       "device": "Device",
+      "speechModel": "Speech model",
+      "invalidApiKey": "Invalid API key",
+      "removeApiKeyFailed": "Failed to remove API key. Please try again.",
       "cudaWarning": "If the GPU is unavailable or fails, transcription will automatically fall back to CPU using <strong>int8</strong> precision"
     },
     "summarization": {

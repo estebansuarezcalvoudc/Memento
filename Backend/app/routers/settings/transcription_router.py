@@ -6,7 +6,6 @@ from ...dependencies.auth_dependencies import get_current_active_user
 from ...dependencies.service_dependencies import get_transcription_providers_service
 from ...schemas.auth.auth_schema import User
 from ...schemas.settings.transcription_provider_schema import (
-    ActiveTranscriptionProviderResponse,
     ActiveTranscriptionProviderUpdate,
     TranscriptionProvider,
     TranscriptionProviderAPIKeyRequest,
@@ -17,16 +16,6 @@ from ...services.settings.transcription_providers_service import (
 )
 
 router = APIRouter(prefix="/transcription", tags=["Settings - Transcription"])
-
-
-@router.get("/active-provider", response_model=ActiveTranscriptionProviderResponse)
-def get_active_provider(
-    user: Annotated[User, Depends(get_current_active_user)],
-    providers_service: Annotated[
-        TranscriptionProvidersService, Depends(get_transcription_providers_service)
-    ],
-) -> ActiveTranscriptionProviderResponse:
-    return providers_service.get_active_provider(user.id)
 
 
 @router.get("/providers", response_model=list[TranscriptionProvider])

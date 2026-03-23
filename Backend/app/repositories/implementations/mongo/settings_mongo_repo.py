@@ -232,11 +232,7 @@ class SettingsMongoRepository(AbstractSettingsRepository):
     ) -> dict | None:
         user_data = self._collection.find_one(
             {"user_id": user_id},
-            {
-                f"settings.transcription.providers.{provider_name}": True,
-                "settings.transcription": True,
-                "_id": False,
-            },
+            {"settings.transcription": True, "_id": False},
         )
         if not user_data:
             return None

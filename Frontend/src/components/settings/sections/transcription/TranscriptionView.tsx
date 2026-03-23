@@ -1,88 +1,56 @@
-import { Trans, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 
 import {
   useGetTranscriptionConfiguration,
   useGetTranscriptionOptions,
+  useGetTranscriptionProviders,
+  useSetActiveTranscriptionProvider,
   useUpdateTranscriptionConfiguration,
 } from '../../../../api/queries/settings/useTranscriptionQueries'
-import Select from '../../../ui/inputs/Select'
-import SubSectionTitle from '../SubSectionTitle'
+import AssemblyAITranscriptionSection from './AssemblyAITranscriptionSection'
+import WhisperXTranscriptionSection from './WhisperXTranscriptionSection'
 
 export default function TranscriptionView() {
   const { t } = useTranslation()
-  const { data: options, isLoading: optionsLoading } =
-    useGetTranscriptionOptions()
-  const { data: config, isLoading: configLoading } =
-    useGetTranscriptionConfiguration()
+  const { data: options } = useGetTranscriptionOptions()
+  const { data: config } = useGetTranscriptionConfiguration()
+  const { data: providers } = useGetTranscriptionProviders()
   const { mutate: updateConfig } = useUpdateTranscriptionConfiguration()
+  const { mutate: setActiveProvider } = useSetActiveTranscriptionProvider()
 
-  const isLoading = optionsLoading || configLoading
-  const selectedDevice = config?.device ?? 'cuda'
+  const isInitialLoading = !options || !config || !providers
+  const whisperProvider = providers?.find(p => p.name === 'whisperx')
+  const assemblyProvider = providers?.find(p => p.name === 'aai')
+
+  function handleSelectProvider(providerName: 'whisperx' | 'aai') {
+    const provider = providers?.find(p => p.name === providerName)
+    if (!provider || provider.isActive) {
+      return
+    }
+    setActiveProvider(providerName)
+  }
 
   return (
     <>
-      {isLoading ? (
+      {isInitialLoading ? (
         <span>{t('settings.transcription.loading')}</span>
       ) : (
         <div className="flex flex-col gap-6">
-          <div>
-            <SubSectionTitle title="WhisperX" />
-            <Select
-              label={t('settings.transcription.modelSize')}
-              value={config?.modelSize ?? ''}
-              onChange={e => updateConfig({ model_size: e.target.value })}
-            >
-              {(options?.models ?? []).map(m => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </Select>
-            <Select
-              label={t('settings.transcription.computeType')}
-              value={config?.computeType ?? ''}
-              onChange={e => updateConfig({ compute_type: e.target.value })}
-            >
-              {(options?.computeTypes ?? []).map(c => (
-                <option
-                  key={c}
-                  value={c}
-                  disabled={selectedDevice === 'cpu' && c !== 'int8'}
-                >
-                  {c}
-                </option>
-              ))}
-            </Select>
-            <Select
-              label={t('settings.transcription.device')}
-              value={selectedDevice}
-              onChange={e => {
-                const newDevice = e.target.value
-                const update: { device: string; compute_type?: string } = {
-                  device: newDevice,
-                }
-                if (newDevice === 'cpu' && config?.computeType !== 'int8') {
-                  update.compute_type = 'int8'
-                }
-                updateConfig(update)
-              }}
-            >
-              {(options?.devices ?? []).map(d => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </Select>
-            {selectedDevice === 'cuda' && (
-              <p className="mt-1 text-sm text-yellow-600 dark:text-yellow-400">
-                <Trans i18nKey="settings.transcription.cudaWarning">
-                  If the GPU is unavailable or fails, transcription will
-                  automatically fall back to CPU using <strong>int8</strong>{' '}
-                  precision
-                </Trans>
-              </p>
-            )}
-          </div>
+          <WhisperXTranscriptionSection
+            options={options}
+            modelSize={config?.modelSize}
+            computeType={config?.computeType}
+            device={config?.device}
+            isActive={whisperProvider?.isActive ?? true}
+            onSelectProvider={() => handleSelectProvider('whisperx')}
+            onUpdateConfiguration={updateConfig}
+          />
+
+          <AssemblyAITranscriptionSection
+            hasApiKey={assemblyProvider?.hasApiKey ?? false}
+            isActive={assemblyProvider?.isActive ?? false}
+            onSelectProvider={() => handleSelectProvider('aai')}
+          />
         </div>
       )}
     </>

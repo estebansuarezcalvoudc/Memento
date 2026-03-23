@@ -20,12 +20,12 @@ class TranscriptionProvidersService:
         self._repository = repository
 
     def get_transcription_service_for_user(self, user_id: str) -> TranscriptionService:
-        provider = self.get_active_provider(user_id).provider
+        provider = self._get_active_provider(user_id).provider
         if provider == "aai":
             self._require_provider_api_key(user_id, provider)
         return create_transcription_service(provider, self._repository)
 
-    def get_active_provider(self, user_id: str) -> ActiveTranscriptionProviderResponse:
+    def _get_active_provider(self, user_id: str) -> ActiveTranscriptionProviderResponse:
         active = self._repository.get_transcription_active_provider(user_id)
         if active not in AVAILABLE_TRANSCRIPTION_PROVIDERS:
             active = "whisperx"
@@ -41,7 +41,7 @@ class TranscriptionProvidersService:
         return decrypt_api_key(encrypted_key)
 
     def get_providers(self, user_id: str) -> list[TranscriptionProvider]:
-        active = self.get_active_provider(user_id).provider
+        active = self._get_active_provider(user_id).provider
         providers: list[TranscriptionProvider] = []
         for provider_name, cfg in AVAILABLE_TRANSCRIPTION_PROVIDERS.items():
             has_api_key = None
