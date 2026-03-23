@@ -180,6 +180,53 @@ class SettingsRepository(ABC):
         pass
 
     @abstractmethod
+    def get_transcription_active_provider(self, user_id: str) -> str | None:
+        """Get active transcription provider for a user."""
+        pass
+
+    @abstractmethod
+    def set_transcription_active_provider(
+        self, user_id: str, provider_name: str
+    ) -> None:
+        """Set active transcription provider for a user."""
+        pass
+
+    @abstractmethod
+    def get_transcription_provider_settings(
+        self, user_id: str, provider_name: str
+    ) -> dict | None:
+        """Get provider-specific transcription settings for a user."""
+        pass
+
+    @abstractmethod
+    def update_transcription_provider_settings(
+        self, user_id: str, provider_name: str, data: dict
+    ) -> None:
+        """Partially update provider-specific transcription settings for a user."""
+        pass
+
+    @abstractmethod
+    def save_transcription_provider_api_key_encrypted(
+        self, user_id: str, provider_name: str, encrypted_api_key: str
+    ) -> None:
+        """Save encrypted API key for a transcription provider."""
+        pass
+
+    @abstractmethod
+    def get_transcription_provider_api_key_encrypted(
+        self, user_id: str, provider_name: str
+    ) -> Optional[str]:
+        """Get encrypted API key for a transcription provider."""
+        pass
+
+    @abstractmethod
+    def delete_transcription_provider_api_key(
+        self, user_id: str, provider_name: str
+    ) -> None:
+        """Delete API key for a transcription provider."""
+        pass
+
+    @abstractmethod
     def get_system_prompt(self, user_id: str) -> Optional[str]:
         """
         Get user's custom system prompt

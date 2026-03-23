@@ -2,12 +2,19 @@ from io import BytesIO
 
 import assemblyai as aai
 from fastapi import HTTPException, status
-from pydantic import BaseModel
+from pydantic import ValidationError
 
-from app.core.logging import setup_logger
-from app.repositories.interfaces.settings_repo import SettingsRepository
-from app.schemas.transcription.transcription_schema import LanguageOption
-from app.services.transcription.interfaces.transcription_service import (
+from .....core.encryption import decrypt_api_key
+from .....core.logging import setup_logger
+from .....repositories.interfaces.settings_repo import SettingsRepository
+from .....schemas.settings.assemblyai_schema import (
+    LANGUAGE_NAMES,
+    AssemblyAIAvailableOptions,
+    AssemblyAIConfiguration,
+    AssemblyAIConfigurationUpdate,
+)
+from .....schemas.transcription.transcription_schema import LanguageOption
+from ...interfaces.transcription_service import (
     TranscriptionResult,
     TranscriptionService,
 )
@@ -21,18 +28,25 @@ class AssemblyaiTranscriptionService(TranscriptionService):
     def transcribe(
         self, audio_bytes: bytes, language: str | None, user_id: str
     ) -> TranscriptionResult:
-        aai.settings.api_key = "9bcb5c8f8e6a4757b23cfe64636a4c9c"
+        api_key = self._get_user_api_key(user_id)
+        aai.settings.api_key = api_key
+        user_config = self._get_user_config(user_id)
 
-        config = aai.TranscriptionConfig(
-            speech_models=["universal-3-pro", "universal-2"],
-            language_detection=True,
-            speaker_labels=True,
-            language_code=language,
-        )
+        config_kwargs: dict = {
+            "speaker_labels": user_config.speaker_labels,
+            "speech_model": aai.SpeechModel(user_config.speech_model),
+        }
+        if language:
+            config_kwargs["language_code"] = language
+            config_kwargs["language_detection"] = False
+        else:
+            config_kwargs["language_detection"] = True
 
-        transcript = aai.Transcriber(config=config).transcribe(BytesIO(audio_bytes))
+        config = aai.TranscriptionConfig(**config_kwargs)
 
-        if transcript.status == "error":
+        transcript = aai.Transcriber().transcribe(BytesIO(audio_bytes), config=config)
+
+        if transcript.status == aai.TranscriptStatus.error:
             self._logger.error(f"Transcription failed: {transcript.error}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -45,14 +59,75 @@ class AssemblyaiTranscriptionService(TranscriptionService):
 
         return TranscriptionResult(text=text, language=str(transcript.language_code))
 
+    def _get_user_api_key(self, user_id: str) -> str:
+        encrypted_api_key = (
+            self._settings_repo.get_transcription_provider_api_key_encrypted(
+                user_id, "aai"
+            )
+        )
+        if not encrypted_api_key:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Provider aai requires API key configuration",
+            )
+        return decrypt_api_key(encrypted_api_key)
+
+    def _get_user_config(self, user_id: str) -> AssemblyAIConfiguration:
+        user_settings = self._settings_repo.get_transcription_provider_settings(
+            user_id, "aai"
+        )
+        if not user_settings:
+            return AssemblyAIConfiguration()
+
+        allowed_keys = set(AssemblyAIConfiguration.model_fields.keys())
+        filtered = {k: v for k, v in user_settings.items() if k in allowed_keys}
+        if "speech_model" in filtered:
+            supported_models = {model.value for model in aai.SpeechModel}
+            if filtered["speech_model"] not in supported_models:
+                filtered["speech_model"] = AssemblyAIConfiguration().speech_model
+        return AssemblyAIConfiguration(**filtered)
+
     def get_supported_languages(self) -> list[LanguageOption]:
-        return super().get_supported_languages()
+        languages = [
+            LanguageOption(code=code, name=LANGUAGE_NAMES.get(code, code.upper()))
+            for code in (language.value for language in aai.types.LanguageCode)
+        ]
+        return sorted(languages, key=lambda x: x.name)
 
-    def get_available_options(self) -> BaseModel:
-        return super().get_available_options()
+    def get_available_options(self) -> AssemblyAIAvailableOptions:
+        speech_models = [model.value for model in aai.SpeechModel]
+        return AssemblyAIAvailableOptions(speech_models=speech_models)
 
-    def get_user_configuration(self, user_id: str) -> BaseModel:
-        return super().get_user_configuration(user_id)
+    def get_user_configuration(self, user_id: str) -> AssemblyAIConfiguration:
+        return self._get_user_config(user_id)
 
-    def update_user_configuration(self, user_id: str, data: dict) -> BaseModel:
-        return super().update_user_configuration(user_id, data)
+    def update_user_configuration(
+        self, user_id: str, data: dict
+    ) -> AssemblyAIConfiguration:
+        try:
+            update = AssemblyAIConfigurationUpdate(**data)
+        except ValidationError as e:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=e.errors()
+            )
+
+        update_data = update.model_dump(exclude_none=True)
+        if update_data:
+            self._settings_repo.update_transcription_provider_settings(
+                user_id, "aai", update_data
+            )
+
+        return self.get_user_configuration(user_id)
+
+    def validate_api_key(self, api_key: str) -> None:
+        try:
+            aai.settings.api_key = api_key
+            aai.Transcriber().transcribe(
+                "https://assembly.ai/wildfires.mp3",
+                config=aai.TranscriptionConfig(speech_model=aai.SpeechModel.nano),
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid API key for aai",
+            ) from e

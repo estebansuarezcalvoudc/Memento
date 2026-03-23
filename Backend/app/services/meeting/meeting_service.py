@@ -24,8 +24,8 @@ from ...schemas.meeting.meeting_schema import (
     MeetingTranscriptionResponse,
     UpdateMeetingMetadata,
 )
-from ...services.transcription.interfaces.transcription_service import (
-    TranscriptionService,
+from ...services.settings.transcription_providers_service import (
+    TranscriptionProvidersService,
 )
 from ...utils.singleton_meta import SingletonMeta
 from .meeting_processing.summarization import get_meeting_summary
@@ -40,12 +40,12 @@ class MeetingService(metaclass=SingletonMeta):
         self,
         meetings_repository: MeetingRepository,
         settings_repository: SettingsRepository,
-        transcription_service: TranscriptionService,
+        transcription_providers_service: TranscriptionProvidersService,
         vector_store: VectorStore,
     ) -> None:
         self._meeting_repository: MeetingRepository = meetings_repository
         self._settings_repository: SettingsRepository = settings_repository
-        self._transcription_service = transcription_service
+        self._transcription_providers_service = transcription_providers_service
         self._vector_store = vector_store
 
     async def process_meetings(
@@ -103,7 +103,12 @@ class MeetingService(metaclass=SingletonMeta):
         audio_bytes: bytes,
         user_id: str,
     ) -> MeetingMetadataResponse:
-        result = self._transcription_service.transcribe(
+        transcription_service = (
+            self._transcription_providers_service.get_transcription_service_for_user(
+                user_id
+            )
+        )
+        result = transcription_service.transcribe(
             audio_bytes, meeting_metadata.language, user_id
         )
         meeting_metadata.language = result.language

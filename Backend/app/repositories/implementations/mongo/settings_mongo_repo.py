@@ -205,6 +205,119 @@ class SettingsMongoRepository(AbstractSettingsRepository):
             {"user_id": user_id}, {"$set": update_fields}, upsert=True
         )
 
+    def get_transcription_active_provider(self, user_id: str) -> str | None:
+        user_data = self._collection.find_one(
+            {"user_id": user_id},
+            {"settings.transcription.active_provider": True, "_id": False},
+        )
+        if not user_data:
+            return None
+        return (
+            user_data.get("settings", {})
+            .get("transcription", {})
+            .get("active_provider")
+        )
+
+    def set_transcription_active_provider(
+        self, user_id: str, provider_name: str
+    ) -> None:
+        self._collection.update_one(
+            {"user_id": user_id},
+            {"$set": {"settings.transcription.active_provider": provider_name}},
+            upsert=True,
+        )
+
+    def get_transcription_provider_settings(
+        self, user_id: str, provider_name: str
+    ) -> dict | None:
+        user_data = self._collection.find_one(
+            {"user_id": user_id},
+            {
+                f"settings.transcription.providers.{provider_name}": True,
+                "settings.transcription": True,
+                "_id": False,
+            },
+        )
+        if not user_data:
+            return None
+
+        transcription_settings = user_data.get("settings", {}).get("transcription", {})
+        providers = transcription_settings.get("providers", {})
+        provider_settings = providers.get(provider_name)
+        if provider_settings is not None:
+            return provider_settings
+
+        if provider_name == "whisperx":
+            legacy_keys = ["model_size", "compute_type", "device"]
+            legacy_settings = {
+                key: transcription_settings[key]
+                for key in legacy_keys
+                if key in transcription_settings
+            }
+            return legacy_settings or None
+
+        return None
+
+    def update_transcription_provider_settings(
+        self, user_id: str, provider_name: str, data: dict
+    ) -> None:
+        update_fields = {
+            f"settings.transcription.providers.{provider_name}.{key}": value
+            for key, value in data.items()
+        }
+        if not update_fields:
+            return
+
+        self._collection.update_one(
+            {"user_id": user_id}, {"$set": update_fields}, upsert=True
+        )
+
+    def save_transcription_provider_api_key_encrypted(
+        self, user_id: str, provider_name: str, encrypted_api_key: str
+    ) -> None:
+        self._collection.update_one(
+            {"user_id": user_id},
+            {
+                "$set": {
+                    f"settings.transcription.providers.{provider_name}.api_key_encrypted": encrypted_api_key,
+                }
+            },
+            upsert=True,
+        )
+
+    def get_transcription_provider_api_key_encrypted(
+        self, user_id: str, provider_name: str
+    ) -> Optional[str]:
+        user_data = self._collection.find_one(
+            {"user_id": user_id},
+            {
+                f"settings.transcription.providers.{provider_name}.api_key_encrypted": True,
+                "_id": False,
+            },
+        )
+        if not user_data:
+            return None
+
+        return (
+            user_data.get("settings", {})
+            .get("transcription", {})
+            .get("providers", {})
+            .get(provider_name, {})
+            .get("api_key_encrypted")
+        )
+
+    def delete_transcription_provider_api_key(
+        self, user_id: str, provider_name: str
+    ) -> None:
+        self._collection.update_one(
+            {"user_id": user_id},
+            {
+                "$unset": {
+                    f"settings.transcription.providers.{provider_name}.api_key_encrypted": ""
+                }
+            },
+        )
+
     def get_system_prompt(self, user_id: str) -> Optional[str]:
         user_data = self._collection.find_one(
             {"user_id": user_id}, {"settings.templates.system_prompt": 1, "_id": 0}

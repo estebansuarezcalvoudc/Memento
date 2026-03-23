@@ -40,6 +40,20 @@ DEFAULT_USER_SETTINGS: dict = {
             "max_tokens": 500,
         },
     },
+    "transcription": {
+        "active_provider": "whisperx",
+        "providers": {
+            "whisperx": {
+                "model_size": "tiny",
+                "compute_type": "int8",
+                "device": "cuda",
+            },
+            "aai": {
+                "speech_model": "universal",
+                "speaker_labels": True,
+            },
+        },
+    },
 }
 
 _ALLOWLIST_PATH = Path(__file__).parent / "models_allowlist.yaml"
