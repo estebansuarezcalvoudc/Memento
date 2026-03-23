@@ -1,88 +1,109 @@
-import { Trans, useTranslation } from 'react-i18next'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import {
   useGetTranscriptionConfiguration,
   useGetTranscriptionOptions,
+  useGetTranscriptionProviders,
+  useSetActiveTranscriptionProvider,
   useUpdateTranscriptionConfiguration,
 } from '../../../../api/queries/settings/useTranscriptionQueries'
-import Select from '../../../ui/inputs/Select'
-import SubSectionTitle from '../SubSectionTitle'
+import {
+  type TranscriptionAvailableOptions,
+  type TranscriptionConfiguration,
+} from '../../../../types/settings/transcription'
+import AssemblyAITranscriptionSection from './AssemblyAITranscriptionSection'
+import WhisperXTranscriptionSection from './WhisperXTranscriptionSection'
 
 export default function TranscriptionView() {
   const { t } = useTranslation()
-  const { data: options, isLoading: optionsLoading } =
-    useGetTranscriptionOptions()
-  const { data: config, isLoading: configLoading } =
-    useGetTranscriptionConfiguration()
+  const optionsQuery = useGetTranscriptionOptions()
+  const configQuery = useGetTranscriptionConfiguration()
+  const providersQuery = useGetTranscriptionProviders()
+  const { data: options } = optionsQuery
+  const { data: config } = configQuery
+  const { data: providers } = providersQuery
   const { mutate: updateConfig } = useUpdateTranscriptionConfiguration()
+  const { mutate: setActiveProvider } = useSetActiveTranscriptionProvider()
 
-  const isLoading = optionsLoading || configLoading
-  const selectedDevice = config?.device ?? 'cuda'
+  const isInitialLoading =
+    optionsQuery.isLoading || configQuery.isLoading || providersQuery.isLoading
+  const hasError =
+    optionsQuery.isError || configQuery.isError || providersQuery.isError
+  const whisperProvider = providers?.find(p => p.name === 'whisperx')
+  const assemblyProvider = providers?.find(p => p.name === 'aai')
+  const [lastWhisperOptions, setLastWhisperOptions] =
+    useState<TranscriptionAvailableOptions>()
+  const [lastWhisperConfig, setLastWhisperConfig] =
+    useState<TranscriptionConfiguration>()
+
+  const hasWhisperOptions = Boolean(
+    options?.models && options?.computeTypes && options?.devices,
+  )
+  const hasWhisperConfig = Boolean(
+    config?.modelSize && config?.computeType && config?.device,
+  )
+
+  const whisperOptionsForUI = hasWhisperOptions
+    ? options
+    : (lastWhisperOptions ?? options)
+  const whisperConfigForUI = hasWhisperConfig
+    ? config
+    : (lastWhisperConfig ?? config)
+
+  useEffect(() => {
+    if (
+      whisperProvider?.isActive &&
+      options?.models &&
+      options?.computeTypes &&
+      options?.devices
+    ) {
+      setLastWhisperOptions(options)
+    }
+  }, [whisperProvider?.isActive, options])
+
+  useEffect(() => {
+    if (
+      whisperProvider?.isActive &&
+      config?.modelSize &&
+      config?.computeType &&
+      config?.device
+    ) {
+      setLastWhisperConfig(config)
+    }
+  }, [whisperProvider?.isActive, config])
+
+  function handleSelectProvider(providerName: 'whisperx' | 'aai') {
+    const provider = providers?.find(p => p.name === providerName)
+    if (!provider || provider.isActive) {
+      return
+    }
+    setActiveProvider(providerName)
+  }
 
   return (
     <>
-      {isLoading ? (
+      {isInitialLoading ? (
         <span>{t('settings.transcription.loading')}</span>
+      ) : hasError ? (
+        <span>{t('common.somethingWentWrong')}</span>
       ) : (
         <div className="flex flex-col gap-6">
-          <div>
-            <SubSectionTitle title="WhisperX" />
-            <Select
-              label={t('settings.transcription.modelSize')}
-              value={config?.modelSize ?? ''}
-              onChange={e => updateConfig({ model_size: e.target.value })}
-            >
-              {(options?.models ?? []).map(m => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </Select>
-            <Select
-              label={t('settings.transcription.computeType')}
-              value={config?.computeType ?? ''}
-              onChange={e => updateConfig({ compute_type: e.target.value })}
-            >
-              {(options?.computeTypes ?? []).map(c => (
-                <option
-                  key={c}
-                  value={c}
-                  disabled={selectedDevice === 'cpu' && c !== 'int8'}
-                >
-                  {c}
-                </option>
-              ))}
-            </Select>
-            <Select
-              label={t('settings.transcription.device')}
-              value={selectedDevice}
-              onChange={e => {
-                const newDevice = e.target.value
-                const update: { device: string; compute_type?: string } = {
-                  device: newDevice,
-                }
-                if (newDevice === 'cpu' && config?.computeType !== 'int8') {
-                  update.compute_type = 'int8'
-                }
-                updateConfig(update)
-              }}
-            >
-              {(options?.devices ?? []).map(d => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </Select>
-            {selectedDevice === 'cuda' && (
-              <p className="mt-1 text-sm text-yellow-600 dark:text-yellow-400">
-                <Trans i18nKey="settings.transcription.cudaWarning">
-                  If the GPU is unavailable or fails, transcription will
-                  automatically fall back to CPU using <strong>int8</strong>{' '}
-                  precision
-                </Trans>
-              </p>
-            )}
-          </div>
+          <WhisperXTranscriptionSection
+            options={whisperOptionsForUI}
+            modelSize={whisperConfigForUI?.modelSize}
+            computeType={whisperConfigForUI?.computeType}
+            device={whisperConfigForUI?.device}
+            isActive={whisperProvider?.isActive ?? true}
+            onSelectProvider={() => handleSelectProvider('whisperx')}
+            onUpdateConfiguration={updateConfig}
+          />
+
+          <AssemblyAITranscriptionSection
+            hasApiKey={assemblyProvider?.hasApiKey ?? false}
+            isActive={assemblyProvider?.isActive ?? false}
+            onSelectProvider={() => handleSelectProvider('aai')}
+          />
         </div>
       )}
     </>

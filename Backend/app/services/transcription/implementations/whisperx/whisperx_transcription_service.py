@@ -38,8 +38,6 @@ class WhisperXTranscriptionService(TranscriptionService):
         self._settings_repo = settings_repo
         self._device = get_device()
 
-    # --- TranscriptionService interface ---
-
     def transcribe(
         self, audio_bytes: bytes, language: str | None, user_id: str
     ) -> TranscriptionResult:
@@ -64,44 +62,10 @@ class WhisperXTranscriptionService(TranscriptionService):
 
         return TranscriptionResult(text=text, language=detected_language)
 
-    def get_supported_languages(self) -> list[LanguageOption]:
-        languages = [
-            LanguageOption(code=code, name=name)
-            for code, name in LANGUAGE_NAMES.items()
-        ]
-        return sorted(languages, key=lambda x: x.name)
-
-    # --- WhisperX-specific configuration methods ---
-
-    def get_available_options(self) -> WhisperXAvailableOptions:
-        models = list(get_args(WhisperXModel))
-        compute_types = list(get_args(ComputeType))
-        devices = list(get_args(Device))
-        return WhisperXAvailableOptions(
-            models=models, compute_types=compute_types, devices=devices
-        )
-
-    def get_user_configuration(self, user_id: str) -> WhisperXConfiguration:
-        return self._get_user_config(user_id)
-
-    def update_user_configuration(
-        self, user_id: str, data: dict
-    ) -> WhisperXConfiguration:
-        try:
-            update = WhisperXConfigurationUpdate(**data)
-        except ValidationError as e:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=e.errors()
-            )
-        update_data = update.model_dump(exclude_none=True)
-        if update_data:
-            self._settings_repo.update_transcription_settings(user_id, update_data)
-        return self.get_user_configuration(user_id)
-
-    # --- Private helpers ---
-
     def _get_user_config(self, user_id: str) -> WhisperXConfiguration:
-        user_settings = self._settings_repo.get_transcription_settings(user_id)
+        user_settings = self._settings_repo.get_transcription_provider_settings(
+            user_id, "whisperx"
+        )
         if not user_settings:
             return WhisperXConfiguration()
         return WhisperXConfiguration(**user_settings)
@@ -179,3 +143,41 @@ class WhisperXTranscriptionService(TranscriptionService):
             conversation += "</p>"
 
         return conversation
+
+    def get_supported_languages(self) -> list[LanguageOption]:
+        languages = [
+            LanguageOption(code=code, name=name)
+            for code, name in LANGUAGE_NAMES.items()
+        ]
+        return sorted(languages, key=lambda x: x.name)
+
+    def get_available_options(self) -> WhisperXAvailableOptions:
+        models = list(get_args(WhisperXModel))
+        compute_types = list(get_args(ComputeType))
+        devices = list(get_args(Device))
+        return WhisperXAvailableOptions(
+            models=models, compute_types=compute_types, devices=devices
+        )
+
+    def get_user_configuration(self, user_id: str) -> WhisperXConfiguration:
+        return self._get_user_config(user_id)
+
+    def update_user_configuration(
+        self, user_id: str, data: dict
+    ) -> WhisperXConfiguration:
+        try:
+            update = WhisperXConfigurationUpdate(**data)
+        except ValidationError as e:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=e.errors()
+            )
+        update_data = update.model_dump(exclude_none=True)
+        if update_data:
+            self._settings_repo.update_transcription_provider_settings(
+                user_id, "whisperx", update_data
+            )
+        return self.get_user_configuration(user_id)
+
+    def validate_api_key(self, api_key: str) -> None:
+        _ = api_key
+        return

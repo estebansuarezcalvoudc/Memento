@@ -24,7 +24,7 @@ export default function TemplateSection() {
   const { data: defaultData } =
     useGetDefaultSummarizationPrompt(currentLanguage)
   const {
-    mutateAsync: updatePrompt,
+    mutate: updatePrompt,
     isPending,
     isError,
   } = useUpdateSummarizationPrompt(currentLanguage)
@@ -47,9 +47,12 @@ export default function TemplateSection() {
   const tooLong = value.length > MAX
   const invalid = tooShort || tooLong
 
-  async function handleSave() {
-    await updatePrompt(value)
-    setDraft(undefined)
+  function handleSave() {
+    updatePrompt(value, {
+      onSuccess: () => {
+        setDraft(undefined)
+      },
+    })
   }
 
   return (

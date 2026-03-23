@@ -1,24 +1,33 @@
 import { useTranslation } from 'react-i18next'
 
-import { useUploadApiKey } from '../../../../../api/queries/settings/useProvidersQueries'
 import { HttpError } from '../../../../../api/utils/fetchBackend'
 import ProviderInlineForm from '../ProviderInlineForm'
 
 interface ApiKeyFormProps {
-  providerName: string
+  invalidApiKeyMessage?: string
+  onSubmitApiKey: (apiKey: string) => Promise<void>
   onClose: () => void
+  apiKeyPlaceholder?: string
+  apiKeyEmptyError?: string
 }
 
-export default function ApiKeyForm({ providerName, onClose }: ApiKeyFormProps) {
+export default function ApiKeyForm({
+  invalidApiKeyMessage,
+  onSubmitApiKey,
+  onClose,
+  apiKeyPlaceholder,
+  apiKeyEmptyError,
+}: ApiKeyFormProps) {
   const { t } = useTranslation()
-  const { mutateAsync: uploadApiKey } = useUploadApiKey()
 
   async function handleSubmit(apiKey: string) {
     try {
-      await uploadApiKey({ providerName, apiKey })
+      await onSubmitApiKey(apiKey)
     } catch (error) {
       if (error instanceof HttpError && error.status === 401) {
-        throw new Error(t('settings.providers.invalidApiKey'))
+        throw new Error(
+          invalidApiKeyMessage ?? t('settings.providers.invalidApiKey'),
+        )
       }
       throw error
     }
@@ -27,8 +36,10 @@ export default function ApiKeyForm({ providerName, onClose }: ApiKeyFormProps) {
   return (
     <ProviderInlineForm
       inputName="apiKey"
-      placeholder={t('settings.providers.apiKeyPlaceholder')}
-      emptyError={t('settings.providers.apiKeyEmptyError')}
+      placeholder={
+        apiKeyPlaceholder ?? t('settings.providers.apiKeyPlaceholder')
+      }
+      emptyError={apiKeyEmptyError ?? t('settings.providers.apiKeyEmptyError')}
       onSubmit={handleSubmit}
       onClose={onClose}
     />

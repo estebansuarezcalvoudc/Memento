@@ -78,3 +78,14 @@ class TranscriptionService(ABC):
         Returns:
             Provider-specific Pydantic model with the updated configuration
         """
+
+    @abstractmethod
+    def validate_api_key(self, api_key: str) -> None:
+        """
+        Validate provider API key when the provider requires one.
+
+        Providers without API key requirements can implement this as a no-op.
+
+        Args:
+            api_key: Plain text API key to validate
+        """

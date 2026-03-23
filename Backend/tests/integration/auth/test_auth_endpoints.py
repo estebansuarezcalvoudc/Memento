@@ -78,9 +78,13 @@ class TestAuthEndpoints:
 
         inserted = set_on_insert_calls[0].args[1]["$setOnInsert"]
         chat_model = inserted["settings"]["models"]["chat_model"]
+        transcription = inserted["settings"]["transcription"]
 
         assert chat_model["provider"] == "Ollama"
         assert chat_model["model_name"] == "llama3.2:latest"
+        assert transcription["active_provider"] == "whisperx"
+        assert "whisperx" in transcription["providers"]
+        assert "aai" in transcription["providers"]
 
         # Verify upsert=True was passed
         assert set_on_insert_calls[0].kwargs.get("upsert") is True

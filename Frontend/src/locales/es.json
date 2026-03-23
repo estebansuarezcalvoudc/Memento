@@ -115,6 +115,9 @@
       "modelSize": "Tamaño del modelo",
       "computeType": "Tipo de cómputo",
       "device": "Dispositivo",
+      "speechModel": "Modelo de voz",
+      "invalidApiKey": "Clave API inválida",
+      "removeApiKeyFailed": "Error al eliminar la clave API. Por favor, inténtalo de nuevo.",
       "cudaWarning": "Si la GPU no está disponible o falla, la transcripción usará automáticamente la CPU con precisión <strong>int8</strong>"
     },
     "summarization": {

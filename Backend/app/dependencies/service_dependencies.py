@@ -24,8 +24,8 @@ from ..services.meeting.meeting_service import MeetingService
 from ..services.settings.models_service import ModelsService
 from ..services.settings.providers_service import ProvidersService
 from ..services.settings.templates_service import TemplatesService
-from ..services.transcription.implementations.whisperx.whisperx_transcription_service import (
-    WhisperXTranscriptionService,
+from ..services.settings.transcription_providers_service import (
+    TranscriptionProvidersService,
 )
 
 _logger = setup_logger(__name__)
@@ -89,13 +89,13 @@ def get_meeting_service() -> MeetingService:
     return MeetingService(
         MeetingMongoRepository(),
         SettingsMongoRepository(),
-        get_transcription_service(),
+        get_transcription_providers_service(),
         get_vector_store(),
     )
 
 
-def get_transcription_service() -> WhisperXTranscriptionService:
-    return WhisperXTranscriptionService(SettingsMongoRepository())
+def get_transcription_providers_service() -> TranscriptionProvidersService:
+    return TranscriptionProvidersService(SettingsMongoRepository())
 
 
 def get_models_service() -> ModelsService:
