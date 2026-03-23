@@ -14,6 +14,7 @@ class TestTranscriptionProvidersEndpoints:
         mock_mongo.find_one.return_value = {
             "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
+            "password": "$2b$12$test_hashed_password",
             "settings": {
                 "transcription": {
                     "active_provider": "whisperx",
@@ -52,6 +53,7 @@ class TestTranscriptionProvidersEndpoints:
         mock_mongo.find_one.return_value = {
             "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
+            "password": "$2b$12$test_hashed_password",
             "settings": {
                 "transcription": {
                     "active_provider": "aai",
@@ -79,6 +81,7 @@ class TestTranscriptionProvidersEndpoints:
         mock_mongo.find_one.return_value = {
             "_id": ObjectId(TEST_USER_ID),
             "username": "test@example.com",
+            "password": "$2b$12$test_hashed_password",
             "settings": {
                 "transcription": {
                     "active_provider": "whisperx",

@@ -40,7 +40,7 @@ export default function WhisperXTranscriptionSection({
         onSelect={() => onSelectProvider()}
       />
 
-      <div className={isActive ? '' : 'pointer-events-none opacity-60'}>
+      <div className={''}>
         <Select
           label={t('settings.transcription.modelSize')}
           value={modelSize ?? ''}

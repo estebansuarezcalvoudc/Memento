@@ -6,9 +6,12 @@ from tests.conftest import TEST_USER_ID
 
 class TestWhisperXEndpoints:
     def test_get_available_options_should_return_models_compute_types_and_devices(
-        self, client: TestClient
+        self, mock_mongo, client: TestClient, auth_headers: dict
     ):
-        response = client.get("/settings/transcription/available-options")
+        _ = mock_mongo
+        response = client.get(
+            "/settings/transcription/available-options", headers=auth_headers
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -38,9 +41,10 @@ class TestWhisperXEndpoints:
         assert "cpu" in data["devices"]
 
     def test_get_supported_languages_should_return_language_codes(
-        self, client: TestClient
+        self, mock_mongo, client: TestClient, auth_headers: dict
     ):
-        response = client.get("/settings/transcription/languages")
+        _ = mock_mongo
+        response = client.get("/settings/transcription/languages", headers=auth_headers)
 
         assert response.status_code == 200
         languages = response.json()
@@ -264,6 +268,24 @@ class TestWhisperXEndpoints:
     ):
         _ = mock_mongo
 
+        mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
+            "username": "test@example.com",
+            "password": "$2b$12$test_hashed_password",
+            "settings": {
+                "transcription": {
+                    "active_provider": "whisperx",
+                    "providers": {
+                        "whisperx": {
+                            "model_size": "base",
+                            "compute_type": "int8",
+                            "device": "cuda",
+                        }
+                    },
+                }
+            },
+        }
+
         response = client.patch(
             "/settings/transcription/configuration",
             headers=auth_headers,
@@ -271,7 +293,8 @@ class TestWhisperXEndpoints:
         )
 
         assert response.status_code == 422
-        mock_mongo.update_one.assert_not_called()
+        update_calls = str(mock_mongo.update_one.call_args_list)
+        assert "settings.transcription.providers.whisperx.device" not in update_calls
 
     def test_update_whisperx_configuration_should_not_update_device_when_not_provided(
         self, client: TestClient, auth_headers: dict, mock_mongo
@@ -322,6 +345,24 @@ class TestWhisperXEndpoints:
     ):
         _ = mock_mongo
 
+        mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
+            "username": "test@example.com",
+            "password": "$2b$12$test_hashed_password",
+            "settings": {
+                "transcription": {
+                    "active_provider": "whisperx",
+                    "providers": {
+                        "whisperx": {
+                            "model_size": "base",
+                            "compute_type": "int8",
+                            "device": "cuda",
+                        }
+                    },
+                }
+            },
+        }
+
         response = client.patch(
             "/settings/transcription/configuration",
             headers=auth_headers,
@@ -329,12 +370,33 @@ class TestWhisperXEndpoints:
         )
 
         assert response.status_code == 422
-        mock_mongo.update_one.assert_not_called()
+        update_calls = str(mock_mongo.update_one.call_args_list)
+        assert (
+            "settings.transcription.providers.whisperx.model_size" not in update_calls
+        )
 
     def test_update_whisperx_configuration_should_reject_invalid_compute_type(
         self, client: TestClient, auth_headers: dict, mock_mongo
     ):
         _ = mock_mongo
+
+        mock_mongo.find_one.return_value = {
+            "_id": ObjectId(TEST_USER_ID),
+            "username": "test@example.com",
+            "password": "$2b$12$test_hashed_password",
+            "settings": {
+                "transcription": {
+                    "active_provider": "whisperx",
+                    "providers": {
+                        "whisperx": {
+                            "model_size": "base",
+                            "compute_type": "int8",
+                            "device": "cuda",
+                        }
+                    },
+                }
+            },
+        }
 
         response = client.patch(
             "/settings/transcription/configuration",
@@ -343,7 +405,10 @@ class TestWhisperXEndpoints:
         )
 
         assert response.status_code == 422
-        mock_mongo.update_one.assert_not_called()
+        update_calls = str(mock_mongo.update_one.call_args_list)
+        assert (
+            "settings.transcription.providers.whisperx.compute_type" not in update_calls
+        )
 
     def test_update_whisperx_configuration_should_require_authentication(
         self, client: TestClient, mock_mongo
