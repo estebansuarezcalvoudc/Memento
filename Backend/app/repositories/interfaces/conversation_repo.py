@@ -15,7 +15,6 @@ class ConversationRepository(ABC):
     @abstractmethod
     def store_conversation(
         self,
-        conversation_title: str,
         user_id: str,
         initial_messages: Optional[list[dict]] = None,
     ) -> ConversationCreateResponse:
@@ -23,7 +22,6 @@ class ConversationRepository(ABC):
         Store a new conversation
 
         Args:
-            conversation_title: Title of the conversation
             user_id: ID of the conversation owner
             initial_messages: Optional initial messages for the conversation
 
