@@ -43,7 +43,7 @@ export default function ChatItem({ chatId, chatTitle }: ChatItemProps) {
           <input
             ref={inputRef}
             className="font-ubuntu pointer-events-none ml-1.5 w-full truncate border-0 bg-transparent text-base text-stone-700 caret-stone-700 shadow-none ring-0 outline-none focus:border-0 focus:shadow-none focus:ring-0 focus:outline-none enabled:underline enabled:decoration-stone-600 enabled:decoration-2 enabled:underline-offset-3 dark:text-stone-300 dark:caret-stone-300 dark:enabled:decoration-stone-300"
-            value={localTitle}
+            value={localTitle ?? ''}
             onChange={e => setLocalTitle(e.target.value)}
             disabled
           />
