@@ -61,14 +61,16 @@ class ConversationService:
         - Persists the user message immediately.
         - Streams LLM tokens as TokenEvent instances.
         - Persists the full assistant reply once streaming is complete.
-        - On the first exchange of a conversation (no prior messages), auto-
-          generates a title and yields a TitleEvent before the final DoneEvent.
+        - On the first exchange of a conversation (no prior messages), starts
+          title generation in the background and emits a TitleEvent before the
+          final DoneEvent.
         - Yields a DoneEvent to signal completion of the stream.
         """
 
         async def _generate() -> AsyncGenerator[ChatEvent, None]:
             conversation_id = request.conversation_id
             user_message = {"role": "user", "content": request.message}
+            pending_title_task: asyncio.Task[str] | None = None
 
             if conversation_id is None:
                 new_conv = self._repository.store_conversation(user_id, [user_message])
@@ -76,10 +78,11 @@ class ConversationService:
                 yield ConversationCreatedEvent(conversation_id=new_conv.id)
 
                 previous_messages = []
-                generated_title = await self._create_and_store_title(
-                    conversation_id, request.message, user_id
+                pending_title_task = asyncio.create_task(
+                    self._create_and_store_title(
+                        conversation_id, request.message, user_id
+                    )
                 )
-                yield TitleEvent(title=generated_title)
             else:
                 dialogue = self._repository.fetch_conversation(conversation_id, user_id)
                 previous_messages = dialogue.messages.copy()
@@ -131,6 +134,11 @@ class ConversationService:
             self._repository.append_new_messages_to_conversation(
                 conversation_id, [assistant_message], user_id
             )
+
+            if pending_title_task is not None:
+                generated_title = await pending_title_task
+                yield TitleEvent(title=generated_title)
+
             _logger.debug("streaming message processed and persisted")
             yield DoneEvent()
 
