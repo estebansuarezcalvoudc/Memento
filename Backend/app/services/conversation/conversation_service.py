@@ -38,9 +38,7 @@ class ConversationService:
     async def create_conversation(
         self, conversation_create_request: ConversationCreateRequest, user_id: str
     ) -> ConversationCreateResponse:
-        created_conversation = self._repository.store_conversation(
-            "New chat", user_id, []
-        )
+        created_conversation = self._repository.store_conversation(user_id, [])
 
         asyncio.create_task(
             self.send_message(
@@ -70,22 +68,25 @@ class ConversationService:
 
         async def _generate() -> AsyncGenerator[ChatEvent, None]:
             conversation_id = request.conversation_id
+            user_message = {"role": "user", "content": request.message}
 
             if conversation_id is None:
-                new_conv = self._repository.store_conversation("New chat", user_id, [])
+                new_conv = self._repository.store_conversation(user_id, [user_message])
                 conversation_id = new_conv.id
-                yield ConversationCreatedEvent(
-                    conversation_id=new_conv.id,
-                    title=new_conv.title,
+                yield ConversationCreatedEvent(conversation_id=new_conv.id)
+
+                previous_messages = []
+                generated_title = await self._create_and_store_title(
+                    conversation_id, request.message, user_id
                 )
+                yield TitleEvent(title=generated_title)
+            else:
+                dialogue = self._repository.fetch_conversation(conversation_id, user_id)
+                previous_messages = dialogue.messages.copy()
 
-            dialogue = self._repository.fetch_conversation(conversation_id, user_id)
-            conversation_history = dialogue.messages.copy()
-
-            user_message = {"role": "user", "content": request.message}
-            self._repository.append_new_messages_to_conversation(
-                conversation_id, [user_message], user_id
-            )
+                self._repository.append_new_messages_to_conversation(
+                    conversation_id, [user_message], user_id
+                )
 
             full_reply_parts: list[str] = []
             thinking_filter = ThinkingStreamFilter()
@@ -94,14 +95,14 @@ class ConversationService:
             yield RetrievingEvent()
             context = await self._rag_service.retrieve_context(
                 message=request.message,
-                conversation_history=conversation_history,
+                conversation_history=previous_messages,
                 current_date=current_date,
                 user_id=user_id,
             )
 
             async for token in self._rag_service.stream_reply(
                 message=request.message,
-                conversation_history=conversation_history,
+                conversation_history=previous_messages,
                 context=context,
                 current_date=current_date,
                 user_id=user_id,
@@ -131,23 +132,20 @@ class ConversationService:
                 conversation_id, [assistant_message], user_id
             )
             _logger.debug("streaming message processed and persisted")
-
-            # Auto-generate a title on the first exchange, before DoneEvent so
-            # the TitleEvent is sent while the WebSocket is still open.
-            if len(conversation_history) == 0:
-                generated_title = await self._rag_service.generate_title(
-                    request.message, user_id
-                )
-                self._repository.update_conversation_metadata(
-                    conversation_id,
-                    ConversationUpdateRequest(title=generated_title),
-                    user_id,
-                )
-                yield TitleEvent(title=generated_title)
-
             yield DoneEvent()
 
         return _generate()
+
+    async def _create_and_store_title(
+        self, conversation_id: str, message: str, user_id: str
+    ) -> str:
+        generated_title = await self._rag_service.generate_title(message, user_id)
+        self._repository.update_conversation_metadata(
+            conversation_id,
+            ConversationUpdateRequest(title=generated_title),
+            user_id,
+        )
+        return generated_title
 
     async def send_message(
         self,

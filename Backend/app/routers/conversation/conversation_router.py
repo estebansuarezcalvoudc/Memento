@@ -47,7 +47,7 @@ async def chat_websocket(
         { "conversation_id": null | "<id>", "message": "...", "current_datetime": "..." }
 
     Server sends (in order):
-        { "type": "conversation_created", "conversation_id": "...", "title": "..." }
+        { "type": "conversation_created", "conversation_id": "..." }
         { "type": "retrieving" }  — indicates the assistant is retrieving context before streaming
         { "type": "token", "content": "..." }  — repeated for each LLM token
         { "type": "title", "title": "..." }  — sent before done on first message only

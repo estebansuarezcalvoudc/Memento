@@ -7,7 +7,6 @@ import type { ChatAction } from './chatReducer'
 interface ConversationCreatedEvent {
   type: 'conversation_created'
   conversation_id: string
-  title: string
 }
 
 interface RetrievingEvent {
@@ -96,8 +95,8 @@ export function createMessageHandler(
 
       queryClient.setQueryData<Chat[]>(CHATS_KEY, old =>
         old
-          ? [{ id: event.conversation_id, title: event.title }, ...old]
-          : [{ id: event.conversation_id, title: event.title }],
+          ? [{ id: event.conversation_id }, ...old]
+          : [{ id: event.conversation_id }],
       )
 
       onConversationCreated?.(event.conversation_id)

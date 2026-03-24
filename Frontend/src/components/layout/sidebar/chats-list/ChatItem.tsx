@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { NavLink, useLocation } from 'react-router-dom'
 
 import ChatOptionsDropdown from './chat-options/ChatOptionsDropdown'
 
 interface ChatItemProps {
   chatId: string
-  chatTitle: string
+  chatTitle?: string
 }
 
 export default function ChatItem({ chatId, chatTitle }: ChatItemProps) {
@@ -13,10 +14,15 @@ export default function ChatItem({ chatId, chatTitle }: ChatItemProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [localTitle, setLocalTitle] = useState(chatTitle)
   const { pathname } = useLocation()
+  const { t } = useTranslation()
 
   useEffect(() => {
-    setLocalTitle(chatTitle)
-  }, [chatTitle])
+    if (chatTitle) {
+      setLocalTitle(chatTitle)
+    } else {
+      setLocalTitle(t('sidebar.newChat'))
+    }
+  }, [chatTitle, t])
 
   const shouldShowOptions = isDivHovered || isMenuOpen
   const isActive = pathname === `/chats/${chatId}`
