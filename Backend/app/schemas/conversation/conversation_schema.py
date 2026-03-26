@@ -10,7 +10,7 @@ class ConversationDialogueRetrieve(BaseModel):
 
 class ConversationMetadataRetrieve(BaseModel):
     id: str
-    title: str
+    title: str | None
     updated_at: datetime
 
 
@@ -24,7 +24,9 @@ class SendMessageRequest(BaseModel):
 ConversationCreateRequest = SendMessageRequest
 
 
-ConversationCreateResponse = ConversationMetadataRetrieve
+class ConversationCreateResponse(BaseModel):
+    id: str
+    updated_at: datetime
 
 
 Messages = list[dict]
@@ -53,7 +55,6 @@ class ChatRequest(BaseModel):
 class ConversationCreatedEvent(BaseModel):
     type: Literal["conversation_created"] = "conversation_created"
     conversation_id: str
-    title: str
 
 
 class RetrievingEvent(BaseModel):

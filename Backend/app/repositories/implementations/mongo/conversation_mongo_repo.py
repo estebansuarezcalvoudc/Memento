@@ -30,7 +30,6 @@ class ConversationMongoRepository(AbstractConversationRepository):
 
     def store_conversation(
         self,
-        conversation_title: str,
         user_id: str,
         initial_messages: Optional[list[dict]] = None,
     ) -> ConversationCreateResponse:
@@ -42,7 +41,6 @@ class ConversationMongoRepository(AbstractConversationRepository):
         result = self._collection.insert_one(
             {
                 "user_id": user_id,
-                "title": conversation_title,
                 "updated_at": updated_at,
                 "messages": initial_messages,
             }
@@ -50,7 +48,6 @@ class ConversationMongoRepository(AbstractConversationRepository):
 
         return ConversationCreateResponse(
             id=str(result.inserted_id),
-            title=conversation_title,
             updated_at=updated_at,
         )
 
@@ -79,7 +76,7 @@ class ConversationMongoRepository(AbstractConversationRepository):
         return [
             ConversationMetadataRetrieve(
                 id=str(conversation["_id"]),
-                title=conversation["title"],
+                title=conversation.get("title", None),
                 updated_at=conversation["updated_at"],
             )
             for conversation in result
@@ -107,6 +104,7 @@ class ConversationMongoRepository(AbstractConversationRepository):
         result = self._collection.update_one(
             {"user_id": user_id, "_id": ObjectId(id)},
             {"$set": {"title": metadata.title}},
+            upsert=True,
         )
 
         if result.modified_count == 0:

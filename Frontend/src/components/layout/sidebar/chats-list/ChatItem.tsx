@@ -1,21 +1,27 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { NavLink, useLocation } from 'react-router-dom'
 
 import ChatOptionsDropdown from './chat-options/ChatOptionsDropdown'
 
 interface ChatItemProps {
   chatId: string
-  chatTitle: string
+  chatTitle?: string
 }
 
 export default function ChatItem({ chatId, chatTitle }: ChatItemProps) {
   const [isDivHovered, setDivIsHovered] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [localTitle, setLocalTitle] = useState(chatTitle)
+  const { t } = useTranslation()
+  const [localTitle, setLocalTitle] = useState(
+    chatTitle ?? t('sidebar.newChat'),
+  )
   const { pathname } = useLocation()
 
   useEffect(() => {
-    setLocalTitle(chatTitle)
+    if (chatTitle) {
+      setLocalTitle(chatTitle)
+    }
   }, [chatTitle])
 
   const shouldShowOptions = isDivHovered || isMenuOpen
@@ -32,11 +38,11 @@ export default function ChatItem({ chatId, chatTitle }: ChatItemProps) {
       >
         <NavLink
           to={`/chats/${chatId}`}
-          className="flex-1 cursor-pointer truncate rounded-l-xl py-1.5 text-left text-stone-700 dark:text-stone-300"
+          className="flex-1 cursor-pointer rounded-l-xl py-1.5 text-left text-stone-700 dark:text-stone-300"
         >
           <input
             ref={inputRef}
-            className="font-ubuntu pointer-events-none ml-1.5 w-full truncate border-0 bg-transparent text-base text-stone-700 caret-stone-700 shadow-none ring-0 outline-none focus:border-0 focus:shadow-none focus:ring-0 focus:outline-none enabled:underline enabled:decoration-stone-600 enabled:decoration-2 enabled:underline-offset-3 dark:text-stone-300 dark:caret-stone-300 dark:enabled:decoration-stone-300"
+            className="font-ubuntu pointer-events-none w-full truncate border-0 bg-transparent pl-1.5 text-base text-stone-700 caret-stone-700 shadow-none ring-0 outline-none focus:border-0 focus:shadow-none focus:ring-0 focus:outline-none enabled:underline enabled:decoration-stone-600 enabled:decoration-2 enabled:underline-offset-3 dark:text-stone-300 dark:caret-stone-300 dark:enabled:decoration-stone-300"
             value={localTitle}
             onChange={e => setLocalTitle(e.target.value)}
             disabled

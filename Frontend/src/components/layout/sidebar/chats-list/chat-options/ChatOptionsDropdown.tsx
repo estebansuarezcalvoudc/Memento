@@ -63,6 +63,13 @@ function ChatActionsDropdown({
       return
     }
 
+    const resetInputViewport = () => {
+      input.scrollLeft = 0
+      requestAnimationFrame(() => {
+        input.scrollLeft = 0
+      })
+    }
+
     const previousTitle = input.value
 
     input.disabled = false
@@ -79,13 +86,16 @@ function ChatActionsDropdown({
 
       const nextTitle = input.value.trim()
       input.disabled = true
+      resetInputViewport()
 
       if (!nextTitle) {
         input.value = previousTitle
+        resetInputViewport()
         return
       }
 
       input.value = nextTitle
+      resetInputViewport()
 
       if (nextTitle === previousTitle) {
         return
