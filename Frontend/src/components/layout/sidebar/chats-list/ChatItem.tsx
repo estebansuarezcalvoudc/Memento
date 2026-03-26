@@ -12,17 +12,17 @@ interface ChatItemProps {
 export default function ChatItem({ chatId, chatTitle }: ChatItemProps) {
   const [isDivHovered, setDivIsHovered] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [localTitle, setLocalTitle] = useState(chatTitle ?? '')
-  const { pathname } = useLocation()
   const { t } = useTranslation()
+  const [localTitle, setLocalTitle] = useState(
+    chatTitle ?? t('sidebar.newChat'),
+  )
+  const { pathname } = useLocation()
 
   useEffect(() => {
     if (chatTitle) {
       setLocalTitle(chatTitle)
-    } else {
-      setLocalTitle(t('sidebar.newChat'))
     }
-  }, [chatTitle, t])
+  }, [chatTitle])
 
   const shouldShowOptions = isDivHovered || isMenuOpen
   const isActive = pathname === `/chats/${chatId}`
@@ -43,7 +43,7 @@ export default function ChatItem({ chatId, chatTitle }: ChatItemProps) {
           <input
             ref={inputRef}
             className="font-ubuntu pointer-events-none w-full truncate border-0 bg-transparent pl-1.5 text-base text-stone-700 caret-stone-700 shadow-none ring-0 outline-none focus:border-0 focus:shadow-none focus:ring-0 focus:outline-none enabled:underline enabled:decoration-stone-600 enabled:decoration-2 enabled:underline-offset-3 dark:text-stone-300 dark:caret-stone-300 dark:enabled:decoration-stone-300"
-            value={localTitle ?? ''}
+            value={localTitle}
             onChange={e => setLocalTitle(e.target.value)}
             disabled
           />

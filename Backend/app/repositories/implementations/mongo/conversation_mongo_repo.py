@@ -76,7 +76,7 @@ class ConversationMongoRepository(AbstractConversationRepository):
         return [
             ConversationMetadataRetrieve(
                 id=str(conversation["_id"]),
-                title=conversation["title"],
+                title=conversation.get("title", None),
                 updated_at=conversation["updated_at"],
             )
             for conversation in result

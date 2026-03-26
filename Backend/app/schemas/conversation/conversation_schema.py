@@ -10,7 +10,7 @@ class ConversationDialogueRetrieve(BaseModel):
 
 class ConversationMetadataRetrieve(BaseModel):
     id: str
-    title: str
+    title: str | None
     updated_at: datetime
 
 

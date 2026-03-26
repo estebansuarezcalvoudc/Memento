@@ -136,8 +136,15 @@ class ConversationService:
             )
 
             if pending_title_task is not None:
-                generated_title = await pending_title_task
-                yield TitleEvent(title=generated_title)
+                try:
+                    generated_title = await pending_title_task
+                except Exception:
+                    _logger.exception(
+                        "Failed to generate or store title for conversation %s",
+                        conversation_id,
+                    )
+                else:
+                    yield TitleEvent(title=generated_title)
 
             _logger.debug("streaming message processed and persisted")
             yield DoneEvent()
