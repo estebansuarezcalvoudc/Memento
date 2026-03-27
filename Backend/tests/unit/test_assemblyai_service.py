@@ -1,4 +1,3 @@
-import os
 from io import BytesIO
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
