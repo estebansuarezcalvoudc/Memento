@@ -26,7 +26,7 @@ export default function Dialog({
   const isBodyScrollLockedRef = useRef(false)
   const dialogSizeClassName =
     size === 'sm'
-      ? 'h-[20vh] w-[40vh]'
+      ? 'h-[20vh] w-[90vw] max-w-md'
       : 'h-[80vh] max-h-[90vh] w-[90vw] max-w-4xl'
 
   const lockBodyScroll = () => {
