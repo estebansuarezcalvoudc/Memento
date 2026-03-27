@@ -241,3 +241,6 @@ Frontend/.vite
 *.sw?
 
 Frontend/coverage
+
+data/
+letsencrypt/

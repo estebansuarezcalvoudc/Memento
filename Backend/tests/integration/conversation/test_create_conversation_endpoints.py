@@ -54,7 +54,6 @@ class TestChatWebSocketCreateConversation:
             first = json.loads(ws.receive_text())
             assert first["type"] == "conversation_created"
             assert first["conversation_id"] == VALID_CONV_ID
-            assert first["title"] == "New chat"
 
             second = json.loads(ws.receive_text())
             assert second["type"] == "retrieving"
@@ -85,13 +84,12 @@ class TestChatWebSocketCreateConversation:
             ) as ws:
                 ws.receive_text()
 
-    def test_create_conversation_should_emit_title_event_and_persist_generated_title(
+    def test_create_conversation_should_stream_without_requiring_title_event(
         self,
         client: TestClient,
         auth_headers: dict,
         mock_mongo,
         mock_rag_get_reply_stream,
-        find_title_update_call,
     ):
         mock_mongo.insert_one.return_value.inserted_id = ObjectId(VALID_CONV_ID)
         mock_mongo.find_one.side_effect = _mongo_side_effect_new_conv(VALID_CONV_ID)
@@ -118,13 +116,4 @@ class TestChatWebSocketCreateConversation:
                     if msg["type"] in ("done", "error"):
                         break
 
-        event_types = [m["type"] for m in messages]
-        assert "title" in event_types
-        assert event_types.index("title") < event_types.index("done")
-
-        title_events = [m for m in messages if m["type"] == "title"]
-        assert title_events[-1]["title"] == "Auto generated title"
-
-        title_update_call = find_title_update_call(mock_mongo)
-        assert title_update_call is not None
-        assert title_update_call[0][1]["$set"]["title"] == "Auto generated title"
+        assert messages[-1]["type"] == "done"
