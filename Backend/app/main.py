@@ -35,7 +35,12 @@ _tags_metadata = [
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     if settings.account_purge_job_enabled:
-        app.state.account_purge_task = asyncio.create_task(_purge_scheduler_loop())
+        if settings.account_purge_job_interval_seconds <= 0:
+            _logger.error(
+                "Account purge job disabled: ACCOUNT_PURGE_JOB_INTERVAL_SECONDS must be greater than 0"
+            )
+        else:
+            app.state.account_purge_task = asyncio.create_task(_purge_scheduler_loop())
 
     try:
         yield
@@ -70,7 +75,9 @@ _logger.info("Backend is up")
 async def _purge_scheduler_loop() -> None:
     while True:
         try:
-            get_auth_service().purge_accounts_due_for_deletion()
+            await asyncio.to_thread(get_auth_service().purge_accounts_due_for_deletion)
+        except asyncio.CancelledError:
+            raise
         except Exception as exc:
             _logger.error(f"Error running account purge job: {str(exc)}", exc_info=True)
 
