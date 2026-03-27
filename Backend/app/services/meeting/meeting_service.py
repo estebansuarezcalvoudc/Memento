@@ -109,7 +109,10 @@ class MeetingService(metaclass=SingletonMeta):
             )
         )
         result = transcription_service.transcribe(
-            audio_bytes, meeting_metadata.language, user_id
+            audio_bytes,
+            meeting_metadata.language,
+            meeting_metadata.number_of_speakers,
+            user_id,
         )
         meeting_metadata.language = result.language
 

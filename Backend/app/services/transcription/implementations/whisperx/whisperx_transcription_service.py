@@ -39,7 +39,11 @@ class WhisperXTranscriptionService(TranscriptionService):
         self._device = get_device()
 
     def transcribe(
-        self, audio_bytes: bytes, language: str | None, user_id: str
+        self,
+        audio_bytes: bytes,
+        language: str | None,
+        number_of_speakers: int | None,
+        user_id: str,
     ) -> TranscriptionResult:
         config = self._get_user_config(user_id)
         audio = self._load_audio(audio_bytes)
@@ -56,7 +60,12 @@ class WhisperXTranscriptionService(TranscriptionService):
         aligned = self._align_audio(
             transcription_result, audio, device, detected_language
         )
-        segments = self._diarize_audio(audio, device)
+        segments = self._diarize_audio(
+            audio,
+            device,
+            min_speakers=number_of_speakers,
+            max_speakers=number_of_speakers,
+        )
         diarized = whisperx.assign_word_speakers(segments, aligned)
         text = self._build_dialogue(diarized)
 

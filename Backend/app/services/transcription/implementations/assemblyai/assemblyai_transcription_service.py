@@ -26,7 +26,11 @@ class AssemblyaiTranscriptionService(TranscriptionService):
         self._logger = setup_logger(__name__)
 
     def transcribe(
-        self, audio_bytes: bytes, language: str | None, user_id: str
+        self,
+        audio_bytes: bytes,
+        language: str | None,
+        number_of_speakers: int | None,
+        user_id: str,
     ) -> TranscriptionResult:
         api_key = self._get_user_api_key(user_id)
         client = aai.client.Client(settings=aai.types.Settings(api_key=api_key))
@@ -42,6 +46,9 @@ class AssemblyaiTranscriptionService(TranscriptionService):
             config_kwargs["language_detection"] = False
         else:
             config_kwargs["language_detection"] = True
+
+        if number_of_speakers:
+            config_kwargs["speakers_expected"] = number_of_speakers
 
         config = aai.TranscriptionConfig(**config_kwargs)
 
@@ -93,7 +100,7 @@ class AssemblyaiTranscriptionService(TranscriptionService):
 
     def get_supported_languages(self) -> list[LanguageOption]:
         languages = [
-            LanguageOption(code=code, name=LANGUAGE_NAMES.get(code, code.upper()))
+            LanguageOption(code=code, name=str(LANGUAGE_NAMES.get(code, code.upper())))
             for code in (language.value for language in aai.types.LanguageCode)
         ]
         return sorted(languages, key=lambda x: x.name)

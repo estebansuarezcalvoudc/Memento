@@ -20,7 +20,11 @@ class TranscriptionService(ABC):
 
     @abstractmethod
     def transcribe(
-        self, audio_bytes: bytes, language: str | None, user_id: str
+        self,
+        audio_bytes: bytes,
+        language: str | None,
+        number_of_speakers: int | None,
+        user_id: str,
     ) -> TranscriptionResult:
         """
         Transcribe audio bytes into diarized text.
