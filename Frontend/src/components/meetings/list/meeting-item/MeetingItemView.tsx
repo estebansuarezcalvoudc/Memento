@@ -12,14 +12,12 @@ interface MeetingItemViewProps {
   meeting: Meeting
   index: number
   setEditState: (state: EditState) => void
-  isDeleteOnCooldown: boolean
 }
 
 export default function MeetingItemView({
   meeting,
   index,
   setEditState,
-  isDeleteOnCooldown,
 }: MeetingItemViewProps) {
   const dialogRef = useRef<DialogHandler>(null)
 
@@ -57,7 +55,6 @@ export default function MeetingItemView({
         onClick={() => dialogRef.current?.open()}
         bgColor="hover:bg-red-300"
         textColor="hover:text-red-800"
-        disabled={isDeleteOnCooldown}
         ariaLabel="Delete"
       />
 
