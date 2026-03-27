@@ -64,7 +64,7 @@ describe('MeetingContent Page', () => {
     renderTranscription()
 
     expect(await screen.findByText(/Team Meeting/)).toBeInTheDocument()
-    expect(screen.getByText(/2024-01-22/)).toBeInTheDocument()
+    expect(screen.getByText(/01\/22\/2024/)).toBeInTheDocument()
   })
 
   it('shows loading state initially for summary', () => {
