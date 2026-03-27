@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     model_config = ConfigDict(
-        env_file=["/.env.docker", "/Backend/.env"],
+        env_file=["/.env", "/Backend/.env"],
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
