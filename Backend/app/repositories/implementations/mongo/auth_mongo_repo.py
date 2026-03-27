@@ -124,21 +124,27 @@ class AuthMongoRepository(AbstractAuthRepository):
     def mark_account_pending_deletion(
         self, user_id: str, scheduled_purge_at: datetime
     ) -> None:
-        result = self._collection.update_one(
-            {"_id": ObjectId(user_id)},
-            {
-                "$set": {
-                    "status": "pending_deletion",
-                    "scheduled_purge_at": scheduled_purge_at,
-                }
-            },
+        error_404 = HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
         )
 
-        if result.matched_count == 0:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found",
+        try:
+            result = self._collection.update_one(
+                {"_id": ObjectId(user_id)},
+                {
+                    "$set": {
+                        "status": "pending_deletion",
+                        "scheduled_purge_at": scheduled_purge_at,
+                    }
+                },
             )
+
+        except Exception:
+            raise error_404
+
+        if not result or result.matched_count == 0:
+            raise error_404
 
     def list_accounts_pending_purge(self, now: datetime) -> list[UserInDB]:
         result = self._collection.find(
