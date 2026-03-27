@@ -12,7 +12,7 @@ export default defineConfig({
     css: false,
     environmentOptions: {
       jsdom: {
-        url: 'esteban-suarez-tfg.duckdns.org',
+        url: 'https://esteban-suarez-tfg.duckdns.org',
       },
     },
   },
