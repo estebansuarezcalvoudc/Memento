@@ -12,13 +12,14 @@ export default defineConfig({
     css: false,
     environmentOptions: {
       jsdom: {
-        url: 'http://localhost',
+        url: 'esteban-suarez-tfg.duckdns.org',
       },
     },
   },
   server: {
     host: true,
     port: 5173,
+    allowedHosts: ['esteban-suarez-tfg.duckdns.org'],
     proxy: {
       '/api': {
         target: 'http://backend:8000',

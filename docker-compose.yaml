@@ -1,4 +1,17 @@
 services:
+  nginx:
+    image: "docker.io/jc21/nginx-proxy-manager:2.14.0"
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "9081:81"
+      - "443:443"
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+    networks:
+      - nginx_net
+
   frontend:
     build: ./Frontend
     ports:
@@ -9,6 +22,7 @@ services:
     depends_on:
       - backend
     networks:
+      - nginx_net
       - front_net
 
   backend:
@@ -17,7 +31,7 @@ services:
       - "8000:${BACKEND_PORT}"
     volumes:
       - ./Backend:/Backend
-      - ./.env.docker:/.env.docker
+      - ./.env:/.env
       - ./Backend/.env.secrets:/Backend/.env.secrets
     runtime: nvidia
     depends_on:
@@ -87,5 +101,6 @@ volumes:
   ollama_data:
 
 networks:
-  back_net:
+  nginx_net:
   front_net:
+  back_net:
