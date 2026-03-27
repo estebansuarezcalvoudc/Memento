@@ -1,8 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { NavLink, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 
 import ChatOptionsDropdown from './chat-options/ChatOptionsDropdown'
+import ChatTitleField from './ChatTitleField'
+import ChatTitleTooltip from './ChatTitleTooltip'
+import {
+  useChatTitleTooltip,
+  type HoverState,
+} from './hooks/useChatTitleTooltip'
 
 interface ChatItemProps {
   chatId: string
@@ -10,7 +16,7 @@ interface ChatItemProps {
 }
 
 export default function ChatItem({ chatId, chatTitle }: ChatItemProps) {
-  const [isDivHovered, setDivIsHovered] = useState(false)
+  const [hoverState, setHoverState] = useState<HoverState>('none')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { t } = useTranslation()
   const [localTitle, setLocalTitle] = useState(
@@ -24,30 +30,39 @@ export default function ChatItem({ chatId, chatTitle }: ChatItemProps) {
     }
   }, [chatTitle])
 
-  const shouldShowOptions = isDivHovered || isMenuOpen
-  const isActive = pathname === `/chats/${chatId}`
-
   const inputRef = useRef<HTMLInputElement>(null)
+  const titleLinkRef = useRef<HTMLAnchorElement>(null)
+  const { shouldShowTitleTooltip } = useChatTitleTooltip({
+    inputRef,
+    hoverState,
+    isMenuOpen,
+    title: localTitle,
+  })
+  const shouldShowOptions = hoverState !== 'none' || isMenuOpen
+  const isActive = pathname === `/chats/${chatId}`
 
   return (
     <li>
       <div
-        className={`flex w-full items-center rounded-xl hover:bg-stone-200 dark:hover:bg-stone-700 ${isActive ? 'bg-stone-200 dark:bg-stone-700' : ''}`}
-        onMouseEnter={() => setDivIsHovered(true)}
-        onMouseLeave={() => setDivIsHovered(false)}
+        className={`relative flex w-full items-center rounded-xl hover:bg-stone-200 dark:hover:bg-stone-700 ${isActive ? 'bg-stone-200 dark:bg-stone-700' : ''}`}
+        onMouseEnter={() => setHoverState('item')}
+        onMouseLeave={() => setHoverState('none')}
       >
-        <NavLink
-          to={`/chats/${chatId}`}
-          className="flex-1 cursor-pointer rounded-l-xl py-1.5 text-left text-stone-700 dark:text-stone-300"
-        >
-          <input
-            ref={inputRef}
-            className="font-ubuntu pointer-events-none w-full truncate border-0 bg-transparent pl-1.5 text-base text-stone-700 caret-stone-700 shadow-none ring-0 outline-none focus:border-0 focus:shadow-none focus:ring-0 focus:outline-none enabled:underline enabled:decoration-stone-600 enabled:decoration-2 enabled:underline-offset-3 dark:text-stone-300 dark:caret-stone-300 dark:enabled:decoration-stone-300"
-            value={localTitle}
-            onChange={e => setLocalTitle(e.target.value)}
-            disabled
-          />
-        </NavLink>
+        <ChatTitleField
+          chatId={chatId}
+          title={localTitle}
+          titleLinkRef={titleLinkRef}
+          inputRef={inputRef}
+          onTitleEnter={() => setHoverState('title')}
+          onTitleLeave={() => setHoverState('item')}
+          onTitleChange={setLocalTitle}
+        />
+
+        <ChatTitleTooltip
+          visible={shouldShowTitleTooltip}
+          title={localTitle}
+          anchorElement={titleLinkRef.current}
+        />
 
         {shouldShowOptions && (
           <ChatOptionsDropdown

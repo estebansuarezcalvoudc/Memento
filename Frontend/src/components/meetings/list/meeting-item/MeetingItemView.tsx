@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom'
 
 import { editImage, removeImage } from '../../../../assets/buttonsImages'
 import { type Meeting } from '../../../../types/meetings'
+import { formatDateForDisplay } from '../../../../utils/date'
 import MeetingButton from '../../MeetingButton'
 import type { EditState } from './MeetingItem'
 
@@ -38,7 +39,7 @@ export default function MeetingItemView({
         {meeting.title}
       </NavLink>
       <span className="font-ubuntu text-base text-stone-600 dark:text-stone-400">
-        {meeting.date}
+        {formatDateForDisplay(meeting.date)}
       </span>
       <MeetingButton
         image={editImage}

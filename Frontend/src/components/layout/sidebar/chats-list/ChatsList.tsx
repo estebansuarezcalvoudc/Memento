@@ -52,12 +52,14 @@ export default function ChatsList() {
         isSidebarOpen
           ? 'block opacity-100 delay-150'
           : 'hidden opacity-0 delay-[0ms]'
-      } flex h-full flex-col overflow-hidden`}
+      } flex h-full flex-col`}
     >
       <h2 className="font-ubuntu mt-8 mb-2 ml-1.5 flex-shrink-0 truncate text-base text-stone-400 dark:text-stone-500">
         {t('sidebar.chats')}
       </h2>
-      <ul className="custom-scrollbar flex-1 overflow-y-auto">{chatContent}</ul>
+      <ul className="custom-scrollbar -mr-2 flex-1 overflow-y-auto pr-2">
+        {chatContent}
+      </ul>
     </div>
   )
 }
