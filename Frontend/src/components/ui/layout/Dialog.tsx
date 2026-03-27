@@ -73,8 +73,13 @@ export default function Dialog({
     <dialog
       ref={innerRef}
       aria-modal="true"
-      className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl bg-white p-0 backdrop-blur-xl backdrop:backdrop-blur-[1px] dark:bg-stone-700 ${dialogSizeClassName}`}
+      className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl bg-white p-0 backdrop-blur-xl backdrop:backdrop-blur-[1px] dark:bg-stone-800 ${dialogSizeClassName}`}
       onClose={unlockBodyScroll}
+      onClick={e => {
+        if (e.target === e.currentTarget) {
+          closeDialog()
+        }
+      }}
       onKeyDown={e => {
         if (e.key === 'Escape') {
           e.preventDefault()
