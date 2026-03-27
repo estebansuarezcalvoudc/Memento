@@ -1,7 +1,12 @@
+import asyncio
+from contextlib import asynccontextmanager, suppress
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .core.logging import setup_logger
+from .core.settings import settings
+from .dependencies.service_dependencies import get_auth_service
 from .routers.auth import auth_router
 from .routers.conversation import conversation_router
 from .routers.meeting import meeting_router
@@ -27,7 +32,22 @@ _tags_metadata = [
 ]
 
 
-app = FastAPI(title="TFG", openapi_tags=_tags_metadata)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if settings.account_purge_job_enabled:
+        app.state.account_purge_task = asyncio.create_task(_purge_scheduler_loop())
+
+    try:
+        yield
+    finally:
+        task = getattr(app.state, "account_purge_task", None)
+        if task is not None:
+            task.cancel()
+            with suppress(asyncio.CancelledError):
+                await task
+
+
+app = FastAPI(title="TFG", openapi_tags=_tags_metadata, lifespan=lifespan)
 
 # Configure CORS
 app.add_middleware(
@@ -45,3 +65,13 @@ app.include_router(settings_router)
 
 _logger = setup_logger(__name__)
 _logger.info("Backend is up")
+
+
+async def _purge_scheduler_loop() -> None:
+    while True:
+        try:
+            get_auth_service().purge_accounts_due_for_deletion()
+        except Exception as exc:
+            _logger.error(f"Error running account purge job: {str(exc)}", exc_info=True)
+
+        await asyncio.sleep(settings.account_purge_job_interval_seconds)

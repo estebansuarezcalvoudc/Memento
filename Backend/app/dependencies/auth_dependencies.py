@@ -20,7 +20,7 @@ def _get_auth_repository() -> AuthRepository:
 async def _get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
     users_repo: Annotated[AuthRepository, Depends(_get_auth_repository)],
-) -> User:
+) -> dict[str, str]:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -31,7 +31,7 @@ async def _get_current_user(
         payload = jwt.decode(
             token, settings.secret_key, algorithms=[settings.algorithm]
         )
-        user_id: str = payload.get("sub")
+        user_id = payload.get("sub", None)
         if user_id is None:
             raise credentials_exception
     except jwt.InvalidTokenError:
@@ -41,16 +41,19 @@ async def _get_current_user(
     if user is None:
         raise credentials_exception
 
-    # Return user without password for security
-    return User(id=user.id, username=user.username)
+    return {"id": user.id, "username": user.username, "status": user.status}
 
 
 async def get_current_active_user(
-    current_user: Annotated[User, Depends(_get_current_user)],
+    current_user: Annotated[dict[str, str], Depends(_get_current_user)],
 ) -> User:
-    # Add any additional user validation here if needed
-    # For example, check if user is active, not banned, etc.
-    return current_user
+    if current_user["status"] != "active":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is pending deletion",
+        )
+
+    return User(id=current_user["id"], username=current_user["username"])
 
 
 async def get_current_ws_user(
@@ -67,7 +70,7 @@ async def get_current_ws_user(
         payload = jwt.decode(
             token, settings.secret_key, algorithms=[settings.algorithm]
         )
-        user_id: str = payload.get("sub")
+        user_id = payload.get("sub", None)
         if user_id is None:
             raise credentials_exception
     except jwt.InvalidTokenError:
@@ -75,6 +78,9 @@ async def get_current_ws_user(
 
     user = users_repo.retrieve_user_by_id(user_id=user_id)
     if user is None:
+        raise credentials_exception
+
+    if user.status != "active":
         raise credentials_exception
 
     return User(id=user.id, username=user.username)

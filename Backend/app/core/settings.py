@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     secret_key: str
     algorithm: str
     access_token_expire_minutes: int
+    account_deletion_grace_days: int
+    account_purge_job_interval_seconds: int
+    account_purge_job_enabled: bool
 
     ollama_host: str
     ollama_port: int
