@@ -8,6 +8,7 @@ interface MeetingItemProps {
   meeting: Meeting
   index: number
   gridCols: string
+  onRequestDelete: (meeting: Meeting) => void
 }
 
 export interface EditState {
@@ -20,6 +21,7 @@ export default function MeetingItem({
   meeting,
   index,
   gridCols,
+  onRequestDelete,
 }: MeetingItemProps) {
   const [editState, setEditState] = useState<EditState>({
     isEditing: false,
@@ -43,6 +45,7 @@ export default function MeetingItem({
           meeting={meeting}
           index={index}
           setEditState={setEditState}
+          onRequestDelete={onRequestDelete}
         />
       )}
     </div>

@@ -1,10 +1,7 @@
-import { useRef } from 'react'
 import { NavLink } from 'react-router-dom'
 
 import { editImage, removeImage } from '../../../../assets/buttonsImages'
 import { type Meeting } from '../../../../types/meetings'
-import { type DialogHandler } from '../../../ui/layout/Dialog'
-import DeleteMeetingDialog from '../../DeleteMeetingDialog'
 import MeetingButton from '../../MeetingButton'
 import type { EditState } from './MeetingItem'
 
@@ -12,15 +9,15 @@ interface MeetingItemViewProps {
   meeting: Meeting
   index: number
   setEditState: (state: EditState) => void
+  onRequestDelete: (meeting: Meeting) => void
 }
 
 export default function MeetingItemView({
   meeting,
   index,
   setEditState,
+  onRequestDelete,
 }: MeetingItemViewProps) {
-  const dialogRef = useRef<DialogHandler>(null)
-
   const handleEdit = () => {
     setEditState({
       isEditing: true,
@@ -52,13 +49,11 @@ export default function MeetingItemView({
       />
       <MeetingButton
         image={removeImage}
-        onClick={() => dialogRef.current?.open()}
+        onClick={() => onRequestDelete(meeting)}
         bgColor="hover:bg-red-300"
         textColor="hover:text-red-800"
         ariaLabel="Delete"
       />
-
-      <DeleteMeetingDialog dialogRef={dialogRef} meeting={meeting} />
     </>
   )
 }

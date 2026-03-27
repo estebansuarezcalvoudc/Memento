@@ -9,7 +9,7 @@ import Dialog from '../ui/layout/Dialog'
 
 interface DeleteMeetingDialogProps {
   dialogRef: React.Ref<DialogHandler>
-  meeting: Meeting
+  meeting: Meeting | null
 }
 
 export default function DeleteMeetingDialog({
@@ -18,6 +18,13 @@ export default function DeleteMeetingDialog({
 }: DeleteMeetingDialogProps) {
   const { mutate: deleteMeeting, isPending } = useDeleteMeeting()
   const { t } = useTranslation()
+  const canDelete = meeting !== null
+
+  const handleCancel = () => {
+    if (dialogRef && typeof dialogRef !== 'function') {
+      dialogRef.current?.close()
+    }
+  }
 
   return (
     <Dialog dialogRef={dialogRef} size="sm" showCloseButton={false}>
@@ -27,16 +34,20 @@ export default function DeleteMeetingDialog({
             {t('meetings.deleteDialog.confirmMessage')}
           </span>
           <div className="font-ubuntu flex gap-4 text-base">
-            <span className="dark:text-stone-100">{meeting.title}</span>
+            <span className="dark:text-stone-100">{meeting?.title ?? ''}</span>
             <span className="dark:text-stone-400">-</span>
-            <span className="dark:text-stone-400">{meeting.date}</span>
+            <span className="dark:text-stone-400">{meeting?.date ?? ''}</span>
           </div>
 
           <div className="flex gap-x-2.5">
-            <SecondaryButton onClick={() => dialogRef.current?.close()} />
+            <SecondaryButton onClick={handleCancel} />
             <DangerButton
-              onClick={() => deleteMeeting(meeting.id)}
-              disabled={isPending}
+              onClick={() => {
+                if (meeting) {
+                  deleteMeeting(meeting.id)
+                }
+              }}
+              disabled={isPending || !canDelete}
             >
               {t('settings.buttons.delete')}
             </DangerButton>
