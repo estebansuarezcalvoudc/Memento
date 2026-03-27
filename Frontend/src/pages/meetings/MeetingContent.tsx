@@ -10,6 +10,7 @@ import PageContainer from '../../components/layout/PageContainer'
 import MeetingSummary from '../../components/meetings/content/MeetingSummary'
 import MeetingTranscription from '../../components/meetings/content/MeetingTranscription'
 import Header from '../../components/meetings/Header'
+import { formatDateForDisplay } from '../../utils/date'
 
 type ContentType = 'transcription' | 'summary'
 
@@ -98,7 +99,7 @@ export default function MeetingContent({ type }: MeetingContentProps) {
       </div>
       {query.data && (
         <div className="font-ubuntu mb-8 text-2xl text-stone-600 dark:text-stone-400">
-          {query.data.title} - {query.data.date}
+          {query.data.title} - {formatDateForDisplay(query.data.date)}
         </div>
       )}
       {displayContent}

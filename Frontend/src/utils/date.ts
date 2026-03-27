@@ -22,3 +22,36 @@ export function localISOString(d = new Date()): string {
   const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
   return local.toISOString().slice(0, 19) + `${sign}${hh}:${mm}`
 }
+
+function getBrowserLocale(): string | undefined {
+  if (typeof navigator === 'undefined') {
+    return undefined
+  }
+
+  return navigator.languages?.[0] ?? navigator.language
+}
+
+/**
+ * Formats an ISO date string (YYYY-MM-DD) using the user's locale.
+ * If the input is invalid, it returns the original value.
+ */
+export function formatDateForDisplay(date: string, locale?: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date)
+  if (!match) {
+    return date
+  }
+
+  const [, year, month, day] = match
+  const parsed = new Date(Number(year), Number(month) - 1, Number(day))
+  if (Number.isNaN(parsed.getTime())) {
+    return date
+  }
+
+  const resolvedLocale = locale ?? getBrowserLocale()
+
+  return new Intl.DateTimeFormat(resolvedLocale, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(parsed)
+}

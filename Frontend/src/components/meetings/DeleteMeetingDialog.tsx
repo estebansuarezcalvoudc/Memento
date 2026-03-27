@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useDeleteMeeting } from '../../api/queries/useMeetingsQueries'
 import type { Meeting } from '../../types/meetings'
+import { formatDateForDisplay } from '../../utils/date'
 import DangerButton from '../ui/buttons/DangerButton'
 import SecondaryButton from '../ui/buttons/SecondaryButton'
 import type { DialogHandler } from '../ui/layout/Dialog'
@@ -36,7 +37,9 @@ export default function DeleteMeetingDialog({
           <div className="font-ubuntu flex gap-4 text-base">
             <span className="dark:text-stone-100">{meeting?.title ?? ''}</span>
             <span className="dark:text-stone-400">-</span>
-            <span className="dark:text-stone-400">{meeting?.date ?? ''}</span>
+            <span className="dark:text-stone-400">
+              {meeting ? formatDateForDisplay(meeting.date) : ''}
+            </span>
           </div>
 
           <div className="flex gap-x-2.5">
