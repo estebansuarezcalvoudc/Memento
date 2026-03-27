@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Route, Routes } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
@@ -16,10 +16,18 @@ async function hoverAndOpenMenu(
   displayValue: string,
 ) {
   const input = screen.getByDisplayValue(displayValue)
-  // input → flex-1 div → flex w-full div (the one with onMouseEnter)
-  const hoverDiv = input.parentElement!.parentElement!
+  const chatItem = input.closest('li')
+  if (!chatItem) {
+    throw new Error('Chat item container not found')
+  }
+
+  const hoverDiv = chatItem.querySelector('div')
+  if (!hoverDiv) {
+    throw new Error('Hover container not found')
+  }
+
   fireEvent.mouseEnter(hoverDiv)
-  const menuButton = await screen.findByRole('button')
+  const menuButton = await within(chatItem).findByRole('button')
   await user.click(menuButton)
 }
 

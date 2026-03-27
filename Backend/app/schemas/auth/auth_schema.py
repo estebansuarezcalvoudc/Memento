@@ -1,5 +1,5 @@
-import datetime
-from typing import Optional
+from datetime import datetime
+from typing import Literal, Optional
 
 from pydantic import BaseModel
 
@@ -18,17 +18,22 @@ class UserCreate(BaseModel):
     password: str
 
 
-class UserInDB(BaseModel):
-    """User schema with id and password (for internal use only)"""
+class UserCreateInDB(BaseModel):
+    username: str
+    password: str
+    status: Literal["active", "pending_deletion"]
+    scheduled_purge_at: Optional[datetime] = None
 
+
+class UserInDB(BaseModel):
     id: str
     username: str
     password: str
+    status: Literal["active", "pending_deletion"] = "active"
+    scheduled_purge_at: Optional[datetime] = None
 
 
 class User(BaseModel):
-    """User schema for authenticated users (without password)"""
-
     id: str
     username: str
 
@@ -36,7 +41,7 @@ class User(BaseModel):
 class ActiveSession(BaseModel):
     username: str
     access_token: str
-    expire_time: datetime.datetime
+    expire_time: datetime
 
 
 class ChangeUsernameRequest(BaseModel):
@@ -51,3 +56,8 @@ class ChangePasswordRequest(BaseModel):
 
 class DeleteAccountRequest(BaseModel):
     password: str
+
+
+class AccountDeletionPolicyResponse(BaseModel):
+    grace_days: int
+    contact_email: str

@@ -94,7 +94,11 @@
       "deleteAccountForm": {
         "password": "Password",
         "passwordRequired": "Password cannot be empty",
-        "failed": "Failed to delete account"
+        "failed": "Failed to delete account",
+        "loadingPolicy": "Loading account deletion policy...",
+        "retentionNotice": "When you delete your account, your data will be kept for <bold>{{days}} days</bold> before permanent deletion.",
+        "contactNotice": "During that period, you can request immediate data deletion or account recovery by contacting <bold>{{email}}</bold>.",
+        "policyLoadFailed": "Could not load account deletion policy. Please try again later."
       }
     },
     "providers": {

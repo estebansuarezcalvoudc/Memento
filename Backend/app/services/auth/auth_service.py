@@ -11,7 +11,7 @@ from ...repositories.interfaces.auth_repo import AuthRepository
 from ...repositories.interfaces.conversation_repo import ConversationRepository
 from ...repositories.interfaces.meeting_repo import MeetingRepository
 from ...repositories.interfaces.settings_repo import SettingsRepository
-from ...schemas.auth.auth_schema import Token, UserCreate
+from ...schemas.auth.auth_schema import Token, UserCreate, UserCreateInDB
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -32,13 +32,15 @@ class AuthService:
         self._vector_store = vector_store
 
     def register(self, user_create: UserCreate) -> Token:
-        user = UserCreate(
+        user = UserCreateInDB(
             username=user_create.username,
             password=pwd_context.hash(user_create.password),
+            status="active",
         )
 
         user_id = self._repository.store_user(user)
         self._initialize_default_settings(user_id)
+
         return AuthService._create_access_token(
             data={"sub": user_id, "email": user.username}
         )
@@ -67,6 +69,12 @@ class AuthService:
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect username or password",
                 headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        if user.status != "active":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Account is pending deletion",
             )
 
         return AuthService._create_access_token(
@@ -130,8 +138,25 @@ class AuthService:
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password"
             )
 
-        self._meeting_repository.delete_user_data(user_id)
-        self._conversation_repository.delete_user_data(user_id)
-        self._settings_repository.delete_user_data(user_id)
-        self._vector_store.delete(where={"user_id": user_id})
-        self._repository.delete_account(user_id)
+        if user.status != "active":
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Account is already pending deletion",
+            )
+
+        purge_at = datetime.now(timezone.utc) + timedelta(
+            days=settings.account_deletion_grace_days
+        )
+        self._repository.mark_account_pending_deletion(user_id, purge_at)
+
+    def purge_accounts_due_for_deletion(self) -> None:
+        due_users = self._repository.list_accounts_pending_purge(
+            datetime.now(timezone.utc)
+        )
+
+        for user in due_users:
+            self._meeting_repository.delete_user_data(user.id)
+            self._conversation_repository.delete_user_data(user.id)
+            self._settings_repository.delete_user_data(user.id)
+            self._vector_store.delete(where={"user_id": user.id})
+            self._repository.delete_account(user.id)

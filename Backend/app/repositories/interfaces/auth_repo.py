@@ -1,14 +1,15 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Optional
 
-from ...schemas.auth.auth_schema import UserCreate, UserInDB
+from ...schemas.auth.auth_schema import UserCreateInDB, UserInDB
 
 
 class AuthRepository(ABC):
     """Abstract repository interface for authentication data access"""
 
     @abstractmethod
-    def store_user(self, user: UserCreate) -> str:
+    def store_user(self, user: UserCreateInDB) -> str:
         """
         Store a new user in the data store
 
@@ -82,4 +83,31 @@ class AuthRepository(ABC):
 
         Raises:
             HTTPException: 400 if user could not be deleted
+        """
+
+    @abstractmethod
+    def mark_account_pending_deletion(
+        self, user_id: str, scheduled_purge_at: datetime
+    ) -> None:
+        """
+        Mark a user account as pending deletion.
+
+        Args:
+            user_id: The user's id
+            scheduled_purge_at: Datetime when data should be permanently purged
+
+        Raises:
+            HTTPException: 404 if user is not found
+        """
+
+    @abstractmethod
+    def list_accounts_pending_purge(self, now: datetime) -> list[UserInDB]:
+        """
+        List accounts scheduled for purge at or before the provided datetime.
+
+        Args:
+            now: Cutoff datetime
+
+        Returns:
+            List of users pending deletion that are due for purge
         """

@@ -17,6 +17,12 @@ export const authHandlers = [
       HttpResponse.json({ id: 'user-123', username: 'test@example.com' }),
     ),
   ),
+  http.get('/api/auth/deletion-policy', () =>
+    HttpResponse.json({
+      grace_days: 30,
+      contact_email: 'privacy@example.com',
+    }),
+  ),
   http.patch(
     '/api/auth/username',
     withAuth(() =>

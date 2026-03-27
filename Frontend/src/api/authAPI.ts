@@ -5,6 +5,11 @@ export interface Token {
   token_type: string
 }
 
+export interface AccountDeletionPolicy {
+  graceDays: number
+  contactEmail: string
+}
+
 export async function login(email: string, password: string): Promise<Token> {
   const formData = new FormData()
   formData.append('username', email)
@@ -50,4 +55,8 @@ export async function deleteAccount(password: string): Promise<null> {
 
 export async function verifyToken(): Promise<{ id: string; username: string }> {
   return fetchBackend('GET', 'auth/me')
+}
+
+export async function getAccountDeletionPolicy(): Promise<AccountDeletionPolicy> {
+  return fetchBackend('GET', 'auth/deletion-policy')
 }

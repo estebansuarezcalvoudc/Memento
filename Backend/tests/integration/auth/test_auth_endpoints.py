@@ -215,6 +215,24 @@ class TestAuthEndpoints:
         assert response.status_code == 401
         assert "incorrect username or password" in response.json()["detail"].lower()
 
+    def test_login_should_fail_when_account_is_pending_deletion(
+        self, client: TestClient, mock_mongo
+    ):
+        pending_user_doc = {
+            **_USER_DOC,
+            "status": "pending_deletion",
+            "scheduled_purge_at": None,
+        }
+        mock_mongo.find_one.return_value = pending_user_doc
+
+        response = client.post(
+            "/auth/token",
+            data={"username": "test@example.com", "password": "password123"},
+        )
+
+        assert response.status_code == 403
+        assert "pending deletion" in response.json()["detail"].lower()
+
     def test_login_should_use_form_data_format(self, client: TestClient, mock_mongo):
         _ = mock_mongo  # Fixture needed for MongoDB mock setup
         mock_mongo.find_one.return_value = {
@@ -236,6 +254,17 @@ class TestAuthEndpoints:
             json={"username": "test@example.com", "password": "password123"},
         )
         assert response.status_code == 422
+
+    def test_get_deletion_policy_should_return_grace_days_and_contact_email(
+        self, client: TestClient
+    ):
+        response = client.get("/auth/deletion-policy")
+
+        assert response.status_code == 200
+        assert response.json() == {
+            "grace_days": 30,
+            "contact_email": "privacy@example.com",
+        }
 
     def test_login_should_validate_required_fields(
         self, client: TestClient, mock_mongo
@@ -408,8 +437,6 @@ class TestAuthEndpoints:
         # 1st call: auth middleware retrieves current user
         # 2nd call: service retrieves current user to verify password
         mock_mongo.find_one.side_effect = [_USER_DOC, _USER_DOC]
-        mock_mongo.delete_one.return_value = MagicMock(deleted_count=1)
-
         response = client.request(
             "DELETE",
             "/auth",
@@ -418,11 +445,13 @@ class TestAuthEndpoints:
         )
 
         assert response.status_code == 204
-        mock_mongo.delete_many.assert_called()
-        mock_vector_store.delete.assert_called_once_with(
-            where={"user_id": TEST_USER_ID}
-        )
-        mock_mongo.delete_one.assert_called_once()
+        mock_mongo.update_one.assert_called_once()
+        update_fields = mock_mongo.update_one.call_args.args[1]["$set"]
+        assert update_fields["status"] == "pending_deletion"
+        assert "scheduled_purge_at" in update_fields
+        mock_mongo.delete_many.assert_not_called()
+        mock_vector_store.delete.assert_not_called()
+        mock_mongo.delete_one.assert_not_called()
 
     def test_delete_account_should_fail_with_wrong_password(
         self, client: TestClient, mock_mongo, auth_headers
@@ -439,6 +468,7 @@ class TestAuthEndpoints:
 
         assert response.status_code == 401
         assert "incorrect password" in response.json()["detail"].lower()
+        mock_mongo.update_one.assert_not_called()
         mock_mongo.delete_one.assert_not_called()
 
     def test_delete_account_should_fail_when_user_not_found_in_db(
@@ -455,6 +485,7 @@ class TestAuthEndpoints:
         )
 
         assert response.status_code == 401
+        mock_mongo.update_one.assert_not_called()
         mock_mongo.delete_one.assert_not_called()
 
     def test_delete_account_should_require_authentication(self, client: TestClient):
@@ -469,13 +500,10 @@ class TestAuthEndpoints:
         response = client.request("DELETE", "/auth", json={}, headers=auth_headers)
         assert response.status_code == 422
 
-    def test_delete_account_should_delete_all_associated_data(
+    def test_delete_account_should_not_delete_associated_data_immediately(
         self, client: TestClient, mock_mongo, auth_headers
     ):
-        # Verifies that delete_many is called exactly 3 times:
-        # once for meetings, once for conversations, once for settings
         mock_mongo.find_one.side_effect = [_USER_DOC, _USER_DOC]
-        mock_mongo.delete_one.return_value = MagicMock(deleted_count=1)
 
         response = client.request(
             "DELETE",
@@ -485,17 +513,13 @@ class TestAuthEndpoints:
         )
 
         assert response.status_code == 204
-        assert mock_mongo.delete_many.call_count == 3
-        for call in mock_mongo.delete_many.call_args_list:
-            assert call.args == ({"user_id": TEST_USER_ID},)
-        mock_mongo.delete_one.assert_called_once_with({"_id": ObjectId(TEST_USER_ID)})
+        mock_mongo.delete_many.assert_not_called()
+        mock_mongo.delete_one.assert_not_called()
 
-    def test_delete_account_should_delete_vector_store_embeddings(
+    def test_delete_account_should_not_delete_vector_store_embeddings_immediately(
         self, client: TestClient, mock_mongo, auth_headers, mock_vector_store
     ):
-        # Verifies that the vector store embeddings for the user are deleted
         mock_mongo.find_one.side_effect = [_USER_DOC, _USER_DOC]
-        mock_mongo.delete_one.return_value = MagicMock(deleted_count=1)
 
         response = client.request(
             "DELETE",
@@ -505,9 +529,7 @@ class TestAuthEndpoints:
         )
 
         assert response.status_code == 204
-        mock_vector_store.delete.assert_called_once_with(
-            where={"user_id": TEST_USER_ID}
-        )
+        mock_vector_store.delete.assert_not_called()
 
     def test_delete_account_should_not_delete_any_data_with_wrong_password(
         self, client: TestClient, mock_mongo, auth_headers, mock_vector_store
@@ -524,24 +546,20 @@ class TestAuthEndpoints:
         )
 
         assert response.status_code == 401
+        mock_mongo.update_one.assert_not_called()
         mock_mongo.delete_many.assert_not_called()
         mock_vector_store.delete.assert_not_called()
         mock_mongo.delete_one.assert_not_called()
 
-    def test_delete_account_should_delete_auth_record_last(
+    def test_delete_account_should_reject_when_already_pending_deletion(
         self, client: TestClient, mock_mongo, auth_headers
     ):
-        # Verifies that the auth record (delete_one) is only deleted after all
-        # associated data (delete_many x3) has been removed
-        call_order = []
-        mock_mongo.delete_many.side_effect = lambda *a, **kw: call_order.append(
-            "delete_many"
-        )
-        mock_mongo.delete_one.side_effect = lambda *a, **kw: (
-            call_order.append("delete_one"),
-            MagicMock(deleted_count=1),
-        )[1]
-        mock_mongo.find_one.side_effect = [_USER_DOC, _USER_DOC]
+        pending_user_doc = {
+            **_USER_DOC,
+            "status": "pending_deletion",
+            "scheduled_purge_at": None,
+        }
+        mock_mongo.find_one.side_effect = [_USER_DOC, pending_user_doc]
 
         response = client.request(
             "DELETE",
@@ -550,7 +568,21 @@ class TestAuthEndpoints:
             headers=auth_headers,
         )
 
-        assert response.status_code == 204
-        assert call_order.count("delete_many") == 3
-        assert call_order.count("delete_one") == 1
-        assert call_order[-1] == "delete_one"
+        assert response.status_code == 409
+        assert "already pending deletion" in response.json()["detail"].lower()
+        mock_mongo.update_one.assert_not_called()
+
+    def test_me_should_fail_when_account_is_pending_deletion(
+        self, client: TestClient, mock_mongo, auth_headers
+    ):
+        pending_user_doc = {
+            **_USER_DOC,
+            "status": "pending_deletion",
+            "scheduled_purge_at": None,
+        }
+        mock_mongo.find_one.return_value = pending_user_doc
+
+        response = client.get("/auth/me", headers=auth_headers)
+
+        assert response.status_code == 403
+        assert "pending deletion" in response.json()["detail"].lower()

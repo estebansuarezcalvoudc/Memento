@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 
@@ -125,8 +125,15 @@ describe('Meeting Delete', () => {
     const deleteButtons = screen.getAllByRole('button', { name: 'Delete' })
     await user.click(deleteButtons[0])
 
+    const deleteDialog = await screen.findByRole('dialog')
+    await user.click(
+      within(deleteDialog).getByRole('button', { name: 'Delete' }),
+    )
+
     await waitFor(() => {
-      expect(screen.queryByText('Team Meeting')).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('link', { name: 'Team Meeting' }),
+      ).not.toBeInTheDocument()
     })
     expect(screen.getByText('Sprint Planning')).toBeInTheDocument()
   })
