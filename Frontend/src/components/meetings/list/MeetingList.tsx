@@ -1,6 +1,10 @@
+import { useRef, useState } from 'react'
+
 import { useMeetingListFilters } from '../../../hooks/useMeetingListFilters'
 import { type Meeting } from '../../../types/meetings'
+import { type DialogHandler } from '../../ui/layout/Dialog'
 import ColumnHeader from '../ColumnHeader'
+import DeleteMeetingDialog from '../DeleteMeetingDialog'
 import MeetingItem from './meeting-item/MeetingItem'
 import MeetingListPagination from './MeetingListPagination'
 import MeetingDateFilters from './toolbar/MeetingDateFilters'
@@ -14,39 +18,50 @@ const gridCols = 'grid-cols-[20px_1fr_150px_32px_32px]'
 
 export default function MeetingsList({ meetings }: MeetingsListProps) {
   const { pagedMeetings, totalPages } = useMeetingListFilters(meetings)
+  const dialogRef = useRef<DialogHandler>(null)
+  const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null)
+
+  const handleRequestDelete = (meeting: Meeting) => {
+    setSelectedMeeting(meeting)
+    dialogRef.current?.open()
+  }
 
   return (
-    <div className="w-full">
-      <div className="mb-3 flex flex-col gap-2">
-        <MeetingListToolbar />
-        <MeetingDateFilters />
-      </div>
+    <>
+      <div className="w-full">
+        <div className="mb-3 flex flex-col gap-2">
+          <MeetingListToolbar />
+          <MeetingDateFilters />
+        </div>
 
-      <div className="overflow-x-auto">
-        <div className="min-w-[500px]">
-          <div
-            className={`grid ${gridCols} gap-6 border-b border-stone-300 px-4 py-3 dark:border-stone-600`}
-          >
-            <ColumnHeader>#</ColumnHeader>
-            <ColumnHeader>Title</ColumnHeader>
-            <ColumnHeader>Date</ColumnHeader>
-            <div />
-            <div />
-          </div>
+        <div className="overflow-x-auto">
+          <div className="min-w-[500px]">
+            <div
+              className={`grid ${gridCols} gap-6 border-b border-stone-300 px-4 py-3 dark:border-stone-600`}
+            >
+              <ColumnHeader>#</ColumnHeader>
+              <ColumnHeader>Title</ColumnHeader>
+              <ColumnHeader>Date</ColumnHeader>
+              <div />
+              <div />
+            </div>
 
-          <div className="flex flex-col">
-            {pagedMeetings.map((meeting, index) => (
-              <MeetingItem
-                key={meeting.id}
-                meeting={meeting}
-                index={index + 1}
-                gridCols={gridCols}
-              />
-            ))}
+            <div className="flex flex-col">
+              {pagedMeetings.map((meeting, index) => (
+                <MeetingItem
+                  key={meeting.id}
+                  meeting={meeting}
+                  index={index + 1}
+                  gridCols={gridCols}
+                  onRequestDelete={handleRequestDelete}
+                />
+              ))}
+            </div>
           </div>
         </div>
+        <MeetingListPagination totalPages={totalPages} />
       </div>
-      <MeetingListPagination totalPages={totalPages} />
-    </div>
+      <DeleteMeetingDialog dialogRef={dialogRef} meeting={selectedMeeting} />
+    </>
   )
 }

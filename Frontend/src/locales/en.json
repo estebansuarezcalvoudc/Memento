@@ -203,6 +203,9 @@
         "atLeastOne": "You must add at least one meeting"
       }
     },
+    "deleteDialog": {
+      "confirmMessage": "Are you sure you want to delete this meeting?"
+    },
     "content": {
       "summary": "Summary",
       "transcription": "Transcription",
