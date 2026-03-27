@@ -325,6 +325,8 @@ describe('AccountView – Delete account form', () => {
     expect(screen.getByLabelText('Password')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+    expect(await screen.findByText('30 days')).toBeInTheDocument()
+    expect(screen.getByText('privacy@example.com')).toBeInTheDocument()
   })
 
   it('clicking "Delete account" hides the action buttons', async () => {
@@ -414,5 +416,25 @@ describe('AccountView – Delete account form', () => {
     await user.click(screen.getByRole('button', { name: 'Delete' }))
 
     expect(await screen.findByText('Incorrect password')).toBeInTheDocument()
+  })
+
+  it('disables account deletion when deletion policy cannot be loaded', async () => {
+    server.use(
+      http.get(
+        '/api/auth/deletion-policy',
+        () => new HttpResponse(null, { status: 500 }),
+      ),
+    )
+
+    const { user } = setup()
+    renderWithRouter(<AccountView />)
+    await user.click(screen.getByRole('button', { name: 'Delete account' }))
+
+    expect(
+      await screen.findByText(
+        'Could not load account deletion policy. Please try again later.',
+      ),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeDisabled()
   })
 })

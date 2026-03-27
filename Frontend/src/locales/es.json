@@ -94,7 +94,11 @@
       "deleteAccountForm": {
         "password": "Contraseña",
         "passwordRequired": "La contraseña no puede estar vacía",
-        "failed": "Error al eliminar la cuenta"
+        "failed": "Error al eliminar la cuenta",
+        "loadingPolicy": "Cargando política de eliminación de cuenta...",
+        "retentionNotice": "Al eliminar tu cuenta, tus datos se conservarán durante <bold>{{days}} días</bold> antes de su eliminación definitiva.",
+        "contactNotice": "Durante ese plazo puedes solicitar la eliminación inmediata de tus datos o la recuperación de tu cuenta escribiendo a <bold>{{email}}</bold>.",
+        "policyLoadFailed": "No se pudo cargar la política de eliminación de cuenta. Inténtalo de nuevo más tarde."
       }
     },
     "providers": {

@@ -4,9 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from ...core.logging import setup_logger
+from ...core.settings import settings
 from ...dependencies.auth_dependencies import get_current_active_user
 from ...dependencies.service_dependencies import get_auth_service
 from ...schemas.auth.auth_schema import (
+    AccountDeletionPolicyResponse,
     ChangePasswordRequest,
     ChangeUsernameRequest,
     DeleteAccountRequest,
@@ -52,6 +54,14 @@ async def get_current_user_info(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> User:
     return current_user
+
+
+@router.get("/deletion-policy")
+async def get_deletion_policy() -> AccountDeletionPolicyResponse:
+    return AccountDeletionPolicyResponse(
+        grace_days=settings.account_deletion_grace_days,
+        contact_email=settings.privacy_contact_email,
+    )
 
 
 @router.patch("/username")

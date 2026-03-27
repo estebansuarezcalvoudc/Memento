@@ -255,6 +255,17 @@ class TestAuthEndpoints:
         )
         assert response.status_code == 422
 
+    def test_get_deletion_policy_should_return_grace_days_and_contact_email(
+        self, client: TestClient
+    ):
+        response = client.get("/auth/deletion-policy")
+
+        assert response.status_code == 200
+        assert response.json() == {
+            "grace_days": 30,
+            "contact_email": "privacy@example.com",
+        }
+
     def test_login_should_validate_required_fields(
         self, client: TestClient, mock_mongo
     ):

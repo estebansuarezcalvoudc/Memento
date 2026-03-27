@@ -56,3 +56,8 @@ class ChangePasswordRequest(BaseModel):
 
 class DeleteAccountRequest(BaseModel):
     password: str
+
+
+class AccountDeletionPolicyResponse(BaseModel):
+    grace_days: int
+    contact_email: str
