@@ -1,6 +1,5 @@
 import { NavLink } from 'react-router-dom'
 
-import { useDeleteMeeting } from '../../../../api/queries/useMeetingsQueries'
 import { editImage, removeImage } from '../../../../assets/buttonsImages'
 import { type Meeting } from '../../../../types/meetings'
 import MeetingButton from '../../MeetingButton'
@@ -10,27 +9,21 @@ interface MeetingItemViewProps {
   meeting: Meeting
   index: number
   setEditState: (state: EditState) => void
-  isDeleteOnCooldown: boolean
+  onRequestDelete: (meeting: Meeting) => void
 }
 
 export default function MeetingItemView({
   meeting,
   index,
   setEditState,
-  isDeleteOnCooldown,
+  onRequestDelete,
 }: MeetingItemViewProps) {
-  const { mutate: deleteMeeting, isPending } = useDeleteMeeting()
-
   const handleEdit = () => {
     setEditState({
       isEditing: true,
       title: meeting.title,
       date: meeting.date,
     })
-  }
-
-  const handleDelete = () => {
-    deleteMeeting(meeting.id)
   }
 
   return (
@@ -52,15 +45,13 @@ export default function MeetingItemView({
         onClick={handleEdit}
         bgColor="hover:bg-blue-300"
         textColor="hover:text-blue-800"
-        disabled={isPending}
         ariaLabel="Edit"
       />
       <MeetingButton
         image={removeImage}
-        onClick={handleDelete}
+        onClick={() => onRequestDelete(meeting)}
         bgColor="hover:bg-red-300"
         textColor="hover:text-red-800"
-        disabled={isPending || isDeleteOnCooldown}
         ariaLabel="Delete"
       />
     </>

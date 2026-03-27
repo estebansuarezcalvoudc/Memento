@@ -203,6 +203,9 @@
         "atLeastOne": "Debes añadir al menos una reunión"
       }
     },
+    "deleteDialog": {
+      "confirmMessage": "¿Seguro que deseas eliminar esta reunión?"
+    },
     "content": {
       "summary": "Resumen",
       "transcription": "Transcripción",

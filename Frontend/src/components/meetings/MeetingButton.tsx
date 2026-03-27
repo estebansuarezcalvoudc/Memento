@@ -3,8 +3,8 @@ interface MeetingButtonProps {
   onClick: () => void
   bgColor: string
   textColor: string
-  disabled: boolean
   ariaLabel?: string
+  disabled?: boolean
 }
 
 export default function MeetingButton({
@@ -12,8 +12,8 @@ export default function MeetingButton({
   onClick,
   bgColor,
   textColor,
-  disabled,
   ariaLabel,
+  disabled,
 }: MeetingButtonProps) {
   return (
     <button
