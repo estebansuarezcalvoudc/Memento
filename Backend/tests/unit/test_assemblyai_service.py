@@ -24,7 +24,7 @@ def _make_service(
 
 class TestAssemblyAITranscriptionService:
     def test_validate_api_key_should_succeed_for_valid_key(self):
-        service, _repo = _make_service()
+        service, _ = _make_service()
 
         with patch("assemblyai.Transcriber") as transcriber_cls:
             transcriber_cls.return_value.list_transcripts.return_value = MagicMock()
@@ -34,7 +34,7 @@ class TestAssemblyAITranscriptionService:
         transcriber_cls.return_value.list_transcripts.assert_called_once()
 
     def test_validate_api_key_should_raise_401_for_invalid_key(self):
-        service, _repo = _make_service()
+        service, _ = _make_service()
 
         with patch("assemblyai.Transcriber") as transcriber_cls:
             transcriber_cls.return_value.list_transcripts.side_effect = (
@@ -47,7 +47,7 @@ class TestAssemblyAITranscriptionService:
         assert exc_info.value.status_code == 401
 
     def test_validate_api_key_should_raise_503_for_timeout_or_network_error(self):
-        service, _repo = _make_service()
+        service, _ = _make_service()
 
         with patch("assemblyai.Transcriber") as transcriber_cls:
             transcriber_cls.return_value.list_transcripts.side_effect = Exception(
@@ -60,7 +60,7 @@ class TestAssemblyAITranscriptionService:
         assert exc_info.value.status_code == 503
 
     def test_get_supported_languages_should_return_language_options_with_name(self):
-        service, _repo = _make_service()
+        service, _ = _make_service()
 
         languages = service.get_supported_languages()
 
@@ -69,7 +69,7 @@ class TestAssemblyAITranscriptionService:
         assert all(lang.name for lang in languages)
 
     def test_get_available_options_should_return_speech_models(self):
-        service, _repo = _make_service()
+        service, _ = _make_service()
 
         options = service.get_available_options()
 
@@ -77,7 +77,7 @@ class TestAssemblyAITranscriptionService:
         assert "universal" in options.speech_models
 
     def test_get_user_configuration_should_return_defaults_when_no_settings(self):
-        service, _repo = _make_service(provider_settings=None)
+        service, _ = _make_service(provider_settings=None)
 
         config = service.get_user_configuration("user123")
 
@@ -85,9 +85,7 @@ class TestAssemblyAITranscriptionService:
         assert config.speaker_labels is True
 
     def test_get_user_configuration_should_fallback_invalid_speech_model(self):
-        service, _repo = _make_service(
-            provider_settings={"speech_model": "invalid-model"}
-        )
+        service, _ = _make_service(provider_settings={"speech_model": "invalid-model"})
 
         config = service.get_user_configuration("user123")
 
@@ -112,7 +110,7 @@ class TestAssemblyAITranscriptionService:
         repo.update_transcription_provider_settings.assert_not_called()
 
     def test_transcribe_should_handle_none_utterances(self):
-        service, _repo = _make_service(
+        service, _ = _make_service(
             provider_settings={"speech_model": "universal", "speaker_labels": True},
             encrypted_api_key="encrypted",
         )
@@ -125,14 +123,17 @@ class TestAssemblyAITranscriptionService:
             language_code="en",
         )
 
-        with patch(
-            "app.services.transcription.implementations.assemblyai"
-            ".assemblyai_transcription_service.decrypt_api_key",
-            return_value="plain-key",
-        ), patch("assemblyai.Transcriber") as transcriber_cls:
+        with (
+            patch(
+                "app.services.transcription.implementations.assemblyai"
+                ".assemblyai_transcription_service.decrypt_api_key",
+                return_value="plain-key",
+            ),
+            patch("assemblyai.Transcriber") as transcriber_cls,
+        ):
             transcriber_cls.return_value.transcribe.return_value = transcript
 
-            result = service.transcribe(b"audio-bytes", None, "user123")
+            result = service.transcribe(b"audio-bytes", None, None, "user123")
 
         args, kwargs = transcriber_cls.return_value.transcribe.call_args
         assert isinstance(args[0], BytesIO)
@@ -141,7 +142,7 @@ class TestAssemblyAITranscriptionService:
         assert result.language == "en"
 
     def test_transcribe_should_raise_500_when_provider_returns_error(self):
-        service, _repo = _make_service(
+        service, _ = _make_service(
             provider_settings={"speech_model": "universal", "speaker_labels": True},
             encrypted_api_key="encrypted",
         )
@@ -153,14 +154,17 @@ class TestAssemblyAITranscriptionService:
             language_code="en",
         )
 
-        with patch(
-            "app.services.transcription.implementations.assemblyai"
-            ".assemblyai_transcription_service.decrypt_api_key",
-            return_value="plain-key",
-        ), patch("assemblyai.Transcriber") as transcriber_cls:
+        with (
+            patch(
+                "app.services.transcription.implementations.assemblyai"
+                ".assemblyai_transcription_service.decrypt_api_key",
+                return_value="plain-key",
+            ),
+            patch("assemblyai.Transcriber") as transcriber_cls,
+        ):
             transcriber_cls.return_value.transcribe.return_value = transcript
 
             with pytest.raises(HTTPException) as exc_info:
-                service.transcribe(b"audio-bytes", None, "user123")
+                service.transcribe(b"audio-bytes", None, None, "user123")
 
         assert exc_info.value.status_code == 500
