@@ -5,7 +5,9 @@ from ...schemas.conversation.conversation_schema import (
     ConversationCreateResponse,
     ConversationDialogueRetrieve,
     ConversationMetadataRetrieve,
+    ConversationStreamState,
     ConversationUpdateRequest,
+    StreamStatus,
 )
 
 
@@ -121,5 +123,59 @@ class ConversationRepository(ABC):
 
         Args:
             user_id: User ID whose data will be deleted
+        """
+        pass
+
+    @abstractmethod
+    def set_stream_state(
+        self,
+        conversation_id: str,
+        user_id: str,
+        status: StreamStatus,
+        partial_reply: str | None = None,
+        error: str | None = None,
+    ) -> None:
+        """
+        Persist the current generation stream state for a conversation.
+
+        Args:
+            conversation_id: Conversation ID
+            user_id: Owner ID
+            status: Stream status
+            partial_reply: Current visible partial assistant reply
+            error: Optional error message
+        """
+        pass
+
+    @abstractmethod
+    def clear_stream_state(
+        self,
+        conversation_id: str,
+        user_id: str,
+    ) -> None:
+        """
+        Reset stream state to idle and clear transient stream fields.
+
+        Args:
+            conversation_id: Conversation ID
+            user_id: Owner ID
+        """
+        pass
+
+    @abstractmethod
+    def get_stream_state(
+        self,
+        conversation_id: str,
+        user_id: str,
+    ) -> ConversationStreamState:
+        """
+        Retrieve stream state for a conversation.
+
+        Args:
+            conversation_id: Conversation ID
+            user_id: Owner ID
+
+        Returns:
+            ConversationStreamState with current stream metadata.
         """
         pass

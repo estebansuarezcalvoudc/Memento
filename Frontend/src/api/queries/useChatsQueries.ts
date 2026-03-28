@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { type Chat, type Message } from '../../types/chats'
+import { type Chat, type ConversationDialogueResponse } from '../../types/chats'
 import { chatKey, chatsKey, getAuthSessionKey } from '../chat/chatQueryKeys'
 import fetchBackend from '../utils/fetchBackend'
 
@@ -17,10 +17,22 @@ export function useGetChats() {
 export function useGetChatMessages(id: string | undefined) {
   const sessionKey = getAuthSessionKey()
 
-  return useQuery<Message[]>({
+  return useQuery<ConversationDialogueResponse>({
     queryKey: chatKey(sessionKey, id!),
     queryFn: () => fetchBackend('GET', `conversations/${id}`),
     enabled: !!id,
+    refetchInterval: query => {
+      const current = query.state.data
+      if (!current) {
+        return false
+      }
+
+      if (Array.isArray(current)) {
+        return false
+      }
+
+      return current.state?.status === 'idle' ? false : 1000
+    },
   })
 }
 

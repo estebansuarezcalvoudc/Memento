@@ -2,7 +2,7 @@ import type { QueryClient } from '@tanstack/react-query'
 import { describe, expect, it, vi } from 'vitest'
 
 import { createMessageHandler } from '../../../../src/api/chat/chatMessageHandler'
-import { CHATS_KEY } from '../../../../src/api/chat/chatQueryKeys'
+import { chatsKey } from '../../../../src/api/chat/chatQueryKeys'
 
 describe('chatMessageHandler', () => {
   it('invalidates chats query when title event arrives', () => {
@@ -18,6 +18,7 @@ describe('chatMessageHandler', () => {
       dispatch,
       queryClient,
       message: 'hello',
+      sessionKey: 'token-a',
       resolvedConvIdRef: { current: null },
       accumulatedTokensRef: { current: '' },
       ws,
@@ -28,7 +29,7 @@ describe('chatMessageHandler', () => {
     } as MessageEvent<string>)
 
     expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
-      queryKey: CHATS_KEY,
+      queryKey: chatsKey('token-a'),
     })
     expect(ws.close).not.toHaveBeenCalled()
     expect(dispatch).not.toHaveBeenCalledWith(

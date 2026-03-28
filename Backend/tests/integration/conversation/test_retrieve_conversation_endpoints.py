@@ -101,7 +101,10 @@ class TestRetrieveDialogueEndpoint:
         response = client.get(f"/conversations/{VALID_CONV_ID}", headers=auth_headers)
 
         assert response.status_code == 200
-        assert response.json() == stored_messages
+        payload = response.json()
+        assert payload["messages"] == stored_messages
+        assert payload["state"]["status"] == "idle"
+        assert payload["state"]["partial_reply"] == ""
 
     def test_retrieve_dialogue_should_return_404_when_conversation_does_not_exist(
         self, client: TestClient, auth_headers: dict, mock_mongo

@@ -19,9 +19,9 @@ from ...dependencies.service_dependencies import get_conversation_service
 from ...schemas.auth.auth_schema import User
 from ...schemas.conversation.conversation_schema import (
     ChatRequest,
+    ConversationDialogueResponse,
     ConversationMetadataRetrieve,
     ConversationUpdateRequest,
-    Messages,
 )
 from ...services.conversation.conversation_service import ConversationService
 
@@ -64,10 +64,30 @@ async def chat_websocket(
             chat_request, current_user.id
         )
 
-        async for event in event_stream:
-            await websocket.send_text(event.model_dump_json())
+        client_disconnected = False
 
-        await websocket.close()
+        async for event in event_stream:
+            if client_disconnected:
+                continue
+
+            try:
+                await websocket.send_text(event.model_dump_json())
+            except WebSocketDisconnect:
+                client_disconnected = True
+                _logger.info(
+                    "WebSocket disconnected while streaming for user %s; continuing processing in background",
+                    current_user.id,
+                )
+            except Exception:
+                client_disconnected = True
+                _logger.info(
+                    "WebSocket send failed for user %s; continuing processing in background",
+                    current_user.id,
+                    exc_info=True,
+                )
+
+        if not client_disconnected:
+            await websocket.close()
 
     except WebSocketDisconnect:
         _logger.info(f"WebSocket disconnected for user {current_user.id}")
@@ -122,10 +142,12 @@ async def retrieve_dialogue(
     conversation_service: Annotated[
         ConversationService, Depends(get_conversation_service)
     ],
-) -> Messages:
+) -> ConversationDialogueResponse:
     try:
         dialogue = conversation_service.retrieve_dialogue(id, current_user.id)
-        return dialogue.messages
+        return ConversationDialogueResponse(
+            messages=dialogue.messages, state=dialogue.state
+        )
     except HTTPException:
         raise
     except Exception as e:

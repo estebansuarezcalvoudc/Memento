@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query'
 
-import type { Chat, Message } from '../../types/chats'
+import type { Chat, ConversationDialogueResponse } from '../../types/chats'
 import { chatKey, chatsKey } from './chatQueryKeys'
 import type { ChatAction } from './chatReducer'
 
@@ -90,9 +90,20 @@ export function createMessageHandler(
         conversationId: event.conversation_id,
       })
 
-      queryClient.setQueryData<Message[]>(
+      queryClient.setQueryData<ConversationDialogueResponse>(
         chatKey(sessionKey, event.conversation_id),
-        old => [...(old ?? []), { role: 'user', content: message }],
+        old => ({
+          messages: [
+            ...(old?.messages ?? []),
+            { role: 'user', content: message },
+          ],
+          state: old?.state ?? {
+            status: 'idle',
+            partialReply: '',
+            updatedAt: null,
+            error: null,
+          },
+        }),
       )
 
       queryClient.setQueryData<Chat[]>(chatsKey(sessionKey), old =>
@@ -114,12 +125,20 @@ export function createMessageHandler(
     } else if (event.type === 'done') {
       const convId = resolvedConvIdRef.current
       if (convId) {
-        queryClient.setQueryData<Message[]>(
+        queryClient.setQueryData<ConversationDialogueResponse>(
           chatKey(sessionKey, convId),
-          old => [
-            ...(old ?? []),
-            { role: 'assistant', content: accumulatedTokensRef.current },
-          ],
+          old => ({
+            messages: [
+              ...(old?.messages ?? []),
+              { role: 'assistant', content: accumulatedTokensRef.current },
+            ],
+            state: old?.state ?? {
+              status: 'idle',
+              partialReply: '',
+              updatedAt: null,
+              error: null,
+            },
+          }),
         )
       }
       dispatch({ type: 'DONE' })
