@@ -1,7 +1,14 @@
+import { getJwtUserId } from '../../auth/jwt'
+
 const NO_SESSION_KEY = 'no-session'
 
 export function getAuthSessionKey(): string {
-  return localStorage.getItem('access_token') ?? NO_SESSION_KEY
+  const token = localStorage.getItem('access_token')
+  if (!token) {
+    return NO_SESSION_KEY
+  }
+
+  return getJwtUserId(token) ?? NO_SESSION_KEY
 }
 
 export const chatsKey = (sessionKey: string) => ['chats', sessionKey] as const

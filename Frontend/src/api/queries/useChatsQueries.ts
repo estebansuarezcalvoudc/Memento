@@ -31,7 +31,11 @@ export function useGetChatMessages(id: string | undefined) {
         return false
       }
 
-      return current.state?.status === 'idle' ? false : 1000
+      if (!current.state) {
+        return false
+      }
+
+      return current.state.status === 'idle' ? false : 1000
     },
   })
 }
