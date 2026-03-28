@@ -49,11 +49,18 @@ export default function Chat() {
 
   const chatDivRef = useRef<HTMLDivElement | null>(null)
 
+  const effectiveStreamingContent = uiState.showTransientState
+    ? uiState.streamingContent
+    : ''
+  const effectiveIsRetrieving = uiState.showTransientState
+    ? uiState.isRetrieving
+    : false
+
   useEffect(() => {
     if (chatDivRef.current) {
       chatDivRef.current.scrollTop = chatDivRef.current.scrollHeight
     }
-  }, [messages, streamingContent, isRetrieving])
+  }, [messages, effectiveStreamingContent, effectiveIsRetrieving])
 
   if (uiState.showNewChatView) {
     return (
@@ -74,11 +81,9 @@ export default function Chat() {
       <ChatConversation
         ref={chatDivRef}
         messages={messages}
-        streamingContent={
-          uiState.showTransientState ? uiState.streamingContent : ''
-        }
+        streamingContent={effectiveStreamingContent}
         isStreaming={uiState.showTransientState ? uiState.isStreaming : false}
-        isRetrieving={uiState.showTransientState ? uiState.isRetrieving : false}
+        isRetrieving={effectiveIsRetrieving}
         isThinking={uiState.showTransientState ? uiState.isThinking : false}
         isInputDisabled={uiState.isInputDisabled}
         onSubmit={sendMessage}
