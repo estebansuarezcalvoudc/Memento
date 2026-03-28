@@ -1,5 +1,6 @@
 import asyncio
 from collections.abc import AsyncGenerator
+from datetime import datetime
 
 from ...core.logging import setup_logger
 from ...repositories.interfaces.conversation_repo import ConversationRepository
@@ -11,6 +12,7 @@ from ...schemas.conversation.conversation_schema import (
     ConversationCreateResponse,
     ConversationDialogueRetrieve,
     ConversationMetadataRetrieve,
+    ConversationStreamState,
     ConversationUpdateRequest,
     DoneEvent,
     RetrievingEvent,
@@ -24,6 +26,8 @@ from .rag import Rag
 from .thinking_filter import ThinkingStreamFilter
 
 _logger = setup_logger(__name__)
+
+_STREAM_STATE_PERSIST_INTERVAL_SECONDS = 0.25
 
 
 class ConversationService:
@@ -71,6 +75,8 @@ class ConversationService:
             conversation_id = request.conversation_id
             user_message = {"role": "user", "content": request.message}
             pending_title_task: asyncio.Task[str] | None = None
+            persisted_partial_reply = ""
+            last_partial_persist_at = datetime.min
 
             if conversation_id is None:
                 new_conv = self._repository.store_conversation(user_id, [user_message])
@@ -90,6 +96,12 @@ class ConversationService:
                 self._repository.append_new_messages_to_conversation(
                     conversation_id, [user_message], user_id
                 )
+
+            self._repository.set_stream_state(
+                conversation_id=conversation_id,
+                user_id=user_id,
+                status="retrieving",
+            )
 
             full_reply_parts: list[str] = []
             thinking_filter = ThinkingStreamFilter()
@@ -113,13 +125,39 @@ class ConversationService:
                 filtered = thinking_filter.consume(token)
 
                 if filtered.thinking_started:
+                    self._repository.set_stream_state(
+                        conversation_id=conversation_id,
+                        user_id=user_id,
+                        status="thinking",
+                        partial_reply="".join(full_reply_parts),
+                    )
                     yield ThinkingStartEvent()
 
                 for visible_chunk in filtered.visible_tokens:
                     full_reply_parts.append(visible_chunk)
+                    partial_reply = "".join(full_reply_parts)
+                    if self._should_persist_partial_reply(
+                        partial_reply,
+                        persisted_partial_reply,
+                        last_partial_persist_at,
+                    ):
+                        self._repository.set_stream_state(
+                            conversation_id=conversation_id,
+                            user_id=user_id,
+                            status="streaming",
+                            partial_reply=partial_reply,
+                        )
+                        persisted_partial_reply = partial_reply
+                        last_partial_persist_at = datetime.utcnow()
                     yield TokenEvent(content=visible_chunk)
 
                 if filtered.thinking_ended:
+                    self._repository.set_stream_state(
+                        conversation_id=conversation_id,
+                        user_id=user_id,
+                        status="streaming",
+                        partial_reply="".join(full_reply_parts),
+                    )
                     yield ThinkingEndEvent()
 
             final_filtered = thinking_filter.finalize()
@@ -134,6 +172,7 @@ class ConversationService:
             self._repository.append_new_messages_to_conversation(
                 conversation_id, [assistant_message], user_id
             )
+            self._repository.clear_stream_state(conversation_id, user_id)
 
             if pending_title_task is not None:
                 try:
@@ -149,7 +188,41 @@ class ConversationService:
             _logger.debug("streaming message processed and persisted")
             yield DoneEvent()
 
-        return _generate()
+        async def _generate_with_error_state() -> AsyncGenerator[ChatEvent, None]:
+            conversation_id_for_error = request.conversation_id
+
+            try:
+                async for event in _generate():
+                    if isinstance(event, ConversationCreatedEvent):
+                        conversation_id_for_error = event.conversation_id
+                    yield event
+            except Exception:
+                if conversation_id_for_error is not None:
+                    self._repository.set_stream_state(
+                        conversation_id=conversation_id_for_error,
+                        user_id=user_id,
+                        status="idle",
+                        error="Failed to process message",
+                    )
+                raise
+
+        return _generate_with_error_state()
+
+    @staticmethod
+    def _should_persist_partial_reply(
+        partial_reply: str,
+        persisted_partial_reply: str,
+        last_partial_persist_at: datetime,
+    ) -> bool:
+        if partial_reply == persisted_partial_reply:
+            return False
+
+        if len(partial_reply) - len(persisted_partial_reply) >= 40:
+            return True
+
+        return (
+            datetime.utcnow() - last_partial_persist_at
+        ).total_seconds() >= _STREAM_STATE_PERSIST_INTERVAL_SECONDS
 
     async def _create_and_store_title(
         self, conversation_id: str, message: str, user_id: str
@@ -208,6 +281,9 @@ class ConversationService:
 
     def retrieve_dialogue(self, id: str, user_id: str) -> ConversationDialogueRetrieve:
         return self._repository.fetch_conversation(id, user_id)
+
+    def retrieve_stream_state(self, id: str, user_id: str) -> ConversationStreamState:
+        return self._repository.get_stream_state(id, user_id)
 
     def update_conversation_metadata(
         self, id: str, metadata: ConversationUpdateRequest, user_id: str

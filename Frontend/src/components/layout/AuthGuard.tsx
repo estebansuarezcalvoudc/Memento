@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { clearAuthSession } from '../../auth/session'
 import { useSetIsUserAuth } from '../../stores/authStore'
 
 export default function AuthGuard() {
@@ -9,7 +10,7 @@ export default function AuthGuard() {
 
   useEffect(() => {
     const handleUnauthorized = () => {
-      localStorage.removeItem('access_token')
+      clearAuthSession()
       setIsUserAuth(false)
       navigate('/login')
     }

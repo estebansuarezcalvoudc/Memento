@@ -1,20 +1,17 @@
 from typing import Optional, cast
 
-import pymongo
-
 from ....core.providers_config import AVAILABLE_PROVIDERS, ProviderName
-from ....core.settings import settings
 from ....schemas.settings.model_schema import ModelConfig
 from ....schemas.settings.provider_schema import Provider, ProviderSettings
 from ...interfaces.settings_repo import SettingsRepository as AbstractSettingsRepository
+from .mongo_client import get_mongo_database
 
 
 class SettingsMongoRepository(AbstractSettingsRepository):
     """Repository for user settings data access"""
 
     def __init__(self) -> None:
-        myclient = pymongo.MongoClient(settings.mongo_url)
-        mydb = myclient["tfg_db"]
+        mydb = get_mongo_database()
         self._collection = mydb["user_settings"]
 
     def get_providers(self, user_id: str) -> list[Provider]:

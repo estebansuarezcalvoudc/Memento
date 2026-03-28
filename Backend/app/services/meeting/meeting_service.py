@@ -27,7 +27,6 @@ from ...schemas.meeting.meeting_schema import (
 from ...services.settings.transcription_providers_service import (
     TranscriptionProvidersService,
 )
-from ...utils.singleton_meta import SingletonMeta
 from .meeting_processing.summarization import get_meeting_summary
 
 _logger = setup_logger(__name__)
@@ -35,7 +34,7 @@ _logger = setup_logger(__name__)
 _TEXT_SPLITTER = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
 
 
-class MeetingService(metaclass=SingletonMeta):
+class MeetingService:
     def __init__(
         self,
         meetings_repository: MeetingRepository,

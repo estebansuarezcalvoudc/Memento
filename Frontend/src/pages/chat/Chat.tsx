@@ -5,12 +5,17 @@ import { useChat } from '../../api/chat/useChat'
 import { useGetChatMessages } from '../../api/queries/useChatsQueries'
 import ChatConversation from '../../components/chat/ChatConversation'
 import NewChatView from '../../components/chat/NewChatView'
+import type { ConversationStreamState, Message } from '../../types/chats'
+
+const EMPTY_MESSAGES: Message[] = []
 
 export default function Chat() {
   const { chatId } = useParams<{ chatId?: string }>()
   const navigate = useNavigate()
 
-  const { data: messages = [] } = useGetChatMessages(chatId)
+  const { data: dialogue } = useGetChatMessages(chatId)
+  const messages = dialogue?.messages ?? EMPTY_MESSAGES
+  const persistedState = dialogue?.state
 
   const onConversationCreated = useCallback(
     (id: string) => {
@@ -34,19 +39,28 @@ export default function Chat() {
     chatId,
     activeConversationId,
     isCreatingConversationFromNewChat,
+    streamingContent,
     isStreaming,
     isRetrieving,
     isThinking,
+    persistedState,
     error,
   })
 
   const chatDivRef = useRef<HTMLDivElement | null>(null)
 
+  const effectiveStreamingContent = uiState.showTransientState
+    ? uiState.streamingContent
+    : ''
+  const effectiveIsRetrieving = uiState.showTransientState
+    ? uiState.isRetrieving
+    : false
+
   useEffect(() => {
     if (chatDivRef.current) {
       chatDivRef.current.scrollTop = chatDivRef.current.scrollHeight
     }
-  }, [messages, streamingContent, isRetrieving])
+  }, [messages, effectiveStreamingContent, effectiveIsRetrieving])
 
   if (uiState.showNewChatView) {
     return (
@@ -67,10 +81,10 @@ export default function Chat() {
       <ChatConversation
         ref={chatDivRef}
         messages={messages}
-        streamingContent={uiState.showTransientState ? streamingContent : ''}
-        isStreaming={uiState.showTransientState ? isStreaming : false}
-        isRetrieving={uiState.showTransientState ? isRetrieving : false}
-        isThinking={uiState.showTransientState ? isThinking : false}
+        streamingContent={effectiveStreamingContent}
+        isStreaming={uiState.showTransientState ? uiState.isStreaming : false}
+        isRetrieving={effectiveIsRetrieving}
+        isThinking={uiState.showTransientState ? uiState.isThinking : false}
         isInputDisabled={uiState.isInputDisabled}
         onSubmit={sendMessage}
       />
@@ -82,37 +96,86 @@ interface ChatUiState {
   showNewChatView: boolean
   showTransientState: boolean
   isInputDisabled: boolean
+  isStreaming: boolean
+  streamingContent: string
+  isRetrieving: boolean
+  isThinking: boolean
 }
 
 interface ChatUiStateParams {
   chatId?: string
   activeConversationId: string | null
   isCreatingConversationFromNewChat: boolean
+  streamingContent: string
   isStreaming: boolean
   isRetrieving: boolean
   isThinking: boolean
+  persistedState: ConversationStreamState | undefined
   error: string | null
 }
 
+interface PersistedTransientState {
+  inProgress: boolean
+  isStreaming: boolean
+  isRetrieving: boolean
+  isThinking: boolean
+  streamingContent: string
+}
 function getChatUiState({
   chatId,
   activeConversationId,
   isCreatingConversationFromNewChat,
+  streamingContent,
   isStreaming,
   isRetrieving,
   isThinking,
+  persistedState,
   error,
 }: ChatUiStateParams): ChatUiState {
-  const isInputDisabled = isStreaming || isRetrieving || isThinking
+  const persisted = getPersistedTransientState(persistedState)
+  const effectiveIsStreaming = isStreaming || persisted.isStreaming
+  const effectiveIsRetrieving = isRetrieving || persisted.isRetrieving
+  const effectiveIsThinking = isThinking || persisted.isThinking
+  const effectiveStreamingContent =
+    streamingContent || persisted.streamingContent
+  const isInputDisabled =
+    effectiveIsStreaming ||
+    effectiveIsRetrieving ||
+    effectiveIsThinking ||
+    persisted.inProgress
+
   const showNewChatView =
     !chatId && !isCreatingConversationFromNewChat && !error
-  const showTransientState = chatId
-    ? activeConversationId === chatId
-    : isCreatingConversationFromNewChat
+  const isActiveConversation = Boolean(
+    chatId && activeConversationId === chatId,
+  )
+  const showTransientState =
+    isActiveConversation ||
+    isCreatingConversationFromNewChat ||
+    persisted.inProgress
 
   return {
     showNewChatView,
     showTransientState,
     isInputDisabled,
+    isStreaming: effectiveIsStreaming,
+    streamingContent: effectiveStreamingContent,
+    isRetrieving: effectiveIsRetrieving,
+    isThinking: effectiveIsThinking,
+  }
+}
+
+function getPersistedTransientState(
+  persistedState: ConversationStreamState | undefined,
+): PersistedTransientState {
+  const status = persistedState?.status ?? 'idle'
+
+  return {
+    inProgress: status !== 'idle',
+    isStreaming: status === 'streaming',
+    isRetrieving: status === 'retrieving',
+    isThinking: status === 'thinking',
+    streamingContent:
+      status === 'streaming' ? (persistedState?.partialReply ?? '') : '',
   }
 }

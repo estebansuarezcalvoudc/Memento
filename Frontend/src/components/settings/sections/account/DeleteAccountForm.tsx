@@ -6,6 +6,7 @@ import {
   useDeleteAccount,
   useGetAccountDeletionPolicy,
 } from '../../../../api/queries/auth/useAuthQueries'
+import { clearAuthSession } from '../../../../auth/session'
 import {
   useSetIsUserAuth,
   type SetIsUserAuth,
@@ -122,7 +123,7 @@ async function deleteAccountAction(
 
   try {
     await deleteAccount({ password })
-    localStorage.removeItem('access_token')
+    clearAuthSession()
     setIsUserAuth(false)
     navigate('/')
     return { errors: null }

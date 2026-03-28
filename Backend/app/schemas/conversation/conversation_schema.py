@@ -3,9 +3,19 @@ from typing import Literal
 
 from pydantic import AwareDatetime, BaseModel, Field
 
+StreamStatus = Literal["idle", "retrieving", "thinking", "streaming"]
+
+
+class ConversationStreamState(BaseModel):
+    status: StreamStatus = "idle"
+    partial_reply: str = ""
+    updated_at: datetime | None = None
+    error: str | None = None
+
 
 class ConversationDialogueRetrieve(BaseModel):
     messages: list[dict]
+    state: ConversationStreamState = Field(default_factory=ConversationStreamState)
 
 
 class ConversationMetadataRetrieve(BaseModel):
@@ -29,7 +39,9 @@ class ConversationCreateResponse(BaseModel):
     updated_at: datetime
 
 
-Messages = list[dict]
+class ConversationDialogueResponse(BaseModel):
+    messages: list[dict]
+    state: ConversationStreamState
 
 
 class ConversationUpdateRequest(BaseModel):

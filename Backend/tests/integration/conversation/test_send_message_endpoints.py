@@ -62,8 +62,15 @@ class TestChatWebSocketSendMessage:
         token_msgs = [m for m in messages if m["type"] == "token"]
         assert "".join(m["content"] for m in token_msgs) == "AI response"
         assert messages[-1]["type"] == "done"
-        # User message persisted + assistant message persisted
-        assert mock_mongo.update_one.call_count == 2
+        # User + assistant messages are persisted, alongside stream-state updates.
+        update_calls = mock_mongo.update_one.call_args_list
+        assert len(update_calls) >= 2
+        message_updates = [
+            call
+            for call in update_calls
+            if "$push" in call[0][1] and "messages" in call[0][1]["$push"]
+        ]
+        assert len(message_updates) == 2
 
     def test_send_message_should_send_error_when_conversation_does_not_exist(
         self,

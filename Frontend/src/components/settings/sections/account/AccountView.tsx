@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
+import { getJwtEmail } from '../../../../auth/jwt'
+import { clearAuthSession } from '../../../../auth/session'
 import { useSetIsUserAuth } from '../../../../stores/authStore'
 import InlineButton from '../../../ui/buttons/InlineButton'
 import DeleteAccountForm from './DeleteAccountForm'
@@ -15,12 +17,8 @@ function getUsernameFromToken(): string {
   if (!token) {
     return ''
   }
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return payload.email ?? ''
-  } catch {
-    return ''
-  }
+
+  return getJwtEmail(token) ?? ''
 }
 
 export default function AccountView() {
@@ -48,7 +46,7 @@ export default function AccountView() {
               <InlineButton
                 variant="emphasis"
                 onClick={() => {
-                  localStorage.removeItem('access_token')
+                  clearAuthSession()
                   setIsUserAuth(false)
                   navigate('/login')
                 }}

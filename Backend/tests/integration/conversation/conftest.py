@@ -3,23 +3,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from app.services.conversation.conversation_service import ConversationService
-from app.services.conversation.rag import Rag
-from app.utils.singleton_meta import SingletonMeta
-
-
-@pytest.fixture(autouse=True)
-def reset_conversation_singletons():
-    """
-    Reset ConversationService and Rag singletons before and after each
-    test so every test gets fresh instances initialized against current mocks.
-    """
-    SingletonMeta._instances.pop(ConversationService, None)
-    SingletonMeta._instances.pop(Rag, None)
-    yield
-    SingletonMeta._instances.pop(ConversationService, None)
-    SingletonMeta._instances.pop(Rag, None)
-
 
 @pytest.fixture(autouse=True)
 def mock_vector_store():

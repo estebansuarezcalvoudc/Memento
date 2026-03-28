@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { ClipLoader } from 'react-spinners'
 
 import { verifyToken } from './api/authAPI'
+import { clearAuthSession } from './auth/session'
 import AuthGuard from './components/layout/AuthGuard'
 import ProtectedRoute from './components/layout/ProtectedRoute'
 import PublicOnlyRoute from './components/layout/PublicOnlyRoute'
@@ -34,7 +35,7 @@ export default function App() {
     if (token) {
       verifyToken()
         .then(() => setIsUserAuth(true))
-        .catch(() => localStorage.removeItem('access_token'))
+        .catch(() => clearAuthSession())
         .finally(() => setAuthInitialized(true))
     } else {
       setAuthInitialized(true)
