@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
+import { clearAuthSession } from '../../../../auth/session'
 import { useSetIsUserAuth } from '../../../../stores/authStore'
 import InlineButton from '../../../ui/buttons/InlineButton'
 import DeleteAccountForm from './DeleteAccountForm'
@@ -48,7 +49,7 @@ export default function AccountView() {
               <InlineButton
                 variant="emphasis"
                 onClick={() => {
-                  localStorage.removeItem('access_token')
+                  clearAuthSession()
                   setIsUserAuth(false)
                   navigate('/login')
                 }}

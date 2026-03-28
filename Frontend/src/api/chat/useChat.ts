@@ -4,7 +4,7 @@ import { useCallback, useEffect, useReducer, useRef } from 'react'
 import type { Message } from '../../types/chats'
 import { localISOString } from '../../utils/date'
 import { buildWebSocketUrl, createMessageHandler } from './chatMessageHandler'
-import { chatKey } from './chatQueryKeys'
+import { chatKey, getAuthSessionKey } from './chatQueryKeys'
 import { chatReducer, IDLE_STATE } from './chatReducer'
 
 export interface UseChatResult {
@@ -51,14 +51,16 @@ export function useChat(
         return
       }
 
+      const sessionKey = getAuthSessionKey()
+
       resolvedConvIdRef.current = conversationId
       accumulatedTokensRef.current = ''
 
       if (conversationId) {
-        queryClient.setQueryData<Message[]>(chatKey(conversationId), old => [
-          ...(old ?? []),
-          { role: 'user', content: message },
-        ])
+        queryClient.setQueryData<Message[]>(
+          chatKey(sessionKey, conversationId),
+          old => [...(old ?? []), { role: 'user', content: message }],
+        )
       }
 
       dispatch({ type: 'SEND_MESSAGE', conversationId })
@@ -82,6 +84,7 @@ export function useChat(
         dispatch,
         queryClient,
         message,
+        sessionKey,
         resolvedConvIdRef,
         accumulatedTokensRef,
         onConversationCreated,

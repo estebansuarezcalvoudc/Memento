@@ -1,7 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query'
 
 import type { Chat, Message } from '../../types/chats'
-import { chatKey, CHATS_KEY } from './chatQueryKeys'
+import { chatKey, chatsKey } from './chatQueryKeys'
 import type { ChatAction } from './chatReducer'
 
 interface ConversationCreatedEvent {
@@ -54,6 +54,7 @@ interface MessageHandlerDeps {
   dispatch: React.Dispatch<ChatAction>
   queryClient: Pick<QueryClient, 'setQueryData' | 'invalidateQueries'>
   message: string
+  sessionKey: string
   resolvedConvIdRef: React.RefObject<string | null>
   accumulatedTokensRef: React.RefObject<string>
   onConversationCreated?: (id: string) => void
@@ -67,6 +68,7 @@ export function createMessageHandler(
     dispatch,
     queryClient,
     message,
+    sessionKey,
     resolvedConvIdRef,
     accumulatedTokensRef,
     onConversationCreated,
@@ -89,11 +91,11 @@ export function createMessageHandler(
       })
 
       queryClient.setQueryData<Message[]>(
-        chatKey(event.conversation_id),
+        chatKey(sessionKey, event.conversation_id),
         old => [...(old ?? []), { role: 'user', content: message }],
       )
 
-      queryClient.setQueryData<Chat[]>(CHATS_KEY, old =>
+      queryClient.setQueryData<Chat[]>(chatsKey(sessionKey), old =>
         old
           ? [{ id: event.conversation_id }, ...old]
           : [{ id: event.conversation_id }],
@@ -112,16 +114,19 @@ export function createMessageHandler(
     } else if (event.type === 'done') {
       const convId = resolvedConvIdRef.current
       if (convId) {
-        queryClient.setQueryData<Message[]>(chatKey(convId), old => [
-          ...(old ?? []),
-          { role: 'assistant', content: accumulatedTokensRef.current },
-        ])
+        queryClient.setQueryData<Message[]>(
+          chatKey(sessionKey, convId),
+          old => [
+            ...(old ?? []),
+            { role: 'assistant', content: accumulatedTokensRef.current },
+          ],
+        )
       }
       dispatch({ type: 'DONE' })
       ws.close()
     } else if (event.type === 'title') {
       // Invalidate so useGetChats refetches and the sidebar updates automatically
-      void queryClient.invalidateQueries({ queryKey: CHATS_KEY })
+      void queryClient.invalidateQueries({ queryKey: chatsKey(sessionKey) })
     } else if (event.type === 'error') {
       dispatch({ type: 'ERROR', content: event.content })
       ws.close()
