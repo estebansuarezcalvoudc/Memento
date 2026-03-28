@@ -1,20 +1,18 @@
 from datetime import datetime
 from typing import Optional
 
-import pymongo
 from bson import ObjectId
 from fastapi import HTTPException, status
 from pymongo.errors import DuplicateKeyError
 
-from ....core.settings import settings
 from ....schemas.auth.auth_schema import UserCreateInDB, UserInDB
 from ...interfaces.auth_repo import AuthRepository as AbstractAuthRepository
+from .mongo_client import get_mongo_database
 
 
 class AuthMongoRepository(AbstractAuthRepository):
     def __init__(self) -> None:
-        myclient = pymongo.MongoClient(settings.mongo_url)
-        mydb = myclient["tfg_db"]
+        mydb = get_mongo_database()
         self._collection = mydb["auth"]
         self._collection.create_index("username", unique=True)
 

@@ -1,11 +1,9 @@
 from datetime import datetime
 from typing import Optional
 
-import pymongo
 from bson import ObjectId
 from fastapi import HTTPException, status
 
-from ....core.settings import settings
 from ....schemas.meeting.meeting_schema import MeetingMetadata as MeetingMetadataSchema
 from ....schemas.meeting.meeting_schema import (
     MeetingMetadataResponse,
@@ -14,13 +12,13 @@ from ....schemas.meeting.meeting_schema import (
     UpdateMeetingMetadata,
 )
 from ...interfaces.meeting_repo import MeetingRepository as AbstractMeetingRepository
+from .mongo_client import get_mongo_database
 from .utils.handle_invalid_id import handle_invalid_id
 
 
 class MeetingMongoRepository(AbstractMeetingRepository):
     def __init__(self) -> None:
-        myclient = pymongo.MongoClient(settings.mongo_url)
-        mydb = myclient["tfg_db"]
+        mydb = get_mongo_database()
         self._collection = mydb["meetings"]
         self._collection.create_index("user_id", background=True)
 

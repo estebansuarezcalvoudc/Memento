@@ -1,4 +1,5 @@
 import threading
+from functools import lru_cache
 
 import chromadb
 from chromadb.errors import NotFoundError as ChromaNotFoundError
@@ -67,6 +68,7 @@ def get_vector_store() -> Chroma:
     return _chroma_store
 
 
+@lru_cache(maxsize=1)
 def get_auth_service() -> AuthService:
     return AuthService(
         AuthMongoRepository(),
@@ -77,14 +79,17 @@ def get_auth_service() -> AuthService:
     )
 
 
+@lru_cache(maxsize=1)
 def get_rag_service() -> Rag:
     return Rag(SettingsMongoRepository(), get_vector_store())
 
 
+@lru_cache(maxsize=1)
 def get_conversation_service() -> ConversationService:
     return ConversationService(ConversationMongoRepository(), get_rag_service())
 
 
+@lru_cache(maxsize=1)
 def get_meeting_service() -> MeetingService:
     return MeetingService(
         MeetingMongoRepository(),
@@ -94,17 +99,32 @@ def get_meeting_service() -> MeetingService:
     )
 
 
+@lru_cache(maxsize=1)
 def get_transcription_providers_service() -> TranscriptionProvidersService:
     return TranscriptionProvidersService(SettingsMongoRepository())
 
 
+@lru_cache(maxsize=1)
 def get_models_service() -> ModelsService:
     return ModelsService(SettingsMongoRepository())
 
 
+@lru_cache(maxsize=1)
 def get_providers_service() -> ProvidersService:
     return ProvidersService(SettingsMongoRepository())
 
 
+@lru_cache(maxsize=1)
 def get_templates_service() -> TemplatesService:
     return TemplatesService(SettingsMongoRepository())
+
+
+def clear_service_dependency_caches() -> None:
+    get_auth_service.cache_clear()
+    get_rag_service.cache_clear()
+    get_conversation_service.cache_clear()
+    get_meeting_service.cache_clear()
+    get_transcription_providers_service.cache_clear()
+    get_models_service.cache_clear()
+    get_providers_service.cache_clear()
+    get_templates_service.cache_clear()

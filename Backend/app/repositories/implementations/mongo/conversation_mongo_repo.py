@@ -5,7 +5,6 @@ import pymongo
 from bson import ObjectId
 from fastapi import HTTPException, status
 
-from ....core.settings import settings
 from ....schemas.conversation.conversation_schema import (
     ConversationCreateResponse,
     ConversationDialogueRetrieve,
@@ -15,13 +14,13 @@ from ....schemas.conversation.conversation_schema import (
 from ...interfaces.conversation_repo import (
     ConversationRepository as AbstractConversationRepository,
 )
+from .mongo_client import get_mongo_database
 from .utils.handle_invalid_id import handle_invalid_id
 
 
 class ConversationMongoRepository(AbstractConversationRepository):
     def __init__(self):
-        myclient = pymongo.MongoClient(settings.mongo_url)
-        mydb = myclient["tfg_db"]
+        mydb = get_mongo_database()
         self._collection = mydb["conversations"]
         self._collection.create_index(
             [("user_id", pymongo.ASCENDING), ("updated_at", pymongo.DESCENDING)],
