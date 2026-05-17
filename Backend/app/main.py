@@ -10,7 +10,7 @@ from .dependencies.service_dependencies import (
     clear_service_dependency_caches,
     get_auth_service,
 )
-from .repositories.implementations.mongo.mongo_client import close_mongo_client
+from .repositories import close_database_connection
 from .routers.auth import auth_router
 from .routers.conversation import conversation_router
 from .routers.meeting import meeting_router
@@ -55,7 +55,7 @@ async def lifespan(app: FastAPI):
             with suppress(asyncio.CancelledError):
                 await task
         clear_service_dependency_caches()
-        close_mongo_client()
+        close_database_connection()
 
 
 app = FastAPI(title="TFG", openapi_tags=_tags_metadata, lifespan=lifespan)
