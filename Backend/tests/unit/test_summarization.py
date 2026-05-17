@@ -7,9 +7,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi import HTTPException
 
-_PATCH_CREATE_LLM = (
-    "app.services.meeting.meeting_processing.summarization.get_llm_for_user"
-)
+_PATCH_CREATE_LLM = "app.services.meeting.summarization.get_llm_for_user"
 
 
 def _make_llm_config(provider: str = "Ollama", model: str = "llama3.2:latest"):
@@ -40,7 +38,7 @@ class TestGetMeetingSummary:
                 detail="API key not configured for user_id=user@example.com",
             )
 
-            from app.services.meeting.meeting_processing.summarization import (
+            from app.services.meeting.summarization import (
                 get_meeting_summary,
             )
 
@@ -65,7 +63,7 @@ class TestGetMeetingSummary:
         with (
             patch(_PATCH_CREATE_LLM, return_value=mock_llm),
             patch(
-                "app.services.meeting.meeting_processing.summarization.ChatPromptTemplate"
+                "app.services.meeting.summarization.ChatPromptTemplate"
             ) as mock_prompt_cls,
         ):
             # Make prompt | llm | parser chain return mock_chain
@@ -74,7 +72,7 @@ class TestGetMeetingSummary:
             mock_prompt.__or__ = MagicMock(return_value=mock_chain)
             mock_chain.__or__ = MagicMock(return_value=mock_chain)
 
-            from app.services.meeting.meeting_processing.summarization import (
+            from app.services.meeting.summarization import (
                 get_meeting_summary,
             )
 
@@ -101,7 +99,7 @@ class TestGetMeetingSummary:
                 detail="API key not configured for user_id=user@example.com",
             )
 
-            from app.services.meeting.meeting_processing.summarization import (
+            from app.services.meeting.summarization import (
                 get_meeting_summary,
             )
 

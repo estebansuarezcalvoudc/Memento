@@ -4,7 +4,7 @@ Unit tests for gpu_utils: CPU fallback logic and compute_type replacement.
 
 import pytest
 
-from app.services.meeting.meeting_processing.gpu_utils import (
+from app.services.transcription.implementations.whisperx.gpu_utils import (
     _replace_for_cpu_fallback,
     try_on_gpu,
 )
