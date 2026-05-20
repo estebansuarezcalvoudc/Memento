@@ -1,0 +1,53 @@
+@startgantt
+language es
+
+' Fecha en la que entregaste el anteproyecto aprox.
+Project starts 2025-07-08
+
+saturday are closed
+sunday are closed
+
+printscale weekly
+
+' Tu primer commit real
+[Sprint 1] starts 2025-07-08
+[Sprint 1] requires 10 days
+
+[Sprint 2] starts at [Sprint 1]'s end
+[Sprint 2] requires 10 days
+
+[Sprint 3 (Retraso MCP)] starts at [Sprint 2]'s end
+[Sprint 3 (Retraso MCP)] requires 15 days
+
+[Sprint 4 (Retraso Frontend)] starts at [Sprint 3 (Retraso MCP)]'s end
+[Sprint 4 (Retraso Frontend)] requires 15 days
+
+' Pausa del proyecto pintada en gris
+[Pausa por inicio del Máster] is colored in LightCoral
+[Pausa por inicio del Máster] starts at [Sprint 4 (Retraso Frontend)]'s end
+[Pausa por inicio del Máster] ends 2026-02-01
+
+' Retoma del proyecto
+[Sprint 5 (Retraso Adaptación)] starts 2026-02-02
+[Sprint 5 (Retraso Adaptación)] requires 15 days
+
+' Sprint 6 se alarga debido al desarrollo intermitente por el Máster
+[Sprint 6 (Desarrollo intermitente)] starts at [Sprint 5 (Retraso Adaptación)]'s end
+[Sprint 6 (Desarrollo intermitente)] requires 15 days
+
+' === APLICAMOS LOS ALIAS PARA EL SPRINT 7 ===
+
+' Primera parte del Sprint 7 (con alias s7_1)
+[Sprint 7 (Desarrollo intermitente)] as [s7_1] starts at [Sprint 6 (Desarrollo intermitente)]'s end
+[s7_1] ends 2026-04-03
+
+' Pausa real hasta mediados de mayo
+[Pausa por Máster (Carga académica)] is colored in LightCoral
+[Pausa por Máster (Carga académica)] starts 2026-04-06
+[Pausa por Máster (Carga académica)] ends 2026-05-10
+
+' Segunda parte del Sprint 7 (añadimos un espacio al final del nombre y usamos alias s7_2)
+[Sprint 7 (Desarrollo intermitente) ] as [s7_2] starts 2026-05-11
+[s7_2] requires 10 days
+
+@endgantt
