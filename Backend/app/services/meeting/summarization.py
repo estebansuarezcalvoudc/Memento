@@ -4,8 +4,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from app.repositories.interfaces.settings_repo import SettingsRepository
 from app.schemas.settings.templates_schema import DEFAULT_PROMPT
 
-from ....core.llm_factory import get_llm_for_user
-from ....core.logging import log_execution_time, setup_logger
+from ...core.llm_factory import get_llm_for_user
+from ...core.logging import log_execution_time, setup_logger
 
 _logger = setup_logger(__name__)
 
