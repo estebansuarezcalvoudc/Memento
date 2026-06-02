@@ -68,7 +68,7 @@ async def chat_websocket(
 
         async for event in event_stream:
             if client_disconnected:
-                continue
+                break
 
             try:
                 await websocket.send_text(event.model_dump_json())

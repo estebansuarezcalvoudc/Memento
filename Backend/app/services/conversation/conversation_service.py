@@ -44,9 +44,20 @@ class ConversationService:
     ) -> ConversationCreateResponse:
         created_conversation = self._repository.store_conversation(user_id, [])
 
-        asyncio.create_task(
+        task = asyncio.create_task(
             self.send_message(
                 created_conversation.id, conversation_create_request, user_id
+            )
+        )
+        task.add_done_callback(
+            lambda t: (
+                _logger.error(
+                    "send_message task failed: %s",
+                    t.exception(),
+                    exc_info=t.exception(),
+                )
+                if t.exception()
+                else None
             )
         )
 

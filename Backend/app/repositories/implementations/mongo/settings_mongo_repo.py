@@ -128,7 +128,12 @@ class SettingsMongoRepository(AbstractSettingsRepository):
             else None
         )
         if not data:
-            return None  # type: ignore[return-value]
+            return ModelConfig(
+                provider="Ollama",
+                model_name="llama3.2:latest",
+                temperature=0.7,
+                max_tokens=2000,
+            )
         return ModelConfig(**data)
 
     def update_chat_model(self, user_id: str, model: ModelConfig) -> None:
@@ -149,7 +154,12 @@ class SettingsMongoRepository(AbstractSettingsRepository):
             else None
         )
         if not data:
-            return None  # type: ignore[return-value]
+            return ModelConfig(
+                provider="Ollama",
+                model_name="llama3.2:latest",
+                temperature=0.3,
+                max_tokens=4000,
+            )
         return ModelConfig(**data)
 
     def update_summary_model(self, user_id: str, model: ModelConfig) -> None:
@@ -171,7 +181,12 @@ class SettingsMongoRepository(AbstractSettingsRepository):
             else None
         )
         if not data:
-            return None  # type: ignore[return-value]
+            return ModelConfig(
+                provider="Ollama",
+                model_name="llama3.2:latest",
+                temperature=0.0,
+                max_tokens=500,
+            )
         return ModelConfig(**data)
 
     def update_retrieval_model(self, user_id: str, model: ModelConfig) -> None:
