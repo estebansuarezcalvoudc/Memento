@@ -19,7 +19,7 @@ from ...schemas.meeting.meeting_schema import (
 from ...services.meeting.meeting_service import MeetingService
 
 _logger = setup_logger(__name__)
-router = APIRouter(prefix="/meetings", tags=["Meeting"])
+router = APIRouter(prefix="/meetings", tags=["Meetings"])
 
 
 def _parse_meetings_batch_request(

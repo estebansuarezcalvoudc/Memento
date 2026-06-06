@@ -1,0 +1,59 @@
+@startuml
+!theme mars
+
+actor Usuario
+
+participant SwaggerUI
+participant MeetingRouter
+
+Usuario -> SwaggerUI
+activate SwaggerUI
+
+SwaggerUI -> MeetingRouter : POST /meetings
+activate MeetingRouter
+
+' Volvemos a tu estructura original: envolver el flujo en el box
+box Services
+
+    MeetingRouter -> MeetingService
+    activate MeetingService
+
+    MeetingService -> transcription_factory : create_transcription_service
+    activate transcription_factory
+
+    ' Ahora sí, PlantUML creará la caja aquí abajo y la mantendrá dentro del box
+    create participant TranscriptionService
+    transcription_factory -> TranscriptionService
+
+    ' LA CORRECCIÓN: Usamos solo el return mágico. Borramos el "deactivate transcription_factory"
+    return
+
+    loop
+        MeetingService -> TranscriptionService
+        activate TranscriptionService
+        return transcription
+
+        MeetingService -> summarization
+        activate summarization
+        return summary
+    end
+end box
+
+participant MeetingRepository
+database "Base de Datos" as DB
+
+MeetingService -> MeetingRepository
+activate MeetingRepository
+
+MeetingRepository -> DB
+activate DB
+return
+
+return
+
+return
+return 201 Created
+
+return
+
+@enduml

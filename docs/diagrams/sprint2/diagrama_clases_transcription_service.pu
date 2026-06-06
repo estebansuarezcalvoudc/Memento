@@ -1,0 +1,12 @@
+@startuml
+
+top to bottom direction
+
+abstract class TranscriptionService
+class WhisperXTranscriptionService
+class AssemblyAITranscriptionService
+
+TranscriptionService <|-- WhisperXTranscriptionService
+TranscriptionService <|-- AssemblyAITranscriptionService
+
+@enduml

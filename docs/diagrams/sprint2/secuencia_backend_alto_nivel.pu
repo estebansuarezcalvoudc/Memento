@@ -1,0 +1,41 @@
+@startuml
+!theme mars
+
+actor "Usuario" as Client
+
+participant "Frontend" as Frontend
+
+box "Backend"
+    participant "Routers" as Routers
+    participant "Services" as Services
+    participant "Repositories" as Repositories
+end box
+
+database "Base de Datos" as BD
+
+Client -> Frontend
+activate Frontend
+
+Frontend -> Routers
+activate Routers
+
+Routers -> Services
+activate Services
+
+Services -> Repositories
+activate Repositories
+
+Repositories -> BD
+activate BD
+
+return
+
+return
+
+return
+
+return
+
+return
+
+@enduml

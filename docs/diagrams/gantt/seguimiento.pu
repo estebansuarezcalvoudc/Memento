@@ -1,5 +1,6 @@
 @startgantt
 language es
+!theme mars
 
 ' Fecha en la que entregaste el anteproyecto aprox.
 Project starts 2025-07-08
