@@ -1,0 +1,42 @@
+@startuml "Diagrama componentes"
+
+!theme mars
+
+left to right direction
+
+package "routers" {
+    [auth_router] #LightBlue
+    [conversation_router]
+    [meeting_router]
+    [settings_router]
+}
+
+package "services" {
+    [auth_service] #LightBlue
+    [conversation_service]
+    [meeting_service]
+    [settings_service]
+}
+
+package "repositories" as repositories {
+    [auth_repository] #LightBlue
+    [conversation_repository]
+    [meeting_repository]
+    [settings_repository]
+}
+
+database "Base de Datos" as DB
+
+auth_router *-- auth_service
+conversation_router *-- conversation_service
+meeting_router *-- meeting_service
+settings_router *-- settings_service
+
+auth_service *-- auth_repository
+conversation_service *-- conversation_repository
+meeting_service *-- meeting_repository
+settings_service *-- settings_repository
+
+repositories -l-> DB
+
+@enduml
