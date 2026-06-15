@@ -1,7 +1,7 @@
 {
   "home": {
-    "welcome": "Bienvenido a TFG",
-    "subtitle": "Algo de texto...",
+    "welcome": "Bienvenido a Memento",
+    "subtitle": "Tu asistente inteligente para reuniones",
     "logIn": "Iniciar sesión",
     "signUp": "Registrarse"
   },
@@ -11,13 +11,13 @@
   },
   "auth": {
     "login": {
-      "title": "Iniciar sesión en TFG",
-      "footerText": "¿Nuevo en TFG?",
+      "title": "Iniciar sesión en Memento",
+      "footerText": "¿Nuevo en Memento?",
       "linkText": "Crear una cuenta",
       "signIn": "Iniciar sesión"
     },
     "signup": {
-      "title": "Registrarse en TFG",
+      "title": "Registrarse en Memento",
       "footerText": "¿Ya tienes una cuenta?",
       "linkText": "Iniciar sesión",
       "signUp": "Registrarse"

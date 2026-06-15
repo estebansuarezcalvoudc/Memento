@@ -1,7 +1,7 @@
 {
   "home": {
-    "welcome": "Welcome to TFG",
-    "subtitle": "Some text...",
+    "welcome": "Welcome to Memento",
+    "subtitle": "Your intelligent meeting assistant",
     "logIn": "Log in",
     "signUp": "Sign up"
   },
@@ -11,13 +11,13 @@
   },
   "auth": {
     "login": {
-      "title": "Sign in to TFG",
-      "footerText": "New to TFG?",
+      "title": "Sign in to Memento",
+      "footerText": "New to Memento?",
       "linkText": "Create an account",
       "signIn": "Sign in"
     },
     "signup": {
-      "title": "Sign up to TFG",
+      "title": "Sign up to Memento",
       "footerText": "Already have an account?",
       "linkText": "Log in",
       "signUp": "Sign up"

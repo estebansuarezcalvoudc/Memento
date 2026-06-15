@@ -2,7 +2,8 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-// https://vite.dev/config/
+const DOMAIN = process.env.DOMAIN || 'localhost'
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   test: {
@@ -12,14 +13,14 @@ export default defineConfig({
     css: false,
     environmentOptions: {
       jsdom: {
-        url: 'https://esteban-suarez-tfg.duckdns.org',
+        url: `https://${DOMAIN}`,
       },
     },
   },
   server: {
     host: true,
     port: 5173,
-    allowedHosts: ['esteban-suarez-tfg.duckdns.org'],
+    allowedHosts: [DOMAIN],
     proxy: {
       '/api': {
         target: 'http://backend:8000',
