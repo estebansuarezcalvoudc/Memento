@@ -1,0 +1,41 @@
+@startuml "Diagrama ER MongoDB"
+!theme mars
+left to right direction
+
+entity "User" as auth {
+  * _id
+  --
+  username
+  password
+  status
+  scheduled_purge_at
+}
+
+entity "Conversation" as conversation {
+  * _id
+  --
+  # user_id
+  updated_at
+  title
+  messages
+  stream_state
+  stream_partial_reply
+  stream_updated_at
+  stream_error
+}
+
+entity "Meeting" as meeting {
+  * _id
+  --
+  # user_id
+  title
+  date
+  language
+  summary
+  transcription
+}
+
+auth ||--o{ conversation : "tiene"
+auth ||--o{ meeting : "tiene"
+
+@enduml

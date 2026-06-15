@@ -4,21 +4,21 @@
 
 left to right direction
 
-package "routers" {
+package routers {
     [auth_router]
     [conversation_router]
     [meeting_router] #LightBlue
     [settings_router]
 }
 
-package "services" {
+package services {
     [auth_service]
     [conversation_service]
     [meeting_service] #LightBlue
     [settings_service]
 }
 
-package "repositories" as repositories {
+package repositories {
     [auth_repository]
     [conversation_repository]
     [meeting_repository] #LightBlue
