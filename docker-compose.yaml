@@ -19,6 +19,8 @@ services:
     volumes:
       - ./Frontend:/app
       - /app/node_modules
+    environment:
+      - DOMAIN=${DOMAIN}
     depends_on:
       - backend
     networks:
@@ -32,7 +34,7 @@ services:
     volumes:
       - ./Backend:/Backend
       - ./.env:/.env
-      - ./Backend/.env.secrets:/Backend/.env.secrets
+      - ./Backend/.env:/Backend/.env
     runtime: nvidia
     depends_on:
       - ollama
@@ -70,6 +72,8 @@ services:
       - 8001:${OLLAMA_PORT}
     volumes:
       - ollama_data:/root/.ollama
+      - ./scripts/ollama-entrypoint.sh:/entrypoint.sh:ro
+    entrypoint: ["/bin/bash", "/entrypoint.sh"]
     runtime: nvidia
     deploy:
       resources:
