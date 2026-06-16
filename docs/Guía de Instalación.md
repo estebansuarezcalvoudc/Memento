@@ -23,8 +23,7 @@ Esta guía describe paso a paso cómo instalar y desplegar Memento, desde la con
   - [6.6 Verificar el acceso HTTPS](#66-verificar-el-acceso-https)
   - [6.7 NAT loopback (acceso desde la misma red)](#67-nat-loopback-acceso-desde-la-misma-red)
 - [7. Configuración de APIs externas (opcional)](#7-configuración-de-apis-externas-opcional)
-- [8. Solución de problemas](#8-solución-de-problemas)
-- [9. Comandos útiles](#9-comandos-útiles)
+- [8. Comandos útiles](#8-comandos-útiles)
 
 ## 1. Requisitos del sistema
 
@@ -327,65 +326,7 @@ Esto fuerza a tu máquina a resolver el dominio localmente. El resto de disposit
 
 Si tu GPU no puede ejecutar modelos locales con el rendimiento deseado o simplemente deseas utilizar otros proveedores, puedes utilizar los modelos de OpenAI o Anthropic añadiendo la clave API correspondiente a través de la interfaz gráfica.
 
-## 8. Solución de problemas
-
-### Error: "could not select device driver nvidia"
-
-NVIDIA Container Toolkit no está configurado correctamente.
-
-```bash
-sudo nvidia-ctk runtime configure --runtime=docker
-sudo systemctl restart docker
-```
-
-### Error: "CUDA out of memory"
-
-El modelo no cabe en la VRAM de tu GPU.
-
-**Soluciones:**
-- Usa un modelo más pequeño: `docker compose exec ollama ollama pull llama3.2:1b`
-- Usa APIs externas (OpenAI/Anthropic) y desactiva Ollama.
-- Cierra otras aplicaciones que usen la GPU.
-
-### Ollama no descarga los modelos
-
-Revisa los logs de Ollama durante el arranque:
-
-```bash
-docker compose logs ollama
-```
-
-Si hay un fallo de red o timeout, reintenta manualmente:
-
-```bash
-docker compose exec ollama ollama pull llama3.2:latest
-docker compose exec ollama ollama pull nomic-embed-text
-```
-
-### MongoDB authentication failed
-
-Asegura que `MONGO_USER` y `MONGO_PASSWORD` coinciden en ambos archivos `.env` (raíz y Backend).
-
-Si cambias las credenciales después del primer despliegue, debes eliminar el volumen de MongoDB. Esto eliminará todos los datos almacenados en MongoDB.
-
-```bash
-docker compose down -v mongo_db
-docker compose up -d mongo_db
-```
-
-### Página de bienvenida de NPM en lugar de la app
-
-Si al acceder al dominio ves "Congratulations! You've successfully started Nginx Proxy Manager", el problema suele ser NAT loopback si estás en la misma red del servidor. Aplica la solución de la sección 6.7.
-
-### "no valid A records found" al solicitar SSL
-
-El dominio DuckDNS no resuelve a tu IP pública. Verifica con `dig +short tudominio.duckdns.org` y, si no devuelve tu IP, entra en [duckdns.org](https://duckdns.org) y haz clic en **Update IP**.
-
-### Puerto en uso
-
-Si los puertos 80, 443, 5173, 8000 u 8001 están ocupados, detén el servicio conflictivo o cambia los puertos en `.env`.
-
-## 9. Comandos útiles
+## 8. Comandos útiles
 
 ```bash
 # Ver todos los logs en tiempo real
