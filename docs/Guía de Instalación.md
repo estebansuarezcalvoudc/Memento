@@ -2,6 +2,7 @@ Esta guía describe paso a paso cómo instalar y desplegar Memento, desde la con
 
 ## Índice
 
+- [Índice](#índice)
 - [1. Requisitos del sistema](#1-requisitos-del-sistema)
   - [1.1 Hardware](#11-hardware)
   - [1.2 Software](#12-software)
@@ -13,7 +14,9 @@ Esta guía describe paso a paso cómo instalar y desplegar Memento, desde la con
   - [3.1 Clonar el repositorio](#31-clonar-el-repositorio)
   - [3.2 Archivos de entorno](#32-archivos-de-entorno)
 - [4. Despliegue](#4-despliegue)
+  - [Verificar estado](#verificar-estado)
 - [5. Acceso a la aplicación](#5-acceso-a-la-aplicación)
+  - [Primer uso](#primer-uso)
 - [6. Dominio y acceso seguro (DuckDNS + Nginx Proxy Manager)](#6-dominio-y-acceso-seguro-duckdns--nginx-proxy-manager)
   - [6.1 Obtener un subdominio en DuckDNS](#61-obtener-un-subdominio-en-duckdns)
   - [6.2 Verificar que el dominio resuelve](#62-verificar-que-el-dominio-resuelve)
@@ -88,7 +91,7 @@ Si ambos comandos muestran información de la GPU, la instalación es correcta.
 ### 3.1 Clonar el repositorio
 
 ```bash
-git clone <url-del-repositorio>
+git clone git@github.com:estebansuarezcalvoudc/Memento.git
 cd memento
 ```
 
