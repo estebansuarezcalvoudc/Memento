@@ -49,6 +49,6 @@ printscale weekly
 
 ' Segunda parte del Sprint 7 (añadimos un espacio al final del nombre y usamos alias s7_2)
 [Sprint 7 (Desarrollo intermitente) ] as [s7_2] starts 2026-05-11
-[s7_2] requires 10 days
+[s7_2] requires 15 days
 
 @endgantt
