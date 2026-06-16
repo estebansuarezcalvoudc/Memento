@@ -109,7 +109,6 @@ Edítalo dando valores a las siguientes variables:
 
 ```bash
 FRONTEND_PORT=5173
-BACKEND_PORT=8000
 
 MONGO_HOST=mongo_db
 MONGO_USER=mongo
@@ -220,8 +219,6 @@ docker compose logs -f <nombre-servicio>
 | Servicio | URL |
 |---|---|
 | Frontend | http://localhost:5173 |
-| Backend API | http://localhost:8000 |
-| Documentación API | http://localhost:8000/docs |
 | Nginx Proxy Manager | http://localhost:81 |
 
 ### Primer uso
@@ -234,6 +231,8 @@ docker compose logs -f <nombre-servicio>
 ## 6. Dominio y acceso seguro (DuckDNS + Nginx Proxy Manager)
 
 Para acceder a Memento desde internet con HTTPS necesitas un dominio público. DuckDNS ofrece subdominios gratuitos, y Nginx Proxy Manager (incluido en el docker-compose) gestiona el proxy inverso y los certificados SSL.
+
+Si utilizas Nginx Proxy Manager como entrada única a la aplicación, es recomendable eliminar el mapeo del puerto del frontend (`ports: - "5173:5173"`) en el `docker-compose.yaml`, de modo que solo Nginx quede expuesto al host y el resto de servicios se comuniquen exclusivamente por las redes internas de Docker.
 
 ### 6.1 Obtener un subdominio en DuckDNS
 
