@@ -2,7 +2,6 @@ Esta guía describe paso a paso cómo instalar y desplegar Memento, desde la con
 
 ## Índice
 
-- [Índice](#índice)
 - [1. Requisitos del sistema](#1-requisitos-del-sistema)
   - [1.1 Hardware](#11-hardware)
   - [1.2 Software](#12-software)
@@ -19,12 +18,11 @@ Esta guía describe paso a paso cómo instalar y desplegar Memento, desde la con
   - [Primer uso](#primer-uso)
 - [6. Dominio y acceso seguro (DuckDNS + Nginx Proxy Manager)](#6-dominio-y-acceso-seguro-duckdns--nginx-proxy-manager)
   - [6.1 Obtener un subdominio en DuckDNS](#61-obtener-un-subdominio-en-duckdns)
-  - [6.2 Verificar que el dominio resuelve](#62-verificar-que-el-dominio-resuelve)
-  - [6.3 Configurar el dominio en el proyecto](#63-configurar-el-dominio-en-el-proyecto)
-  - [6.4 Crear el certificado SSL](#64-crear-el-certificado-ssl)
-  - [6.5 Crear el Proxy Host](#65-crear-el-proxy-host)
-  - [6.6 Verificar el acceso HTTPS](#66-verificar-el-acceso-https)
-  - [6.7 NAT loopback (acceso desde la misma red)](#67-nat-loopback-acceso-desde-la-misma-red)
+  - [6.2 Configurar el dominio en el proyecto](#62-configurar-el-dominio-en-el-proyecto)
+  - [6.3 Crear el certificado SSL](#63-crear-el-certificado-ssl)
+  - [6.4 Crear el Proxy Host](#64-crear-el-proxy-host)
+  - [6.5 Verificar el acceso HTTPS](#65-verificar-el-acceso-https)
+  - [6.6 NAT loopback (acceso desde la misma red)](#66-nat-loopback-acceso-desde-la-misma-red)
 - [7. Configuración de APIs externas (opcional)](#7-configuración-de-apis-externas-opcional)
 - [8. Comandos útiles](#8-comandos-útiles)
 
@@ -241,18 +239,7 @@ Para acceder a Memento desde internet con HTTPS necesitas un dominio público. D
 
 1. Regístrate en [duckdns.org](https://www.duckdns.org/).
 2. Crea un subdominio (ej. `midominio.duckdns.org`) y haz clic en **add domain**.
-3. Copia el **token** que aparece en la parte superior de la página.
-4. Haz clic en **Update IP** para que DuckDNS asocie tu IP pública al subdominio.
-
-### 6.2 Verificar que el dominio resuelve
-
-```bash
-dig +short midominio.duckdns.org
-```
-
-Debe devolver tu IP pública. Si no devuelve nada, repite el paso 4 de la sección 6.1.
-
-### 6.3 Configurar el dominio en el proyecto
+### 6.2 Configurar el dominio en el proyecto
 
 Edita `.env` en la raíz del proyecto y cambia el valor de `DOMAIN`:
 
@@ -266,7 +253,7 @@ Reconstruye el frontend para que coja la nueva variable:
 docker compose up -d --build frontend
 ```
 
-### 6.4 Crear el certificado SSL
+### 6.3 Crear el certificado SSL
 
 1. Accede a Nginx Proxy Manager en [http://localhost:81](http://localhost:81).
 2. Añade tus credenciales.
@@ -282,7 +269,7 @@ docker compose up -d --build frontend
 
 5. Haz clic en **Save**. El certificado se generará en unos segundos.
 
-### 6.5 Crear el Proxy Host
+### 6.4 Crear el Proxy Host
 
 1. Ve a **Hosts > Proxy Hosts** y haz clic en **Add Proxy Host**.
 
@@ -311,11 +298,11 @@ docker compose up -d --build frontend
 
 4. Haz clic en **Save**.
 
-### 6.6 Verificar el acceso HTTPS
+### 6.5 Verificar el acceso HTTPS
 
 Abre `https://midominio.duckdns.org` en un navegador. Deberías ver Memento con el candado verde. El certificado se renovará automáticamente mientras Nginx Proxy Manager esté corriendo.
 
-### 6.7 NAT loopback (acceso desde la misma red)
+### 6.6 NAT loopback (acceso desde la misma red)
 
 Si accedes desde la misma red local donde está alojado el servidor, es posible que el dominio no resuelva correctamente y veas la página de bienvenida de NPM. Para evitarlo, añade una entrada en `/etc/hosts`:
 
