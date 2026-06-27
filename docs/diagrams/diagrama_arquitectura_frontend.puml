@@ -1,0 +1,203 @@
+@startuml
+!theme mars
+title Arquitectura en Capas del Frontend — Memento
+skinparam componentStyle rectangle
+
+top to bottom direction
+' ============================================================
+' Capa 1 — Páginas
+' ============================================================
+package "Páginas  (pages/)" as PAGES {
+
+  component "Home"              as H
+  component "NotFound"          as NF
+  component "LogIn"             as LI
+  component "SignUp"            as SU
+  component "Chat"              as CH
+  component "Meetings"          as ME
+  component "MeetingContent"    as MC
+
+}
+
+' ============================================================
+' Capa 2 — Componentes de Funcionalidad
+' ============================================================
+package "Componentes de Funcionalidad  (components/)" as FEATURES {
+
+  package "Chat" as PKG_CHAT {
+    component "ChatConversation"   as F1
+    component "ChatInput"          as F2
+    component "NewChatView"        as F3
+    component "AssistantMessage"   as F4
+    component "UserMessage"        as F5
+    component "SendMessageButton"  as F6
+  }
+
+  package "Meetings" as PKG_MEETINGS {
+    component "MeetingList"          as F7
+    component "MeetingItem"          as F8
+    component "MeetingListToolbar"   as F9
+    component "MeetingSearchInput"   as F10
+    component "MeetingDateFilters"   as F11
+    component "MeetingListPagination" as F12
+    component "DeleteMeetingDialog"  as F13
+  }
+
+  package "Upload" as PKG_UPLOAD {
+    component "UploadMeetingsDialog" as F14
+    component "UploadMeetingsForm"   as F15
+    component "MeetingForm"          as F16
+    component "MeetingOptionsRow"    as F17
+  }
+
+  package "Meeting Content" as PKG_MTC {
+    component "MeetingSummary"       as F18
+    component "MeetingTranscription" as F19
+  }
+
+  package "Auth" as PKG_AUTH {
+    component "AuthPageLayout" as F20
+    component "LogInForm"      as F21
+    component "SignUpForm"     as F22
+  }
+
+  package "Settings" as PKG_SETTINGS {
+    component "SettingsDialog"    as F23
+    component "GeneralView"       as F24
+    component "ProvidersView"     as F25
+    component "TranscriptionView" as F26
+    component "SummarizationView" as F27
+    component "ChatView"          as F28
+    component "AccountView"       as F29
+  }
+
+  package "Layout" as PKG_LAYOUT {
+    component "Sidebar"         as F30
+    component "AuthGuard"       as F31
+    component "ProtectedRoute"  as F32
+    component "PublicOnlyRoute" as F33
+  }
+
+}
+
+' ============================================================
+' Capa 3 — UI Primitivos
+' ============================================================
+package "UI Primitivos  (components/ui/)" as UI {
+
+  package "Botones" as PKG_BTN {
+    component "ConfirmButton"     as U1
+    component "SecondaryButton"   as U2
+    component "DangerButton"      as U3
+    component "InlineButton"      as U4
+    component "FormButton"        as U5
+    component "PaginationButton"  as U6
+  }
+
+  package "Inputs" as PKG_INP {
+    component "Input"            as U7
+    component "InlineInput"      as U8
+    component "Select"           as U9
+    component "Toggle"           as U10
+    component "FilePickerInput"  as U11
+  }
+
+  package "Feedback" as PKG_FDB {
+    component "ErrorMessage" as U12
+    component "FormErrors"   as U13
+  }
+
+  component "Dialog"        as U14
+  component "SectionHeader" as U15
+  component "PageContainer" as U16
+
+}
+
+' ============================================================
+' Capa 4 — Estado del Cliente
+' ============================================================
+package "Estado del Cliente  (stores/ + hooks/)" as STATE {
+
+  package "Zustand Stores" as PKG_ZUS {
+    component "authStore"         as S1
+    component "sidebarStore"      as S2
+    component "themeStore"        as S3
+    component "meetingListStore"  as S4
+  }
+
+  package "Hooks Genéricos" as PKG_HOOKS {
+    component "useMeetingListFilters" as S5
+    component "useDelayedDisplay"     as S6
+  }
+
+}
+
+' ============================================================
+' Capa 5 — API
+' ============================================================
+package "API + Estado del Servidor  (api/)" as API {
+
+  package "HTTP" as PKG_HTTP {
+    component "fetchBackend"  as A1
+    component "authAPI"       as A2
+  }
+
+  package "TanStack Query  (queries/)" as PKG_QUERY {
+    component "useChatsQueries"          as A3
+    component "useMeetingsQueries"       as A4
+    component "useSettingsQueries"       as A5
+    component "useAuthQueries"           as A6
+    component "useModelsQueries"         as A7
+    component "useProvidersQueries"      as A8
+    component "useSummarizationQueries"  as A9
+    component "useTranscriptionQueries"  as A10
+  }
+
+  package "Tiempo Real" as PKG_RT {
+    component "useChat\n(WebSocket)"          as A11
+    component "chatMessageHandler\n(WS)"      as A12
+    component "useUploadMeetings\n(SSE)"      as A13
+    component "uploadMeetingsStream\n(SSE)"   as A14
+    component "meetingEvents"                 as A15
+  }
+
+  component "queryClient"  as A16
+  component "chatReducer"  as A17
+
+}
+
+' ============================================================
+' Backend (externo)
+' ============================================================
+component "BACKEND  (FastAPI)" as BACKEND
+
+' ============================================================
+' Transversal
+' ============================================================
+package "Transversal" as TRANSVERSAL {
+
+  component "i18n\n(en / es)"   as T1
+  component "utils/date"        as T2
+  component "auth/jwt"          as T3
+  component "auth/session"      as T4
+
+}
+
+' ============================================================
+' Dependencias unidireccionales (top → down)
+' ============================================================
+
+PAGES      -down-> FEATURES
+FEATURES   -down-> UI
+UI         -down-> STATE
+STATE      -down-> API
+API        -down-> BACKEND
+
+' Dependencias transversales
+TRANSVERSAL -left-> PAGES
+TRANSVERSAL -left-> FEATURES
+TRANSVERSAL -left-> UI
+TRANSVERSAL -left-> STATE
+TRANSVERSAL -left-> API
+
+@enduml
