@@ -115,10 +115,9 @@ class ConversationMongoRepository(AbstractConversationRepository):
         result = self._collection.update_one(
             {"user_id": user_id, "_id": ObjectId(id)},
             {"$set": {"title": metadata.title}},
-            upsert=True,
         )
 
-        if result.modified_count == 0:
+        if result.matched_count == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Conversation with id={id} not found",

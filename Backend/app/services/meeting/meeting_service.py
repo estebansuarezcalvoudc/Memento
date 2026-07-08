@@ -27,7 +27,7 @@ from ...schemas.meeting.meeting_schema import (
 from ...services.settings.transcription_providers_service import (
     TranscriptionProvidersService,
 )
-from .meeting_processing.summarization import get_meeting_summary
+from .summarization import get_meeting_summary
 
 _logger = setup_logger(__name__)
 

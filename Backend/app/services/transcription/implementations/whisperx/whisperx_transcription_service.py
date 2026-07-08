@@ -19,11 +19,11 @@ from .....schemas.settings.whisperx_schema import (
     WhisperXModel,
 )
 from .....schemas.transcription.transcription_schema import LanguageOption
-from ....meeting.meeting_processing.gpu_utils import get_device, try_on_gpu
 from ...interfaces.transcription_service import (
     TranscriptionResult,
     TranscriptionService,
 )
+from .gpu_utils import get_device, try_on_gpu
 
 _logger = setup_logger(__name__)
 

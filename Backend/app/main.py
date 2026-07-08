@@ -58,7 +58,7 @@ async def lifespan(app: FastAPI):
         close_database_connection()
 
 
-app = FastAPI(title="TFG", openapi_tags=_tags_metadata, lifespan=lifespan)
+app = FastAPI(title="Memento", openapi_tags=_tags_metadata, lifespan=lifespan)
 
 # Configure CORS
 app.add_middleware(

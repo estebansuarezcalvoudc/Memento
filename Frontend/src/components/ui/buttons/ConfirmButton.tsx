@@ -25,7 +25,7 @@ export default function ConfirmButton({
 
   const bgColor =
     color === 'lime'
-      ? 'bg-lime-400 hover:bg-lime-500 text-stone-800'
+      ? 'bg-blue-400 hover:bg-blue-500 text-stone-800 dark:text-white hover:text-black'
       : 'bg-red-500 hover:bg-red-700 text-stone-50'
 
   return (

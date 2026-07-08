@@ -132,7 +132,7 @@ export function createMessageHandler(
               ...(old?.messages ?? []),
               { role: 'assistant', content: accumulatedTokensRef.current },
             ],
-            state: old?.state ?? {
+            state: {
               status: 'idle',
               partialReply: '',
               updatedAt: null,

@@ -20,7 +20,7 @@ export default function ProviderSelectorTitle({
       <input
         type="radio"
         name="transcription-provider"
-        className="h-4 w-4 appearance-none rounded-full border border-stone-400 bg-stone-100 transition-colors checked:border-lime-500 checked:bg-lime-500 focus-visible:ring-2 focus-visible:ring-lime-500/40 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-stone-500 dark:bg-stone-700"
+        className="h-4 w-4 appearance-none rounded-full border border-stone-400 bg-stone-100 transition-colors checked:border-blue-500 checked:bg-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-stone-500 dark:bg-stone-700"
         checked={checked}
         disabled={disabled}
         onChange={() => onSelect(providerName)}

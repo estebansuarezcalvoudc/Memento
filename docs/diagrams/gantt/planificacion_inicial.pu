@@ -1,0 +1,27 @@
+@startgantt
+language es
+!theme mars
+
+Project starts 2025-06-02
+
+saturday are closed
+sunday are closed
+
+' Cambiamos a escala semanal
+printscale weekly
+
+[Sprint 1] requires 10 days
+[Sprint 2] requires 10 days
+[Sprint 3] requires 10 days
+[Sprint 4] requires 10 days
+[Sprint 5] requires 10 days
+[Sprint 6] requires 10 days
+[Sprint 7] requires 20 days
+
+[Sprint 2] starts at [Sprint 1]'s end
+[Sprint 3] starts at [Sprint 2]'s end
+[Sprint 4] starts at [Sprint 3]'s end
+[Sprint 5] starts at [Sprint 4]'s end
+[Sprint 6] starts at [Sprint 5]'s end
+[Sprint 7] starts at [Sprint 6]'s end
+@endgantt

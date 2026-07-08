@@ -19,6 +19,8 @@ services:
     volumes:
       - ./Frontend:/app
       - /app/node_modules
+    environment:
+      - DOMAIN=${DOMAIN}
     depends_on:
       - backend
     networks:
@@ -27,12 +29,10 @@ services:
 
   backend:
     build: ./Backend
-    ports:
-      - "8000:${BACKEND_PORT}"
     volumes:
       - ./Backend:/Backend
       - ./.env:/.env
-      - ./Backend/.env.secrets:/Backend/.env.secrets
+      - ./Backend/.env:/Backend/.env
     runtime: nvidia
     depends_on:
       - ollama
@@ -56,8 +56,6 @@ services:
 
   chromadb:
     image: chromadb/chroma
-    ports:
-      - "8002:8000"
     volumes:
       - chroma_data:/data
     networks:
@@ -66,10 +64,10 @@ services:
 
   ollama:
     image: ollama/ollama
-    ports:
-      - 8001:${OLLAMA_PORT}
     volumes:
       - ollama_data:/root/.ollama
+      - ./scripts/ollama-entrypoint.sh:/entrypoint.sh:ro
+    entrypoint: ["/bin/bash", "/entrypoint.sh"]
     runtime: nvidia
     deploy:
       resources:
@@ -84,8 +82,6 @@ services:
 
   mongo_db:
     image: mongodb/mongodb-community-server
-    ports:
-      - 27017:${MONGO_PORT}
     volumes:
       - mongodb_data:/data/db
     environment:

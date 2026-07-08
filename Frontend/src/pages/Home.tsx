@@ -28,6 +28,7 @@ export default function Home() {
             text={t('home.signUp')}
             hoverColor="hover:bg-stone-300 dark:hover:bg-stone-600"
             bgColor="bg-white dark:bg-stone-800"
+            border="border-1 border-stone-400 dark:border-stone-600"
           />
         </div>
       )}

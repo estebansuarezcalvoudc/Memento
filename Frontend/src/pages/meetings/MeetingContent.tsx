@@ -92,7 +92,7 @@ export default function MeetingContent({ type }: MeetingContentProps) {
         </div>
         <NavLink
           to={otherLink.path}
-          className="font-ubuntu rounded-xl bg-lime-400 px-4 py-2 text-xl text-stone-800 hover:bg-lime-500"
+          className="font-ubuntu rounded-xl bg-blue-400 px-4 py-2 text-xl text-stone-800 hover:bg-blue-500 hover:text-black dark:text-white"
         >
           {otherLink.text}
         </NavLink>

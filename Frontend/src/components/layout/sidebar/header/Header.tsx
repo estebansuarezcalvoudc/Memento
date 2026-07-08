@@ -20,7 +20,7 @@ export default function Header() {
           ref={titleRef}
           className="font-dongle animate-[fadeInText_300ms_ease-out_50ms_forwards] p-1 text-6xl text-stone-700 uppercase opacity-0 dark:text-stone-300"
         >
-          TFG
+          Memento
         </span>
       )}
       <button

@@ -4,7 +4,7 @@ from typing import Any, Callable
 
 import torch
 
-from ....core.logging import setup_logger
+from .....core.logging import setup_logger
 
 _logger = setup_logger(__name__, show_file_name=False)
 

@@ -242,5 +242,8 @@ Frontend/.vite
 
 Frontend/coverage
 
+# Obsidian
+docs/.obsidian/
+
 data/
 letsencrypt/
