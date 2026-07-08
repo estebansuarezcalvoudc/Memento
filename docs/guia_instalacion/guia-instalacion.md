@@ -258,12 +258,12 @@ docker compose up -d --build frontend
 2. Añade tus credenciales.
 3. Ve a **Certificates > Add SSL Certificate > Let's Encrypt via DNS**.
 
-![](guia_instalacion/add-certificate-dns.png)
+![](images/add-certificate-dns.png)
 *Figura 1: Selección del método de emisión de certificados.*
 
 4. Rellena los campos, sustituyendo el texto `your-duckdns-token` por tu token de DuckDNS, que puedes obtener en [este enlace](https://www.duckdns.org/domains):
 
-![](guia_instalacion/duckdns-token-form.png)
+![](images/duckdns-token-form.png)
 *Figura 2: Formulario de solicitud del certificado.*
 
 5. Haz clic en **Save**. El certificado se generará en unos segundos.
@@ -272,10 +272,10 @@ docker compose up -d --build frontend
 
 1. Ve a **Hosts > Proxy Hosts** y haz clic en **Add Proxy Host**.
 
-![](guia_instalacion/add-proxy-host.png)
+![](images/add-proxy-host.png)
 *Figura 3: Acceso a la creación de un proxy host.*
 
-![](guia_instalacion/proxy-host-form.png)
+![](images/proxy-host-form.png)
 *Figura 4: Formulario de creación del proxy host.*
 
 2. Rellena los detalles del proxy:
@@ -287,12 +287,12 @@ docker compose up -d --build frontend
    - **Cache Assets:** Activado
    - **Block Common Exploits:** Activado
 
-![](guia_instalacion/proxy-host-details.png)
+![](images/proxy-host-details.png)
 *Figura 5: Detalles del proxy host.*
 
 3. Ve a la pestaña **SSL** y selecciona el certificado creado anteriormente, activando las opciones que se ven en la imagen:
 
-![](guia_instalacion/ssl-tab-options.png)
+![](images/ssl-tab-options.png)
 *Figura 6: Configuración del certificado SSL en el proxy host.*
 
 4. Haz clic en **Save**.
